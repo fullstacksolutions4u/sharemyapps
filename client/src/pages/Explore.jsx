@@ -33,7 +33,19 @@ export default function Explore() {
     }
   }, [search, activeTag]);
 
-  useEffect(() => { fetch(1, search, activeTag); }, []);
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await api.get('/projects?page=1');
+        setProjects(res.data.projects);
+        setPages(res.data.pages);
+        setTotal(res.data.total);
+        setPage(1);
+      } catch { /* ignore */ } finally {
+        setLoading(false);
+      }
+    })();
+  }, []);
 
   const handleSearch = (e) => {
     e.preventDefault();
