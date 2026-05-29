@@ -26,7 +26,7 @@ export default function Explore() {
       setPages(res.data.pages);
       setTotal(res.data.total);
       setPage(p);
-    } catch (_e) {
+    } catch {
       /* silently ignore */
     } finally {
       setLoading(false);

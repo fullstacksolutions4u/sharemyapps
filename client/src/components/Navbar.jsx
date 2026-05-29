@@ -23,7 +23,7 @@ function NotificationBell() {
       const res = await api.get('/notifications');
       setNotifications(res.data.notifications);
       setUnread(res.data.unreadCount);
-    } catch (_e) { /* silently ignore */ }
+    } catch { /* silently ignore */ }
   };
 
   useEffect(() => {
@@ -31,7 +31,7 @@ function NotificationBell() {
     load();
     const interval = setInterval(load, 30000);
     return () => clearInterval(interval);
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, []);
 
   // Close on outside click
   useEffect(() => {
@@ -45,7 +45,7 @@ function NotificationBell() {
       await api.patch('/notifications/read-all');
       setNotifications(n => n.map(x => ({ ...x, read: true })));
       setUnread(0);
-    } catch (_e) { /* silently ignore */ }
+    } catch { /* silently ignore */ }
   };
 
   const markRead = async (id) => {
@@ -53,7 +53,7 @@ function NotificationBell() {
       await api.patch(`/notifications/${id}/read`);
       setNotifications(n => n.map(x => x._id === id ? { ...x, read: true } : x));
       setUnread(u => Math.max(0, u - 1));
-    } catch (_e) { /* silently ignore */ }
+    } catch { /* silently ignore */ }
   };
 
   return (
