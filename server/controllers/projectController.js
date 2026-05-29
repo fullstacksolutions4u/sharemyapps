@@ -52,7 +52,7 @@ exports.getMyProjects = async (req, res) => {
 
 exports.createProject = async (req, res) => {
   try {
-    const { title, description, liveUrl, techTags, contactEmail, contactPhone, linkedinUrl, githubUrl, githubVisible } = req.body;
+    const { title, description, liveUrl, techTags, contactEmail, contactPhone, linkedinUrl, githubUrls, githubVisible } = req.body;
     if (!title || !description || !liveUrl)
       return res.status(400).json({ message: 'Title, description, and live URL are required' });
 
@@ -64,13 +64,17 @@ exports.createProject = async (req, res) => {
       ? (Array.isArray(techTags) ? techTags : techTags.split(',').map(t => t.trim()).filter(Boolean))
       : [];
 
+    const parsedGithubUrls = githubUrls
+      ? (Array.isArray(githubUrls) ? githubUrls : [githubUrls]).map(u => u.trim()).filter(Boolean)
+      : [];
+
     const project = await Project.create({
       title, description, liveUrl, bannerImage, screenshots,
       techTags: tags,
       contactEmail: contactEmail || '',
       contactPhone: contactPhone || '',
       linkedinUrl: linkedinUrl || '',
-      githubUrl: githubUrl || '',
+      githubUrls: parsedGithubUrls,
       githubVisible: githubVisible !== 'false',
       owner: req.user._id,
     });
@@ -88,7 +92,7 @@ exports.updateProject = async (req, res) => {
     if (project.owner.toString() !== req.user._id.toString())
       return res.status(403).json({ message: 'Forbidden' });
 
-    const { title, description, liveUrl, techTags, removeScreenshots, contactEmail, contactPhone, linkedinUrl, githubUrl, githubVisible, resubmit } = req.body;
+    const { title, description, liveUrl, techTags, removeScreenshots, contactEmail, contactPhone, linkedinUrl, githubUrls, githubVisible, resubmit } = req.body;
     const files = req.files || {};
 
     if (title) project.title = title;
@@ -102,7 +106,9 @@ exports.updateProject = async (req, res) => {
     if (contactEmail !== undefined) project.contactEmail = contactEmail;
     if (contactPhone !== undefined) project.contactPhone = contactPhone;
     if (linkedinUrl !== undefined) project.linkedinUrl = linkedinUrl;
-    if (githubUrl !== undefined) project.githubUrl = githubUrl;
+    if (githubUrls !== undefined) {
+      project.githubUrls = (Array.isArray(githubUrls) ? githubUrls : [githubUrls]).map(u => u.trim()).filter(Boolean);
+    }
     if (githubVisible !== undefined) project.githubVisible = githubVisible !== 'false';
     if (resubmit === 'true') {
       project.status = 'pending';

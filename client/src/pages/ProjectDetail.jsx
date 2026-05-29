@@ -12,6 +12,7 @@ import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
 
 const PLACEHOLDER = 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=1200&q=80';
+const getbanner = (bannerImage, liveUrl) => bannerImage || `https://s0.wp.com/mshots/v1/${encodeURIComponent(liveUrl)}?w=1200`;
 
 const TAG_COLORS = ['bg-blue-50 text-blue-700','bg-green-50 text-green-700','bg-purple-50 text-purple-700','bg-yellow-50 text-yellow-700','bg-pink-50 text-pink-700','bg-[#E6F7F5] text-[#00A693]'];
 function tagColor(tag) {
@@ -43,8 +44,8 @@ export default function ProjectDetail() {
 
   if (!project) return null;
 
-  const { title, description, liveUrl, bannerImage, screenshots = [], techTags = [], owner, createdAt, githubUrl, githubVisible } = project;
-  const images = [bannerImage || PLACEHOLDER, ...screenshots].filter(Boolean);
+  const { title, description, liveUrl, bannerImage, screenshots = [], techTags = [], owner, createdAt, githubUrl, githubUrls = [], githubVisible } = project;
+  const images = [getbanner(bannerImage, liveUrl), ...screenshots].filter(Boolean);
   const isOwner = user && owner && user._id === owner._id;
 
   const handleDelete = async () => {

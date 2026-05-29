@@ -1,6 +1,6 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
-import { ArrowLeft, Upload, X, Plus } from 'lucide-react';
+import { ArrowLeft, X, Plus } from 'lucide-react';
 import api from '../api/axios';
 import toast from 'react-hot-toast';
 
@@ -9,58 +9,27 @@ export default function ProjectForm() {
   const isEdit = Boolean(id);
   const navigate = useNavigate();
 
-  const [form, setForm] = useState({ title: '', description: '', liveUrl: '', techTags: '', contactEmail: '', contactPhone: '', linkedinUrl: '', githubUrl: '', githubVisible: true });
-  const [banner, setBanner] = useState(null);
-  const [bannerPreview, setBannerPreview] = useState('');
-  const [screenshots, setScreenshots] = useState([]);
-  const [screenshotPreviews, setScreenshotPreviews] = useState([]);
-  const [removedScreenshots, setRemovedScreenshots] = useState([]);
+  const [form, setForm] = useState({ title: '', description: '', liveUrl: '', techTags: '', contactEmail: '', contactPhone: '', linkedinUrl: '' });
+  const [githubUrls, setGithubUrls] = useState(['']);
+  const [githubVisible, setGithubVisible] = useState(true);
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(isEdit);
   const [projectStatus, setProjectStatus] = useState('');
-
-  const bannerRef = useRef();
-  const ssRef = useRef();
 
   useEffect(() => {
     if (!isEdit) return;
     api.get(`/projects/${id}`)
       .then(res => {
         const p = res.data;
-        setForm({ title: p.title, description: p.description, liveUrl: p.liveUrl, techTags: p.techTags?.join(', ') || '', contactEmail: p.contactEmail || '', contactPhone: p.contactPhone || '', linkedinUrl: p.linkedinUrl || '', githubUrl: p.githubUrl || '', githubVisible: p.githubVisible !== false });
+        setForm({ title: p.title, description: p.description, liveUrl: p.liveUrl, techTags: p.techTags?.join(', ') || '', contactEmail: p.contactEmail || '', contactPhone: p.contactPhone || '', linkedinUrl: p.linkedinUrl || '' });
         setProjectStatus(p.status || '');
-        setBannerPreview(p.bannerImage || '');
-        setScreenshotPreviews(p.screenshots || []);
+        const urls = p.githubUrls?.length ? p.githubUrls : (p.githubUrl ? [p.githubUrl] : ['']);
+        setGithubUrls(urls);
+        setGithubVisible(p.githubVisible !== false);
       })
       .catch(() => { toast.error('Failed to load project'); navigate('/dashboard'); })
       .finally(() => setFetching(false));
   }, [id, isEdit, navigate]);
-
-  const handleBanner = (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    setBanner(file);
-    setBannerPreview(URL.createObjectURL(file));
-  };
-
-  const handleScreenshots = (e) => {
-    const files = Array.from(e.target.files);
-    const total = screenshotPreviews.length - removedScreenshots.length + screenshots.length + files.length;
-    if (total > 5) { toast.error('Maximum 5 screenshots'); return; }
-    setScreenshots(s => [...s, ...files]);
-    setScreenshotPreviews(p => [...p, ...files.map(f => URL.createObjectURL(f))]);
-  };
-
-  const removeExistingScreenshot = (url) => {
-    setRemovedScreenshots(r => [...r, url]);
-    setScreenshotPreviews(p => p.filter(x => x !== url));
-  };
-
-  const removeNewScreenshot = (idx) => {
-    const newIdx = idx - (screenshotPreviews.length - screenshots.length);
-    setScreenshots(s => s.filter((_, i) => i !== newIdx));
-    setScreenshotPreviews(p => p.filter((_, i) => i !== idx));
-  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -78,11 +47,8 @@ export default function ProjectForm() {
       data.append('contactEmail', form.contactEmail.trim());
       data.append('contactPhone', form.contactPhone.trim());
       data.append('linkedinUrl', form.linkedinUrl.trim());
-      data.append('githubUrl', form.githubUrl.trim());
-      data.append('githubVisible', form.githubVisible);
-      if (banner) data.append('banner', banner);
-      screenshots.forEach(f => data.append('screenshots', f));
-      removedScreenshots.forEach(url => data.append('removeScreenshots', url));
+      githubUrls.forEach(url => { if (url.trim()) data.append('githubUrls', url.trim()); });
+      data.append('githubVisible', githubVisible);
 
       if (isEdit) {
         const isResubmit = projectStatus === 'rejected';
@@ -203,10 +169,11 @@ export default function ProjectForm() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-[#1A1A1A] mb-2">LinkedIn URL <span className="text-red-400">*</span></label>
+            <label className="block text-sm font-medium text-[#1A1A1A] mb-2">
+              LinkedIn URL <span className="text-xs text-[#9CA3AF] font-normal">(optional)</span>
+            </label>
             <input
               type="text"
-              required
               value={form.linkedinUrl}
               onChange={e => setForm(f => ({ ...f, linkedinUrl: e.target.value }))}
               placeholder="linkedin.com/in/yourprofile"
@@ -216,90 +183,49 @@ export default function ProjectForm() {
 
           <div>
             <label className="block text-sm font-medium text-[#1A1A1A] mb-2">
-              GitHub URL <span className="text-xs text-[#9CA3AF] font-normal">(optional)</span>
+              GitHub URLs <span className="text-xs text-[#9CA3AF] font-normal">(optional)</span>
             </label>
-            <input
-              type="text"
-              value={form.githubUrl}
-              onChange={e => setForm(f => ({ ...f, githubUrl: e.target.value }))}
-              placeholder="github.com/username/repo"
-              className="w-full px-3.5 py-2.5 border border-[#E5E1DA] rounded-xl text-sm text-[#1A1A1A] placeholder-[#9CA3AF] focus:outline-none focus:border-[#00A693] focus:ring-2 focus:ring-[#00A693]/10 transition"
-            />
+            <div className="space-y-2">
+              {githubUrls.map((url, i) => (
+                <div key={i} className="flex gap-2 items-center">
+                  <input
+                    type="text"
+                    value={url}
+                    onChange={e => setGithubUrls(urls => urls.map((u, j) => j === i ? e.target.value : u))}
+                    placeholder="github.com/username/repo"
+                    className="flex-1 px-3.5 py-2.5 border border-[#E5E1DA] rounded-xl text-sm text-[#1A1A1A] placeholder-[#9CA3AF] focus:outline-none focus:border-[#00A693] focus:ring-2 focus:ring-[#00A693]/10 transition"
+                  />
+                  {githubUrls.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => setGithubUrls(urls => urls.filter((_, j) => j !== i))}
+                      className="w-8 h-8 flex items-center justify-center text-[#9CA3AF] hover:text-red-400 hover:bg-red-50 rounded-lg transition-colors flex-shrink-0"
+                    >
+                      <X size={14} />
+                    </button>
+                  )}
+                </div>
+              ))}
+              <button
+                type="button"
+                onClick={() => setGithubUrls(urls => [...urls, ''])}
+                className="inline-flex items-center gap-1.5 text-xs text-[#00A693] hover:text-[#007D6F] font-medium transition-colors"
+              >
+                <Plus size={13} /> Add another GitHub link
+              </button>
+            </div>
             <label className="flex items-center gap-2.5 mt-3 cursor-pointer select-none w-fit">
               <div
-                onClick={() => setForm(f => ({ ...f, githubVisible: !f.githubVisible }))}
-                className={`w-9 h-5 rounded-full transition-colors relative ${form.githubVisible ? 'bg-[#00A693]' : 'bg-[#D1D5DB]'}`}
+                onClick={() => setGithubVisible(v => !v)}
+                className={`w-9 h-5 rounded-full transition-colors relative ${githubVisible ? 'bg-[#00A693]' : 'bg-[#D1D5DB]'}`}
               >
-                <span className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${form.githubVisible ? 'translate-x-4' : 'translate-x-0.5'}`} />
+                <span className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${githubVisible ? 'translate-x-4' : 'translate-x-0.5'}`} />
               </div>
               <span className="text-xs text-[#6B7280]">
-                {form.githubVisible ? 'Visible to everyone' : 'Hidden from other users'}
+                {githubVisible ? 'Visible to everyone' : 'Hidden from other users'}
               </span>
             </label>
           </div>
-        </div>
-
-        {/* Banner image */}
-        <div>
-          <label className="block text-sm font-medium text-[#1A1A1A] mb-2">Banner image</label>
-          {bannerPreview ? (
-            <div className="relative rounded-xl overflow-hidden mb-2">
-              <img src={bannerPreview} alt="Banner" className="w-full h-40 object-cover" />
-              <button
-                type="button"
-                onClick={() => { setBanner(null); setBannerPreview(''); if (bannerRef.current) bannerRef.current.value = ''; }}
-                className="absolute top-2 right-2 w-7 h-7 bg-black/60 hover:bg-black/80 text-white rounded-full flex items-center justify-center transition"
-              >
-                <X size={14} />
-              </button>
-            </div>
-          ) : (
-            <button
-              type="button"
-              onClick={() => bannerRef.current?.click()}
-              className="w-full h-32 border-2 border-dashed border-[#E5E1DA] hover:border-[#00A693] rounded-xl flex flex-col items-center justify-center gap-2 text-[#6B7280] hover:text-[#00A693] transition-colors"
-            >
-              <Upload size={20} />
-              <span className="text-xs font-medium">Click to upload banner</span>
-              <span className="text-xs">PNG, JPG, WebP up to 5MB</span>
-            </button>
-          )}
-          <input ref={bannerRef} type="file" accept="image/*" onChange={handleBanner} className="hidden" />
-        </div>
-
-        {/* Screenshots */}
-        <div>
-          <label className="block text-sm font-medium text-[#1A1A1A] mb-1.5">Screenshots</label>
-          <p className="text-xs text-[#6B7280] mb-2">Up to 5 screenshots of your project in action</p>
-          <div className="grid grid-cols-3 gap-2 mb-2">
-            {screenshotPreviews.map((src, i) => (
-              <div key={i} className="relative rounded-lg overflow-hidden">
-                <img src={src} alt={`ss ${i}`} className="w-full h-20 object-cover" />
-                <button
-                  type="button"
-                  onClick={() => {
-                    const isExisting = !src.startsWith('blob:');
-                    if (isExisting) removeExistingScreenshot(src);
-                    else removeNewScreenshot(i);
-                  }}
-                  className="absolute top-1 right-1 w-5 h-5 bg-black/60 hover:bg-black/80 text-white rounded-full flex items-center justify-center"
-                >
-                  <X size={10} />
-                </button>
-              </div>
-            ))}
-            {screenshotPreviews.length < 5 && (
-              <button
-                type="button"
-                onClick={() => ssRef.current?.click()}
-                className="h-20 border-2 border-dashed border-[#E5E1DA] hover:border-[#00A693] rounded-lg flex flex-col items-center justify-center gap-1 text-[#6B7280] hover:text-[#00A693] transition-colors"
-              >
-                <Plus size={16} />
-                <span className="text-xs">Add</span>
-              </button>
-            )}
-          </div>
-          <input ref={ssRef} type="file" accept="image/*" multiple onChange={handleScreenshots} className="hidden" />
         </div>
 
         {/* Submit */}

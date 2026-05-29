@@ -11,6 +11,7 @@ const projectSchema = new mongoose.Schema({
   contactPhone: { type: String, trim: true, default: '' },
   linkedinUrl: { type: String, trim: true, default: '' },
   githubUrl: { type: String, trim: true, default: '' },
+  githubUrls: [{ type: String, trim: true }],
   githubVisible: { type: Boolean, default: true },
   status: { type: String, enum: ['pending', 'approved', 'rejected'], default: 'pending' },
   adminNote: { type: String, default: '' },

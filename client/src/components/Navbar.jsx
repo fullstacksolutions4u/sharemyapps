@@ -142,6 +142,14 @@ export default function Navbar() {
 
           {user ? (
             <div className="flex items-center gap-3">
+              {/* Add Project */}
+              <Link
+                to="/dashboard/add"
+                className="flex items-center gap-1.5 text-sm bg-[#00A693] hover:bg-[#007D6F] text-white px-3.5 py-2 rounded-lg font-medium transition-colors"
+              >
+                <Plus size={14} /> Add project
+              </Link>
+
               {/* Notification Bell */}
               <NotificationBell />
 
@@ -159,19 +167,12 @@ export default function Navbar() {
                   <ChevronDown size={14} />
                 </button>
                 {dropOpen && (
-                  <div className="absolute right-0 mt-2 w-48 bg-white border border-[#E5E1DA] rounded-xl shadow-lg py-1 z-50">
-                    <Link to="/dashboard" onClick={() => setDropOpen(false)} className="flex items-center gap-2 px-4 py-2 text-sm text-[#1A1A1A] hover:bg-[#FAF9F6]">
-                      <LayoutDashboard size={14} /> Dashboard
-                    </Link>
-                    <Link to="/dashboard/add" onClick={() => setDropOpen(false)} className="flex items-center gap-2 px-4 py-2 text-sm text-[#1A1A1A] hover:bg-[#FAF9F6]">
-                      <Plus size={14} /> Add Project
-                    </Link>
+                  <div className="absolute right-0 mt-2 w-40 bg-white border border-[#E5E1DA] rounded-xl shadow-lg py-1 z-50">
                     {user.role === 'admin' && (
                       <Link to="/admin" onClick={() => setDropOpen(false)} className="flex items-center gap-2 px-4 py-2 text-sm text-[#00A693] hover:bg-[#FAF9F6]">
                         <ShieldCheck size={14} /> Admin Panel
                       </Link>
                     )}
-                    <hr className="my-1 border-[#E5E1DA]" />
                     <button onClick={handleLogout} className="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-500 hover:bg-[#FAF9F6]">
                       <LogOut size={14} /> Logout
                     </button>

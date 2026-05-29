@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { ExternalLink } from 'lucide-react';
 
 const PLACEHOLDER = 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=600&q=80';
+const getbanner = (bannerImage, liveUrl) => bannerImage || `https://s0.wp.com/mshots/v1/${encodeURIComponent(liveUrl)}?w=800`;
 
 const TAG_COLORS = [
   'bg-blue-50 text-blue-700',
@@ -26,7 +27,7 @@ export default function ProjectCard({ project }) {
       {/* Banner */}
       <Link to={`/project/${_id}`} className="block overflow-hidden">
         <img
-          src={bannerImage || PLACEHOLDER}
+          src={getbanner(bannerImage, liveUrl)}
           alt={title}
           className="w-full h-44 object-cover group-hover:scale-[1.02] transition-transform duration-300"
           onError={e => { e.target.src = PLACEHOLDER; }}

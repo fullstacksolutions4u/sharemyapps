@@ -66,12 +66,6 @@ export default function Explore() {
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 py-12">
-      {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-[#1A1A1A] tracking-tight mb-2">Explore projects</h1>
-        <p className="text-[#6B7280] text-sm">{total} project{total !== 1 ? 's' : ''} listed by developers</p>
-      </div>
-
       {/* Search */}
       <form onSubmit={handleSearch} className="relative mb-4">
         <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#6B7280]" />

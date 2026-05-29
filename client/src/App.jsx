@@ -2,7 +2,6 @@ import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-route
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import Navbar from './components/Navbar';
-import Footer from './components/Footer';
 import ProtectedRoute from './components/ProtectedRoute';
 import AdminRoute from './components/AdminRoute';
 
@@ -44,8 +43,7 @@ function AppRoutes() {
           <Route path="*" element={<NotFound />} />
         </Routes>
       </main>
-      {!['/login', '/register', '/admin'].includes(useLocation().pathname) && <Footer />}
-      <Toaster
+<Toaster
         position="top-right"
         toastOptions={{
           style: { fontFamily: 'Inter, sans-serif', fontSize: '13px', borderRadius: '10px', border: '1px solid #E5E1DA' },

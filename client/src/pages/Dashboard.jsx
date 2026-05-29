@@ -6,6 +6,7 @@ import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
 
 const PLACEHOLDER = 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=400&q=80';
+const getbanner = (bannerImage, liveUrl) => bannerImage || `https://s0.wp.com/mshots/v1/${encodeURIComponent(liveUrl)}?w=400`;
 
 const statusBadge = {
   pending:  { label: 'Pending review', icon: Clock,        cls: 'bg-yellow-50 text-yellow-700 border-yellow-200' },
@@ -81,12 +82,7 @@ export default function Dashboard() {
         <div className="space-y-3">
           {projects.map(project => (
             <div key={project._id} className="bg-white border border-[#E5E1DA] rounded-xl p-4 flex items-center gap-4 hover:border-[#00A693]/30 transition-colors">
-              <img
-                src={project.bannerImage || PLACEHOLDER}
-                alt={project.title}
-                className="w-14 h-14 rounded-lg object-cover shrink-0"
-                onError={e => { e.target.src = PLACEHOLDER; }}
-              />
+              {/* Info */}
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
                   <h3 className="font-medium text-[#1A1A1A] truncate">{project.title}</h3>
@@ -123,30 +119,40 @@ export default function Dashboard() {
                   </Link>
                 )}
               </div>
-              <div className="flex items-center gap-2 shrink-0">
-                <a
-                  href={project.liveUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-[#6B7280] hover:text-[#00A693] transition-colors"
-                  title="Visit live"
-                >
-                  <ExternalLink size={15} />
-                </a>
-                <Link
-                  to={`/dashboard/edit/${project._id}`}
-                  className="text-[#6B7280] hover:text-[#00A693] transition-colors"
-                  title="Edit"
-                >
-                  <Pencil size={15} />
-                </Link>
-                <button
-                  onClick={() => handleDelete(project._id, project.title)}
-                  className="text-[#6B7280] hover:text-red-500 transition-colors"
-                  title="Delete"
-                >
-                  <Trash2 size={15} />
-                </button>
+
+              {/* Image with overlaid action buttons */}
+              <div className="relative w-28 h-20 rounded-lg overflow-hidden shrink-0">
+                <img
+                  src={getbanner(project.bannerImage, project.liveUrl)}
+                  alt={project.title}
+                  className="w-full h-full object-cover"
+                  onError={e => { e.target.src = PLACEHOLDER; }}
+                />
+                <div className="absolute inset-x-0 top-0 flex items-center justify-end gap-1 p-1 bg-gradient-to-b from-black/60 to-transparent">
+                  <a
+                    href={project.liveUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-6 h-6 flex items-center justify-center rounded bg-white/20 hover:bg-white/40 text-white transition-colors"
+                    title="Visit live"
+                  >
+                    <ExternalLink size={11} />
+                  </a>
+                  <Link
+                    to={`/dashboard/edit/${project._id}`}
+                    className="w-6 h-6 flex items-center justify-center rounded bg-white/20 hover:bg-white/40 text-white transition-colors"
+                    title="Edit"
+                  >
+                    <Pencil size={11} />
+                  </Link>
+                  <button
+                    onClick={() => handleDelete(project._id, project.title)}
+                    className="w-6 h-6 flex items-center justify-center rounded bg-white/20 hover:bg-red-500/80 text-white transition-colors"
+                    title="Delete"
+                  >
+                    <Trash2 size={11} />
+                  </button>
+                </div>
               </div>
             </div>
           ))}

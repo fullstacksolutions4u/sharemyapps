@@ -22,11 +22,11 @@ export default function Home() {
       <section className="max-w-6xl mx-auto px-4 sm:px-6 pt-20 pb-16 text-center">
         <div className="inline-flex items-center gap-2 bg-[#E6F7F5] text-[#00A693] text-xs font-medium px-3 py-1.5 rounded-full mb-6">
           <span className="w-1.5 h-1.5 bg-[#00A693] rounded-full animate-pulse" />
-          Discover developer side projects
+          Find inspiring apps crafted by real developers
         </div>
         <h1 className="text-5xl sm:text-6xl font-bold text-[#1A1A1A] tracking-tight leading-tight mb-6">
-          Find apps built by<br />
-          <span className="text-[#00A693]">real developers</span>
+          Turning side projects into<br />
+          <span className="text-[#00A693]">opportunities and connections</span>
         </h1>
         <p className="text-lg text-[#6B7280] max-w-2xl mx-auto leading-relaxed mb-10">
           A curated showcase of side projects. Browse live apps, explore what developers are building,
