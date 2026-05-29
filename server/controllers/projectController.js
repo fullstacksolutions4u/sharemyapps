@@ -98,7 +98,7 @@ exports.updateProject = async (req, res) => {
     if (files.banner?.[0]) {
       if (project.bannerImage) {
         const pid = project.bannerImage.split('/').pop().split('.')[0];
-        await cloudinary.uploader.destroy(`findmyapp/${pid}`).catch(() => {});
+        await cloudinary.uploader.destroy(`sharemyapp/${pid}`).catch(() => {});
       }
       project.bannerImage = files.banner[0].path;
     }
@@ -107,7 +107,7 @@ exports.updateProject = async (req, res) => {
       const toRemove = Array.isArray(removeScreenshots) ? removeScreenshots : [removeScreenshots];
       for (const url of toRemove) {
         const pid = url.split('/').pop().split('.')[0];
-        await cloudinary.uploader.destroy(`findmyapp/${pid}`).catch(() => {});
+        await cloudinary.uploader.destroy(`sharemyapp/${pid}`).catch(() => {});
       }
       project.screenshots = project.screenshots.filter(s => !toRemove.includes(s));
     }
@@ -133,7 +133,7 @@ exports.deleteProject = async (req, res) => {
     const images = [project.bannerImage, ...project.screenshots].filter(Boolean);
     for (const url of images) {
       const pid = url.split('/').pop().split('.')[0];
-      await cloudinary.uploader.destroy(`findmyapp/${pid}`).catch(() => {});
+      await cloudinary.uploader.destroy(`sharemyapp/${pid}`).catch(() => {});
     }
 
     await project.deleteOne();

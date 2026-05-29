@@ -12,7 +12,7 @@ class CloudinaryStorage {
   _handleFile(_req, file, cb) {
     const uploadStream = cloudinary.uploader.upload_stream(
       {
-        folder: 'findmyapp',
+        folder: 'sharemyapp',
         allowed_formats: ['jpg', 'jpeg', 'png', 'webp'],
         transformation: [{ width: 1200, crop: 'limit' }],
       },
