@@ -14,6 +14,7 @@ import Dashboard from './pages/Dashboard';
 import ProjectForm from './pages/ProjectForm';
 import NotFound from './pages/NotFound';
 import AdminPanel from './pages/AdminPanel';
+import Messages from './pages/Messages';
 
 function GuestRoute({ children }) {
   const { user, loading } = useAuth();
@@ -39,6 +40,7 @@ function AppRoutes() {
           <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
           <Route path="/dashboard/add" element={<ProtectedRoute><ProjectForm /></ProtectedRoute>} />
           <Route path="/dashboard/edit/:id" element={<ProtectedRoute><ProjectForm /></ProtectedRoute>} />
+          <Route path="/messages" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
           <Route path="/admin" element={<AdminRoute><AdminPanel /></AdminRoute>} />
           <Route path="*" element={<NotFound />} />
         </Routes>

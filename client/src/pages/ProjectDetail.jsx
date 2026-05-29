@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { ExternalLink, Mail, ArrowLeft, ChevronLeft, ChevronRight, Pencil, Trash2, EyeOff, Heart, Star, Send, Trash } from 'lucide-react';
+import { ExternalLink, Mail, ArrowLeft, ChevronLeft, ChevronRight, Pencil, Trash2, EyeOff, Heart, Star, Send, Trash, MessageSquare, X } from 'lucide-react';
 
 const GithubIcon = () => (
   <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor">
@@ -13,6 +13,7 @@ import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
 
 const PLACEHOLDER = 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=1200&q=80';
+const toAbsUrl = (url) => url && !/^https?:\/\//i.test(url) ? `https://${url}` : url;
 const getbanner = (bannerImage, liveUrl) => bannerImage || `https://s0.wp.com/mshots/v1/${encodeURIComponent(liveUrl)}?w=1200`;
 
 const TAG_COLORS = ['bg-blue-50 text-blue-700','bg-green-50 text-green-700','bg-purple-50 text-purple-700','bg-yellow-50 text-yellow-700','bg-pink-50 text-pink-700','bg-[#E6F7F5] text-[#00A693]'];
@@ -62,6 +63,9 @@ export default function ProjectDetail() {
   const [loading, setLoading] = useState(true);
   const [imgIdx, setImgIdx] = useState(0);
   const [deleting, setDeleting] = useState(false);
+  const [msgOpen, setMsgOpen] = useState(false);
+  const [msgText, setMsgText] = useState('');
+  const [msgSending, setMsgSending] = useState(false);
 
   // likes
   const [liked, setLiked] = useState(false);
@@ -162,6 +166,23 @@ export default function ProjectDetail() {
   const { title, description, liveUrl, bannerImage, screenshots = [], techTags = [], owner, createdAt, githubUrl, githubUrls = [], githubVisible, linkedinUrl } = project;
   const images = [getbanner(bannerImage, liveUrl), ...screenshots].filter(Boolean);
   const isOwner = user && owner && user._id === owner._id;
+
+  const handleSendMessage = async (e) => {
+    e.preventDefault();
+    if (!user) { toast.error('Sign in to send messages'); return; }
+    if (!msgText.trim()) return;
+    setMsgSending(true);
+    try {
+      await api.post(`/projects/${id}/message`, { text: msgText });
+      toast.success('Message sent to developer!');
+      setMsgText('');
+      setMsgOpen(false);
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to send message');
+    } finally {
+      setMsgSending(false);
+    }
+  };
 
   const handleDelete = async () => {
     if (!confirm('Delete this project? This cannot be undone.')) return;
@@ -363,7 +384,7 @@ export default function ProjectDetail() {
           {allGithubUrls.length > 0 && (isOwner || githubVisible) && allGithubUrls.map((url, i) => (
             <a
               key={i}
-              href={url}
+              href={toAbsUrl(url)}
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center justify-center gap-2 w-full border border-[#E5E1DA] hover:border-[#1A1A1A] text-[#1A1A1A] px-5 py-3 rounded-xl font-medium text-sm transition-colors"
@@ -397,9 +418,17 @@ export default function ProjectDetail() {
               >
                 <Mail size={14} /> {owner.email}
               </a>
+              {!isOwner && (
+                <button
+                  onClick={() => { if (!user) { toast.error('Sign in to send messages'); return; } setMsgOpen(true); }}
+                  className="flex items-center gap-2 w-full border border-[#E5E1DA] hover:border-[#00A693] text-[#1A1A1A] hover:text-[#00A693] px-4 py-2.5 rounded-lg text-sm transition-colors font-medium"
+                >
+                  <MessageSquare size={14} /> Message Developer
+                </button>
+              )}
               {linkedinUrl && (
                 <a
-                  href={linkedinUrl}
+                  href={toAbsUrl(linkedinUrl)}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center gap-2 w-full border border-[#E5E1DA] hover:border-[#0A66C2] text-[#1A1A1A] hover:text-[#0A66C2] px-4 py-2.5 rounded-lg text-sm transition-colors font-medium"
@@ -414,6 +443,56 @@ export default function ProjectDetail() {
           )}
         </div>
       </div>
+
+      {/* Message Modal */}
+      {msgOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md">
+            <div className="flex items-center justify-between px-5 py-4 border-b border-[#E5E1DA]">
+              <div>
+                <h3 className="font-semibold text-[#1A1A1A]">Message Developer</h3>
+                <p className="text-xs text-[#6B7280] mt-0.5">Send a message to {owner?.name}</p>
+              </div>
+              <button onClick={() => setMsgOpen(false)} className="text-[#9CA3AF] hover:text-[#1A1A1A] transition-colors">
+                <X size={18} />
+              </button>
+            </div>
+            <form onSubmit={handleSendMessage} className="p-5 space-y-4">
+              <div className="flex items-center gap-3 pb-3 border-b border-[#F3F0EB]">
+                <div className="w-8 h-8 rounded-full bg-[#E6F7F5] flex items-center justify-center text-xs font-semibold text-[#00A693] shrink-0">
+                  {title[0].toUpperCase()}
+                </div>
+                <div className="text-sm text-[#6B7280]">
+                  Re: <span className="font-medium text-[#1A1A1A]">{title}</span>
+                </div>
+              </div>
+              <textarea
+                value={msgText}
+                onChange={e => setMsgText(e.target.value)}
+                placeholder="Write your message here…"
+                rows={5}
+                className="w-full px-4 py-3 bg-[#FAF9F6] border border-[#E5E1DA] rounded-xl text-sm text-[#1A1A1A] placeholder-[#9CA3AF] focus:outline-none focus:border-[#00A693] focus:ring-2 focus:ring-[#00A693]/10 transition resize-none"
+              />
+              <div className="flex gap-3 justify-end">
+                <button
+                  type="button"
+                  onClick={() => setMsgOpen(false)}
+                  className="px-4 py-2 text-sm text-[#6B7280] border border-[#E5E1DA] rounded-lg hover:bg-[#F3F0EB] transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={!msgText.trim() || msgSending}
+                  className="flex items-center gap-2 px-4 py-2 text-sm bg-[#00A693] hover:bg-[#007D6F] text-white rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <Send size={13} /> {msgSending ? 'Sending…' : 'Send Message'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -6,6 +6,7 @@ const {
   createProject, updateProject, deleteProject,
   toggleLike, rateProject, getComments, addComment, deleteComment,
 } = require('../controllers/projectController');
+const { sendMessage } = require('../controllers/messageController');
 
 const projectUpload = upload.fields([
   { name: 'banner', maxCount: 1 },
@@ -24,5 +25,6 @@ router.post('/:id/rate', protect, rateProject);
 router.get('/:id/comments', getComments);
 router.post('/:id/comments', protect, addComment);
 router.delete('/:id/comments/:commentId', protect, deleteComment);
+router.post('/:id/message', protect, sendMessage);
 
 module.exports = router;

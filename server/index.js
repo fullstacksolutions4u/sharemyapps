@@ -11,6 +11,7 @@ const authRoutes = require('./routes/auth');
 const projectRoutes = require('./routes/projects');
 const adminRoutes = require('./routes/admin');
 const notificationRoutes = require('./routes/notifications');
+const messageRoutes = require('./routes/messages');
 
 const app = express();
 
@@ -26,6 +27,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/projects', projectRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/notifications', notificationRoutes);
+app.use('/api/messages', messageRoutes);
 
 app.get('/api/health', (_req, res) => res.json({ status: 'ok' }));
 

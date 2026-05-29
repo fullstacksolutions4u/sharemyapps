@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Menu, X, ChevronDown, LogOut, LayoutDashboard, Plus, ShieldCheck, Bell, CheckCircle, XCircle, Clock } from 'lucide-react';
+import { Menu, X, ChevronDown, LogOut, LayoutDashboard, Plus, ShieldCheck, Bell, CheckCircle, XCircle, Clock, MessageSquare } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import api from '../api/axios';
 import toast from 'react-hot-toast';
@@ -11,6 +11,33 @@ const typeIcon = {
   rejected: <XCircle size={14} className="text-red-500 shrink-0" />,
   resubmit: <Clock size={14} className="text-yellow-500 shrink-0" />,
 };
+
+function MessagesBadge() {
+  const [unread, setUnread] = useState(0);
+
+  useEffect(() => {
+    const fetch = async () => {
+      try {
+        const res = await api.get('/messages');
+        setUnread(res.data.unreadCount);
+      } catch { /* ignore */ }
+    };
+    fetch();
+    const interval = setInterval(fetch, 30000);
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <Link to="/messages" className="relative p-1.5 text-[#6B7280] hover:text-[#1A1A1A] transition-colors">
+      <MessageSquare size={18} />
+      {unread > 0 && (
+        <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-[#00A693] text-white text-[10px] font-bold flex items-center justify-center rounded-full">
+          {unread > 9 ? '9+' : unread}
+        </span>
+      )}
+    </Link>
+  );
+}
 
 function NotificationBell() {
   const [open, setOpen] = useState(false);
@@ -150,6 +177,9 @@ export default function Navbar() {
                 <Plus size={14} /> Add project
               </Link>
 
+              {/* Messages */}
+              <MessagesBadge />
+
               {/* Notification Bell */}
               <NotificationBell />
 
@@ -208,6 +238,7 @@ export default function Navbar() {
           {user ? (
             <>
               <Link to="/dashboard" onClick={() => setMenuOpen(false)} className="block text-sm text-[#6B7280] hover:text-[#1A1A1A]">My Projects</Link>
+              <Link to="/messages" onClick={() => setMenuOpen(false)} className="block text-sm text-[#6B7280] hover:text-[#1A1A1A]">Messages</Link>
               <Link to="/dashboard/add" onClick={() => setMenuOpen(false)} className="block text-sm text-[#1A1A1A]">Add Project</Link>
               <button onClick={handleLogout} className="block text-sm text-red-500">Logout</button>
             </>
