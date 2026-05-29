@@ -7,6 +7,7 @@ const userSchema = new mongoose.Schema({
   password: { type: String },
   googleId: { type: String },
   avatar: { type: String, default: '' },
+  role: { type: String, enum: ['user', 'admin'], default: 'user' },
 }, { timestamps: true });
 
 userSchema.pre('save', async function (next) {
@@ -25,6 +26,7 @@ userSchema.methods.toPublicJSON = function () {
     name: this.name,
     email: this.email,
     avatar: this.avatar,
+    role: this.role,
     createdAt: this.createdAt,
   };
 };

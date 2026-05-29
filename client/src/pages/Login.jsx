@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
+import logo from '../assets/logo.png';
 
 export default function Login() {
   const { login } = useAuth();
@@ -18,9 +19,9 @@ export default function Login() {
     e.preventDefault();
     setLoading(true);
     try {
-      await login(form.email, form.password);
+      const user = await login(form.email, form.password);
       toast.success('Welcome back!');
-      navigate('/dashboard');
+      navigate(user.role === 'admin' ? '/admin' : '/dashboard');
     } catch (err) {
       toast.error(err.response?.data?.message || 'Login failed');
     } finally {
@@ -29,12 +30,11 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4">
+    <div className="h-[calc(100vh-4rem)] flex items-center justify-center px-4">
       <div className="w-full max-w-sm">
-        <div className="text-center mb-8">
-          <Link to="/" className="inline-flex items-center gap-2 font-semibold text-[#1A1A1A] text-lg mb-6">
-            <span className="w-8 h-8 rounded-lg bg-[#E8734A] flex items-center justify-center text-white font-bold">F</span>
-            FindMyApp
+        <div className="text-center mb-5">
+          <Link to="/" className="inline-flex mb-3">
+            <img src={logo} alt="FindMyApp" className="h-9 w-auto" />
           </Link>
           <h1 className="text-2xl font-bold text-[#1A1A1A] tracking-tight">Welcome back</h1>
           <p className="text-sm text-[#6B7280] mt-1">Sign in to manage your projects</p>
@@ -70,7 +70,7 @@ export default function Login() {
                 value={form.email}
                 onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
                 placeholder="you@example.com"
-                className="w-full px-3.5 py-2.5 border border-[#E5E1DA] rounded-xl text-sm text-[#1A1A1A] placeholder-[#9CA3AF] focus:outline-none focus:border-[#E8734A] focus:ring-2 focus:ring-[#E8734A]/10 transition"
+                className="w-full px-3.5 py-2.5 border border-[#E5E1DA] rounded-xl text-sm text-[#1A1A1A] placeholder-[#9CA3AF] focus:outline-none focus:border-[#00A693] focus:ring-2 focus:ring-[#00A693]/10 transition"
               />
             </div>
             <div>
@@ -81,13 +81,13 @@ export default function Login() {
                 value={form.password}
                 onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
                 placeholder="••••••••"
-                className="w-full px-3.5 py-2.5 border border-[#E5E1DA] rounded-xl text-sm text-[#1A1A1A] placeholder-[#9CA3AF] focus:outline-none focus:border-[#E8734A] focus:ring-2 focus:ring-[#E8734A]/10 transition"
+                className="w-full px-3.5 py-2.5 border border-[#E5E1DA] rounded-xl text-sm text-[#1A1A1A] placeholder-[#9CA3AF] focus:outline-none focus:border-[#00A693] focus:ring-2 focus:ring-[#00A693]/10 transition"
               />
             </div>
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-[#E8734A] hover:bg-[#D4612F] text-white py-2.5 rounded-xl font-medium text-sm transition-colors disabled:opacity-60"
+              className="w-full bg-[#00A693] hover:bg-[#007D6F] text-white py-2.5 rounded-xl font-medium text-sm transition-colors disabled:opacity-60"
             >
               {loading ? 'Signing in...' : 'Sign in'}
             </button>
@@ -96,7 +96,7 @@ export default function Login() {
 
         <p className="text-center text-sm text-[#6B7280] mt-5">
           No account?{' '}
-          <Link to="/register" className="text-[#E8734A] hover:text-[#D4612F] font-medium">Create one</Link>
+          <Link to="/register" className="text-[#00A693] hover:text-[#007D6F] font-medium">Create one</Link>
         </p>
       </div>
     </div>

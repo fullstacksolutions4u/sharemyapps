@@ -9,7 +9,7 @@ export default function ProjectForm() {
   const isEdit = Boolean(id);
   const navigate = useNavigate();
 
-  const [form, setForm] = useState({ title: '', description: '', liveUrl: '', techTags: '' });
+  const [form, setForm] = useState({ title: '', description: '', liveUrl: '', techTags: '', contactEmail: '', contactPhone: '', linkedinUrl: '', githubUrl: '', githubVisible: true });
   const [banner, setBanner] = useState(null);
   const [bannerPreview, setBannerPreview] = useState('');
   const [screenshots, setScreenshots] = useState([]);
@@ -17,6 +17,7 @@ export default function ProjectForm() {
   const [removedScreenshots, setRemovedScreenshots] = useState([]);
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(isEdit);
+  const [projectStatus, setProjectStatus] = useState('');
 
   const bannerRef = useRef();
   const ssRef = useRef();
@@ -26,7 +27,8 @@ export default function ProjectForm() {
     api.get(`/projects/${id}`)
       .then(res => {
         const p = res.data;
-        setForm({ title: p.title, description: p.description, liveUrl: p.liveUrl, techTags: p.techTags?.join(', ') || '' });
+        setForm({ title: p.title, description: p.description, liveUrl: p.liveUrl, techTags: p.techTags?.join(', ') || '', contactEmail: p.contactEmail || '', contactPhone: p.contactPhone || '', linkedinUrl: p.linkedinUrl || '', githubUrl: p.githubUrl || '', githubVisible: p.githubVisible !== false });
+        setProjectStatus(p.status || '');
         setBannerPreview(p.bannerImage || '');
         setScreenshotPreviews(p.screenshots || []);
       })
@@ -73,16 +75,23 @@ export default function ProjectForm() {
       data.append('description', form.description.trim());
       data.append('liveUrl', form.liveUrl.trim());
       data.append('techTags', form.techTags);
+      data.append('contactEmail', form.contactEmail.trim());
+      data.append('contactPhone', form.contactPhone.trim());
+      data.append('linkedinUrl', form.linkedinUrl.trim());
+      data.append('githubUrl', form.githubUrl.trim());
+      data.append('githubVisible', form.githubVisible);
       if (banner) data.append('banner', banner);
       screenshots.forEach(f => data.append('screenshots', f));
       removedScreenshots.forEach(url => data.append('removeScreenshots', url));
 
       if (isEdit) {
+        const isResubmit = projectStatus === 'rejected';
+        if (isResubmit) data.append('resubmit', 'true');
         await api.put(`/projects/${id}`, data);
-        toast.success('Project updated!');
+        toast.success(isResubmit ? 'Project resubmitted for approval!' : 'Project updated!');
       } else {
         await api.post('/projects', data);
-        toast.success('Project listed!');
+        toast.success('Project submitted for approval!');
       }
       navigate('/dashboard');
     } catch (err) {
@@ -94,7 +103,7 @@ export default function ProjectForm() {
 
   if (fetching) return (
     <div className="min-h-screen flex items-center justify-center">
-      <div className="w-6 h-6 border-2 border-[#E8734A] border-t-transparent rounded-full animate-spin" />
+      <div className="w-6 h-6 border-2 border-[#00A693] border-t-transparent rounded-full animate-spin" />
     </div>
   );
 
@@ -118,7 +127,7 @@ export default function ProjectForm() {
             value={form.title}
             onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
             placeholder="e.g. DevTracker — habit tracker for developers"
-            className="w-full px-3.5 py-2.5 border border-[#E5E1DA] rounded-xl text-sm text-[#1A1A1A] placeholder-[#9CA3AF] focus:outline-none focus:border-[#E8734A] focus:ring-2 focus:ring-[#E8734A]/10 transition"
+            className="w-full px-3.5 py-2.5 border border-[#E5E1DA] rounded-xl text-sm text-[#1A1A1A] placeholder-[#9CA3AF] focus:outline-none focus:border-[#00A693] focus:ring-2 focus:ring-[#00A693]/10 transition"
           />
         </div>
 
@@ -131,7 +140,7 @@ export default function ProjectForm() {
             value={form.description}
             onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
             placeholder="Describe what your project does, who it's for, and what makes it interesting..."
-            className="w-full px-3.5 py-2.5 border border-[#E5E1DA] rounded-xl text-sm text-[#1A1A1A] placeholder-[#9CA3AF] focus:outline-none focus:border-[#E8734A] focus:ring-2 focus:ring-[#E8734A]/10 transition resize-none"
+            className="w-full px-3.5 py-2.5 border border-[#E5E1DA] rounded-xl text-sm text-[#1A1A1A] placeholder-[#9CA3AF] focus:outline-none focus:border-[#00A693] focus:ring-2 focus:ring-[#00A693]/10 transition resize-none"
           />
         </div>
 
@@ -144,7 +153,7 @@ export default function ProjectForm() {
             value={form.liveUrl}
             onChange={e => setForm(f => ({ ...f, liveUrl: e.target.value }))}
             placeholder="https://yourapp.com"
-            className="w-full px-3.5 py-2.5 border border-[#E5E1DA] rounded-xl text-sm text-[#1A1A1A] placeholder-[#9CA3AF] focus:outline-none focus:border-[#E8734A] focus:ring-2 focus:ring-[#E8734A]/10 transition"
+            className="w-full px-3.5 py-2.5 border border-[#E5E1DA] rounded-xl text-sm text-[#1A1A1A] placeholder-[#9CA3AF] focus:outline-none focus:border-[#00A693] focus:ring-2 focus:ring-[#00A693]/10 transition"
           />
         </div>
 
@@ -157,8 +166,77 @@ export default function ProjectForm() {
             value={form.techTags}
             onChange={e => setForm(f => ({ ...f, techTags: e.target.value }))}
             placeholder="React, Node.js, MongoDB"
-            className="w-full px-3.5 py-2.5 border border-[#E5E1DA] rounded-xl text-sm text-[#1A1A1A] placeholder-[#9CA3AF] focus:outline-none focus:border-[#E8734A] focus:ring-2 focus:ring-[#E8734A]/10 transition"
+            className="w-full px-3.5 py-2.5 border border-[#E5E1DA] rounded-xl text-sm text-[#1A1A1A] placeholder-[#9CA3AF] focus:outline-none focus:border-[#00A693] focus:ring-2 focus:ring-[#00A693]/10 transition"
           />
+        </div>
+
+        {/* Contact info */}
+        <div className="border border-[#E5E1DA] rounded-2xl p-5 space-y-4">
+          <div>
+            <h3 className="text-sm font-semibold text-[#1A1A1A] mb-0.5">Contact information</h3>
+            <p className="text-xs text-[#6B7280]">Let people reach out to you about this project</p>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-[#1A1A1A] mb-2">Email <span className="text-red-400">*</span></label>
+            <input
+              type="email"
+              required
+              value={form.contactEmail}
+              onChange={e => setForm(f => ({ ...f, contactEmail: e.target.value }))}
+              placeholder="you@example.com"
+              className="w-full px-3.5 py-2.5 border border-[#E5E1DA] rounded-xl text-sm text-[#1A1A1A] placeholder-[#9CA3AF] focus:outline-none focus:border-[#00A693] focus:ring-2 focus:ring-[#00A693]/10 transition"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-[#1A1A1A] mb-2">
+              Mobile number <span className="text-xs text-[#9CA3AF] font-normal">(optional)</span>
+            </label>
+            <input
+              type="tel"
+              value={form.contactPhone}
+              onChange={e => setForm(f => ({ ...f, contactPhone: e.target.value }))}
+              placeholder="+1 234 567 8900"
+              className="w-full px-3.5 py-2.5 border border-[#E5E1DA] rounded-xl text-sm text-[#1A1A1A] placeholder-[#9CA3AF] focus:outline-none focus:border-[#00A693] focus:ring-2 focus:ring-[#00A693]/10 transition"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-[#1A1A1A] mb-2">LinkedIn URL <span className="text-red-400">*</span></label>
+            <input
+              type="text"
+              required
+              value={form.linkedinUrl}
+              onChange={e => setForm(f => ({ ...f, linkedinUrl: e.target.value }))}
+              placeholder="linkedin.com/in/yourprofile"
+              className="w-full px-3.5 py-2.5 border border-[#E5E1DA] rounded-xl text-sm text-[#1A1A1A] placeholder-[#9CA3AF] focus:outline-none focus:border-[#00A693] focus:ring-2 focus:ring-[#00A693]/10 transition"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-[#1A1A1A] mb-2">
+              GitHub URL <span className="text-xs text-[#9CA3AF] font-normal">(optional)</span>
+            </label>
+            <input
+              type="text"
+              value={form.githubUrl}
+              onChange={e => setForm(f => ({ ...f, githubUrl: e.target.value }))}
+              placeholder="github.com/username/repo"
+              className="w-full px-3.5 py-2.5 border border-[#E5E1DA] rounded-xl text-sm text-[#1A1A1A] placeholder-[#9CA3AF] focus:outline-none focus:border-[#00A693] focus:ring-2 focus:ring-[#00A693]/10 transition"
+            />
+            <label className="flex items-center gap-2.5 mt-3 cursor-pointer select-none w-fit">
+              <div
+                onClick={() => setForm(f => ({ ...f, githubVisible: !f.githubVisible }))}
+                className={`w-9 h-5 rounded-full transition-colors relative ${form.githubVisible ? 'bg-[#00A693]' : 'bg-[#D1D5DB]'}`}
+              >
+                <span className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${form.githubVisible ? 'translate-x-4' : 'translate-x-0.5'}`} />
+              </div>
+              <span className="text-xs text-[#6B7280]">
+                {form.githubVisible ? 'Visible to everyone' : 'Hidden from other users'}
+              </span>
+            </label>
+          </div>
         </div>
 
         {/* Banner image */}
@@ -179,7 +257,7 @@ export default function ProjectForm() {
             <button
               type="button"
               onClick={() => bannerRef.current?.click()}
-              className="w-full h-32 border-2 border-dashed border-[#E5E1DA] hover:border-[#E8734A] rounded-xl flex flex-col items-center justify-center gap-2 text-[#6B7280] hover:text-[#E8734A] transition-colors"
+              className="w-full h-32 border-2 border-dashed border-[#E5E1DA] hover:border-[#00A693] rounded-xl flex flex-col items-center justify-center gap-2 text-[#6B7280] hover:text-[#00A693] transition-colors"
             >
               <Upload size={20} />
               <span className="text-xs font-medium">Click to upload banner</span>
@@ -214,7 +292,7 @@ export default function ProjectForm() {
               <button
                 type="button"
                 onClick={() => ssRef.current?.click()}
-                className="h-20 border-2 border-dashed border-[#E5E1DA] hover:border-[#E8734A] rounded-lg flex flex-col items-center justify-center gap-1 text-[#6B7280] hover:text-[#E8734A] transition-colors"
+                className="h-20 border-2 border-dashed border-[#E5E1DA] hover:border-[#00A693] rounded-lg flex flex-col items-center justify-center gap-1 text-[#6B7280] hover:text-[#00A693] transition-colors"
               >
                 <Plus size={16} />
                 <span className="text-xs">Add</span>
@@ -229,9 +307,12 @@ export default function ProjectForm() {
           <button
             type="submit"
             disabled={loading}
-            className="flex-1 bg-[#E8734A] hover:bg-[#D4612F] text-white py-3 rounded-xl font-medium text-sm transition-colors disabled:opacity-60"
+            className="flex-1 bg-[#00A693] hover:bg-[#007D6F] text-white py-3 rounded-xl font-medium text-sm transition-colors disabled:opacity-60"
           >
-            {loading ? (isEdit ? 'Saving...' : 'Publishing...') : (isEdit ? 'Save changes' : 'Publish project')}
+            {loading
+              ? (isEdit ? (projectStatus === 'rejected' ? 'Resubmitting...' : 'Saving...') : 'Submitting...')
+              : (isEdit ? (projectStatus === 'rejected' ? 'Resubmit for Approval' : 'Save changes') : 'Submit for Approval')
+            }
           </button>
           <Link
             to="/dashboard"

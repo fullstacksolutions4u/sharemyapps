@@ -20,13 +20,13 @@ export default function Home() {
     <div className="min-h-screen">
       {/* Hero */}
       <section className="max-w-6xl mx-auto px-4 sm:px-6 pt-20 pb-16 text-center">
-        <div className="inline-flex items-center gap-2 bg-[#FDF0EB] text-[#E8734A] text-xs font-medium px-3 py-1.5 rounded-full mb-6">
-          <span className="w-1.5 h-1.5 bg-[#E8734A] rounded-full animate-pulse" />
+        <div className="inline-flex items-center gap-2 bg-[#E6F7F5] text-[#00A693] text-xs font-medium px-3 py-1.5 rounded-full mb-6">
+          <span className="w-1.5 h-1.5 bg-[#00A693] rounded-full animate-pulse" />
           Discover developer side projects
         </div>
         <h1 className="text-5xl sm:text-6xl font-bold text-[#1A1A1A] tracking-tight leading-tight mb-6">
           Find apps built by<br />
-          <span className="text-[#E8734A]">real developers</span>
+          <span className="text-[#00A693]">real developers</span>
         </h1>
         <p className="text-lg text-[#6B7280] max-w-2xl mx-auto leading-relaxed mb-10">
           A curated showcase of side projects. Browse live apps, explore what developers are building,
@@ -35,7 +35,7 @@ export default function Home() {
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
           <Link
             to="/explore"
-            className="flex items-center gap-2 bg-[#E8734A] hover:bg-[#D4612F] text-white px-6 py-3 rounded-xl font-medium transition-colors text-sm"
+            className="flex items-center gap-2 bg-[#00A693] hover:bg-[#007D6F] text-white px-6 py-3 rounded-xl font-medium transition-colors text-sm"
           >
             Explore projects <ArrowRight size={16} />
           </Link>
@@ -57,8 +57,8 @@ export default function Home() {
             { icon: Mail, title: 'Get contacted', desc: 'Interested clients see your email and can reach you right from the project page.' },
           ].map(({ icon: Icon, title, desc }) => (
             <div key={title} className="flex flex-col items-center text-center gap-3">
-              <div className="w-10 h-10 bg-[#FDF0EB] rounded-xl flex items-center justify-center">
-                <Icon size={20} className="text-[#E8734A]" />
+              <div className="w-10 h-10 bg-[#E6F7F5] rounded-xl flex items-center justify-center">
+                <Icon size={20} className="text-[#00A693]" />
               </div>
               <h3 className="font-semibold text-[#1A1A1A] text-sm">{title}</h3>
               <p className="text-sm text-[#6B7280] leading-relaxed">{desc}</p>
@@ -71,7 +71,7 @@ export default function Home() {
       <section className="max-w-6xl mx-auto px-4 sm:px-6 py-16">
         <div className="flex items-center justify-between mb-8">
           <h2 className="text-2xl font-bold text-[#1A1A1A] tracking-tight">Latest projects</h2>
-          <Link to="/explore" className="text-sm text-[#E8734A] hover:text-[#D4612F] flex items-center gap-1 font-medium">
+          <Link to="/explore" className="text-sm text-[#00A693] hover:text-[#007D6F] flex items-center gap-1 font-medium">
             View all <ArrowRight size={14} />
           </Link>
         </div>
@@ -82,7 +82,7 @@ export default function Home() {
               ? projects.map(p => <ProjectCard key={p._id} project={p} />)
               : (
                 <div className="col-span-3 text-center py-16 text-[#6B7280]">
-                  <p className="text-sm">No projects yet. <Link to="/register" className="text-[#E8734A] hover:underline">Be the first to list one!</Link></p>
+                  <p className="text-sm">No projects yet. <Link to="/register" className="text-[#00A693] hover:underline">Be the first to list one!</Link></p>
                 </div>
               )
           }
@@ -98,7 +98,7 @@ export default function Home() {
           </p>
           <Link
             to="/register"
-            className="inline-flex items-center gap-2 bg-[#E8734A] hover:bg-[#D4612F] text-white px-6 py-3 rounded-xl font-medium transition-colors text-sm"
+            className="inline-flex items-center gap-2 bg-[#00A693] hover:bg-[#007D6F] text-white px-6 py-3 rounded-xl font-medium transition-colors text-sm"
           >
             Get started — it's free <ArrowRight size={16} />
           </Link>

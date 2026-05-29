@@ -5,7 +5,7 @@ export default function Footer() {
     <footer className="border-t border-[#E5E1DA] bg-white mt-auto">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8 flex flex-col sm:flex-row items-center justify-between gap-4">
         <Link to="/" className="flex items-center gap-2 text-sm font-semibold text-[#1A1A1A]">
-          <span className="w-6 h-6 rounded-md bg-[#E8734A] flex items-center justify-center text-white text-xs font-bold">F</span>
+          <span className="w-6 h-6 rounded-md bg-[#00A693] flex items-center justify-center text-white text-xs font-bold">F</span>
           FindMyApp
         </Link>
         <p className="text-xs text-[#6B7280]">

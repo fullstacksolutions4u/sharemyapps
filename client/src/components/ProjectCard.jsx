@@ -9,7 +9,7 @@ const TAG_COLORS = [
   'bg-purple-50 text-purple-700',
   'bg-yellow-50 text-yellow-700',
   'bg-pink-50 text-pink-700',
-  'bg-[#FDF0EB] text-[#E8734A]',
+  'bg-[#E6F7F5] text-[#00A693]',
 ];
 
 function tagColor(tag) {
@@ -22,7 +22,7 @@ export default function ProjectCard({ project }) {
   const { _id, title, description, liveUrl, bannerImage, techTags = [], owner } = project;
 
   return (
-    <div className="group bg-white border border-[#E5E1DA] rounded-xl overflow-hidden hover:shadow-md hover:border-[#E8734A]/30 transition-all duration-200 flex flex-col">
+    <div className="group bg-white border border-[#E5E1DA] rounded-xl overflow-hidden hover:shadow-md hover:border-[#00A693]/30 transition-all duration-200 flex flex-col">
       {/* Banner */}
       <Link to={`/project/${_id}`} className="block overflow-hidden">
         <img
@@ -37,7 +37,7 @@ export default function ProjectCard({ project }) {
       <div className="p-4 flex flex-col flex-1 gap-3">
         <div>
           <Link to={`/project/${_id}`}>
-            <h3 className="font-semibold text-[#1A1A1A] hover:text-[#E8734A] transition-colors leading-tight mb-1">{title}</h3>
+            <h3 className="font-semibold text-[#1A1A1A] hover:text-[#00A693] transition-colors leading-tight mb-1">{title}</h3>
           </Link>
           <p className="text-sm text-[#6B7280] line-clamp-2 leading-relaxed">{description}</p>
         </div>
@@ -55,7 +55,7 @@ export default function ProjectCard({ project }) {
             <div className="flex items-center gap-2">
               {owner.avatar
                 ? <img src={owner.avatar} alt={owner.name} className="w-6 h-6 rounded-full object-cover" />
-                : <span className="w-6 h-6 rounded-full bg-[#E8734A] text-white text-xs flex items-center justify-center font-medium">{owner.name[0].toUpperCase()}</span>
+                : <span className="w-6 h-6 rounded-full bg-[#00A693] text-white text-xs flex items-center justify-center font-medium">{owner.name[0].toUpperCase()}</span>
               }
               <span className="text-xs text-[#6B7280]">{owner.name}</span>
             </div>
@@ -64,7 +64,7 @@ export default function ProjectCard({ project }) {
             href={liveUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-1 text-xs text-[#E8734A] hover:text-[#D4612F] font-medium transition-colors"
+            className="flex items-center gap-1 text-xs text-[#00A693] hover:text-[#007D6F] font-medium transition-colors"
           >
             Visit <ExternalLink size={12} />
           </a>

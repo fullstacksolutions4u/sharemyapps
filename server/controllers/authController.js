@@ -64,5 +64,6 @@ exports.getMe = (req, res) => {
 exports.googleCallback = (req, res) => {
   const token = signToken(req.user._id);
   setCookie(res, token);
-  res.redirect(`${process.env.CLIENT_URL}/dashboard`);
+  const dest = req.user.role === 'admin' ? '/admin' : '/dashboard';
+  res.redirect(`${process.env.CLIENT_URL}${dest}`);
 };

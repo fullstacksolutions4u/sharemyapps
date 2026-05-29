@@ -80,7 +80,7 @@ export default function Explore() {
           placeholder="Search projects..."
           value={search}
           onChange={e => setSearch(e.target.value)}
-          className="w-full pl-10 pr-10 py-3 bg-white border border-[#E5E1DA] rounded-xl text-sm text-[#1A1A1A] placeholder-[#6B7280] focus:outline-none focus:border-[#E8734A] focus:ring-2 focus:ring-[#E8734A]/10 transition"
+          className="w-full pl-10 pr-10 py-3 bg-white border border-[#E5E1DA] rounded-xl text-sm text-[#1A1A1A] placeholder-[#6B7280] focus:outline-none focus:border-[#00A693] focus:ring-2 focus:ring-[#00A693]/10 transition"
         />
         {(search || activeTag) && (
           <button type="button" onClick={clearSearch} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#6B7280] hover:text-[#1A1A1A]">
@@ -97,8 +97,8 @@ export default function Explore() {
             onClick={() => handleTag(tag)}
             className={`text-xs px-3 py-1.5 rounded-full font-medium transition-colors border ${
               activeTag === tag
-                ? 'bg-[#E8734A] text-white border-[#E8734A]'
-                : 'bg-white text-[#6B7280] border-[#E5E1DA] hover:border-[#E8734A] hover:text-[#E8734A]'
+                ? 'bg-[#00A693] text-white border-[#00A693]'
+                : 'bg-white text-[#6B7280] border-[#E5E1DA] hover:border-[#00A693] hover:text-[#00A693]'
             }`}
           >
             {tag}
@@ -115,7 +115,7 @@ export default function Explore() {
             : (
               <div className="col-span-3 text-center py-20">
                 <p className="text-[#6B7280] text-sm">No projects found. Try a different search.</p>
-                <button onClick={clearSearch} className="mt-3 text-sm text-[#E8734A] hover:underline">Clear filters</button>
+                <button onClick={clearSearch} className="mt-3 text-sm text-[#00A693] hover:underline">Clear filters</button>
               </div>
             )
         }
@@ -127,7 +127,7 @@ export default function Explore() {
           <button
             onClick={() => fetch(page - 1)}
             disabled={page === 1}
-            className="px-4 py-2 text-sm border border-[#E5E1DA] rounded-lg text-[#6B7280] hover:border-[#E8734A] hover:text-[#E8734A] disabled:opacity-40 disabled:cursor-not-allowed transition"
+            className="px-4 py-2 text-sm border border-[#E5E1DA] rounded-lg text-[#6B7280] hover:border-[#00A693] hover:text-[#00A693] disabled:opacity-40 disabled:cursor-not-allowed transition"
           >
             Previous
           </button>
@@ -135,7 +135,7 @@ export default function Explore() {
           <button
             onClick={() => fetch(page + 1)}
             disabled={page === pages}
-            className="px-4 py-2 text-sm border border-[#E5E1DA] rounded-lg text-[#6B7280] hover:border-[#E8734A] hover:text-[#E8734A] disabled:opacity-40 disabled:cursor-not-allowed transition"
+            className="px-4 py-2 text-sm border border-[#E5E1DA] rounded-lg text-[#6B7280] hover:border-[#00A693] hover:text-[#00A693] disabled:opacity-40 disabled:cursor-not-allowed transition"
           >
             Next
           </button>

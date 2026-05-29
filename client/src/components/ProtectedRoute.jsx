@@ -5,9 +5,10 @@ export default function ProtectedRoute({ children }) {
   const { user, loading } = useAuth();
   if (loading) return (
     <div className="min-h-screen flex items-center justify-center">
-      <div className="w-6 h-6 border-2 border-[#E8734A] border-t-transparent rounded-full animate-spin" />
+      <div className="w-6 h-6 border-2 border-[#00A693] border-t-transparent rounded-full animate-spin" />
     </div>
   );
   if (!user) return <Navigate to="/login" replace />;
+  if (user.role === 'admin') return <Navigate to="/admin" replace />;
   return children;
 }

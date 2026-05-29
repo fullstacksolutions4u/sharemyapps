@@ -1,13 +1,19 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { ExternalLink, Mail, ArrowLeft, ChevronLeft, ChevronRight, Pencil, Trash2 } from 'lucide-react';
+import { ExternalLink, Mail, ArrowLeft, ChevronLeft, ChevronRight, Pencil, Trash2, EyeOff } from 'lucide-react';
+
+const GithubIcon = () => (
+  <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor">
+    <path d="M12 2C6.477 2 2 6.484 2 12.021c0 4.428 2.865 8.184 6.839 9.504.5.092.682-.217.682-.482 0-.237-.009-.868-.014-1.703-2.782.605-3.369-1.342-3.369-1.342-.454-1.154-1.11-1.462-1.11-1.462-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0 1 12 6.844a9.59 9.59 0 0 1 2.504.337c1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.743 0 .267.18.578.688.48C19.138 20.2 22 16.447 22 12.021 22 6.484 17.522 2 12 2z"/>
+  </svg>
+);
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
 
 const PLACEHOLDER = 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=1200&q=80';
 
-const TAG_COLORS = ['bg-blue-50 text-blue-700','bg-green-50 text-green-700','bg-purple-50 text-purple-700','bg-yellow-50 text-yellow-700','bg-pink-50 text-pink-700','bg-[#FDF0EB] text-[#E8734A]'];
+const TAG_COLORS = ['bg-blue-50 text-blue-700','bg-green-50 text-green-700','bg-purple-50 text-purple-700','bg-yellow-50 text-yellow-700','bg-pink-50 text-pink-700','bg-[#E6F7F5] text-[#00A693]'];
 function tagColor(tag) {
   let h = 0; for (let i = 0; i < tag.length; i++) h += tag.charCodeAt(i);
   return TAG_COLORS[h % TAG_COLORS.length];
@@ -31,13 +37,13 @@ export default function ProjectDetail() {
 
   if (loading) return (
     <div className="min-h-screen flex items-center justify-center">
-      <div className="w-6 h-6 border-2 border-[#E8734A] border-t-transparent rounded-full animate-spin" />
+      <div className="w-6 h-6 border-2 border-[#00A693] border-t-transparent rounded-full animate-spin" />
     </div>
   );
 
   if (!project) return null;
 
-  const { title, description, liveUrl, bannerImage, screenshots = [], techTags = [], owner, createdAt } = project;
+  const { title, description, liveUrl, bannerImage, screenshots = [], techTags = [], owner, createdAt, githubUrl, githubVisible } = project;
   const images = [bannerImage || PLACEHOLDER, ...screenshots].filter(Boolean);
   const isOwner = user && owner && user._id === owner._id;
 
@@ -106,7 +112,7 @@ export default function ProjectDetail() {
                 <div className="flex items-center gap-2 shrink-0">
                   <Link
                     to={`/dashboard/edit/${id}`}
-                    className="flex items-center gap-1 text-xs text-[#6B7280] hover:text-[#E8734A] border border-[#E5E1DA] px-3 py-1.5 rounded-lg transition-colors"
+                    className="flex items-center gap-1 text-xs text-[#6B7280] hover:text-[#00A693] border border-[#E5E1DA] px-3 py-1.5 rounded-lg transition-colors"
                   >
                     <Pencil size={12} /> Edit
                   </Link>
@@ -145,10 +151,27 @@ export default function ProjectDetail() {
             href={liveUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center justify-center gap-2 w-full bg-[#E8734A] hover:bg-[#D4612F] text-white px-5 py-3 rounded-xl font-medium text-sm transition-colors"
+            className="flex items-center justify-center gap-2 w-full bg-[#00A693] hover:bg-[#007D6F] text-white px-5 py-3 rounded-xl font-medium text-sm transition-colors"
           >
             <ExternalLink size={15} /> Visit Live Project
           </a>
+
+          {githubUrl && (isOwner || githubVisible) && (
+            <a
+              href={githubUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center justify-center gap-2 w-full border border-[#E5E1DA] hover:border-[#1A1A1A] text-[#1A1A1A] px-5 py-3 rounded-xl font-medium text-sm transition-colors"
+            >
+              <GithubIcon />
+              View on GitHub
+              {isOwner && !githubVisible && (
+                <span className="ml-auto flex items-center gap-1 text-xs text-[#9CA3AF]">
+                  <EyeOff size={11} /> hidden
+                </span>
+              )}
+            </a>
+          )}
 
           {owner && (
             <div className="bg-white border border-[#E5E1DA] rounded-xl p-4 space-y-3">
@@ -156,7 +179,7 @@ export default function ProjectDetail() {
               <div className="flex items-center gap-3">
                 {owner.avatar
                   ? <img src={owner.avatar} alt={owner.name} className="w-10 h-10 rounded-full object-cover" />
-                  : <span className="w-10 h-10 rounded-full bg-[#E8734A] text-white font-medium flex items-center justify-center">{owner.name[0].toUpperCase()}</span>
+                  : <span className="w-10 h-10 rounded-full bg-[#00A693] text-white font-medium flex items-center justify-center">{owner.name[0].toUpperCase()}</span>
                 }
                 <div>
                   <p className="font-medium text-sm text-[#1A1A1A]">{owner.name}</p>
@@ -165,7 +188,7 @@ export default function ProjectDetail() {
               </div>
               <a
                 href={`mailto:${owner.email}`}
-                className="flex items-center gap-2 w-full border border-[#E5E1DA] hover:border-[#E8734A] text-[#1A1A1A] hover:text-[#E8734A] px-4 py-2.5 rounded-lg text-sm transition-colors font-medium"
+                className="flex items-center gap-2 w-full border border-[#E5E1DA] hover:border-[#00A693] text-[#1A1A1A] hover:text-[#00A693] px-4 py-2.5 rounded-lg text-sm transition-colors font-medium"
               >
                 <Mail size={14} /> {owner.email}
               </a>
