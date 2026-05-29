@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { MessageSquare, ExternalLink, CheckCheck } from 'lucide-react';
+import { MessageSquare, ExternalLink, CheckCheck, CornerDownRight, Send } from 'lucide-react';
 import api from '../api/axios';
+import toast from 'react-hot-toast';
 
 function timeAgo(date) {
   const secs = Math.floor((Date.now() - new Date(date)) / 1000);
@@ -12,32 +13,140 @@ function timeAgo(date) {
   return new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 }
 
+function MessageRow({ msg, onMarkRead, onReplySent, isInbox }) {
+  const [replyOpen, setReplyOpen] = useState(false);
+  const [replyText, setReplyText] = useState('');
+  const [sending, setSending] = useState(false);
+
+  const person = isInbox ? msg.sender : msg.recipient;
+
+  const handleReply = async (e) => {
+    e.preventDefault();
+    if (!replyText.trim()) return;
+    setSending(true);
+    try {
+      await api.post(`/messages/${msg._id}/reply`, { text: replyText });
+      toast.success('Reply sent!');
+      setReplyText('');
+      setReplyOpen(false);
+      if (onReplySent) onReplySent();
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to send reply');
+    } finally {
+      setSending(false);
+    }
+  };
+
+  return (
+    <div
+      className={`bg-white border rounded-xl transition-all ${
+        isInbox && !msg.read
+          ? 'border-[#00A693]/30 bg-[#F0FBF9]'
+          : 'border-[#E5E1DA]'
+      }`}
+    >
+      {/* Message row */}
+      <div
+        className="p-4 cursor-default"
+        onClick={() => isInbox && !msg.read && onMarkRead(msg._id)}
+      >
+        <div className="flex items-start gap-3">
+          {person?.avatar
+            ? <img src={person.avatar} alt={person.name} className="w-9 h-9 rounded-full object-cover shrink-0" />
+            : <span className="w-9 h-9 rounded-full bg-[#00A693] text-white text-sm flex items-center justify-center font-medium shrink-0">
+                {person?.name?.[0]?.toUpperCase() || '?'}
+              </span>
+          }
+
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center justify-between gap-2 mb-1">
+              <span className={`text-sm ${isInbox && !msg.read ? 'font-semibold text-[#1A1A1A]' : 'font-medium text-[#1A1A1A]'}`}>
+                {person?.name || 'Unknown'}
+              </span>
+              <span className="text-xs text-[#9CA3AF] shrink-0">{timeAgo(msg.createdAt)}</span>
+            </div>
+
+            {msg.project && (
+              <Link
+                to={`/project/${msg.project._id}`}
+                onClick={e => e.stopPropagation()}
+                className="inline-flex items-center gap-1 text-xs text-[#00A693] hover:underline mb-1.5 font-medium"
+              >
+                <ExternalLink size={10} /> {msg.project.title}
+              </Link>
+            )}
+
+            <p className={`text-sm leading-relaxed break-words ${isInbox && !msg.read ? 'text-[#374151]' : 'text-[#6B7280]'}`}>
+              {msg.text}
+            </p>
+          </div>
+
+          {isInbox && !msg.read && (
+            <span className="w-2 h-2 bg-[#00A693] rounded-full mt-1.5 shrink-0" />
+          )}
+        </div>
+
+        {/* Reply button */}
+        {isInbox && (
+          <div className="mt-3 ml-12">
+            <button
+              onClick={e => { e.stopPropagation(); setReplyOpen(v => !v); }}
+              className={`inline-flex items-center gap-1.5 text-xs font-medium transition-colors ${
+                replyOpen ? 'text-[#00A693]' : 'text-[#9CA3AF] hover:text-[#00A693]'
+              }`}
+            >
+              <CornerDownRight size={12} /> Reply
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* Inline reply form */}
+      {replyOpen && (
+        <div className="px-4 pb-4 ml-12 border-t border-[#F3F0EB] pt-3">
+          <form onSubmit={handleReply} className="flex gap-2">
+            <input
+              type="text"
+              value={replyText}
+              onChange={e => setReplyText(e.target.value)}
+              placeholder={`Reply to ${person?.name}…`}
+              autoFocus
+              className="flex-1 px-3.5 py-2 bg-[#FAF9F6] border border-[#E5E1DA] rounded-lg text-sm text-[#1A1A1A] placeholder-[#9CA3AF] focus:outline-none focus:border-[#00A693] focus:ring-2 focus:ring-[#00A693]/10 transition"
+            />
+            <button
+              type="submit"
+              disabled={!replyText.trim() || sending}
+              className="w-9 h-9 bg-[#00A693] hover:bg-[#007D6F] text-white rounded-lg flex items-center justify-center transition-colors disabled:opacity-40 disabled:cursor-not-allowed shrink-0"
+            >
+              <Send size={13} />
+            </button>
+          </form>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function Messages() {
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState('inbox');
 
-  const fetchInbox = async () => {
-    try {
-      const res = await api.get('/messages');
-      setMessages(res.data.messages);
-    } catch { /* ignore */ }
-    finally { setLoading(false); }
-  };
-
-  const fetchSent = async () => {
-    try {
-      const res = await api.get('/messages/sent');
-      setMessages(res.data);
-    } catch { /* ignore */ }
-    finally { setLoading(false); }
-  };
-
-  useEffect(() => {
+  const fetchMessages = async (t = tab) => {
     setLoading(true);
-    if (tab === 'inbox') fetchInbox();
-    else fetchSent();
-  }, [tab]);
+    try {
+      if (t === 'inbox') {
+        const res = await api.get('/messages');
+        setMessages(res.data.messages);
+      } else {
+        const res = await api.get('/messages/sent');
+        setMessages(res.data);
+      }
+    } catch { /* ignore */ }
+    finally { setLoading(false); }
+  };
+
+  useEffect(() => { fetchMessages(tab); }, [tab]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const markRead = async (id) => {
     try {
@@ -112,62 +221,20 @@ export default function Messages() {
         <div className="text-center py-20">
           <MessageSquare size={32} className="mx-auto text-[#D1D5DB] mb-3" />
           <p className="text-sm text-[#6B7280]">
-            {tab === 'inbox' ? 'No messages yet' : 'You haven\'t sent any messages yet'}
+            {tab === 'inbox' ? 'No messages yet' : "You haven't sent any messages yet"}
           </p>
         </div>
       ) : (
         <div className="space-y-2">
-          {messages.map(msg => {
-            const person = tab === 'inbox' ? msg.sender : msg.recipient;
-            return (
-              <div
-                key={msg._id}
-                onClick={() => tab === 'inbox' && !msg.read && markRead(msg._id)}
-                className={`bg-white border rounded-xl p-4 transition-all cursor-default ${
-                  tab === 'inbox' && !msg.read
-                    ? 'border-[#00A693]/30 bg-[#F0FBF9] hover:border-[#00A693]/50'
-                    : 'border-[#E5E1DA] hover:border-[#D1D5DB]'
-                }`}
-              >
-                <div className="flex items-start gap-3">
-                  {/* Avatar */}
-                  {person?.avatar
-                    ? <img src={person.avatar} alt={person.name} className="w-9 h-9 rounded-full object-cover shrink-0" />
-                    : <span className="w-9 h-9 rounded-full bg-[#00A693] text-white text-sm flex items-center justify-center font-medium shrink-0">
-                        {person?.name?.[0]?.toUpperCase() || '?'}
-                      </span>
-                  }
-
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between gap-2 mb-1">
-                      <span className={`text-sm ${tab === 'inbox' && !msg.read ? 'font-semibold text-[#1A1A1A]' : 'font-medium text-[#1A1A1A]'}`}>
-                        {person?.name || 'Unknown'}
-                      </span>
-                      <span className="text-xs text-[#9CA3AF] shrink-0">{timeAgo(msg.createdAt)}</span>
-                    </div>
-
-                    {msg.project && (
-                      <Link
-                        to={`/project/${msg.project._id}`}
-                        onClick={e => e.stopPropagation()}
-                        className="inline-flex items-center gap-1 text-xs text-[#00A693] hover:underline mb-1.5 font-medium"
-                      >
-                        <ExternalLink size={10} /> {msg.project.title}
-                      </Link>
-                    )}
-
-                    <p className={`text-sm leading-relaxed break-words ${tab === 'inbox' && !msg.read ? 'text-[#374151]' : 'text-[#6B7280]'}`}>
-                      {msg.text}
-                    </p>
-                  </div>
-
-                  {tab === 'inbox' && !msg.read && (
-                    <span className="w-2 h-2 bg-[#00A693] rounded-full mt-1.5 shrink-0" />
-                  )}
-                </div>
-              </div>
-            );
-          })}
+          {messages.map(msg => (
+            <MessageRow
+              key={msg._id}
+              msg={msg}
+              isInbox={tab === 'inbox'}
+              onMarkRead={markRead}
+              onReplySent={() => fetchMessages('sent')}
+            />
+          ))}
         </div>
       )}
     </div>

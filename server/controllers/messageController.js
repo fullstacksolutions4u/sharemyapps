@@ -1,6 +1,30 @@
 const Message = require('../models/Message');
 const Project = require('../models/Project');
 
+exports.replyMessage = async (req, res) => {
+  try {
+    const original = await Message.findById(req.params.id);
+    if (!original) return res.status(404).json({ message: 'Message not found' });
+    if (original.recipient.toString() !== req.user._id.toString())
+      return res.status(403).json({ message: 'Forbidden' });
+
+    const text = req.body.text?.trim();
+    if (!text) return res.status(400).json({ message: 'Reply text required' });
+
+    const msg = await Message.create({
+      sender: req.user._id,
+      recipient: original.sender,
+      project: original.project,
+      text,
+    });
+    await msg.populate('sender', 'name avatar');
+    await msg.populate('project', 'title');
+    res.status(201).json(msg);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
 exports.sendMessage = async (req, res) => {
   try {
     const project = await Project.findById(req.params.id);

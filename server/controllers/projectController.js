@@ -35,7 +35,7 @@ exports.getProjects = async (req, res) => {
 exports.getProject = async (req, res) => {
   try {
     const project = await Project.findById(req.params.id)
-      .populate('owner', 'name email avatar');
+      .populate('owner', 'name email avatar phone linkedinUrl githubUrl leetcodeUrl');
     if (!project) return res.status(404).json({ message: 'Project not found' });
     res.json(project);
   } catch (err) {

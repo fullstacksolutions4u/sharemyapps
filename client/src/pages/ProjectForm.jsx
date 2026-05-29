@@ -20,7 +20,7 @@ export default function ProjectForm() {
     'Communication & Chat Apps', 'Inventory Management', 'Event Management', 'Others',
   ];
 
-  const [form, setForm] = useState({ title: '', description: '', liveUrl: '', techTags: '', contactEmail: user?.email || '', contactPhone: '', linkedinUrl: '', appType: 'web', category: '' });
+  const [form, setForm] = useState({ title: '', description: '', liveUrl: '', techTags: '', appType: 'web', category: '' });
   const [githubUrls, setGithubUrls] = useState(['']);
   const [githubVisible, setGithubVisible] = useState(true);
   const [loading, setLoading] = useState(false);
@@ -32,7 +32,7 @@ export default function ProjectForm() {
     api.get(`/projects/${id}`)
       .then(res => {
         const p = res.data;
-        setForm({ title: p.title, description: p.description, liveUrl: p.liveUrl, techTags: p.techTags?.join(', ') || '', contactEmail: p.contactEmail || '', contactPhone: p.contactPhone || '', linkedinUrl: p.linkedinUrl || '', appType: p.appType || 'web', category: p.category || '' });
+        setForm({ title: p.title, description: p.description, liveUrl: p.liveUrl, techTags: p.techTags?.join(', ') || '', appType: p.appType || 'web', category: p.category || '' });
         setProjectStatus(p.status || '');
         const urls = p.githubUrls?.length ? p.githubUrls : (p.githubUrl ? [p.githubUrl] : ['']);
         setGithubUrls(urls);
@@ -57,9 +57,6 @@ export default function ProjectForm() {
       data.append('appType', form.appType);
       data.append('category', form.category);
       data.append('techTags', form.techTags);
-      data.append('contactEmail', form.contactEmail.trim());
-      data.append('contactPhone', form.contactPhone.trim());
-      data.append('linkedinUrl', form.linkedinUrl.trim());
       githubUrls.forEach(url => { if (url.trim()) data.append('githubUrls', url.trim()); });
       data.append('githubVisible', githubVisible);
 
@@ -180,49 +177,11 @@ export default function ProjectForm() {
           />
         </div>
 
-        {/* Contact info */}
+        {/* GitHub repo URLs */}
         <div className="border border-[#E5E1DA] rounded-2xl p-5 space-y-4">
           <div>
-            <h3 className="text-sm font-semibold text-[#1A1A1A] mb-0.5">Contact information</h3>
-            <p className="text-xs text-[#6B7280]">Let people reach out to you about this project</p>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-[#1A1A1A] mb-2">Email <span className="text-red-400">*</span></label>
-            <input
-              type="email"
-              required
-              value={form.contactEmail}
-              onChange={e => setForm(f => ({ ...f, contactEmail: e.target.value }))}
-              placeholder="you@example.com"
-              className="w-full px-3.5 py-2.5 border border-[#E5E1DA] rounded-xl text-sm text-[#1A1A1A] placeholder-[#9CA3AF] focus:outline-none focus:border-[#00A693] focus:ring-2 focus:ring-[#00A693]/10 transition"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-[#1A1A1A] mb-2">
-              Mobile number <span className="text-xs text-[#9CA3AF] font-normal">(optional)</span>
-            </label>
-            <input
-              type="tel"
-              value={form.contactPhone}
-              onChange={e => setForm(f => ({ ...f, contactPhone: e.target.value }))}
-              placeholder="+1 234 567 8900"
-              className="w-full px-3.5 py-2.5 border border-[#E5E1DA] rounded-xl text-sm text-[#1A1A1A] placeholder-[#9CA3AF] focus:outline-none focus:border-[#00A693] focus:ring-2 focus:ring-[#00A693]/10 transition"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-[#1A1A1A] mb-2">
-              LinkedIn URL <span className="text-xs text-[#9CA3AF] font-normal">(optional)</span>
-            </label>
-            <input
-              type="text"
-              value={form.linkedinUrl}
-              onChange={e => setForm(f => ({ ...f, linkedinUrl: e.target.value }))}
-              placeholder="linkedin.com/in/yourprofile"
-              className="w-full px-3.5 py-2.5 border border-[#E5E1DA] rounded-xl text-sm text-[#1A1A1A] placeholder-[#9CA3AF] focus:outline-none focus:border-[#00A693] focus:ring-2 focus:ring-[#00A693]/10 transition"
-            />
+            <h3 className="text-sm font-semibold text-[#1A1A1A] mb-0.5">GitHub repositories</h3>
+            <p className="text-xs text-[#6B7280]">Add repo links for this project (optional)</p>
           </div>
 
           <div>

@@ -8,6 +8,10 @@ const userSchema = new mongoose.Schema({
   googleId: { type: String },
   avatar: { type: String, default: '' },
   role: { type: String, enum: ['user', 'admin'], default: 'user' },
+  phone: { type: String, trim: true, default: '' },
+  linkedinUrl: { type: String, trim: true, default: '' },
+  githubUrl: { type: String, trim: true, default: '' },
+  leetcodeUrl: { type: String, trim: true, default: '' },
 }, { timestamps: true });
 
 userSchema.pre('save', async function (next) {
@@ -27,6 +31,11 @@ userSchema.methods.toPublicJSON = function () {
     email: this.email,
     avatar: this.avatar,
     role: this.role,
+    phone: this.phone,
+    linkedinUrl: this.linkedinUrl,
+    githubUrl: this.githubUrl,
+    leetcodeUrl: this.leetcodeUrl,
+    isGoogleUser: !!this.googleId,
     createdAt: this.createdAt,
   };
 };

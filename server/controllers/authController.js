@@ -61,6 +61,25 @@ exports.getMe = (req, res) => {
   res.json({ user: req.user.toPublicJSON() });
 };
 
+exports.updateProfile = async (req, res) => {
+  try {
+    const { name, phone, linkedinUrl, githubUrl, leetcodeUrl } = req.body;
+    const user = await User.findById(req.user._id);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    if (name?.trim()) user.name = name.trim();
+    if (phone !== undefined) user.phone = phone.trim();
+    if (linkedinUrl !== undefined) user.linkedinUrl = linkedinUrl.trim();
+    if (githubUrl !== undefined) user.githubUrl = githubUrl.trim();
+    if (leetcodeUrl !== undefined) user.leetcodeUrl = leetcodeUrl.trim();
+
+    await user.save();
+    res.json({ user: user.toPublicJSON() });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
 exports.googleCallback = (req, res) => {
   const token = signToken(req.user._id);
   setCookie(res, token);

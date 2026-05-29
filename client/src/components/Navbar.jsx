@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Menu, X, ChevronDown, LogOut, LayoutDashboard, Plus, ShieldCheck, Bell, CheckCircle, XCircle, Clock, MessageSquare } from 'lucide-react';
+import { Menu, X, ChevronDown, LogOut, LayoutDashboard, Plus, ShieldCheck, Bell, CheckCircle, XCircle, Clock, MessageSquare, UserCircle } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import api from '../api/axios';
 import toast from 'react-hot-toast';
@@ -197,12 +197,16 @@ export default function Navbar() {
                   <ChevronDown size={14} />
                 </button>
                 {dropOpen && (
-                  <div className="absolute right-0 mt-2 w-40 bg-white border border-[#E5E1DA] rounded-xl shadow-lg py-1 z-50">
+                  <div className="absolute right-0 mt-2 w-44 bg-white border border-[#E5E1DA] rounded-xl shadow-lg py-1 z-50">
+                    <Link to="/profile" onClick={() => setDropOpen(false)} className="flex items-center gap-2 px-4 py-2 text-sm text-[#1A1A1A] hover:bg-[#FAF9F6]">
+                      <UserCircle size={14} /> Profile
+                    </Link>
                     {user.role === 'admin' && (
                       <Link to="/admin" onClick={() => setDropOpen(false)} className="flex items-center gap-2 px-4 py-2 text-sm text-[#00A693] hover:bg-[#FAF9F6]">
                         <ShieldCheck size={14} /> Admin Panel
                       </Link>
                     )}
+                    <div className="border-t border-[#F3F0EB] my-1" />
                     <button onClick={handleLogout} className="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-500 hover:bg-[#FAF9F6]">
                       <LogOut size={14} /> Logout
                     </button>
