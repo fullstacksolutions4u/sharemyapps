@@ -1,4 +1,5 @@
 const Project = require('../models/Project');
+const Comment = require('../models/Comment');
 const { cloudinary } = require('../middleware/upload');
 
 const PAGE_SIZE = 12;
@@ -8,6 +9,7 @@ exports.getProjects = async (req, res) => {
     const page = Math.max(1, parseInt(req.query.page) || 1);
     const search = req.query.search || '';
     const tag = req.query.tag || '';
+    const category = req.query.category || '';
 
     const filter = { status: 'approved' };
     if (search) filter.$or = [
@@ -15,6 +17,7 @@ exports.getProjects = async (req, res) => {
       { description: { $regex: search, $options: 'i' } },
     ];
     if (tag) filter.techTags = { $in: [tag] };
+    if (category) filter.category = category;
 
     const total = await Project.countDocuments(filter);
     const projects = await Project.find(filter)
@@ -52,7 +55,7 @@ exports.getMyProjects = async (req, res) => {
 
 exports.createProject = async (req, res) => {
   try {
-    const { title, description, liveUrl, techTags, contactEmail, contactPhone, linkedinUrl, githubUrls, githubVisible } = req.body;
+    const { title, description, liveUrl, appType, category, techTags, contactEmail, contactPhone, linkedinUrl, githubUrls, githubVisible } = req.body;
     if (!title || !description || !liveUrl)
       return res.status(400).json({ message: 'Title, description, and live URL are required' });
 
@@ -70,6 +73,8 @@ exports.createProject = async (req, res) => {
 
     const project = await Project.create({
       title, description, liveUrl, bannerImage, screenshots,
+      appType: appType || 'web',
+      category: category || '',
       techTags: tags,
       contactEmail: contactEmail || '',
       contactPhone: contactPhone || '',
@@ -92,12 +97,14 @@ exports.updateProject = async (req, res) => {
     if (project.owner.toString() !== req.user._id.toString())
       return res.status(403).json({ message: 'Forbidden' });
 
-    const { title, description, liveUrl, techTags, removeScreenshots, contactEmail, contactPhone, linkedinUrl, githubUrls, githubVisible, resubmit } = req.body;
+    const { title, description, liveUrl, appType, category, techTags, removeScreenshots, contactEmail, contactPhone, linkedinUrl, githubUrls, githubVisible, resubmit } = req.body;
     const files = req.files || {};
 
     if (title) project.title = title;
     if (description) project.description = description;
     if (liveUrl) project.liveUrl = liveUrl;
+    if (appType) project.appType = appType;
+    if (category !== undefined) project.category = category;
     if (techTags !== undefined) {
       project.techTags = Array.isArray(techTags)
         ? techTags
@@ -138,6 +145,75 @@ exports.updateProject = async (req, res) => {
 
     await project.save();
     res.json(project);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+exports.toggleLike = async (req, res) => {
+  try {
+    const project = await Project.findById(req.params.id);
+    if (!project) return res.status(404).json({ message: 'Project not found' });
+    const uid = req.user._id.toString();
+    const idx = project.likes.findIndex(l => l.toString() === uid);
+    if (idx >= 0) project.likes.splice(idx, 1);
+    else project.likes.push(req.user._id);
+    await project.save();
+    res.json({ likes: project.likes.length, liked: idx < 0 });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+exports.rateProject = async (req, res) => {
+  try {
+    const value = parseInt(req.body.value);
+    if (!value || value < 1 || value > 5)
+      return res.status(400).json({ message: 'Rating must be 1–5' });
+    const project = await Project.findById(req.params.id);
+    if (!project) return res.status(404).json({ message: 'Project not found' });
+    const idx = project.ratings.findIndex(r => r.user.toString() === req.user._id.toString());
+    if (idx >= 0) project.ratings[idx].value = value;
+    else project.ratings.push({ user: req.user._id, value });
+    await project.save();
+    const avg = project.ratings.reduce((s, r) => s + r.value, 0) / project.ratings.length;
+    res.json({ avg: Math.round(avg * 10) / 10, count: project.ratings.length, userRating: value });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+exports.getComments = async (req, res) => {
+  try {
+    const comments = await Comment.find({ project: req.params.id })
+      .populate('user', 'name avatar')
+      .sort({ createdAt: -1 });
+    res.json(comments);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+exports.addComment = async (req, res) => {
+  try {
+    const text = req.body.text?.trim();
+    if (!text) return res.status(400).json({ message: 'Comment text required' });
+    const comment = await Comment.create({ project: req.params.id, user: req.user._id, text });
+    await comment.populate('user', 'name avatar');
+    res.status(201).json(comment);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+exports.deleteComment = async (req, res) => {
+  try {
+    const comment = await Comment.findById(req.params.commentId);
+    if (!comment) return res.status(404).json({ message: 'Not found' });
+    if (comment.user.toString() !== req.user._id.toString() && !req.user.isAdmin)
+      return res.status(403).json({ message: 'Forbidden' });
+    await comment.deleteOne();
+    res.json({ message: 'Deleted' });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

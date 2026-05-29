@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { ExternalLink, Mail, ArrowLeft, ChevronLeft, ChevronRight, Pencil, Trash2, EyeOff } from 'lucide-react';
+import { ExternalLink, Mail, ArrowLeft, ChevronLeft, ChevronRight, Pencil, Trash2, EyeOff, Heart, Star, Send, Trash } from 'lucide-react';
 
 const GithubIcon = () => (
   <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor">
     <path d="M12 2C6.477 2 2 6.484 2 12.021c0 4.428 2.865 8.184 6.839 9.504.5.092.682-.217.682-.482 0-.237-.009-.868-.014-1.703-2.782.605-3.369-1.342-3.369-1.342-.454-1.154-1.11-1.462-1.11-1.462-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0 1 12 6.844a9.59 9.59 0 0 1 2.504.337c1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.743 0 .267.18.578.688.48C19.138 20.2 22 16.447 22 12.021 22 6.484 17.522 2 12 2z"/>
   </svg>
 );
+
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
@@ -20,21 +21,135 @@ function tagColor(tag) {
   return TAG_COLORS[h % TAG_COLORS.length];
 }
 
+function StarPicker({ value, onChange, disabled }) {
+  const [hovered, setHovered] = useState(0);
+  return (
+    <div className="flex gap-0.5">
+      {[1,2,3,4,5].map(n => (
+        <button
+          key={n}
+          type="button"
+          disabled={disabled}
+          onClick={() => onChange(n)}
+          onMouseEnter={() => setHovered(n)}
+          onMouseLeave={() => setHovered(0)}
+          className="transition-transform hover:scale-110 disabled:cursor-not-allowed"
+        >
+          <Star
+            size={22}
+            className={`transition-colors ${(hovered || value) >= n ? 'text-[#F59E0B] fill-[#F59E0B]' : 'text-[#D1D5DB]'}`}
+          />
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function timeAgo(date) {
+  const secs = Math.floor((Date.now() - new Date(date)) / 1000);
+  if (secs < 60) return 'just now';
+  if (secs < 3600) return `${Math.floor(secs / 60)}m ago`;
+  if (secs < 86400) return `${Math.floor(secs / 3600)}h ago`;
+  return `${Math.floor(secs / 86400)}d ago`;
+}
+
 export default function ProjectDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
+
   const [project, setProject] = useState(null);
   const [loading, setLoading] = useState(true);
   const [imgIdx, setImgIdx] = useState(0);
   const [deleting, setDeleting] = useState(false);
 
+  // likes
+  const [liked, setLiked] = useState(false);
+  const [likeCount, setLikeCount] = useState(0);
+  const [liking, setLiking] = useState(false);
+
+  // ratings
+  const [userRating, setUserRating] = useState(0);
+  const [avgRating, setAvgRating] = useState(0);
+  const [ratingCount, setRatingCount] = useState(0);
+  const [rating, setRating] = useState(false);
+
+  // comments
+  const [comments, setComments] = useState([]);
+  const [commentText, setCommentText] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+
   useEffect(() => {
     api.get(`/projects/${id}`)
-      .then(res => setProject(res.data))
+      .then(res => {
+        const p = res.data;
+        setProject(p);
+        // init likes
+        setLikeCount(p.likes?.length || 0);
+        if (user) setLiked(p.likes?.some(l => (l._id || l) === user._id) || false);
+        // init ratings
+        if (p.ratings?.length) {
+          const avg = p.ratings.reduce((s, r) => s + r.value, 0) / p.ratings.length;
+          setAvgRating(Math.round(avg * 10) / 10);
+          setRatingCount(p.ratings.length);
+          if (user) {
+            const mine = p.ratings.find(r => (r.user?._id || r.user) === user._id);
+            if (mine) setUserRating(mine.value);
+          }
+        }
+      })
       .catch(() => navigate('/explore'))
       .finally(() => setLoading(false));
-  }, [id, navigate]);
+
+    api.get(`/projects/${id}/comments`)
+      .then(res => setComments(res.data))
+      .catch(() => {});
+  }, [id, navigate, user]);
+
+  const handleLike = async () => {
+    if (!user) { toast.error('Sign in to like projects'); return; }
+    setLiking(true);
+    try {
+      const res = await api.post(`/projects/${id}/like`);
+      setLiked(res.data.liked);
+      setLikeCount(res.data.likes);
+    } catch { toast.error('Failed to like'); }
+    finally { setLiking(false); }
+  };
+
+  const handleRate = async (value) => {
+    if (!user) { toast.error('Sign in to rate projects'); return; }
+    setRating(true);
+    try {
+      const res = await api.post(`/projects/${id}/rate`, { value });
+      setUserRating(res.data.userRating);
+      setAvgRating(res.data.avg);
+      setRatingCount(res.data.count);
+      toast.success('Rating saved!');
+    } catch { toast.error('Failed to rate'); }
+    finally { setRating(false); }
+  };
+
+  const handleComment = async (e) => {
+    e.preventDefault();
+    if (!user) { toast.error('Sign in to comment'); return; }
+    if (!commentText.trim()) return;
+    setSubmitting(true);
+    try {
+      const res = await api.post(`/projects/${id}/comments`, { text: commentText });
+      setComments(prev => [res.data, ...prev]);
+      setCommentText('');
+    } catch { toast.error('Failed to post comment'); }
+    finally { setSubmitting(false); }
+  };
+
+  const handleDeleteComment = async (commentId) => {
+    if (!confirm('Delete this comment?')) return;
+    try {
+      await api.delete(`/projects/${id}/comments/${commentId}`);
+      setComments(prev => prev.filter(c => c._id !== commentId));
+    } catch { toast.error('Failed to delete comment'); }
+  };
 
   if (loading) return (
     <div className="min-h-screen flex items-center justify-center">
@@ -61,6 +176,8 @@ export default function ProjectDetail() {
     }
   };
 
+  const allGithubUrls = githubUrls.length ? githubUrls : (githubUrl ? [githubUrl] : []);
+
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 py-10">
       {/* Back */}
@@ -78,25 +195,18 @@ export default function ProjectDetail() {
         />
         {images.length > 1 && (
           <>
-            <button
-              onClick={() => setImgIdx(i => (i - 1 + images.length) % images.length)}
-              className="absolute left-3 top-1/2 -translate-y-1/2 w-8 h-8 bg-white/80 hover:bg-white rounded-full flex items-center justify-center shadow transition"
-            >
+            <button onClick={() => setImgIdx(i => (i - 1 + images.length) % images.length)}
+              className="absolute left-3 top-1/2 -translate-y-1/2 w-8 h-8 bg-white/80 hover:bg-white rounded-full flex items-center justify-center shadow transition">
               <ChevronLeft size={16} />
             </button>
-            <button
-              onClick={() => setImgIdx(i => (i + 1) % images.length)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 bg-white/80 hover:bg-white rounded-full flex items-center justify-center shadow transition"
-            >
+            <button onClick={() => setImgIdx(i => (i + 1) % images.length)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 bg-white/80 hover:bg-white rounded-full flex items-center justify-center shadow transition">
               <ChevronRight size={16} />
             </button>
             <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
               {images.map((_, i) => (
-                <button
-                  key={i}
-                  onClick={() => setImgIdx(i)}
-                  className={`w-1.5 h-1.5 rounded-full transition-colors ${i === imgIdx ? 'bg-white' : 'bg-white/50'}`}
-                />
+                <button key={i} onClick={() => setImgIdx(i)}
+                  className={`w-1.5 h-1.5 rounded-full transition-colors ${i === imgIdx ? 'bg-white' : 'bg-white/50'}`} />
               ))}
             </div>
           </>
@@ -111,17 +221,12 @@ export default function ProjectDetail() {
               <h1 className="text-2xl font-bold text-[#1A1A1A] tracking-tight leading-tight">{title}</h1>
               {isOwner && (
                 <div className="flex items-center gap-2 shrink-0">
-                  <Link
-                    to={`/dashboard/edit/${id}`}
-                    className="flex items-center gap-1 text-xs text-[#6B7280] hover:text-[#00A693] border border-[#E5E1DA] px-3 py-1.5 rounded-lg transition-colors"
-                  >
+                  <Link to={`/dashboard/edit/${id}`}
+                    className="flex items-center gap-1 text-xs text-[#6B7280] hover:text-[#00A693] border border-[#E5E1DA] px-3 py-1.5 rounded-lg transition-colors">
                     <Pencil size={12} /> Edit
                   </Link>
-                  <button
-                    onClick={handleDelete}
-                    disabled={deleting}
-                    className="flex items-center gap-1 text-xs text-red-500 hover:text-red-600 border border-red-100 hover:border-red-200 px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50"
-                  >
+                  <button onClick={handleDelete} disabled={deleting}
+                    className="flex items-center gap-1 text-xs text-red-500 hover:text-red-600 border border-red-100 hover:border-red-200 px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50">
                     <Trash2 size={12} /> Delete
                   </button>
                 </div>
@@ -141,9 +246,107 @@ export default function ProjectDetail() {
             </div>
           )}
 
+          {/* Like & Rate bar */}
+          <div className="flex flex-wrap items-center gap-6 py-4 border-y border-[#E5E1DA]">
+            {/* Like */}
+            <button
+              onClick={handleLike}
+              disabled={liking}
+              className={`flex items-center gap-2 text-sm font-medium transition-colors disabled:opacity-50 ${
+                liked ? 'text-red-500' : 'text-[#6B7280] hover:text-red-400'
+              }`}
+            >
+              <Heart size={18} className={liked ? 'fill-red-500' : ''} />
+              <span>{likeCount} {likeCount === 1 ? 'like' : 'likes'}</span>
+            </button>
+
+            {/* Rating */}
+            <div className="flex items-center gap-3">
+              <StarPicker value={userRating} onChange={handleRate} disabled={rating} />
+              <div className="text-sm text-[#6B7280]">
+                {ratingCount > 0 ? (
+                  <span>
+                    <span className="font-semibold text-[#1A1A1A]">{avgRating}</span>
+                    <span className="text-[#9CA3AF]"> / 5 · {ratingCount} {ratingCount === 1 ? 'rating' : 'ratings'}</span>
+                  </span>
+                ) : (
+                  <span className="text-[#9CA3AF]">No ratings yet</span>
+                )}
+              </div>
+            </div>
+          </div>
+
           <p className="text-xs text-[#6B7280]">
             Listed on {new Date(createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
           </p>
+
+          {/* Comments */}
+          <div>
+            <h3 className="text-sm font-semibold text-[#1A1A1A] mb-4">
+              Comments <span className="text-[#9CA3AF] font-normal">({comments.length})</span>
+            </h3>
+
+            {/* Comment form */}
+            <form onSubmit={handleComment} className="flex gap-3 mb-6">
+              {user ? (
+                user.avatar
+                  ? <img src={user.avatar} alt={user.name} className="w-8 h-8 rounded-full object-cover shrink-0" />
+                  : <span className="w-8 h-8 rounded-full bg-[#00A693] text-white text-xs flex items-center justify-center font-medium shrink-0">{user.name[0].toUpperCase()}</span>
+              ) : (
+                <span className="w-8 h-8 rounded-full bg-[#E5E1DA] shrink-0" />
+              )}
+              <div className="flex-1 flex gap-2">
+                <input
+                  type="text"
+                  placeholder={user ? 'Write a comment…' : 'Sign in to comment'}
+                  value={commentText}
+                  onChange={e => setCommentText(e.target.value)}
+                  disabled={!user || submitting}
+                  className="flex-1 px-4 py-2.5 bg-white border border-[#E5E1DA] rounded-xl text-sm text-[#1A1A1A] placeholder-[#9CA3AF] focus:outline-none focus:border-[#00A693] focus:ring-2 focus:ring-[#00A693]/10 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                />
+                <button
+                  type="submit"
+                  disabled={!user || !commentText.trim() || submitting}
+                  className="w-10 h-10 bg-[#00A693] hover:bg-[#007D6F] text-white rounded-xl flex items-center justify-center transition-colors disabled:opacity-40 disabled:cursor-not-allowed shrink-0"
+                >
+                  <Send size={15} />
+                </button>
+              </div>
+            </form>
+
+            {/* Comment list */}
+            {comments.length === 0 ? (
+              <p className="text-sm text-[#9CA3AF] text-center py-6">No comments yet. Be the first!</p>
+            ) : (
+              <div className="space-y-4">
+                {comments.map(c => (
+                  <div key={c._id} className="flex gap-3">
+                    {c.user?.avatar
+                      ? <img src={c.user.avatar} alt={c.user.name} className="w-8 h-8 rounded-full object-cover shrink-0" />
+                      : <span className="w-8 h-8 rounded-full bg-[#E5E1DA] text-[#6B7280] text-xs flex items-center justify-center font-medium shrink-0">
+                          {c.user?.name?.[0]?.toUpperCase() || '?'}
+                        </span>
+                    }
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-sm font-medium text-[#1A1A1A]">{c.user?.name}</span>
+                        <span className="text-xs text-[#9CA3AF]">{timeAgo(c.createdAt)}</span>
+                      </div>
+                      <p className="text-sm text-[#374151] leading-relaxed break-words">{c.text}</p>
+                    </div>
+                    {user && (user._id === (c.user?._id || c.user) || user.isAdmin) && (
+                      <button
+                        onClick={() => handleDeleteComment(c._id)}
+                        className="text-[#D1D5DB] hover:text-red-400 transition-colors shrink-0 mt-1"
+                      >
+                        <Trash size={13} />
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Sidebar */}
@@ -157,22 +360,23 @@ export default function ProjectDetail() {
             <ExternalLink size={15} /> Visit Live Project
           </a>
 
-          {githubUrl && (isOwner || githubVisible) && (
+          {allGithubUrls.length > 0 && (isOwner || githubVisible) && allGithubUrls.map((url, i) => (
             <a
-              href={githubUrl}
+              key={i}
+              href={url}
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center justify-center gap-2 w-full border border-[#E5E1DA] hover:border-[#1A1A1A] text-[#1A1A1A] px-5 py-3 rounded-xl font-medium text-sm transition-colors"
             >
               <GithubIcon />
-              View on GitHub
+              {allGithubUrls.length > 1 ? `GitHub Repo ${i + 1}` : 'View on GitHub'}
               {isOwner && !githubVisible && (
                 <span className="ml-auto flex items-center gap-1 text-xs text-[#9CA3AF]">
                   <EyeOff size={11} /> hidden
                 </span>
               )}
             </a>
-          )}
+          ))}
 
           {owner && (
             <div className="bg-white border border-[#E5E1DA] rounded-xl p-4 space-y-3">

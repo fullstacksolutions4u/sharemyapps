@@ -5,7 +5,8 @@ import {
   ExternalLink, Check, X, Clock, LayoutDashboard,
   Users, FolderOpen, RefreshCw, ShieldCheck,
   CheckCircle, AlertCircle, ChevronRight, Menu,
-  Eye, Mail, Phone, Tag, Link as LinkIcon, LogOut,
+  Mail, Phone, Tag, Link as LinkIcon, LogOut,
+  ArrowLeft, Plus, Save,
 } from 'lucide-react';
 import api from '../api/axios';
 import toast from 'react-hot-toast';
@@ -70,73 +71,286 @@ function Overview({ stats, onNavigate }) {
   );
 }
 
-// ─── Project Detail Slide-over ────────────────────────────────────────────────
-function ProjectDetailPanel({ project, onClose, onApprove, onReject, updating }) {
+const CATEGORIES = [
+  'E-Commerce','Project Management','Customer Relationship Management (CRM)',
+  'Finance & Accounting','Productivity Tools','Social Networking & Community',
+  'Healthcare & Fitness','Education & Learning Platforms','HR & Recruitment',
+  'Marketing & SEO','Real Estate','Travel & Booking','Food Delivery & Restaurant',
+  'Gaming','Blockchain & Web3','Automation Tools','Analytics & Reporting',
+  'Communication & Chat Apps','Inventory Management','Event Management','Others',
+];
+
+// ─── Full-page Project Review & Edit ─────────────────────────────────────────
+function ProjectReviewPage({ project: initial, onBack, onApprove, onReject, updating }) {
+  const [form, setForm] = useState({
+    title: initial.title || '',
+    description: initial.description || '',
+    liveUrl: initial.liveUrl || '',
+    appType: initial.appType || 'web',
+    category: initial.category || '',
+    techTags: initial.techTags?.join(', ') || '',
+    contactEmail: initial.contactEmail || '',
+    contactPhone: initial.contactPhone || '',
+    linkedinUrl: initial.linkedinUrl || '',
+  });
+  const [githubUrls, setGithubUrls] = useState(
+    initial.githubUrls?.length ? initial.githubUrls : (initial.githubUrl ? [initial.githubUrl] : [''])
+  );
+  const [githubVisible, setGithubVisible] = useState(initial.githubVisible !== false);
+  const [saving, setSaving] = useState(false);
   const [rejectOpen, setRejectOpen] = useState(false);
   const [rejectTitle, setRejectTitle] = useState('');
   const [rejectBody, setRejectBody] = useState('');
 
-  if (!project) return null;
+  const input = 'w-full px-3.5 py-2.5 border border-[#E5E1DA] rounded-xl text-sm text-[#1A1A1A] bg-white placeholder-[#9CA3AF] focus:outline-none focus:border-[#00A693] focus:ring-2 focus:ring-[#00A693]/10 transition';
+
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      await api.put(`/admin/projects/${initial._id}`, {
+        ...form,
+        githubUrls,
+        githubVisible,
+      });
+      toast.success('Changes saved');
+    } catch {
+      toast.error('Failed to save changes');
+    } finally {
+      setSaving(false);
+    }
+  };
 
   const handleReject = () => {
     const note = rejectTitle.trim()
       ? `${rejectTitle.trim()}\n\n${rejectBody.trim()}`
       : rejectBody.trim();
-    onReject(project._id, note);
-    setRejectOpen(false);
-    setRejectTitle('');
-    setRejectBody('');
+    onReject(initial._id, note);
   };
 
+  const bannerSrc = initial.bannerImage || `https://s0.wp.com/mshots/v1/${encodeURIComponent(initial.liveUrl)}?w=600`;
+
   return (
-    <>
-      {/* Backdrop */}
-      <div className="fixed inset-0 bg-black/30 z-40" onClick={onClose} />
-
-      {/* Panel */}
-      <div className="fixed right-0 top-0 h-full w-full max-w-lg bg-white shadow-2xl z-50 flex flex-col overflow-hidden">
-        {/* Header */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-[#E5E1DA] shrink-0">
-          <div className="flex items-center gap-2">
-            <span className={`text-xs px-2 py-0.5 rounded-full border font-medium capitalize ${statusStyle[project.status]}`}>
-              {project.status}
-            </span>
-            <h2 className="font-semibold text-[#1A1A1A] text-sm truncate">{project.title}</h2>
-          </div>
-          <button onClick={onClose} className="p-1.5 text-[#6B7280] hover:text-[#1A1A1A] transition-colors rounded-lg hover:bg-[#F3F0EB]">
-            <X size={16} />
-          </button>
+    <div className="space-y-6">
+      {/* Top bar */}
+      <div className="flex items-center justify-between">
+        <button onClick={onBack} className="flex items-center gap-1.5 text-sm text-[#6B7280] hover:text-[#1A1A1A] transition-colors">
+          <ArrowLeft size={14} /> Back to Projects
+        </button>
+        <div className="flex items-center gap-2">
+          <span className={`text-xs px-2.5 py-1 rounded-full border font-medium capitalize ${statusStyle[initial.status]}`}>
+            {initial.status}
+          </span>
+          <span className="text-sm font-semibold text-[#1A1A1A]">{initial.title}</span>
         </div>
+      </div>
 
-        {/* Scrollable body */}
-        <div className="flex-1 overflow-y-auto px-5 py-5 space-y-5">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* ── Left: editable form ── */}
+        <div className="lg:col-span-2 space-y-5">
 
-          {/* Banner */}
-          {project.bannerImage && (
-            <img src={project.bannerImage} alt="Banner" className="w-full h-44 object-cover rounded-xl" onError={e => { e.target.src = PLACEHOLDER; }} />
+          {/* App type */}
+          <div className="bg-white border border-[#E5E1DA] rounded-2xl p-5 space-y-4">
+            <h3 className="text-sm font-semibold text-[#1A1A1A]">Project details</h3>
+
+            <div className="flex gap-2">
+              <div className="flex-1">
+                <label className="block text-xs font-medium text-[#6B7280] mb-1.5">App type</label>
+                <div className="flex gap-1.5 p-1 bg-[#F3F0EB] rounded-xl w-fit">
+                  {[{ value: 'web', label: 'Web App' }, { value: 'mobile', label: 'Mobile App' }].map(opt => (
+                    <button key={opt.value} type="button"
+                      onClick={() => setForm(f => ({ ...f, appType: opt.value }))}
+                      className={`px-4 py-1.5 rounded-lg text-xs font-medium transition-colors ${form.appType === opt.value ? 'bg-white text-[#1A1A1A] shadow-sm' : 'text-[#6B7280] hover:text-[#1A1A1A]'}`}>
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div className="flex-1">
+                <label className="block text-xs font-medium text-[#6B7280] mb-1.5">Category</label>
+                <select value={form.category} onChange={e => setForm(f => ({ ...f, category: e.target.value }))} className={input}>
+                  <option value="">Select category</option>
+                  {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-xs font-medium text-[#6B7280] mb-1.5">Title</label>
+              <input type="text" value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} className={input} />
+            </div>
+
+            <div>
+              <label className="block text-xs font-medium text-[#6B7280] mb-1.5">Description</label>
+              <textarea rows={4} value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
+                className={`${input} resize-none`} />
+            </div>
+
+            <div>
+              <label className="block text-xs font-medium text-[#6B7280] mb-1.5">Live URL</label>
+              <input type="url" value={form.liveUrl} onChange={e => setForm(f => ({ ...f, liveUrl: e.target.value }))} className={input} />
+            </div>
+
+            <div>
+              <label className="block text-xs font-medium text-[#6B7280] mb-1.5">Tech stack <span className="font-normal text-[#9CA3AF]">(comma-separated)</span></label>
+              <input type="text" value={form.techTags} onChange={e => setForm(f => ({ ...f, techTags: e.target.value }))} className={input} placeholder="React, Node.js, MongoDB" />
+            </div>
+          </div>
+
+          {/* Contact info */}
+          <div className="bg-white border border-[#E5E1DA] rounded-2xl p-5 space-y-4">
+            <h3 className="text-sm font-semibold text-[#1A1A1A]">Contact information</h3>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-medium text-[#6B7280] mb-1.5"><Mail size={11} className="inline mr-1" />Email</label>
+                <input type="email" value={form.contactEmail} onChange={e => setForm(f => ({ ...f, contactEmail: e.target.value }))} className={input} />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-[#6B7280] mb-1.5"><Phone size={11} className="inline mr-1" />Phone</label>
+                <input type="tel" value={form.contactPhone} onChange={e => setForm(f => ({ ...f, contactPhone: e.target.value }))} className={input} />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-xs font-medium text-[#6B7280] mb-1.5"><LinkIcon size={11} className="inline mr-1" />LinkedIn URL</label>
+              <input type="text" value={form.linkedinUrl} onChange={e => setForm(f => ({ ...f, linkedinUrl: e.target.value }))} className={input} />
+            </div>
+
+            <div>
+              <label className="block text-xs font-medium text-[#6B7280] mb-1.5"><LinkIcon size={11} className="inline mr-1" />GitHub URLs</label>
+              <div className="space-y-2">
+                {githubUrls.map((url, i) => (
+                  <div key={i} className="flex gap-2 items-center">
+                    <input type="text" value={url}
+                      onChange={e => setGithubUrls(urls => urls.map((u, j) => j === i ? e.target.value : u))}
+                      className={`flex-1 ${input}`} placeholder="github.com/username/repo" />
+                    {githubUrls.length > 1 && (
+                      <button type="button" onClick={() => setGithubUrls(urls => urls.filter((_, j) => j !== i))}
+                        className="w-8 h-8 flex items-center justify-center text-[#9CA3AF] hover:text-red-400 hover:bg-red-50 rounded-lg transition-colors">
+                        <X size={13} />
+                      </button>
+                    )}
+                  </div>
+                ))}
+                <button type="button" onClick={() => setGithubUrls(u => [...u, ''])}
+                  className="inline-flex items-center gap-1 text-xs text-[#00A693] hover:text-[#007D6F] font-medium transition-colors">
+                  <Plus size={12} /> Add another
+                </button>
+              </div>
+              <label className="flex items-center gap-2.5 mt-3 cursor-pointer select-none w-fit">
+                <div onClick={() => setGithubVisible(v => !v)}
+                  className={`w-9 h-5 rounded-full transition-colors relative ${githubVisible ? 'bg-[#00A693]' : 'bg-[#D1D5DB]'}`}>
+                  <span className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${githubVisible ? 'translate-x-4' : 'translate-x-0.5'}`} />
+                </div>
+                <span className="text-xs text-[#6B7280]">{githubVisible ? 'Visible to everyone' : 'Hidden from public'}</span>
+              </label>
+            </div>
+          </div>
+
+          {/* Reject feedback form */}
+          {rejectOpen && (
+            <div className="bg-white border border-red-200 rounded-2xl overflow-hidden">
+              <div className="bg-red-50 px-5 py-4 border-b border-red-100">
+                <p className="text-sm font-semibold text-red-700">Rejection Feedback</p>
+                <p className="text-xs text-red-600 mt-0.5">This will be sent to the user as a notification.</p>
+              </div>
+              <div className="p-5 space-y-3">
+                <div>
+                  <label className="block text-xs font-medium text-[#1A1A1A] mb-1.5">Title</label>
+                  <input type="text" value={rejectTitle} onChange={e => setRejectTitle(e.target.value)}
+                    placeholder="e.g. Changes required before approval"
+                    className="w-full px-3 py-2.5 text-sm border border-[#E5E1DA] rounded-xl focus:outline-none focus:border-red-400 transition" />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-[#1A1A1A] mb-1.5">Message</label>
+                  <textarea rows={4} value={rejectBody} onChange={e => setRejectBody(e.target.value)}
+                    placeholder="Explain what needs to be changed..."
+                    className="w-full px-3 py-2.5 text-sm border border-[#E5E1DA] rounded-xl focus:outline-none focus:border-red-400 resize-none transition" />
+                </div>
+              </div>
+            </div>
           )}
 
-          {/* Description */}
-          <div>
-            <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wider mb-1">Description</p>
-            <p className="text-sm text-[#1A1A1A] leading-relaxed">{project.description}</p>
+          {/* Action buttons */}
+          <div className="flex flex-wrap gap-2">
+            <button onClick={handleSave} disabled={saving}
+              className="flex items-center gap-1.5 bg-[#F3F0EB] hover:bg-[#E5E1DA] text-[#1A1A1A] px-5 py-2.5 rounded-xl font-medium text-sm transition-colors disabled:opacity-50">
+              <Save size={14} /> {saving ? 'Saving...' : 'Save Changes'}
+            </button>
+            {!rejectOpen ? (
+              <>
+                {initial.status !== 'approved' && (
+                  <button onClick={() => onApprove(initial._id)} disabled={updating === initial._id}
+                    className="flex items-center gap-1.5 bg-[#00A693] hover:bg-[#007D6F] text-white px-5 py-2.5 rounded-xl font-medium text-sm transition-colors disabled:opacity-50">
+                    <Check size={14} /> {updating === initial._id ? 'Approving...' : 'Approve'}
+                  </button>
+                )}
+                {initial.status !== 'rejected' && (
+                  <button onClick={() => setRejectOpen(true)}
+                    className="flex items-center gap-1.5 bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 px-5 py-2.5 rounded-xl font-medium text-sm transition-colors">
+                    <X size={14} /> Reject with Feedback
+                  </button>
+                )}
+                {initial.status === 'rejected' && (
+                  <button onClick={() => onApprove(initial._id, 'pending')} disabled={updating === initial._id}
+                    className="flex items-center gap-1.5 bg-yellow-50 hover:bg-yellow-100 text-yellow-700 border border-yellow-200 px-5 py-2.5 rounded-xl font-medium text-sm transition-colors">
+                    <Clock size={14} /> Move to Pending
+                  </button>
+                )}
+              </>
+            ) : (
+              <>
+                <button onClick={() => setRejectOpen(false)}
+                  className="flex items-center gap-1.5 border border-[#E5E1DA] text-[#6B7280] hover:text-[#1A1A1A] px-5 py-2.5 rounded-xl text-sm font-medium transition-colors">
+                  Cancel
+                </button>
+                <button onClick={handleReject} disabled={updating === initial._id}
+                  className="flex items-center gap-1.5 bg-red-600 hover:bg-red-700 text-white px-5 py-2.5 rounded-xl font-medium text-sm transition-colors disabled:opacity-50">
+                  <X size={14} /> {updating === initial._id ? 'Rejecting...' : 'Confirm Rejection'}
+                </button>
+              </>
+            )}
+          </div>
+        </div>
+
+        {/* ── Right: preview & meta ── */}
+        <div className="space-y-4">
+          {/* Live preview */}
+          <div className="bg-white border border-[#E5E1DA] rounded-2xl overflow-hidden">
+            <img src={bannerSrc} alt={initial.title} className="w-full h-40 object-cover"
+              onError={e => { e.target.src = PLACEHOLDER; }} />
+            <div className="p-4">
+              <a href={initial.liveUrl} target="_blank" rel="noopener noreferrer"
+                className="flex items-center gap-1.5 text-xs text-[#00A693] hover:underline font-medium">
+                <ExternalLink size={12} /> Visit live project
+              </a>
+            </div>
           </div>
 
-          {/* Live URL */}
-          <div>
-            <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wider mb-1">Live URL</p>
-            <a href={project.liveUrl} target="_blank" rel="noopener noreferrer"
-              className="flex items-center gap-1.5 text-sm text-[#00A693] hover:underline">
-              <ExternalLink size={13} /> {project.liveUrl}
-            </a>
+          {/* Submitted by */}
+          <div className="bg-white border border-[#E5E1DA] rounded-2xl p-4">
+            <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wider mb-3">Submitted by</p>
+            <div className="flex items-center gap-3">
+              {initial.owner?.avatar
+                ? <img src={initial.owner.avatar} className="w-9 h-9 rounded-full object-cover shrink-0" alt={initial.owner.name} />
+                : <span className="w-9 h-9 rounded-full bg-[#00A693] text-white text-sm flex items-center justify-center font-medium shrink-0">{initial.owner?.name?.[0]?.toUpperCase()}</span>
+              }
+              <div className="min-w-0">
+                <p className="text-sm font-medium text-[#1A1A1A]">{initial.owner?.name}</p>
+                <p className="text-xs text-[#6B7280] truncate">{initial.owner?.email}</p>
+              </div>
+            </div>
+            <p className="text-xs text-[#9CA3AF] mt-3">
+              Submitted {new Date(initial.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+            </p>
           </div>
 
-          {/* Tech Stack */}
-          {project.techTags?.length > 0 && (
-            <div>
+          {/* Tech tags preview */}
+          {initial.techTags?.length > 0 && (
+            <div className="bg-white border border-[#E5E1DA] rounded-2xl p-4">
               <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wider mb-2">Tech Stack</p>
               <div className="flex flex-wrap gap-1.5">
-                {project.techTags.map(t => (
+                {initial.techTags.map(t => (
                   <span key={t} className="flex items-center gap-1 text-xs bg-[#F3F0EB] text-[#6B7280] px-2.5 py-1 rounded-full">
                     <Tag size={10} /> {t}
                   </span>
@@ -145,149 +359,16 @@ function ProjectDetailPanel({ project, onClose, onApprove, onReject, updating })
             </div>
           )}
 
-          {/* Contact info */}
-          <div>
-            <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wider mb-2">Contact Information</p>
-            <div className="space-y-2">
-              {project.contactEmail && (
-                <div className="flex items-center gap-2 text-sm text-[#1A1A1A]">
-                  <Mail size={13} className="text-[#6B7280] shrink-0" />
-                  <span>{project.contactEmail}</span>
-                </div>
-              )}
-              {project.contactPhone && (
-                <div className="flex items-center gap-2 text-sm text-[#1A1A1A]">
-                  <Phone size={13} className="text-[#6B7280] shrink-0" />
-                  <span>{project.contactPhone}</span>
-                </div>
-              )}
-              {project.linkedinUrl && (
-                <div className="flex items-center gap-2 text-sm text-[#1A1A1A]">
-                  <LinkIcon size={13} className="text-[#6B7280] shrink-0" />
-                  <span className="text-[#00A693]">LinkedIn: {project.linkedinUrl}</span>
-                </div>
-              )}
-              {project.githubUrl && (
-                <div className="flex items-center gap-2 text-sm text-[#1A1A1A]">
-                  <LinkIcon size={13} className="text-[#6B7280] shrink-0" />
-                  <span>GitHub: {project.githubUrl}
-                    {!project.githubVisible && <span className="ml-1 text-xs text-[#9CA3AF]">(hidden from public)</span>}
-                  </span>
-                </div>
-              )}
-              {!project.contactEmail && !project.contactPhone && !project.linkedinUrl && (
-                <p className="text-xs text-[#9CA3AF]">No contact info provided</p>
-              )}
-            </div>
-          </div>
-
-          {/* Screenshots */}
-          {project.screenshots?.length > 0 && (
-            <div>
-              <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wider mb-2">Screenshots</p>
-              <div className="grid grid-cols-3 gap-2">
-                {project.screenshots.map((s, i) => (
-                  <img key={i} src={s} alt={`ss ${i}`} className="w-full h-20 object-cover rounded-lg" />
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Submitted by */}
-          <div className="bg-[#FAF9F6] rounded-xl p-4">
-            <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wider mb-2">Submitted by</p>
-            <div className="flex items-center gap-3">
-              {project.owner?.avatar
-                ? <img src={project.owner.avatar} className="w-9 h-9 rounded-full object-cover" alt={project.owner.name} />
-                : <span className="w-9 h-9 rounded-full bg-[#00A693] text-white text-sm flex items-center justify-center font-medium">{project.owner?.name?.[0]?.toUpperCase()}</span>
-              }
-              <div>
-                <p className="text-sm font-medium text-[#1A1A1A]">{project.owner?.name}</p>
-                <p className="text-xs text-[#6B7280]">{project.owner?.email}</p>
-              </div>
-            </div>
-            <p className="text-xs text-[#9CA3AF] mt-2">Submitted on {new Date(project.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
-          </div>
-
           {/* Previous admin note */}
-          {project.adminNote && (
-            <div className="bg-red-50 border border-red-100 rounded-xl p-4">
+          {initial.adminNote && (
+            <div className="bg-red-50 border border-red-100 rounded-2xl p-4">
               <p className="text-xs font-semibold text-red-700 mb-1">Previous admin feedback</p>
-              <p className="text-sm text-red-700 whitespace-pre-line">{project.adminNote}</p>
-            </div>
-          )}
-
-          {/* Rejection feedback form */}
-          {rejectOpen && (
-            <div className="border border-red-200 rounded-xl overflow-hidden">
-              <div className="bg-red-50 px-4 py-3 border-b border-red-100">
-                <p className="text-sm font-semibold text-red-700">Rejection Feedback</p>
-                <p className="text-xs text-red-600 mt-0.5">This message will be sent to the user as a notification.</p>
-              </div>
-              <div className="p-4 space-y-3">
-                <div>
-                  <label className="block text-xs font-medium text-[#1A1A1A] mb-1.5">Title</label>
-                  <input
-                    type="text"
-                    value={rejectTitle}
-                    onChange={e => setRejectTitle(e.target.value)}
-                    placeholder="e.g. Changes required before approval"
-                    className="w-full px-3 py-2 text-sm border border-[#E5E1DA] rounded-xl focus:outline-none focus:border-red-400 transition"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-medium text-[#1A1A1A] mb-1.5">Message</label>
-                  <textarea
-                    rows={4}
-                    value={rejectBody}
-                    onChange={e => setRejectBody(e.target.value)}
-                    placeholder="Explain what needs to be changed or added before resubmitting..."
-                    className="w-full px-3 py-2 text-sm border border-[#E5E1DA] rounded-xl focus:outline-none focus:border-red-400 resize-none transition"
-                  />
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Footer actions */}
-        <div className="border-t border-[#E5E1DA] px-5 py-4 shrink-0 space-y-2">
-          {!rejectOpen ? (
-            <div className="flex gap-2">
-              {project.status !== 'approved' && (
-                <button onClick={() => onApprove(project._id)} disabled={updating === project._id}
-                  className="flex-1 flex items-center justify-center gap-1.5 bg-[#00A693] hover:bg-[#007D6F] text-white py-2.5 rounded-xl font-medium text-sm transition-colors disabled:opacity-50">
-                  <Check size={15} /> Approve
-                </button>
-              )}
-              {project.status !== 'rejected' && (
-                <button onClick={() => setRejectOpen(true)}
-                  className="flex-1 flex items-center justify-center gap-1.5 bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 py-2.5 rounded-xl font-medium text-sm transition-colors">
-                  <X size={15} /> Reject with Feedback
-                </button>
-              )}
-              {project.status === 'rejected' && (
-                <button onClick={() => onApprove(project._id, 'pending')} disabled={updating === project._id}
-                  className="flex-1 flex items-center justify-center gap-1.5 bg-yellow-50 hover:bg-yellow-100 text-yellow-700 border border-yellow-200 py-2.5 rounded-xl font-medium text-sm transition-colors disabled:opacity-50">
-                  <Clock size={15} /> Move to Pending
-                </button>
-              )}
-            </div>
-          ) : (
-            <div className="flex gap-2">
-              <button onClick={() => setRejectOpen(false)}
-                className="flex-1 py-2.5 border border-[#E5E1DA] text-[#6B7280] hover:text-[#1A1A1A] rounded-xl text-sm font-medium transition-colors">
-                Back
-              </button>
-              <button onClick={handleReject} disabled={updating === project._id}
-                className="flex-1 flex items-center justify-center gap-1.5 bg-red-600 hover:bg-red-700 text-white py-2.5 rounded-xl font-medium text-sm transition-colors disabled:opacity-50">
-                <X size={14} /> {updating === project._id ? 'Rejecting...' : 'Confirm & Send Feedback'}
-              </button>
+              <p className="text-sm text-red-700 whitespace-pre-line">{initial.adminNote}</p>
             </div>
           )}
         </div>
       </div>
-    </>
+    </div>
   );
 }
 
@@ -327,94 +408,78 @@ function ProjectsSection({ stats }) {
     }
   };
 
+  if (selected) {
+    return (
+      <ProjectReviewPage
+        project={selected}
+        onBack={() => setSelected(null)}
+        onApprove={(id) => updateStatus(id, 'approved')}
+        onReject={(id, note) => updateStatus(id, 'rejected', note)}
+        updating={updating}
+      />
+    );
+  }
+
   return (
-    <>
-      {selected && (
-        <ProjectDetailPanel
-          project={selected}
-          onClose={() => setSelected(null)}
-          onApprove={(id) => updateStatus(id, 'approved')}
-          onReject={(id, note) => updateStatus(id, 'rejected', note)}
-          updating={updating}
-        />
-      )}
+    <div className="space-y-5">
+      <div className="flex items-center justify-between">
+        <h2 className="text-xl font-bold text-[#1A1A1A]">Projects</h2>
+        <button onClick={() => fetchProjects(tab)}
+          className="flex items-center gap-1.5 text-xs text-[#6B7280] hover:text-[#1A1A1A] border border-[#E5E1DA] px-3 py-1.5 rounded-lg transition-colors">
+          <RefreshCw size={12} /> Refresh
+        </button>
+      </div>
 
-      <div className="space-y-5">
-        <div className="flex items-center justify-between">
-          <h2 className="text-xl font-bold text-[#1A1A1A]">Projects</h2>
-          <button onClick={() => fetchProjects(tab)}
-            className="flex items-center gap-1.5 text-xs text-[#6B7280] hover:text-[#1A1A1A] border border-[#E5E1DA] px-3 py-1.5 rounded-lg transition-colors">
-            <RefreshCw size={12} /> Refresh
+      <div className="flex gap-1 bg-[#F3F0EB] p-1 rounded-xl w-fit">
+        {['pending', 'approved', 'rejected'].map(t => (
+          <button key={t} onClick={() => setTab(t)}
+            className={`px-4 py-1.5 rounded-lg text-sm font-medium capitalize transition-colors ${
+              tab === t ? 'bg-white text-[#1A1A1A] shadow-sm' : 'text-[#6B7280] hover:text-[#1A1A1A]'
+            }`}>
+            {t}
+            {stats && t === 'pending' && stats.pending > 0 && (
+              <span className="ml-1.5 bg-yellow-500 text-white text-xs px-1.5 py-0.5 rounded-full">{stats.pending}</span>
+            )}
           </button>
-        </div>
+        ))}
+      </div>
 
-        <div className="flex gap-1 bg-[#F3F0EB] p-1 rounded-xl w-fit">
-          {['pending', 'approved', 'rejected'].map(t => (
-            <button key={t} onClick={() => setTab(t)}
-              className={`px-4 py-1.5 rounded-lg text-sm font-medium capitalize transition-colors ${
-                tab === t ? 'bg-white text-[#1A1A1A] shadow-sm' : 'text-[#6B7280] hover:text-[#1A1A1A]'
-              }`}>
-              {t}
-              {stats && t === 'pending' && stats.pending > 0 && (
-                <span className="ml-1.5 bg-yellow-500 text-white text-xs px-1.5 py-0.5 rounded-full">{stats.pending}</span>
-              )}
-            </button>
-          ))}
+      {loading ? (
+        <div className="space-y-3">
+          {Array.from({ length: 4 }).map((_, i) => <div key={i} className="h-24 bg-white border border-[#E5E1DA] rounded-xl animate-pulse" />)}
         </div>
-
-        {loading ? (
-          <div className="space-y-3">
-            {Array.from({ length: 4 }).map((_, i) => <div key={i} className="h-24 bg-white border border-[#E5E1DA] rounded-xl animate-pulse" />)}
-          </div>
-        ) : projects.length === 0 ? (
-          <div className="bg-white border border-[#E5E1DA] rounded-2xl p-16 text-center">
-            <p className="text-[#6B7280] text-sm">No {tab} projects</p>
-          </div>
-        ) : (
-          <div className="space-y-3">
-            {projects.map(project => (
-              <div key={project._id} className="bg-white border border-[#E5E1DA] rounded-xl p-4 flex items-center gap-4 hover:border-[#00A693]/40 transition-colors">
-                <img src={project.bannerImage || PLACEHOLDER} alt={project.title}
-                  className="w-14 h-14 rounded-lg object-cover shrink-0"
-                  onError={e => { e.target.src = PLACEHOLDER; }} />
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-0.5 flex-wrap">
-                    <h3 className="font-semibold text-[#1A1A1A]">{project.title}</h3>
-                    <span className={`text-xs px-2 py-0.5 rounded-full border font-medium capitalize ${statusStyle[project.status]}`}>
-                      {project.status}
-                    </span>
-                  </div>
-                  <p className="text-xs text-[#6B7280] truncate mb-1">{project.description}</p>
-                  <div className="flex items-center gap-3 text-xs text-[#9CA3AF]">
-                    <span>By <span className="text-[#1A1A1A] font-medium">{project.owner?.name}</span></span>
-                    <span className="hidden sm:inline">{project.owner?.email}</span>
-                    <span>{new Date(project.createdAt).toLocaleDateString()}</span>
-                  </div>
+      ) : projects.length === 0 ? (
+        <div className="bg-white border border-[#E5E1DA] rounded-2xl p-16 text-center">
+          <p className="text-[#6B7280] text-sm">No {tab} projects</p>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {projects.map(project => (
+            <div key={project._id} onClick={() => setSelected(project)}
+              className="bg-white border border-[#E5E1DA] rounded-xl p-4 flex items-center gap-4 hover:border-[#00A693]/40 hover:shadow-sm transition-all cursor-pointer">
+              <img src={project.bannerImage || PLACEHOLDER} alt={project.title}
+                className="w-14 h-14 rounded-lg object-cover shrink-0"
+                onError={e => { e.target.src = PLACEHOLDER; }} />
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-0.5 flex-wrap">
+                  <h3 className="font-semibold text-[#1A1A1A]">{project.title}</h3>
+                  <span className={`text-xs px-2 py-0.5 rounded-full border font-medium capitalize ${statusStyle[project.status]}`}>
+                    {project.status}
+                  </span>
                 </div>
-                <div className="flex items-center gap-2 shrink-0">
-                  <button onClick={() => setSelected(project)}
-                    className="flex items-center gap-1.5 text-xs bg-[#F3F0EB] hover:bg-[#E6F7F5] text-[#1A1A1A] hover:text-[#00A693] px-3 py-1.5 rounded-lg transition-colors font-medium">
-                    <Eye size={13} /> View Details
-                  </button>
-                  {tab !== 'approved' && (
-                    <button onClick={() => updateStatus(project._id, 'approved')} disabled={updating === project._id}
-                      className="flex items-center gap-1 text-xs bg-green-50 hover:bg-green-100 text-green-700 border border-green-200 px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50">
-                      <Check size={12} /> Approve
-                    </button>
-                  )}
-                  {tab === 'rejected' && (
-                    <button onClick={() => updateStatus(project._id, 'pending')} disabled={updating === project._id}
-                      className="flex items-center gap-1 text-xs bg-yellow-50 hover:bg-yellow-100 text-yellow-700 border border-yellow-200 px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50">
-                      <Clock size={12} /> Re-review
-                    </button>
-                  )}
+                <p className="text-xs text-[#6B7280] truncate mb-1">{project.description}</p>
+                <div className="flex items-center gap-3 text-xs text-[#9CA3AF]">
+                  <span>By <span className="text-[#1A1A1A] font-medium">{project.owner?.name}</span></span>
+                  <span className="hidden sm:inline">{project.owner?.email}</span>
+                  <span>{new Date(project.createdAt).toLocaleDateString()}</span>
                 </div>
               </div>
-            ))}
-          </div>
-        )}
-      </div>
-    </>
+              <ChevronRight size={16} className="text-[#9CA3AF] shrink-0" />
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
   );
 }
 

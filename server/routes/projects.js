@@ -4,6 +4,7 @@ const { upload } = require('../middleware/upload');
 const {
   getProjects, getProject, getMyProjects,
   createProject, updateProject, deleteProject,
+  toggleLike, rateProject, getComments, addComment, deleteComment,
 } = require('../controllers/projectController');
 
 const projectUpload = upload.fields([
@@ -17,5 +18,11 @@ router.get('/:id', getProject);
 router.post('/', protect, projectUpload, createProject);
 router.put('/:id', protect, projectUpload, updateProject);
 router.delete('/:id', protect, deleteProject);
+
+router.post('/:id/like', protect, toggleLike);
+router.post('/:id/rate', protect, rateProject);
+router.get('/:id/comments', getComments);
+router.post('/:id/comments', protect, addComment);
+router.delete('/:id/comments/:commentId', protect, deleteComment);
 
 module.exports = router;

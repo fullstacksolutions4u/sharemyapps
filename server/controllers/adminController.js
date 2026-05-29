@@ -66,6 +66,36 @@ exports.updateProjectStatus = async (req, res) => {
   }
 };
 
+exports.adminUpdateProject = async (req, res) => {
+  try {
+    const project = await Project.findById(req.params.id);
+    if (!project) return res.status(404).json({ message: 'Project not found' });
+
+    const { title, description, liveUrl, appType, category, techTags, contactEmail, contactPhone, linkedinUrl, githubUrls, githubVisible } = req.body;
+
+    if (title) project.title = title;
+    if (description) project.description = description;
+    if (liveUrl) project.liveUrl = liveUrl;
+    if (appType) project.appType = appType;
+    if (category !== undefined) project.category = category;
+    if (techTags !== undefined) {
+      project.techTags = Array.isArray(techTags) ? techTags : techTags.split(',').map(t => t.trim()).filter(Boolean);
+    }
+    if (contactEmail !== undefined) project.contactEmail = contactEmail;
+    if (contactPhone !== undefined) project.contactPhone = contactPhone;
+    if (linkedinUrl !== undefined) project.linkedinUrl = linkedinUrl;
+    if (githubUrls !== undefined) {
+      project.githubUrls = (Array.isArray(githubUrls) ? githubUrls : [githubUrls]).map(u => u.trim()).filter(Boolean);
+    }
+    if (githubVisible !== undefined) project.githubVisible = githubVisible !== 'false' && githubVisible !== false;
+
+    await project.save();
+    res.json(project);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
 exports.getAllUsers = async (req, res) => {
   try {
     const users = await User.find().select('-password').sort({ createdAt: -1 });

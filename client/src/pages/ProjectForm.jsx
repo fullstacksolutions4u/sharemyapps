@@ -3,13 +3,24 @@ import { useNavigate, useParams, Link } from 'react-router-dom';
 import { ArrowLeft, X, Plus } from 'lucide-react';
 import api from '../api/axios';
 import toast from 'react-hot-toast';
+import { useAuth } from '../context/AuthContext';
 
 export default function ProjectForm() {
   const { id } = useParams();
   const isEdit = Boolean(id);
   const navigate = useNavigate();
+  const { user } = useAuth();
 
-  const [form, setForm] = useState({ title: '', description: '', liveUrl: '', techTags: '', contactEmail: '', contactPhone: '', linkedinUrl: '' });
+  const CATEGORIES = [
+    'E-Commerce', 'Project Management', 'Customer Relationship Management (CRM)',
+    'Finance & Accounting', 'Productivity Tools', 'Social Networking & Community',
+    'Healthcare & Fitness', 'Education & Learning Platforms', 'HR & Recruitment',
+    'Marketing & SEO', 'Real Estate', 'Travel & Booking', 'Food Delivery & Restaurant',
+    'Gaming', 'Blockchain & Web3', 'Automation Tools', 'Analytics & Reporting',
+    'Communication & Chat Apps', 'Inventory Management', 'Event Management', 'Others',
+  ];
+
+  const [form, setForm] = useState({ title: '', description: '', liveUrl: '', techTags: '', contactEmail: user?.email || '', contactPhone: '', linkedinUrl: '', appType: 'web', category: '' });
   const [githubUrls, setGithubUrls] = useState(['']);
   const [githubVisible, setGithubVisible] = useState(true);
   const [loading, setLoading] = useState(false);
@@ -21,7 +32,7 @@ export default function ProjectForm() {
     api.get(`/projects/${id}`)
       .then(res => {
         const p = res.data;
-        setForm({ title: p.title, description: p.description, liveUrl: p.liveUrl, techTags: p.techTags?.join(', ') || '', contactEmail: p.contactEmail || '', contactPhone: p.contactPhone || '', linkedinUrl: p.linkedinUrl || '' });
+        setForm({ title: p.title, description: p.description, liveUrl: p.liveUrl, techTags: p.techTags?.join(', ') || '', contactEmail: p.contactEmail || '', contactPhone: p.contactPhone || '', linkedinUrl: p.linkedinUrl || '', appType: p.appType || 'web', category: p.category || '' });
         setProjectStatus(p.status || '');
         const urls = p.githubUrls?.length ? p.githubUrls : (p.githubUrl ? [p.githubUrl] : ['']);
         setGithubUrls(urls);
@@ -43,6 +54,8 @@ export default function ProjectForm() {
       data.append('title', form.title.trim());
       data.append('description', form.description.trim());
       data.append('liveUrl', form.liveUrl.trim());
+      data.append('appType', form.appType);
+      data.append('category', form.category);
       data.append('techTags', form.techTags);
       data.append('contactEmail', form.contactEmail.trim());
       data.append('contactPhone', form.contactPhone.trim());
@@ -84,6 +97,37 @@ export default function ProjectForm() {
       </h1>
 
       <form onSubmit={handleSubmit} className="space-y-6">
+        {/* App type tab */}
+        <div>
+          <label className="block text-sm font-medium text-[#1A1A1A] mb-2">App type <span className="text-red-400">*</span></label>
+          <div className="flex gap-2 p-1 bg-[#F3F0EB] rounded-xl w-fit">
+            {[{ value: 'web', label: 'Web App' }, { value: 'mobile', label: 'Mobile App' }].map(opt => (
+              <button
+                key={opt.value}
+                type="button"
+                onClick={() => setForm(f => ({ ...f, appType: opt.value }))}
+                className={`px-5 py-2 rounded-lg text-sm font-medium transition-colors ${form.appType === opt.value ? 'bg-white text-[#1A1A1A] shadow-sm' : 'text-[#6B7280] hover:text-[#1A1A1A]'}`}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Category */}
+        <div>
+          <label className="block text-sm font-medium text-[#1A1A1A] mb-2">Category <span className="text-red-400">*</span></label>
+          <select
+            required
+            value={form.category}
+            onChange={e => setForm(f => ({ ...f, category: e.target.value }))}
+            className="w-full px-3.5 py-2.5 border border-[#E5E1DA] rounded-xl text-sm text-[#1A1A1A] bg-white focus:outline-none focus:border-[#00A693] focus:ring-2 focus:ring-[#00A693]/10 transition"
+          >
+            <option value="">Select a category</option>
+            {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+          </select>
+        </div>
+
         {/* Title */}
         <div>
           <label className="block text-sm font-medium text-[#1A1A1A] mb-2">Project title <span className="text-red-400">*</span></label>
