@@ -33,7 +33,7 @@ export default function ProjectDetail() {
       .then(res => setProject(res.data))
       .catch(() => navigate('/explore'))
       .finally(() => setLoading(false));
-  }, [id]);
+  }, [id, navigate]);
 
   if (loading) return (
     <div className="min-h-screen flex items-center justify-center">

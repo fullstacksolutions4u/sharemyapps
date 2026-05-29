@@ -34,7 +34,7 @@ export default function ProjectForm() {
       })
       .catch(() => { toast.error('Failed to load project'); navigate('/dashboard'); })
       .finally(() => setFetching(false));
-  }, [id]);
+  }, [id, isEdit, navigate]);
 
   const handleBanner = (e) => {
     const file = e.target.files[0];

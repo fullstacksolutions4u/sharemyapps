@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import {
@@ -311,7 +311,7 @@ function ProjectsSection({ stats }) {
     }
   };
 
-  useEffect(() => { fetchProjects(tab); }, [tab]);
+  useEffect(() => { fetchProjects(tab); }, [tab]); // eslint-disable-line react-hooks/set-state-in-effect
 
   const updateStatus = async (id, status, adminNote = '') => {
     setUpdating(id);
