@@ -2,6 +2,9 @@ const passport = require('passport');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const User = require('../models/User');
 
+if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
+  console.warn('Google OAuth credentials not set — Google login disabled');
+} else {
 passport.use(new GoogleStrategy({
   clientID: process.env.GOOGLE_CLIENT_ID,
   clientSecret: process.env.GOOGLE_CLIENT_SECRET,
@@ -31,3 +34,4 @@ passport.use(new GoogleStrategy({
     done(err, null);
   }
 }));
+}
