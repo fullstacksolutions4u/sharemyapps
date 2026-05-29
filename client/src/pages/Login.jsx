@@ -43,7 +43,7 @@ export default function Login() {
         <div className="bg-white border border-[#E5E1DA] rounded-2xl p-6 shadow-sm space-y-4">
           {/* Google OAuth */}
           <a
-            href="/api/auth/google"
+            href={`${import.meta.env.VITE_API_URL || ''}/api/auth/google`}
             className="flex items-center justify-center gap-3 w-full border border-[#E5E1DA] hover:border-[#1A1A1A] bg-white px-4 py-2.5 rounded-xl text-sm font-medium text-[#1A1A1A] transition-colors"
           >
             <svg className="w-4 h-4" viewBox="0 0 24 24">
