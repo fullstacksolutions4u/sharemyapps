@@ -1,18 +1,18 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { ExternalLink, GitBranch, Globe, Layers, AlertCircle, Mail, Phone, Code2, Briefcase } from 'lucide-react';
+import { ExternalLink, Layers, AlertCircle, Mail, Phone } from 'lucide-react';
 import api from '../api/axios';
 
 const PLACEHOLDER = 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=400&q=80';
 const getbanner = (bannerImage, liveUrl) =>
   bannerImage || `https://s0.wp.com/mshots/v1/${encodeURIComponent(liveUrl)}?w=400`;
 
-function SocialLink({ href, label, colorClass, dotClass }) {
+function SocialPill({ href, label, colorClass, dotClass }) {
   if (!href) return null;
   return (
     <a href={href} target="_blank" rel="noopener noreferrer"
       className={`inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full border transition-all hover:scale-105 ${colorClass}`}>
-      <span className={`w-1.5 h-1.5 rounded-full ${dotClass}`} />
+      <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${dotClass}`} />
       {label}
     </a>
   );
@@ -34,7 +34,7 @@ export default function PublicPortfolio() {
   if (loading) return (
     <div className="min-h-screen bg-[#FAF9F6]">
       <div className="max-w-5xl mx-auto px-4 py-12 space-y-5">
-        <div className="h-64 bg-white border border-[#E5E1DA] rounded-3xl animate-pulse" />
+        <div className="h-40 bg-white border border-[#E5E1DA] rounded-3xl animate-pulse" />
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {[1,2,3].map(i => <div key={i} className="h-56 bg-white border border-[#E5E1DA] rounded-xl animate-pulse" />)}
         </div>
@@ -55,113 +55,82 @@ export default function PublicPortfolio() {
   const { user, projects } = data;
   const initials = user.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
   const approvedCount = projects.length;
+  const hasContact = user.email || user.phone;
+  const hasSocial = user.linkedinUrl || user.githubUrl || user.leetcodeUrl;
 
   return (
     <div className="min-h-screen bg-[#FAF9F6]">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-10">
 
         {/* Profile Card */}
-        <div className="bg-white border border-[#E5E1DA] rounded-3xl overflow-hidden mb-8 shadow-sm">
+        <div className="bg-white border border-[#E5E1DA] rounded-2xl p-6 mb-8 shadow-sm">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-5">
 
-          {/* Gradient banner */}
-          <div className="h-28 bg-gradient-to-br from-[#00A693] via-[#007D6F] to-[#005F54] relative">
-            <div className="absolute inset-0 opacity-20"
-              style={{ backgroundImage: 'radial-gradient(circle at 20% 50%, white 1px, transparent 1px), radial-gradient(circle at 80% 20%, white 1px, transparent 1px)', backgroundSize: '30px 30px' }} />
-            {/* Explore link top-right */}
-            <div className="absolute top-3 right-4">
-              <Link to="/explore"
-                className="inline-flex items-center gap-1.5 text-xs text-white/80 hover:text-white border border-white/30 hover:border-white/60 rounded-lg px-3 py-1.5 transition-colors backdrop-blur-sm bg-white/10">
-                <Globe size={11} /> Explore all
-              </Link>
-            </div>
-          </div>
-
-          {/* Avatar + info */}
-          <div className="px-6 pb-6">
-            {/* Avatar overlapping banner */}
-            <div className="flex flex-col sm:flex-row sm:items-end gap-4 -mt-12 mb-5">
-              <div className="shrink-0">
-                {user.avatar ? (
-                  <img src={user.avatar} alt={user.name}
-                    className="w-24 h-24 rounded-2xl object-cover border-4 border-white shadow-md" />
-                ) : (
-                  <div className="w-24 h-24 rounded-2xl bg-gradient-to-br from-[#00A693] to-[#007D6F] flex items-center justify-center border-4 border-white shadow-md">
-                    <span className="text-3xl font-bold text-white">{initials}</span>
-                  </div>
-                )}
-              </div>
-
-              {/* Stats chips — align to bottom-right of avatar row */}
-              <div className="sm:ml-auto flex items-center gap-2 flex-wrap mt-2 sm:mt-0 sm:pb-1">
-                <div className="flex items-center gap-1.5 bg-[#E6F7F5] text-[#00A693] text-xs font-semibold px-3 py-1.5 rounded-full border border-[#00A693]/20">
-                  <Briefcase size={11} /> {approvedCount} project{approvedCount !== 1 ? 's' : ''} deployed
-                </div>
-                <div className="flex items-center gap-1.5 bg-[#F3F0EB] text-[#6B7280] text-xs font-medium px-3 py-1.5 rounded-full border border-[#E5E1DA]">
-                  <Code2 size={11} /> Developer
-                </div>
-              </div>
-            </div>
-
-            {/* Name */}
-            <h1 className="text-2xl font-bold text-[#1A1A1A] tracking-tight">{user.name}</h1>
-
-            {/* Divider */}
-            <div className="border-t border-[#F3F0EB] my-4" />
-
-            {/* Contact & Social grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-
-              {/* Contact info */}
-              {(user.email || user.phone) && (
-                <div>
-                  <p className="text-[10px] font-semibold text-[#B0A99F] uppercase tracking-widest mb-2">Contact</p>
-                  <div className="space-y-2">
-                    {user.email && (
-                      <a href={`mailto:${user.email}`}
-                        className="flex items-center gap-2 text-sm text-[#1A1A1A] hover:text-[#00A693] transition-colors group">
-                        <span className="w-7 h-7 rounded-lg bg-[#F3F0EB] group-hover:bg-[#E6F7F5] flex items-center justify-center transition-colors shrink-0">
-                          <Mail size={13} className="text-[#6B7280] group-hover:text-[#00A693]" />
-                        </span>
-                        <span className="truncate">{user.email}</span>
-                      </a>
-                    )}
-                    {user.phone && (
-                      <a href={`tel:${user.phone}`}
-                        className="flex items-center gap-2 text-sm text-[#1A1A1A] hover:text-[#00A693] transition-colors group">
-                        <span className="w-7 h-7 rounded-lg bg-[#F3F0EB] group-hover:bg-[#E6F7F5] flex items-center justify-center transition-colors shrink-0">
-                          <Phone size={13} className="text-[#6B7280] group-hover:text-[#00A693]" />
-                        </span>
-                        <span>{user.phone}</span>
-                      </a>
-                    )}
-                  </div>
+            {/* Left: Avatar + Name */}
+            <div className="flex items-center gap-4 shrink-0">
+              {user.avatar ? (
+                <img src={user.avatar} alt={user.name}
+                  className="w-16 h-16 rounded-xl object-cover border border-[#E5E1DA]" />
+              ) : (
+                <div className="w-16 h-16 rounded-xl bg-[#E6F7F5] flex items-center justify-center border border-[#E5E1DA] shrink-0">
+                  <span className="text-xl font-bold text-[#00A693]">{initials}</span>
                 </div>
               )}
+              <div>
+                <h1 className="text-xl font-bold text-[#1A1A1A]">{user.name}</h1>
+                <p className="text-xs text-[#6B7280] mt-0.5">{approvedCount} deployed project{approvedCount !== 1 ? 's' : ''}</p>
+              </div>
+            </div>
 
-              {/* Social profiles */}
-              {(user.linkedinUrl || user.githubUrl || user.leetcodeUrl) && (
-                <div>
-                  <p className="text-[10px] font-semibold text-[#B0A99F] uppercase tracking-widest mb-2">Social profiles</p>
-                  <div className="flex flex-wrap gap-2">
-                    <SocialLink
-                      href={user.linkedinUrl}
-                      label="LinkedIn"
-                      colorClass="bg-[#EEF4FF] text-[#0A66C2] border-[#0A66C2]/20 hover:border-[#0A66C2]/50"
-                      dotClass="bg-[#0A66C2]"
-                    />
-                    <SocialLink
-                      href={user.githubUrl}
-                      label="GitHub"
-                      colorClass="bg-[#F3F0EB] text-[#1A1A1A] border-[#1A1A1A]/15 hover:border-[#1A1A1A]/40"
-                      dotClass="bg-[#1A1A1A]"
-                    />
-                    <SocialLink
-                      href={user.leetcodeUrl}
-                      label="LeetCode"
-                      colorClass="bg-[#FFF7ED] text-[#EA580C] border-[#EA580C]/20 hover:border-[#EA580C]/50"
-                      dotClass="bg-[#EA580C]"
-                    />
-                  </div>
+            {/* Divider */}
+            {(hasContact || hasSocial) && (
+              <div className="hidden sm:block w-px h-12 bg-[#E5E1DA] shrink-0 mx-2" />
+            )}
+
+            {/* Right: Contact + Social */}
+            <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center sm:flex-wrap sm:gap-x-6 sm:gap-y-2">
+
+              {/* Contact items */}
+              {user.email && (
+                <a href={`mailto:${user.email}`}
+                  className="flex items-center gap-2 text-sm text-[#1A1A1A] hover:text-[#00A693] transition-colors group">
+                  <span className="w-6 h-6 rounded-md bg-[#F3F0EB] group-hover:bg-[#E6F7F5] flex items-center justify-center transition-colors shrink-0">
+                    <Mail size={12} className="text-[#6B7280] group-hover:text-[#00A693]" />
+                  </span>
+                  {user.email}
+                </a>
+              )}
+              {user.phone && (
+                <a href={`tel:${user.phone}`}
+                  className="flex items-center gap-2 text-sm text-[#1A1A1A] hover:text-[#00A693] transition-colors group">
+                  <span className="w-6 h-6 rounded-md bg-[#F3F0EB] group-hover:bg-[#E6F7F5] flex items-center justify-center transition-colors shrink-0">
+                    <Phone size={12} className="text-[#6B7280] group-hover:text-[#00A693]" />
+                  </span>
+                  {user.phone}
+                </a>
+              )}
+
+              {/* Social pills */}
+              {hasSocial && (
+                <div className="flex flex-wrap gap-2">
+                  <SocialPill
+                    href={user.linkedinUrl}
+                    label="LinkedIn"
+                    colorClass="bg-[#EEF4FF] text-[#0A66C2] border-[#0A66C2]/20 hover:border-[#0A66C2]/50"
+                    dotClass="bg-[#0A66C2]"
+                  />
+                  <SocialPill
+                    href={user.githubUrl}
+                    label="GitHub"
+                    colorClass="bg-[#F3F0EB] text-[#1A1A1A] border-[#1A1A1A]/15 hover:border-[#1A1A1A]/40"
+                    dotClass="bg-[#1A1A1A]"
+                  />
+                  <SocialPill
+                    href={user.leetcodeUrl}
+                    label="LeetCode"
+                    colorClass="bg-[#FFF7ED] text-[#EA580C] border-[#EA580C]/20 hover:border-[#EA580C]/50"
+                    dotClass="bg-[#EA580C]"
+                  />
                 </div>
               )}
             </div>
@@ -192,7 +161,6 @@ export default function PublicPortfolio() {
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                     onError={e => { e.target.src = PLACEHOLDER; }}
                   />
-                  {/* Live badge */}
                   <div className="absolute top-2 left-2">
                     <span className="inline-flex items-center gap-1 text-[10px] font-semibold bg-white/90 backdrop-blur-sm text-[#00A693] px-2 py-0.5 rounded-full border border-[#00A693]/20">
                       <span className="w-1.5 h-1.5 rounded-full bg-[#00A693] animate-pulse" /> Live
