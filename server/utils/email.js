@@ -1,7 +1,7 @@
 const Brevo = require('@getbrevo/brevo');
 
 const api = new Brevo.TransactionalEmailsApi();
-api.authentications['api-key'].apiKey = process.env.BREVO_API_KEY;
+api.setApiKey(Brevo.TransactionalEmailsApiApiKeys.apiKey, process.env.BREVO_API_KEY);
 const BASE_URL = process.env.CLIENT_URL || 'http://localhost:5173';
 const FROM = { name: 'ShareMyApps', email: process.env.EMAIL_FROM || 'sharemyappsportal@gmail.com' };
 
