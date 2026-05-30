@@ -9,7 +9,7 @@ export default function ProjectForm() {
   const { id } = useParams();
   const isEdit = Boolean(id);
   const navigate = useNavigate();
-  const { user } = useAuth();
+  useAuth();
 
   const CATEGORIES = [
     'E-Commerce', 'Project Management', 'Customer Relationship Management (CRM)',

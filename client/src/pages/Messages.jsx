@@ -146,7 +146,7 @@ export default function Messages() {
     finally { setLoading(false); }
   };
 
-  useEffect(() => { fetchMessages(tab); }, [tab]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { fetchMessages(tab); }, [tab]); // eslint-disable-line react-hooks/exhaustive-deps, react-hooks/set-state-in-effect
 
   const markRead = async (id) => {
     try {

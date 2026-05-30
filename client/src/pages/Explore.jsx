@@ -4,8 +4,6 @@ import api from '../api/axios';
 import ProjectCard from '../components/ProjectCard';
 import ProjectSkeleton from '../components/ProjectSkeleton';
 
-const POPULAR_TAGS = ['React', 'Node.js', 'Python', 'Next.js', 'Vue', 'MongoDB', 'TypeScript', 'Flutter'];
-
 const CATEGORIES = [
   'E-Commerce', 'Project Management', 'Customer Relationship Management (CRM)',
   'Finance & Accounting', 'Productivity Tools', 'Social Networking & Community',
@@ -41,7 +39,7 @@ export default function Explore() {
     finally { setLoading(false); }
   }, [search, activeTag, activeCategory]);
 
-  useEffect(() => { fetchProjects(1, '', '', ''); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { fetchProjects(1, '', '', ''); }, []); // eslint-disable-line react-hooks/exhaustive-deps, react-hooks/set-state-in-effect
 
   const handleSearch = (e) => { e.preventDefault(); fetchProjects(1, search, activeTag, activeCategory); };
 

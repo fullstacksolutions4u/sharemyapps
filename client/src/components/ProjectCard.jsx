@@ -4,28 +4,13 @@ import { ExternalLink, Heart, Star } from 'lucide-react';
 const PLACEHOLDER = 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=600&q=80';
 const getbanner = (bannerImage, liveUrl) => bannerImage || `https://s0.wp.com/mshots/v1/${encodeURIComponent(liveUrl)}?w=800`;
 
-const TAG_COLORS = [
-  'bg-blue-50 text-blue-700',
-  'bg-green-50 text-green-700',
-  'bg-purple-50 text-purple-700',
-  'bg-yellow-50 text-yellow-700',
-  'bg-pink-50 text-pink-700',
-  'bg-[#E6F7F5] text-[#00A693]',
-];
-
-function tagColor(tag) {
-  let hash = 0;
-  for (let i = 0; i < tag.length; i++) hash += tag.charCodeAt(i);
-  return TAG_COLORS[hash % TAG_COLORS.length];
-}
-
 function avgRating(ratings = []) {
   if (!ratings.length) return null;
   return (ratings.reduce((s, r) => s + r.value, 0) / ratings.length).toFixed(1);
 }
 
 export default function ProjectCard({ project }) {
-  const { _id, title, description, liveUrl, bannerImage, techTags = [], owner, likes = [], ratings = [] } = project;
+  const { _id, title, description, liveUrl, bannerImage, owner, likes = [], ratings = [] } = project;
   const avg = avgRating(ratings);
 
   return (

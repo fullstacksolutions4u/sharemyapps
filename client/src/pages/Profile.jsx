@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, User, Mail, Phone, Link2, GitBranch, Code2, Save } from 'lucide-react';
+import { ArrowLeft, User, Mail, Phone, Link2, GitBranch, Save } from 'lucide-react';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
