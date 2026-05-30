@@ -1,23 +1,14 @@
-const nodemailer = require('nodemailer');
+const { Resend } = require('resend');
 
-const transporter = nodemailer.createTransport({
-  host: 'smtp.gmail.com',
-  port: 587,
-  secure: false, // STARTTLS
-  family: 4, // force IPv4 — Render free tier can't reach Gmail over IPv6
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
-  },
-});
-
+const resend = new Resend(process.env.RESEND_API_KEY);
+const FROM = process.env.EMAIL_FROM || 'ShareMyApps <noreply@sharemyapps.app>';
 const BASE_URL = process.env.CLIENT_URL || 'http://localhost:5173';
 
 exports.sendProjectApprovedEmail = async ({ to, name, projectTitle, projectId, adminNote }) => {
   const projectUrl = `${BASE_URL}/project/${projectId}`;
 
-  await transporter.sendMail({
-    from: `"ShareMyApps" <${process.env.EMAIL_USER}>`,
+  await resend.emails.send({
+    from: FROM,
     to,
     subject: `Your project "${projectTitle}" is now live!`,
     html: `
@@ -53,8 +44,8 @@ exports.sendProjectApprovedEmail = async ({ to, name, projectTitle, projectId, a
 exports.sendProjectRejectedEmail = async ({ to, name, projectTitle, projectId, adminNote }) => {
   const editUrl = `${BASE_URL}/dashboard`;
 
-  await transporter.sendMail({
-    from: `"ShareMyApps" <${process.env.EMAIL_USER}>`,
+  await resend.emails.send({
+    from: FROM,
     to,
     subject: `Action needed on your project "${projectTitle}"`,
     html: `
