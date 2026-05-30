@@ -7,6 +7,11 @@ const PLACEHOLDER = 'https://images.unsplash.com/photo-1518770660439-4636190af47
 const getbanner = (bannerImage, liveUrl) =>
   bannerImage || `https://s0.wp.com/mshots/v1/${encodeURIComponent(liveUrl)}?w=400`;
 
+const toAbsoluteUrl = (url) => {
+  if (!url) return '';
+  return /^https?:\/\//i.test(url) ? url : `https://${url}`;
+};
+
 function SocialPill({ href, label, colorClass, dotClass }) {
   if (!href) return null;
   return (
@@ -114,19 +119,19 @@ export default function PublicPortfolio() {
               {hasSocial && (
                 <div className="flex flex-wrap gap-2">
                   <SocialPill
-                    href={user.linkedinUrl}
+                    href={toAbsoluteUrl(user.linkedinUrl)}
                     label="LinkedIn"
                     colorClass="bg-[#EEF4FF] text-[#0A66C2] border-[#0A66C2]/20 hover:border-[#0A66C2]/50"
                     dotClass="bg-[#0A66C2]"
                   />
                   <SocialPill
-                    href={user.githubUrl}
+                    href={toAbsoluteUrl(user.githubUrl)}
                     label="GitHub"
                     colorClass="bg-[#F3F0EB] text-[#1A1A1A] border-[#1A1A1A]/15 hover:border-[#1A1A1A]/40"
                     dotClass="bg-[#1A1A1A]"
                   />
                   <SocialPill
-                    href={user.leetcodeUrl}
+                    href={toAbsoluteUrl(user.leetcodeUrl)}
                     label="LeetCode"
                     colorClass="bg-[#FFF7ED] text-[#EA580C] border-[#EA580C]/20 hover:border-[#EA580C]/50"
                     dotClass="bg-[#EA580C]"
