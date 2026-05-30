@@ -46,7 +46,7 @@ exports.getProject = async (req, res) => {
 
 exports.getUserProjects = async (req, res) => {
   try {
-    const user = await User.findById(req.params.userId).select('name avatar linkedinUrl githubUrl leetcodeUrl');
+    const user = await User.findById(req.params.userId).select('name avatar linkedinUrl githubUrl leetcodeUrl phone email');
     if (!user) return res.status(404).json({ message: 'User not found' });
     const projects = await Project.find({ owner: req.params.userId, status: 'approved' })
       .sort({ createdAt: -1 });
