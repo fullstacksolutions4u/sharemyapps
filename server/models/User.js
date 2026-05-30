@@ -13,6 +13,7 @@ const userSchema = new mongoose.Schema({
   linkedinUrl: { type: String, trim: true, default: '' },
   githubUrl: { type: String, trim: true, default: '' },
   leetcodeUrl: { type: String, trim: true, default: '' },
+  portfolioUrl: { type: String, trim: true, default: '' },
   // Client-specific fields
   companyName: { type: String, trim: true, default: '' },
   companyWebsite: { type: String, trim: true, default: '' },
@@ -42,6 +43,7 @@ userSchema.methods.toPublicJSON = function () {
     linkedinUrl: this.linkedinUrl,
     githubUrl: this.githubUrl,
     leetcodeUrl: this.leetcodeUrl,
+    portfolioUrl: this.portfolioUrl,
     companyName: this.companyName,
     companyWebsite: this.companyWebsite,
     industry: this.industry,

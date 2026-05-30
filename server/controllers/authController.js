@@ -67,7 +67,7 @@ exports.getMe = (req, res) => {
 
 exports.updateProfile = async (req, res) => {
   try {
-    const { name, phone, linkedinUrl, githubUrl, leetcodeUrl, companyName, companyWebsite, industry, requirements } = req.body;
+    const { name, phone, linkedinUrl, githubUrl, leetcodeUrl, portfolioUrl, companyName, companyWebsite, industry, requirements } = req.body;
     const user = await User.findById(req.user._id);
     if (!user) return res.status(404).json({ message: 'User not found' });
 
@@ -76,6 +76,7 @@ exports.updateProfile = async (req, res) => {
     if (linkedinUrl !== undefined) user.linkedinUrl = linkedinUrl.trim();
     if (githubUrl !== undefined) user.githubUrl = githubUrl.trim();
     if (leetcodeUrl !== undefined) user.leetcodeUrl = leetcodeUrl.trim();
+    if (portfolioUrl !== undefined) user.portfolioUrl = portfolioUrl.trim();
     if (companyName !== undefined) user.companyName = companyName.trim();
     if (companyWebsite !== undefined) user.companyWebsite = companyWebsite.trim();
     if (industry !== undefined) user.industry = industry.trim();

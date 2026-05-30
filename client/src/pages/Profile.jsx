@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, User, Mail, Phone, Link2, GitBranch, Save, Trash2, AlertTriangle } from 'lucide-react';
+import { ArrowLeft, User, Mail, Phone, Link2, GitBranch, Globe, Save, Trash2, AlertTriangle } from 'lucide-react';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
@@ -78,6 +78,7 @@ export default function Profile() {
     linkedinUrl: user?.linkedinUrl || '',
     githubUrl: user?.githubUrl || '',
     leetcodeUrl: user?.leetcodeUrl || '',
+    portfolioUrl: user?.portfolioUrl || '',
   });
   const [saving, setSaving] = useState(false);
   const [showDelete, setShowDelete] = useState(false);
@@ -204,6 +205,14 @@ export default function Profile() {
             value={form.leetcodeUrl}
             onChange={handle}
             placeholder="leetcode.com/yourusername"
+          />
+          <Field
+            icon={<Globe size={15} />}
+            label={<>Portfolio <span className="text-xs text-[#9CA3AF] font-normal">(optional)</span></>}
+            name="portfolioUrl"
+            value={form.portfolioUrl}
+            onChange={handle}
+            placeholder="yourportfolio.com"
           />
         </div>
 
