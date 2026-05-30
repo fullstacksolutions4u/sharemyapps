@@ -2,8 +2,8 @@ const nodemailer = require('nodemailer');
 
 const transporter = nodemailer.createTransport({
   host: 'smtp.gmail.com',
-  port: 465,
-  secure: true,
+  port: 587,
+  secure: false, // STARTTLS
   family: 4, // force IPv4 — Render free tier can't reach Gmail over IPv6
   auth: {
     user: process.env.EMAIL_USER,
