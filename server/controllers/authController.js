@@ -82,6 +82,14 @@ exports.updateProfile = async (req, res) => {
     if (industry !== undefined) user.industry = industry.trim();
     if (requirements !== undefined) user.requirements = requirements.trim();
 
+    if (req.file) {
+      if (user.avatar && user.avatar.includes('cloudinary')) {
+        const pid = user.avatar.split('/').pop().split('.')[0];
+        await cloudinary.uploader.destroy(`sharemyapp/${pid}`).catch(() => {});
+      }
+      user.avatar = req.file.path;
+    }
+
     await user.save();
     res.json({ user: user.toPublicJSON() });
   } catch (err) {

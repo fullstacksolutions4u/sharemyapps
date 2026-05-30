@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, User, Mail, Phone, Link2, GitBranch, Globe, Save, Trash2, AlertTriangle } from 'lucide-react';
+import { ArrowLeft, User, Mail, Phone, Link2, GitBranch, Globe, Save, Trash2, AlertTriangle, Camera, Loader2 } from 'lucide-react';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
@@ -83,12 +83,32 @@ export default function Profile() {
   const [saving, setSaving] = useState(false);
   const [showDelete, setShowDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [avatarUploading, setAvatarUploading] = useState(false);
+  const avatarInputRef = useRef(null);
 
   useEffect(() => {
     if (user?.userType === 'client') navigate('/client-profile', { replace: true });
   }, [user, navigate]);
 
   const handle = e => setForm(f => ({ ...f, [e.target.name]: e.target.value }));
+
+  const handleAvatarChange = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setAvatarUploading(true);
+    try {
+      const fd = new FormData();
+      fd.append('avatar', file);
+      const res = await api.put('/auth/profile', fd);
+      setUser(res.data.user);
+      toast.success('Profile photo updated!');
+    } catch {
+      toast.error('Failed to upload photo');
+    } finally {
+      setAvatarUploading(false);
+      e.target.value = '';
+    }
+  };
 
   const handleDelete = async () => {
     setDeleting(true);
@@ -132,18 +152,33 @@ export default function Profile() {
 
       {/* Avatar */}
       <div className="flex items-center gap-4 mb-8 p-4 bg-white border border-[#E5E1DA] rounded-2xl">
-        {user?.avatar
-          ? <img src={user.avatar} alt={user.name} className="w-14 h-14 rounded-full object-cover" />
-          : <span className="w-14 h-14 rounded-full bg-[#00A693] text-white text-xl font-bold flex items-center justify-center">
-              {user?.name?.[0]?.toUpperCase()}
-            </span>
-        }
+        <div className="relative shrink-0">
+          {user?.avatar
+            ? <img src={user.avatar} alt={user.name} className="w-14 h-14 rounded-full object-cover" />
+            : <span className="w-14 h-14 rounded-full bg-accent text-white text-xl font-bold flex items-center justify-center">
+                {user?.name?.[0]?.toUpperCase()}
+              </span>
+          }
+          <button
+            type="button"
+            onClick={() => avatarInputRef.current?.click()}
+            disabled={avatarUploading}
+            className="absolute -bottom-0.5 -right-0.5 w-6 h-6 bg-accent hover:bg-accent-hover rounded-full flex items-center justify-center border-2 border-white transition-colors disabled:opacity-60"
+          >
+            {avatarUploading
+              ? <Loader2 size={11} className="text-white animate-spin" />
+              : <Camera size={11} className="text-white" />
+            }
+          </button>
+          <input ref={avatarInputRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarChange} />
+        </div>
         <div>
           <p className="font-semibold text-[#1A1A1A]">{user?.name}</p>
           <p className="text-sm text-[#6B7280]">{user?.email}</p>
-          {user?.isGoogleUser && (
-            <span className="text-xs text-[#9CA3AF] mt-0.5 block">Signed in with Google</span>
-          )}
+          {user?.isGoogleUser
+            ? <span className="text-xs text-[#9CA3AF] mt-0.5 block">Signed in with Google</span>
+            : <span className="text-xs text-[#9CA3AF] mt-0.5 block">Click camera to change photo</span>
+          }
         </div>
       </div>
 

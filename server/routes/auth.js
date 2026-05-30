@@ -4,12 +4,13 @@ const {
   register, login, logout, getMe, updateProfile, deleteAccount, googleCallback,
 } = require('../controllers/authController');
 const { protect } = require('../middleware/auth');
+const { upload } = require('../middleware/upload');
 
 router.post('/register', register);
 router.post('/login', login);
 router.get('/logout', logout);
 router.get('/me', protect, getMe);
-router.put('/profile', protect, updateProfile);
+router.put('/profile', protect, upload.single('avatar'), updateProfile);
 router.delete('/account', protect, deleteAccount);
 
 const googleEnabled = !!(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET);

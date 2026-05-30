@@ -14,6 +14,13 @@ const CATEGORIES = [
   'Communication & Chat Apps', 'Inventory Management', 'Event Management', 'Others',
 ];
 
+const getPageNumbers = (current, total) => {
+  if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
+  if (current <= 4) return [1, 2, 3, 4, 5, '...', total];
+  if (current >= total - 3) return [1, '...', total - 4, total - 3, total - 2, total - 1, total];
+  return [1, '...', current - 1, current, current + 1, '...', total];
+};
+
 export default function Explore() {
   const [searchParams] = useSearchParams();
   const [projects, setProjects] = useState([]);
@@ -175,15 +182,28 @@ export default function Explore() {
 
       {/* Pagination */}
       {pages > 1 && (
-        <div className="flex items-center justify-center gap-2 mt-12">
+        <div className="flex items-center justify-center gap-1.5 mt-12 flex-wrap">
           <button onClick={() => fetchProjects(page - 1)} disabled={page === 1}
-            className="px-4 py-2 text-sm border border-border rounded-lg text-muted hover:border-accent hover:text-accent disabled:opacity-40 disabled:cursor-not-allowed transition">
-            Previous
+            className="px-3 h-9 text-sm border border-border rounded-lg text-muted hover:border-accent hover:text-accent disabled:opacity-40 disabled:cursor-not-allowed transition">
+            ‹
           </button>
-          <span className="text-sm text-muted px-2">Page {page} of {pages}</span>
+          {getPageNumbers(page, pages).map((p, i) =>
+            p === '...' ? (
+              <span key={`e${i}`} className="w-9 h-9 flex items-center justify-center text-sm text-muted">…</span>
+            ) : (
+              <button key={p} onClick={() => fetchProjects(p)}
+                className={`w-9 h-9 text-sm rounded-lg border transition ${
+                  p === page
+                    ? 'bg-accent text-white border-accent font-medium'
+                    : 'border-border text-muted hover:border-accent hover:text-accent'
+                }`}>
+                {p}
+              </button>
+            )
+          )}
           <button onClick={() => fetchProjects(page + 1)} disabled={page === pages}
-            className="px-4 py-2 text-sm border border-border rounded-lg text-muted hover:border-accent hover:text-accent disabled:opacity-40 disabled:cursor-not-allowed transition">
-            Next
+            className="px-3 h-9 text-sm border border-border rounded-lg text-muted hover:border-accent hover:text-accent disabled:opacity-40 disabled:cursor-not-allowed transition">
+            ›
           </button>
         </div>
       )}
