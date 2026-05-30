@@ -166,7 +166,8 @@ export default function Navbar() {
       <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
         {/* Logo */}
         <Link to="/" className="flex items-center gap-2">
-          <img src={logo} alt="FindMyApp" className="h-8 w-auto" />
+          <img src={logo} alt="ShareMyApps" className="h-8 w-auto" />
+          <span className="hidden sm:inline font-semibold text-sm text-text">ShareMyApps</span>
         </Link>
 
         {/* Desktop Nav */}

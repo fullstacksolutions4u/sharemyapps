@@ -15,12 +15,17 @@ exports.getPendingProjects = async (req, res) => {
 
 exports.getAllProjects = async (req, res) => {
   try {
-    const { status } = req.query;
+    const { status, page = 1, limit = 12 } = req.query;
     const filter = status ? { status } : {};
+    const p = Math.max(1, parseInt(page));
+    const l = parseInt(limit);
+    const total = await Project.countDocuments(filter);
     const projects = await Project.find(filter)
       .populate('owner', 'name email avatar')
-      .sort({ createdAt: -1 });
-    res.json(projects);
+      .sort({ createdAt: -1 })
+      .skip((p - 1) * l)
+      .limit(l);
+    res.json({ projects, total, page: p, pages: Math.ceil(total / l) });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -109,14 +114,16 @@ exports.getAllUsers = async (req, res) => {
 
 exports.getStats = async (req, res) => {
   try {
-    const [total, pending, approved, rejected, users] = await Promise.all([
+    const [total, pending, approved, rejected, users, developers, clients] = await Promise.all([
       Project.countDocuments(),
       Project.countDocuments({ status: 'pending' }),
       Project.countDocuments({ status: 'approved' }),
       Project.countDocuments({ status: 'rejected' }),
       User.countDocuments(),
+      User.countDocuments({ userType: { $ne: 'client' } }),
+      User.countDocuments({ userType: 'client' }),
     ]);
-    res.json({ total, pending, approved, rejected, users });
+    res.json({ total, pending, approved, rejected, users, developers, clients });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

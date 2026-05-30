@@ -31,12 +31,13 @@ function Overview({ stats, onNavigate }) {
     <div className="space-y-6">
       <h2 className="text-xl font-bold text-[#1A1A1A]">Overview</h2>
 
-      <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 xl:grid-cols-5 gap-4">
         {[
-          { label: 'Total Projects', value: stats.total,    icon: FolderOpen,  iconCls: 'text-[#6B7280]',  bg: 'bg-[#F3F0EB]' },
-          { label: 'Pending',        value: stats.pending,  icon: Clock,        iconCls: 'text-yellow-600', bg: 'bg-yellow-50' },
-          { label: 'Approved',       value: stats.approved, icon: CheckCircle,  iconCls: 'text-green-600',  bg: 'bg-green-50' },
-          { label: 'Total Users',    value: stats.users,    icon: Users,        iconCls: 'text-[#00A693]',  bg: 'bg-[#E6F7F5]' },
+          { label: 'Total Projects', value: stats.total,      icon: FolderOpen,  iconCls: 'text-[#6B7280]',  bg: 'bg-[#F3F0EB]' },
+          { label: 'Pending',        value: stats.pending,    icon: Clock,        iconCls: 'text-yellow-600', bg: 'bg-yellow-50' },
+          { label: 'Approved',       value: stats.approved,   icon: CheckCircle,  iconCls: 'text-green-600',  bg: 'bg-green-50' },
+          { label: 'Developers',     value: stats.developers, icon: Users,        iconCls: 'text-[#00A693]',  bg: 'bg-[#E6F7F5]' },
+          { label: 'Clients',        value: stats.clients,    icon: Users,        iconCls: 'text-purple-600', bg: 'bg-purple-50' },
         ].map(({ label, value, icon: Icon, iconCls, bg }) => (
           <div key={label} className="bg-white border border-[#E5E1DA] rounded-2xl p-5">
             <div className={`w-9 h-9 ${bg} rounded-xl flex items-center justify-center mb-3`}>
@@ -422,12 +423,18 @@ function ProjectsSection({ stats }) {
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(null);
   const [selected, setSelected] = useState(null);
+  const [page, setPage] = useState(1);
+  const [pages, setPages] = useState(1);
+  const [total, setTotal] = useState(0);
 
-  const fetchProjects = async (status) => {
+  const fetchProjects = async (status, p = 1) => {
     setLoading(true);
     try {
-      const res = await api.get(`/admin/projects?status=${status}`);
-      setProjects(res.data);
+      const res = await api.get(`/admin/projects?status=${status}&page=${p}&limit=12`);
+      setProjects(res.data.projects);
+      setPages(res.data.pages);
+      setTotal(res.data.total);
+      setPage(p);
     } catch {
       toast.error('Failed to load projects');
     } finally {
@@ -435,7 +442,7 @@ function ProjectsSection({ stats }) {
     }
   };
 
-  useEffect(() => { fetchProjects(tab); }, [tab]); // eslint-disable-line react-hooks/set-state-in-effect
+  useEffect(() => { fetchProjects(tab, 1); }, [tab]); // eslint-disable-line react-hooks/set-state-in-effect
 
   const updateStatus = async (id, status, adminNote = '') => {
     setUpdating(id);
@@ -467,7 +474,7 @@ function ProjectsSection({ stats }) {
     <div className="space-y-5">
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-bold text-[#1A1A1A]">Projects</h2>
-        <button onClick={() => fetchProjects(tab)}
+        <button onClick={() => fetchProjects(tab, page)}
           className="flex items-center gap-1.5 text-xs text-[#6B7280] hover:text-[#1A1A1A] border border-[#E5E1DA] px-3 py-1.5 rounded-lg transition-colors">
           <RefreshCw size={12} /> Refresh
         </button>
@@ -496,31 +503,54 @@ function ProjectsSection({ stats }) {
           <p className="text-[#6B7280] text-sm">No {tab} projects</p>
         </div>
       ) : (
-        <div className="space-y-3">
-          {projects.map(project => (
-            <div key={project._id} onClick={() => setSelected(project)}
-              className="bg-white border border-[#E5E1DA] rounded-xl p-4 flex items-center gap-4 hover:border-[#00A693]/40 hover:shadow-sm transition-all cursor-pointer">
-              <img src={project.bannerImage || PLACEHOLDER} alt={project.title}
-                className="w-14 h-14 rounded-lg object-cover shrink-0"
-                onError={e => { e.target.src = PLACEHOLDER; }} />
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 mb-0.5 flex-wrap">
-                  <h3 className="font-semibold text-[#1A1A1A]">{project.title}</h3>
-                  <span className={`text-xs px-2 py-0.5 rounded-full border font-medium capitalize ${statusStyle[project.status]}`}>
-                    {project.status}
-                  </span>
+        <>
+          <div className="space-y-3">
+            {projects.map(project => (
+              <div key={project._id} onClick={() => setSelected(project)}
+                className="bg-white border border-[#E5E1DA] rounded-xl p-4 flex items-center gap-4 hover:border-[#00A693]/40 hover:shadow-sm transition-all cursor-pointer">
+                <img src={project.bannerImage || PLACEHOLDER} alt={project.title}
+                  className="w-14 h-14 rounded-lg object-cover shrink-0"
+                  onError={e => { e.target.src = PLACEHOLDER; }} />
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-0.5 flex-wrap">
+                    <h3 className="font-semibold text-[#1A1A1A]">{project.title}</h3>
+                    <span className={`text-xs px-2 py-0.5 rounded-full border font-medium capitalize ${statusStyle[project.status]}`}>
+                      {project.status}
+                    </span>
+                  </div>
+                  <p className="text-xs text-[#6B7280] truncate mb-1">{project.description}</p>
+                  <div className="flex items-center gap-3 text-xs text-[#9CA3AF]">
+                    <span>By <span className="text-[#1A1A1A] font-medium">{project.owner?.name}</span></span>
+                    <span className="hidden sm:inline">{project.owner?.email}</span>
+                    <span>{new Date(project.createdAt).toLocaleDateString()}</span>
+                  </div>
                 </div>
-                <p className="text-xs text-[#6B7280] truncate mb-1">{project.description}</p>
-                <div className="flex items-center gap-3 text-xs text-[#9CA3AF]">
-                  <span>By <span className="text-[#1A1A1A] font-medium">{project.owner?.name}</span></span>
-                  <span className="hidden sm:inline">{project.owner?.email}</span>
-                  <span>{new Date(project.createdAt).toLocaleDateString()}</span>
-                </div>
+                <ChevronRight size={16} className="text-[#9CA3AF] shrink-0" />
               </div>
-              <ChevronRight size={16} className="text-[#9CA3AF] shrink-0" />
+            ))}
+          </div>
+
+          {pages > 1 && (
+            <div className="flex items-center justify-between pt-2">
+              <span className="text-xs text-[#9CA3AF]">{total} project{total !== 1 ? 's' : ''}</span>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => fetchProjects(tab, page - 1)}
+                  disabled={page === 1}
+                  className="px-3 py-1.5 text-xs border border-[#E5E1DA] rounded-lg text-[#6B7280] hover:border-[#00A693] hover:text-[#00A693] disabled:opacity-40 disabled:cursor-not-allowed transition">
+                  Previous
+                </button>
+                <span className="text-xs text-[#6B7280] px-1">Page {page} of {pages}</span>
+                <button
+                  onClick={() => fetchProjects(tab, page + 1)}
+                  disabled={page === pages}
+                  className="px-3 py-1.5 text-xs border border-[#E5E1DA] rounded-lg text-[#6B7280] hover:border-[#00A693] hover:text-[#00A693] disabled:opacity-40 disabled:cursor-not-allowed transition">
+                  Next
+                </button>
+              </div>
             </div>
-          ))}
-        </div>
+          )}
+        </>
       )}
     </div>
   );
@@ -530,6 +560,7 @@ function ProjectsSection({ stats }) {
 function UsersSection() {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [tab, setTab] = useState('developers');
 
   useEffect(() => {
     api.get('/admin/users')
@@ -538,9 +569,35 @@ function UsersSection() {
       .finally(() => setLoading(false));
   }, []);
 
+  const developers = users.filter(u => u.userType !== 'client');
+  const clients = users.filter(u => u.userType === 'client');
+  const list = tab === 'developers' ? developers : clients;
+
+  const Avatar = ({ u }) => u.avatar
+    ? <img src={u.avatar} alt={u.name} className="w-8 h-8 rounded-full object-cover shrink-0" />
+    : <span className="w-8 h-8 rounded-full bg-[#00A693] text-white text-xs flex items-center justify-center font-medium shrink-0">{u.name[0].toUpperCase()}</span>;
+
   return (
     <div className="space-y-5">
-      <h2 className="text-xl font-bold text-[#1A1A1A]">Users</h2>
+      <div className="flex items-center justify-between">
+        <h2 className="text-xl font-bold text-[#1A1A1A]">Users</h2>
+        <div className="text-xs text-[#9CA3AF]">{users.length} total</div>
+      </div>
+
+      {/* Tab switcher */}
+      <div className="flex gap-1 bg-[#F3F0EB] p-1 rounded-xl w-fit">
+        {[
+          { key: 'developers', label: `Developers (${developers.length})` },
+          { key: 'clients',    label: `Clients (${clients.length})` },
+        ].map(t => (
+          <button key={t.key} onClick={() => setTab(t.key)}
+            className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+              tab === t.key ? 'bg-white text-[#1A1A1A] shadow-sm' : 'text-[#6B7280] hover:text-[#1A1A1A]'
+            }`}>
+            {t.label}
+          </button>
+        ))}
+      </div>
 
       {loading ? (
         <div className="space-y-3">
@@ -548,26 +605,27 @@ function UsersSection() {
             <div key={i} className="h-14 bg-white border border-[#E5E1DA] rounded-xl animate-pulse" />
           ))}
         </div>
-      ) : (
+      ) : list.length === 0 ? (
+        <div className="bg-white border border-[#E5E1DA] rounded-2xl p-16 text-center">
+          <p className="text-[#6B7280] text-sm">No {tab === 'developers' ? 'developer' : 'client'} accounts yet</p>
+        </div>
+      ) : tab === 'developers' ? (
         <div className="bg-white border border-[#E5E1DA] rounded-2xl overflow-hidden">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-[#E5E1DA] bg-[#FAF9F6]">
-                <th className="text-left px-4 py-3 text-xs font-semibold text-[#6B7280] uppercase tracking-wider">User</th>
+                <th className="text-left px-4 py-3 text-xs font-semibold text-[#6B7280] uppercase tracking-wider">Developer</th>
                 <th className="text-left px-4 py-3 text-xs font-semibold text-[#6B7280] uppercase tracking-wider hidden sm:table-cell">Email</th>
                 <th className="text-left px-4 py-3 text-xs font-semibold text-[#6B7280] uppercase tracking-wider">Role</th>
                 <th className="text-left px-4 py-3 text-xs font-semibold text-[#6B7280] uppercase tracking-wider hidden md:table-cell">Joined</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[#F3F0EB]">
-              {users.map(u => (
+              {list.map(u => (
                 <tr key={u._id} className="hover:bg-[#FAF9F6] transition-colors">
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-3">
-                      {u.avatar
-                        ? <img src={u.avatar} alt={u.name} className="w-8 h-8 rounded-full object-cover shrink-0" />
-                        : <span className="w-8 h-8 rounded-full bg-[#00A693] text-white text-xs flex items-center justify-center font-medium shrink-0">{u.name[0].toUpperCase()}</span>
-                      }
+                      <Avatar u={u} />
                       <div className="min-w-0">
                         <p className="font-medium text-[#1A1A1A] truncate">{u.name}</p>
                         <p className="text-xs text-[#6B7280] sm:hidden truncate">{u.email}</p>
@@ -583,6 +641,49 @@ function UsersSection() {
                     }`}>
                       {u.role}
                     </span>
+                  </td>
+                  <td className="px-4 py-3 text-[#6B7280] text-xs hidden md:table-cell">
+                    {new Date(u.createdAt).toLocaleDateString()}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      ) : (
+        <div className="bg-white border border-[#E5E1DA] rounded-2xl overflow-hidden">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-[#E5E1DA] bg-[#FAF9F6]">
+                <th className="text-left px-4 py-3 text-xs font-semibold text-[#6B7280] uppercase tracking-wider">Client</th>
+                <th className="text-left px-4 py-3 text-xs font-semibold text-[#6B7280] uppercase tracking-wider hidden sm:table-cell">Email</th>
+                <th className="text-left px-4 py-3 text-xs font-semibold text-[#6B7280] uppercase tracking-wider hidden md:table-cell">Company</th>
+                <th className="text-left px-4 py-3 text-xs font-semibold text-[#6B7280] uppercase tracking-wider hidden lg:table-cell">Industry</th>
+                <th className="text-left px-4 py-3 text-xs font-semibold text-[#6B7280] uppercase tracking-wider hidden md:table-cell">Joined</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-[#F3F0EB]">
+              {list.map(u => (
+                <tr key={u._id} className="hover:bg-[#FAF9F6] transition-colors">
+                  <td className="px-4 py-3">
+                    <div className="flex items-center gap-3">
+                      <Avatar u={u} />
+                      <div className="min-w-0">
+                        <p className="font-medium text-[#1A1A1A] truncate">{u.name}</p>
+                        <p className="text-xs text-[#6B7280] sm:hidden truncate">{u.email}</p>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="px-4 py-3 text-[#6B7280] hidden sm:table-cell text-xs">{u.email}</td>
+                  <td className="px-4 py-3 hidden md:table-cell">
+                    {u.companyName
+                      ? <span className="text-xs font-medium text-[#1A1A1A]">{u.companyName}</span>
+                      : <span className="text-xs text-[#9CA3AF]">—</span>}
+                  </td>
+                  <td className="px-4 py-3 hidden lg:table-cell">
+                    {u.industry
+                      ? <span className="text-xs px-2.5 py-1 rounded-full bg-[#F3F0EB] text-[#6B7280] border border-[#E5E1DA] font-medium">{u.industry}</span>
+                      : <span className="text-xs text-[#9CA3AF]">—</span>}
                   </td>
                   <td className="px-4 py-3 text-[#6B7280] text-xs hidden md:table-cell">
                     {new Date(u.createdAt).toLocaleDateString()}
