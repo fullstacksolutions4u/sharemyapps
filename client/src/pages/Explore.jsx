@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Search, X, LayoutGrid } from 'lucide-react';
 import api from '../api/axios';
 import ProjectCard from '../components/ProjectCard';
@@ -14,22 +15,25 @@ const CATEGORIES = [
 ];
 
 export default function Explore() {
+  const [searchParams] = useSearchParams();
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [activeTag, setActiveTag] = useState('');
   const [activeCategory, setActiveCategory] = useState('');
+  const [activeType, setActiveType] = useState('');
   const [page, setPage] = useState(1);
   const [pages, setPages] = useState(1);
   const [total, setTotal] = useState(0);
 
-  const fetchProjects = useCallback(async (p = 1, s = search, t = activeTag, c = activeCategory) => {
+  const fetchProjects = useCallback(async (p = 1, s = search, t = activeTag, c = activeCategory, tp = activeType) => {
     setLoading(true);
     try {
       const params = new URLSearchParams({ page: p });
       if (s) params.set('search', s);
       if (t) params.set('tag', t);
       if (c) params.set('category', c);
+      if (tp) params.set('type', tp);
       const res = await api.get(`/projects?${params}`);
       setProjects(res.data.projects);
       setPages(res.data.pages);
@@ -37,9 +41,13 @@ export default function Explore() {
       setPage(p);
     } catch { /* silently ignore */ }
     finally { setLoading(false); }
-  }, [search, activeTag, activeCategory]);
+  }, [search, activeTag, activeCategory, activeType]);
 
-  useEffect(() => { fetchProjects(1, '', '', ''); }, []); // eslint-disable-line react-hooks/exhaustive-deps, react-hooks/set-state-in-effect
+  useEffect(() => {
+    const type = searchParams.get('type') || '';
+    setActiveType(type);
+    fetchProjects(1, '', '', '', type);
+  }, [searchParams]); // eslint-disable-line react-hooks/exhaustive-deps, react-hooks/set-state-in-effect
 
   const handleSearch = (e) => { e.preventDefault(); fetchProjects(1, search, activeTag, activeCategory); };
 
@@ -56,27 +64,27 @@ export default function Explore() {
   };
 
   const clearAll = () => {
-    setSearch(''); setActiveTag(''); setActiveCategory('');
-    fetchProjects(1, '', '', '');
+    setSearch(''); setActiveTag(''); setActiveCategory(''); setActiveType('');
+    fetchProjects(1, '', '', '', '');
   };
 
-  const hasFilters = search || activeTag || activeCategory;
+  const hasFilters = search || activeTag || activeCategory || activeType;
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 py-10">
-      <div className="flex gap-6">
+    <div className="w-full pl-5 pr-4 sm:pr-6 py-10">
+      <div className="flex gap-4">
 
         {/* ── Left sidebar: categories ── */}
-        <aside className="hidden lg:flex flex-col w-40 shrink-0">
+        <aside className="hidden lg:block shrink-0 w-44 overflow-hidden">
           <div className="sticky top-24">
-            <div className="flex items-center gap-2 mb-4">
-              <LayoutGrid size={14} className="text-[#6B7280]" />
-              <span className="text-xs font-semibold text-[#6B7280] uppercase tracking-wider">Categories</span>
+            <div className="flex items-center gap-1.5 mb-2">
+              <LayoutGrid size={12} className="text-[#6B7280]" />
+              <span className="text-[10px] font-semibold text-[#6B7280] uppercase tracking-wider">Categories</span>
             </div>
             <nav className="space-y-0.5">
               <button
                 onClick={() => handleCategory('')}
-                className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${
+                className={`w-full text-left px-1.5 py-1 rounded-md text-xs transition-colors truncate ${
                   !activeCategory
                     ? 'bg-[#E6F7F5] text-[#00A693] font-medium'
                     : 'text-[#6B7280] hover:bg-[#F3F0EB] hover:text-[#1A1A1A]'
@@ -88,7 +96,7 @@ export default function Explore() {
                 <button
                   key={cat}
                   onClick={() => handleCategory(cat)}
-                  className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors leading-snug ${
+                  className={`w-full text-left px-1.5 py-1 rounded-md text-xs transition-colors truncate ${
                     activeCategory === cat
                       ? 'bg-[#E6F7F5] text-[#00A693] font-medium'
                       : 'text-[#6B7280] hover:bg-[#F3F0EB] hover:text-[#1A1A1A]'

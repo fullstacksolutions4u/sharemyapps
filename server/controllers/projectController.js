@@ -11,6 +11,7 @@ exports.getProjects = async (req, res) => {
     const search = req.query.search || '';
     const tag = req.query.tag || '';
     const category = req.query.category || '';
+    const type = req.query.type || '';
 
     const filter = { status: 'approved' };
     if (search) filter.$or = [
@@ -19,6 +20,7 @@ exports.getProjects = async (req, res) => {
     ];
     if (tag) filter.techTags = { $in: [tag] };
     if (category) filter.category = category;
+    if (type) filter.appType = type;
 
     const total = await Project.countDocuments(filter);
     const projects = await Project.find(filter)

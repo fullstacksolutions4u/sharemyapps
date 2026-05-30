@@ -8,10 +8,16 @@ const userSchema = new mongoose.Schema({
   googleId: { type: String },
   avatar: { type: String, default: '' },
   role: { type: String, enum: ['user', 'admin'], default: 'user' },
+  userType: { type: String, enum: ['developer', 'client'], default: 'developer' },
   phone: { type: String, trim: true, default: '' },
   linkedinUrl: { type: String, trim: true, default: '' },
   githubUrl: { type: String, trim: true, default: '' },
   leetcodeUrl: { type: String, trim: true, default: '' },
+  // Client-specific fields
+  companyName: { type: String, trim: true, default: '' },
+  companyWebsite: { type: String, trim: true, default: '' },
+  industry: { type: String, trim: true, default: '' },
+  requirements: { type: String, trim: true, default: '' },
 }, { timestamps: true });
 
 userSchema.pre('save', async function (next) {
@@ -31,10 +37,15 @@ userSchema.methods.toPublicJSON = function () {
     email: this.email,
     avatar: this.avatar,
     role: this.role,
+    userType: this.userType,
     phone: this.phone,
     linkedinUrl: this.linkedinUrl,
     githubUrl: this.githubUrl,
     leetcodeUrl: this.leetcodeUrl,
+    companyName: this.companyName,
+    companyWebsite: this.companyWebsite,
+    industry: this.industry,
+    requirements: this.requirements,
     isGoogleUser: !!this.googleId,
     createdAt: this.createdAt,
   };

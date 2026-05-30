@@ -17,11 +17,18 @@ import AdminPanel from './pages/AdminPanel';
 import Messages from './pages/Messages';
 import Profile from './pages/Profile';
 import PublicPortfolio from './pages/PublicPortfolio';
+import ClientProfile from './pages/ClientProfile';
+
+function homeFor(user) {
+  if (user.role === 'admin') return '/admin';
+  if (user.userType === 'client') return '/client-profile';
+  return '/dashboard';
+}
 
 function GuestRoute({ children }) {
   const { user, loading } = useAuth();
   if (loading) return null;
-  if (user) return <Navigate to={user.role === 'admin' ? '/admin' : '/dashboard'} replace />;
+  if (user) return <Navigate to={homeFor(user)} replace />;
   return children;
 }
 
@@ -44,6 +51,7 @@ function AppRoutes() {
           <Route path="/dashboard/edit/:id" element={<ProtectedRoute><ProjectForm /></ProtectedRoute>} />
           <Route path="/messages" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
           <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+          <Route path="/client-profile" element={<ProtectedRoute><ClientProfile /></ProtectedRoute>} />
           <Route path="/portfolio/:userId" element={<PublicPortfolio />} />
           <Route path="/admin" element={<AdminRoute><AdminPanel /></AdminRoute>} />
           <Route path="*" element={<NotFound />} />

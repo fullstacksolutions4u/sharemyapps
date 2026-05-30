@@ -18,14 +18,15 @@ const setCookie = (res, token) => {
 
 exports.register = async (req, res) => {
   try {
-    const { name, email, password } = req.body;
+    const { name, email, password, userType } = req.body;
     if (!name || !email || !password)
       return res.status(400).json({ message: 'All fields are required' });
 
     if (await User.findOne({ email }))
       return res.status(409).json({ message: 'Email already in use' });
 
-    const user = await User.create({ name, email, password });
+    const type = userType === 'client' ? 'client' : 'developer';
+    const user = await User.create({ name, email, password, userType: type });
     const token = signToken(user._id);
     setCookie(res, token);
     res.status(201).json({ user: user.toPublicJSON() });
@@ -66,7 +67,7 @@ exports.getMe = (req, res) => {
 
 exports.updateProfile = async (req, res) => {
   try {
-    const { name, phone, linkedinUrl, githubUrl, leetcodeUrl } = req.body;
+    const { name, phone, linkedinUrl, githubUrl, leetcodeUrl, companyName, companyWebsite, industry, requirements } = req.body;
     const user = await User.findById(req.user._id);
     if (!user) return res.status(404).json({ message: 'User not found' });
 
@@ -75,6 +76,10 @@ exports.updateProfile = async (req, res) => {
     if (linkedinUrl !== undefined) user.linkedinUrl = linkedinUrl.trim();
     if (githubUrl !== undefined) user.githubUrl = githubUrl.trim();
     if (leetcodeUrl !== undefined) user.leetcodeUrl = leetcodeUrl.trim();
+    if (companyName !== undefined) user.companyName = companyName.trim();
+    if (companyWebsite !== undefined) user.companyWebsite = companyWebsite.trim();
+    if (industry !== undefined) user.industry = industry.trim();
+    if (requirements !== undefined) user.requirements = requirements.trim();
 
     await user.save();
     res.json({ user: user.toPublicJSON() });
@@ -107,6 +112,8 @@ exports.deleteAccount = async (req, res) => {
 exports.googleCallback = (req, res) => {
   const token = signToken(req.user._id);
   setCookie(res, token);
-  const dest = req.user.role === 'admin' ? '/admin' : '/dashboard';
+  let dest = '/dashboard';
+  if (req.user.role === 'admin') dest = '/admin';
+  else if (req.user.userType === 'client') dest = '/client-profile';
   res.redirect(`${process.env.CLIENT_URL}${dest}`);
 };

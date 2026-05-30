@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, User, Mail, Phone, Link2, GitBranch, Save, Trash2, AlertTriangle } from 'lucide-react';
 import api from '../api/axios';
@@ -82,6 +82,10 @@ export default function Profile() {
   const [saving, setSaving] = useState(false);
   const [showDelete, setShowDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
+
+  useEffect(() => {
+    if (user?.userType === 'client') navigate('/client-profile', { replace: true });
+  }, [user, navigate]);
 
   const handle = e => setForm(f => ({ ...f, [e.target.name]: e.target.value }));
 

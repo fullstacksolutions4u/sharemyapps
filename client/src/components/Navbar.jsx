@@ -161,21 +161,23 @@ export default function Navbar() {
         {/* Desktop Nav */}
         <nav className="hidden md:flex items-center gap-6">
           <Link to="/explore" className="text-sm text-[#6B7280] hover:text-[#1A1A1A] transition-colors">All Apps</Link>
-          <Link to="/explore?category=web" className="text-sm text-[#6B7280] hover:text-[#1A1A1A] transition-colors">Web Applications</Link>
-          <Link to="/explore?category=mobile" className="text-sm text-[#6B7280] hover:text-[#1A1A1A] transition-colors">Mobile Applications</Link>
-          {user && (
+          <Link to="/explore?type=web" className="text-sm text-[#6B7280] hover:text-[#1A1A1A] transition-colors">Web Applications</Link>
+          <Link to="/explore?type=mobile" className="text-sm text-[#6B7280] hover:text-[#1A1A1A] transition-colors">Mobile Applications</Link>
+          {user && user.userType !== 'client' && (
             <Link to="/dashboard" className="text-sm text-[#6B7280] hover:text-[#1A1A1A] transition-colors">My Projects</Link>
           )}
 
           {user ? (
             <div className="flex items-center gap-3">
-              {/* Add Project */}
-              <Link
-                to="/dashboard/add"
-                className="flex items-center gap-1.5 text-sm bg-[#00A693] hover:bg-[#007D6F] text-white px-3.5 py-2 rounded-lg font-medium transition-colors"
-              >
-                <Plus size={14} /> Add project
-              </Link>
+              {/* Add Project — developers only */}
+              {user.userType !== 'client' && (
+                <Link
+                  to="/dashboard/add"
+                  className="flex items-center gap-1.5 text-sm bg-accent hover:bg-accent-hover text-white px-3.5 py-2 rounded-lg font-medium transition-colors"
+                >
+                  <Plus size={14} /> Add project
+                </Link>
+              )}
 
               {/* Messages */}
               <MessagesBadge />
@@ -198,7 +200,11 @@ export default function Navbar() {
                 </button>
                 {dropOpen && (
                   <div className="absolute right-0 mt-2 w-44 bg-white border border-[#E5E1DA] rounded-xl shadow-lg py-1 z-50">
-                    <Link to="/profile" onClick={() => setDropOpen(false)} className="flex items-center gap-2 px-4 py-2 text-sm text-[#1A1A1A] hover:bg-[#FAF9F6]">
+                    <Link
+                      to={user.userType === 'client' ? '/client-profile' : '/profile'}
+                      onClick={() => setDropOpen(false)}
+                      className="flex items-center gap-2 px-4 py-2 text-sm text-text hover:bg-bg"
+                    >
                       <UserCircle size={14} /> Profile
                     </Link>
                     {user.role === 'admin' && (
@@ -237,8 +243,8 @@ export default function Navbar() {
       {menuOpen && (
         <div className="md:hidden bg-white border-t border-[#E5E1DA] px-4 py-4 space-y-3">
           <Link to="/explore" onClick={() => setMenuOpen(false)} className="block text-sm text-[#6B7280] hover:text-[#1A1A1A]">All Apps</Link>
-          <Link to="/explore?category=web" onClick={() => setMenuOpen(false)} className="block text-sm text-[#6B7280] hover:text-[#1A1A1A]">Web Applications</Link>
-          <Link to="/explore?category=mobile" onClick={() => setMenuOpen(false)} className="block text-sm text-[#6B7280] hover:text-[#1A1A1A]">Mobile Applications</Link>
+          <Link to="/explore?type=web" onClick={() => setMenuOpen(false)} className="block text-sm text-muted hover:text-text">Web Applications</Link>
+          <Link to="/explore?type=mobile" onClick={() => setMenuOpen(false)} className="block text-sm text-muted hover:text-text">Mobile Applications</Link>
           {user ? (
             <>
               <Link to="/dashboard" onClick={() => setMenuOpen(false)} className="block text-sm text-[#6B7280] hover:text-[#1A1A1A]">My Projects</Link>
