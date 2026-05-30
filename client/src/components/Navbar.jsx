@@ -123,13 +123,24 @@ function NotificationBell() {
                   <div className="mt-0.5">{typeIcon[n.type] || <Bell size={14} className="text-[#6B7280] shrink-0" />}</div>
                   <div className="flex-1 min-w-0">
                     <p className={`text-sm leading-snug ${!n.read ? 'font-semibold text-[#1A1A1A]' : 'text-[#1A1A1A]'}`}>{n.title}</p>
-                    <p className="text-xs text-[#6B7280] mt-0.5 leading-snug">{n.message}</p>
+                    <p className="text-xs text-[#6B7280] mt-0.5 leading-snug line-clamp-2">{n.message}</p>
                     <p className="text-xs text-[#9CA3AF] mt-1">{new Date(n.createdAt).toLocaleDateString()}</p>
                   </div>
                   {!n.read && <span className="w-2 h-2 bg-[#00A693] rounded-full mt-1.5 shrink-0" />}
                 </div>
               ))
             )}
+          </div>
+
+          {/* Footer */}
+          <div className="px-4 py-2.5 border-t border-border">
+            <Link
+              to="/notifications"
+              onClick={() => setOpen(false)}
+              className="block text-center text-xs text-accent hover:text-accent-hover font-medium transition-colors"
+            >
+              View all notifications
+            </Link>
           </div>
         </div>
       )}
