@@ -5,6 +5,52 @@ const { cloudinary } = require('../middleware/upload');
 
 const PAGE_SIZE = 12;
 
+const SCORE_PAGE1 = 8; // score-sorted slots on page 1 (rows 1–2)
+const NEWLY_ADDED = 4; // newest slots on page 1 (row 3)
+
+const ownerLookupStages = [
+  {
+    $lookup: {
+      from: 'users',
+      localField: 'owner',
+      foreignField: '_id',
+      as: 'owner',
+      pipeline: [{ $project: { name: 1, email: 1, avatar: 1 } }],
+    },
+  },
+  { $unwind: { path: '$owner', preserveNullAndEmptyArrays: true } },
+  {
+    $lookup: {
+      from: 'projects',
+      let: { ownerId: '$owner._id' },
+      pipeline: [
+        { $match: { $expr: { $and: [{ $eq: ['$owner', '$$ownerId'] }, { $eq: ['$status', 'approved'] }] } } },
+        { $count: 'n' },
+      ],
+      as: '_ownerProjects',
+    },
+  },
+  { $addFields: { 'owner.projectCount': { $ifNull: [{ $arrayElemAt: ['$_ownerProjects.n', 0] }, 0] } } },
+  { $project: { _ownerProjects: 0 } },
+];
+
+const popularityPipeline = (filter, skip, limit) => [
+  { $match: filter },
+  {
+    $addFields: {
+      likesCount: { $size: '$likes' },
+      avgRating: {
+        $cond: [{ $gt: [{ $size: '$ratings' }, 0] }, { $avg: '$ratings.value' }, 0],
+      },
+    },
+  },
+  { $addFields: { popularityScore: { $add: ['$likesCount', { $multiply: ['$avgRating', 2] }] } } },
+  { $sort: { popularityScore: -1, createdAt: -1 } },
+  { $skip: skip },
+  { $limit: limit },
+  ...ownerLookupStages,
+];
+
 exports.getProjects = async (req, res) => {
   try {
     const page = Math.max(1, parseInt(req.query.page) || 1);
@@ -23,13 +69,32 @@ exports.getProjects = async (req, res) => {
     if (type) filter.appType = type;
 
     const total = await Project.countDocuments(filter);
-    const projects = await Project.find(filter)
-      .populate('owner', 'name email avatar')
-      .sort({ createdAt: -1 })
-      .skip((page - 1) * PAGE_SIZE)
-      .limit(PAGE_SIZE);
+    // pages: page 1 uses SCORE_PAGE1 score slots, rest use PAGE_SIZE each
+    const pages = total <= SCORE_PAGE1
+      ? 1
+      : 1 + Math.ceil((total - SCORE_PAGE1) / PAGE_SIZE);
 
-    res.json({ projects, total, page, pages: Math.ceil(total / PAGE_SIZE) });
+    if (page === 1) {
+      // Top 8 by score
+      const projects = await Project.aggregate(popularityPipeline(filter, 0, SCORE_PAGE1));
+
+      // 4 newest — exclude projects already in the score list
+      const scoreIds = projects.map(p => p._id);
+      const newlyAdded = await Project.aggregate([
+        { $match: { ...filter, _id: { $nin: scoreIds } } },
+        { $sort: { createdAt: -1 } },
+        { $limit: NEWLY_ADDED },
+        ...ownerLookupStages,
+      ]);
+
+      return res.json({ projects, newlyAdded, total, page, pages });
+    }
+
+    // Page 2+: offset = SCORE_PAGE1 + (page - 2) * PAGE_SIZE
+    const skip = SCORE_PAGE1 + (page - 2) * PAGE_SIZE;
+    const projects = await Project.aggregate(popularityPipeline(filter, skip, PAGE_SIZE));
+
+    res.json({ projects, newlyAdded: [], total, page, pages });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

@@ -17,6 +17,7 @@ const CATEGORIES = [
 export default function Explore() {
   const [searchParams] = useSearchParams();
   const [projects, setProjects] = useState([]);
+  const [newlyAdded, setNewlyAdded] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [activeTag, setActiveTag] = useState('');
@@ -36,6 +37,7 @@ export default function Explore() {
       if (tp) params.set('type', tp);
       const res = await api.get(`/projects?${params}`);
       setProjects(res.data.projects);
+      setNewlyAdded(res.data.newlyAdded || []);
       setPages(res.data.pages);
       setTotal(res.data.total);
       setPage(p);
@@ -140,19 +142,36 @@ export default function Explore() {
       )}
 
       {/* Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-        {loading
-          ? Array.from({ length: 9 }).map((_, i) => <ProjectSkeleton key={i} />)
-          : projects.length > 0
-            ? projects.map(p => <ProjectCard key={p._id} project={p} />)
-            : (
-              <div className="col-span-4 text-center py-20">
-                <p className="text-muted text-sm">No projects found. Try a different filter.</p>
-                <button onClick={clearAll} className="mt-3 text-sm text-accent hover:underline">Clear all filters</button>
+      {loading ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          {Array.from({ length: 12 }).map((_, i) => <ProjectSkeleton key={i} />)}
+        </div>
+      ) : projects.length === 0 && newlyAdded.length === 0 ? (
+        <div className="text-center py-20">
+          <p className="text-muted text-sm">No projects found. Try a different filter.</p>
+          <button onClick={clearAll} className="mt-3 text-sm text-accent hover:underline">Clear all filters</button>
+        </div>
+      ) : (
+        <>
+          {/* Score-sorted rows */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {projects.map(p => <ProjectCard key={p._id} project={p} />)}
+          </div>
+
+          {/* Newly added row — page 1 only */}
+          {newlyAdded.length > 0 && (
+            <div className="mt-6">
+              <div className="flex items-center gap-3 mb-3">
+                <span className="text-sm font-semibold text-text">Newly Added</span>
+                <div className="flex-1 h-px bg-border" />
               </div>
-            )
-        }
-      </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                {newlyAdded.map(p => <ProjectCard key={p._id} project={p} />)}
+              </div>
+            </div>
+          )}
+        </>
+      )}
 
       {/* Pagination */}
       {pages > 1 && (
