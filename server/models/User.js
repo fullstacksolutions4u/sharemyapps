@@ -19,6 +19,7 @@ const userSchema = new mongoose.Schema({
   companyWebsite: { type: String, trim: true, default: '' },
   industry: { type: String, trim: true, default: '' },
   requirements: { type: String, trim: true, default: '' },
+  followers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
 }, { timestamps: true });
 
 userSchema.pre('save', async function (next) {
@@ -50,6 +51,7 @@ userSchema.methods.toPublicJSON = function () {
     requirements: this.requirements,
     isGoogleUser: !!this.googleId,
     createdAt: this.createdAt,
+    followersCount: this.followers?.length || 0,
   };
 };
 

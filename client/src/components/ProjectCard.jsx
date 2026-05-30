@@ -46,7 +46,7 @@ export default function ProjectCard({ project }) {
             <div className="flex items-center gap-2 min-w-0">
               {owner.avatar
                 ? <img src={owner.avatar} alt={owner.name} className="w-6 h-6 rounded-full object-cover shrink-0" />
-                : <span className={`w-6 h-6 rounded-full ${avatarColor(owner.name)} text-white text-xs flex items-center justify-center font-medium shrink-0`}>{owner.name[0].toUpperCase()}</span>
+                : <span className={`w-6 h-6 rounded-full ${avatarColor(owner.name)} text-white text-xs flex items-center justify-center font-medium shrink-0`}>{owner.name?.[0]?.toUpperCase() || '?'}</span>
               }
               <div className="flex flex-col min-w-0">
                 <span className="text-xs text-muted truncate leading-tight">{owner.name}</span>

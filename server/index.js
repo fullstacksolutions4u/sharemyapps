@@ -12,6 +12,7 @@ const projectRoutes = require('./routes/projects');
 const adminRoutes = require('./routes/admin');
 const notificationRoutes = require('./routes/notifications');
 const messageRoutes = require('./routes/messages');
+const userRoutes = require('./routes/users');
 
 const app = express();
 
@@ -28,6 +29,7 @@ app.use('/api/projects', projectRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/messages', messageRoutes);
+app.use('/api/users', userRoutes);
 
 app.get('/api/health', (_req, res) => res.json({ status: 'ok' }));
 

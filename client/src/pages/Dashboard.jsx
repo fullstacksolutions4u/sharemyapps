@@ -102,7 +102,7 @@ export default function Dashboard() {
             onClick={() => setShowShare(true)}
             className="flex items-center gap-2 border border-[#E5E1DA] hover:border-[#00A693]/50 text-[#6B7280] hover:text-[#00A693] px-4 py-2.5 rounded-xl font-medium text-sm transition-colors bg-white"
           >
-            <Share2 size={15} /> Share with Recruiters
+            <Share2 size={15} /> Share all your projects in 1 click
           </button>
           <Link
             to="/dashboard/add"
