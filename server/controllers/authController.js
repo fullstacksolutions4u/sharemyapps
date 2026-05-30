@@ -1,5 +1,8 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
+const Project = require('../models/Project');
+const Comment = require('../models/Comment');
+const { cloudinary } = require('../middleware/upload');
 
 const signToken = (id) =>
   jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: '7d' });
@@ -75,6 +78,27 @@ exports.updateProfile = async (req, res) => {
 
     await user.save();
     res.json({ user: user.toPublicJSON() });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+exports.deleteAccount = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const projects = await Project.find({ owner: userId });
+    for (const project of projects) {
+      const images = [project.bannerImage, ...project.screenshots].filter(Boolean);
+      for (const url of images) {
+        const pid = url.split('/').pop().split('.')[0];
+        await cloudinary.uploader.destroy(`sharemyapp/${pid}`).catch(() => {});
+      }
+      await Comment.deleteMany({ project: project._id });
+      await project.deleteOne();
+    }
+    await User.findByIdAndDelete(userId);
+    res.clearCookie('token');
+    res.json({ message: 'Account deleted' });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

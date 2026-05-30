@@ -1,7 +1,7 @@
 const router = require('express').Router();
 const passport = require('passport');
 const {
-  register, login, logout, getMe, updateProfile, googleCallback,
+  register, login, logout, getMe, updateProfile, deleteAccount, googleCallback,
 } = require('../controllers/authController');
 const { protect } = require('../middleware/auth');
 
@@ -10,6 +10,7 @@ router.post('/login', login);
 router.get('/logout', logout);
 router.get('/me', protect, getMe);
 router.put('/profile', protect, updateProfile);
+router.delete('/account', protect, deleteAccount);
 
 const googleEnabled = !!(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET);
 

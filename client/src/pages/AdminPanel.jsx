@@ -101,6 +101,8 @@ function ProjectReviewPage({ project: initial, onBack, onApprove, onReject, upda
   const [rejectOpen, setRejectOpen] = useState(false);
   const [rejectTitle, setRejectTitle] = useState('');
   const [rejectBody, setRejectBody] = useState('');
+  const [approveOpen, setApproveOpen] = useState(false);
+  const [approveNote, setApproveNote] = useState('');
 
   const input = 'w-full px-3.5 py-2.5 border border-[#E5E1DA] rounded-xl text-sm text-[#1A1A1A] bg-white placeholder-[#9CA3AF] focus:outline-none focus:border-[#00A693] focus:ring-2 focus:ring-[#00A693]/10 transition';
 
@@ -125,6 +127,10 @@ function ProjectReviewPage({ project: initial, onBack, onApprove, onReject, upda
       ? `${rejectTitle.trim()}\n\n${rejectBody.trim()}`
       : rejectBody.trim();
     onReject(initial._id, note);
+  };
+
+  const handleApproveWithNote = () => {
+    onApprove(initial._id, approveNote.trim());
   };
 
   const bannerSrc = initial.bannerImage || `https://s0.wp.com/mshots/v1/${encodeURIComponent(initial.liveUrl)}?w=600`;
@@ -247,6 +253,21 @@ function ProjectReviewPage({ project: initial, onBack, onApprove, onReject, upda
             </div>
           </div>
 
+          {/* Approve with comment form */}
+          {approveOpen && (
+            <div className="bg-white border border-green-200 rounded-2xl overflow-hidden">
+              <div className="bg-green-50 px-5 py-4 border-b border-green-100">
+                <p className="text-sm font-semibold text-green-700">Approval Comment / Tips</p>
+                <p className="text-xs text-green-600 mt-0.5">Optional — share tips, praise, or suggestions. This will be sent to the developer as a notification.</p>
+              </div>
+              <div className="p-5">
+                <textarea rows={4} value={approveNote} onChange={e => setApproveNote(e.target.value)}
+                  placeholder="e.g. Great work! Consider adding dark mode support and improving mobile responsiveness in future updates."
+                  className="w-full px-3 py-2.5 text-sm border border-[#E5E1DA] rounded-xl focus:outline-none focus:border-green-400 focus:ring-2 focus:ring-green-400/10 resize-none transition" />
+              </div>
+            </div>
+          )}
+
           {/* Reject feedback form */}
           {rejectOpen && (
             <div className="bg-white border border-red-200 rounded-2xl overflow-hidden">
@@ -277,13 +298,20 @@ function ProjectReviewPage({ project: initial, onBack, onApprove, onReject, upda
               className="flex items-center gap-1.5 bg-[#F3F0EB] hover:bg-[#E5E1DA] text-[#1A1A1A] px-5 py-2.5 rounded-xl font-medium text-sm transition-colors disabled:opacity-50">
               <Save size={14} /> {saving ? 'Saving...' : 'Save Changes'}
             </button>
-            {!rejectOpen ? (
+
+            {!rejectOpen && !approveOpen && (
               <>
                 {initial.status !== 'approved' && (
-                  <button onClick={() => onApprove(initial._id)} disabled={updating === initial._id}
-                    className="flex items-center gap-1.5 bg-[#00A693] hover:bg-[#007D6F] text-white px-5 py-2.5 rounded-xl font-medium text-sm transition-colors disabled:opacity-50">
-                    <Check size={14} /> {updating === initial._id ? 'Approving...' : 'Approve'}
-                  </button>
+                  <>
+                    <button onClick={() => onApprove(initial._id, '')} disabled={updating === initial._id}
+                      className="flex items-center gap-1.5 bg-[#00A693] hover:bg-[#007D6F] text-white px-5 py-2.5 rounded-xl font-medium text-sm transition-colors disabled:opacity-50">
+                      <Check size={14} /> {updating === initial._id ? 'Approving...' : 'Approve'}
+                    </button>
+                    <button onClick={() => setApproveOpen(true)}
+                      className="flex items-center gap-1.5 bg-green-50 hover:bg-green-100 text-green-700 border border-green-200 px-5 py-2.5 rounded-xl font-medium text-sm transition-colors">
+                      <Check size={14} /> Approve with Comment
+                    </button>
+                  </>
                 )}
                 {initial.status !== 'rejected' && (
                   <button onClick={() => setRejectOpen(true)}
@@ -292,13 +320,28 @@ function ProjectReviewPage({ project: initial, onBack, onApprove, onReject, upda
                   </button>
                 )}
                 {initial.status === 'rejected' && (
-                  <button onClick={() => onApprove(initial._id, 'pending')} disabled={updating === initial._id}
+                  <button onClick={() => onApprove(initial._id, '')} disabled={updating === initial._id}
                     className="flex items-center gap-1.5 bg-yellow-50 hover:bg-yellow-100 text-yellow-700 border border-yellow-200 px-5 py-2.5 rounded-xl font-medium text-sm transition-colors">
                     <Clock size={14} /> Move to Pending
                   </button>
                 )}
               </>
-            ) : (
+            )}
+
+            {approveOpen && (
+              <>
+                <button onClick={() => setApproveOpen(false)}
+                  className="flex items-center gap-1.5 border border-[#E5E1DA] text-[#6B7280] hover:text-[#1A1A1A] px-5 py-2.5 rounded-xl text-sm font-medium transition-colors">
+                  Cancel
+                </button>
+                <button onClick={handleApproveWithNote} disabled={updating === initial._id}
+                  className="flex items-center gap-1.5 bg-green-600 hover:bg-green-700 text-white px-5 py-2.5 rounded-xl font-medium text-sm transition-colors disabled:opacity-50">
+                  <Check size={14} /> {updating === initial._id ? 'Approving...' : 'Approve & Send Comment'}
+                </button>
+              </>
+            )}
+
+            {rejectOpen && (
               <>
                 <button onClick={() => setRejectOpen(false)}
                   className="flex items-center gap-1.5 border border-[#E5E1DA] text-[#6B7280] hover:text-[#1A1A1A] px-5 py-2.5 rounded-xl text-sm font-medium transition-colors">
@@ -413,7 +456,7 @@ function ProjectsSection({ stats }) {
       <ProjectReviewPage
         project={selected}
         onBack={() => setSelected(null)}
-        onApprove={(id) => updateStatus(id, 'approved')}
+        onApprove={(id, note) => updateStatus(id, 'approved', note)}
         onReject={(id, note) => updateStatus(id, 'rejected', note)}
         updating={updating}
       />

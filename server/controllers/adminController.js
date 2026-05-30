@@ -45,7 +45,9 @@ exports.updateProjectStatus = async (req, res) => {
         user: project.owner._id,
         type: 'approved',
         title: 'Project Approved!',
-        message: `Your project "${project.title}" has been approved and is now live.`,
+        message: adminNote
+          ? `Your project "${project.title}" has been approved and is now live. Admin tip: ${adminNote}`
+          : `Your project "${project.title}" has been approved and is now live.`,
         project: project._id,
       });
     } else if (status === 'rejected') {

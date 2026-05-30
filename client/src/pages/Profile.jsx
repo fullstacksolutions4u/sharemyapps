@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, User, Mail, Phone, Link2, GitBranch, Save } from 'lucide-react';
+import { ArrowLeft, User, Mail, Phone, Link2, GitBranch, Save, Trash2, AlertTriangle } from 'lucide-react';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
@@ -32,6 +32,42 @@ function Field({ icon, label, name, value, onChange, placeholder, type = 'text',
   );
 }
 
+function DeleteModal({ onConfirm, onClose, deleting }) {
+  const [input, setInput] = useState('');
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm" onClick={onClose}>
+      <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm p-6" onClick={e => e.stopPropagation()}>
+        <div className="w-10 h-10 rounded-full bg-red-50 flex items-center justify-center mx-auto mb-4">
+          <AlertTriangle size={20} className="text-red-500" />
+        </div>
+        <h2 className="text-base font-bold text-[#1A1A1A] text-center">Delete your account?</h2>
+        <p className="text-xs text-[#6B7280] text-center mt-1.5 mb-4">
+          This will permanently delete your account and all your projects. This action cannot be undone.
+        </p>
+        <p className="text-xs font-medium text-[#1A1A1A] mb-1.5">Type <span className="font-bold text-red-500">DELETE</span> to confirm</p>
+        <input
+          value={input}
+          onChange={e => setInput(e.target.value)}
+          placeholder="DELETE"
+          className="w-full border border-[#E5E1DA] rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-red-400 focus:ring-2 focus:ring-red-400/10 mb-4"
+        />
+        <div className="flex gap-2">
+          <button onClick={onClose} className="flex-1 border border-[#E5E1DA] text-[#6B7280] hover:text-[#1A1A1A] rounded-xl py-2.5 text-sm font-medium transition-colors">
+            Cancel
+          </button>
+          <button
+            onClick={onConfirm}
+            disabled={input !== 'DELETE' || deleting}
+            className="flex-1 bg-red-500 hover:bg-red-600 disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-xl py-2.5 text-sm font-medium transition-colors"
+          >
+            {deleting ? 'Deleting…' : 'Delete Account'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function Profile() {
   const { user, setUser } = useAuth();
   const navigate = useNavigate();
@@ -44,8 +80,23 @@ export default function Profile() {
     leetcodeUrl: user?.leetcodeUrl || '',
   });
   const [saving, setSaving] = useState(false);
+  const [showDelete, setShowDelete] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   const handle = e => setForm(f => ({ ...f, [e.target.name]: e.target.value }));
+
+  const handleDelete = async () => {
+    setDeleting(true);
+    try {
+      await api.delete('/auth/account');
+      setUser(null);
+      toast.success('Account deleted');
+      navigate('/');
+    } catch {
+      toast.error('Failed to delete account');
+      setDeleting(false);
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -160,6 +211,28 @@ export default function Profile() {
           <Save size={14} /> {saving ? 'Saving…' : 'Save Profile'}
         </button>
       </form>
+
+      {/* Danger zone */}
+      <div className="mt-8 border border-red-100 bg-red-50/50 rounded-2xl p-5">
+        <h2 className="text-sm font-semibold text-red-600 mb-1">Danger Zone</h2>
+        <p className="text-xs text-[#6B7280] mb-4">
+          Permanently delete your account and all your projects. This cannot be undone.
+        </p>
+        <button
+          onClick={() => setShowDelete(true)}
+          className="flex items-center gap-2 border border-red-200 text-red-500 hover:bg-red-500 hover:text-white hover:border-red-500 px-4 py-2.5 rounded-xl text-sm font-medium transition-colors"
+        >
+          <Trash2 size={14} /> Delete Account
+        </button>
+      </div>
+
+      {showDelete && (
+        <DeleteModal
+          onConfirm={handleDelete}
+          onClose={() => setShowDelete(false)}
+          deleting={deleting}
+        />
+      )}
     </div>
   );
 }

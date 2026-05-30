@@ -102,7 +102,7 @@ export default function Dashboard() {
             onClick={() => setShowShare(true)}
             className="flex items-center gap-2 border border-[#E5E1DA] hover:border-[#00A693]/50 text-[#6B7280] hover:text-[#00A693] px-4 py-2.5 rounded-xl font-medium text-sm transition-colors bg-white"
           >
-            <Share2 size={15} /> Share
+            <Share2 size={15} /> Share with Recruiters
           </button>
           <Link
             to="/dashboard/add"
@@ -161,10 +161,16 @@ export default function Dashboard() {
                     ))}
                   </div>
                 )}
-                {project.status === 'rejected' && project.adminNote && (
+                {project.adminNote && project.status === 'rejected' && (
                   <div className="flex items-start gap-1.5 mt-2 bg-red-50 border border-red-100 rounded-lg px-2.5 py-1.5">
                     <AlertCircle size={12} className="text-red-500 mt-0.5 shrink-0" />
                     <p className="text-xs text-red-700"><span className="font-medium">Admin note:</span> {project.adminNote}</p>
+                  </div>
+                )}
+                {project.adminNote && project.status === 'approved' && (
+                  <div className="flex items-start gap-1.5 mt-2 bg-green-50 border border-green-100 rounded-lg px-2.5 py-1.5">
+                    <CheckCircle size={12} className="text-green-500 mt-0.5 shrink-0" />
+                    <p className="text-xs text-green-700"><span className="font-medium">Admin tip:</span> {project.adminNote}</p>
                   </div>
                 )}
                 {project.status === 'rejected' && (
