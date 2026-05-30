@@ -1,5 +1,6 @@
 const Project = require('../models/Project');
 const Comment = require('../models/Comment');
+const User = require('../models/User');
 const { cloudinary } = require('../middleware/upload');
 
 const PAGE_SIZE = 12;
@@ -38,6 +39,18 @@ exports.getProject = async (req, res) => {
       .populate('owner', 'name email avatar phone linkedinUrl githubUrl leetcodeUrl');
     if (!project) return res.status(404).json({ message: 'Project not found' });
     res.json(project);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+exports.getUserProjects = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.userId).select('name avatar linkedinUrl githubUrl leetcodeUrl');
+    if (!user) return res.status(404).json({ message: 'User not found' });
+    const projects = await Project.find({ owner: req.params.userId, status: 'approved' })
+      .sort({ createdAt: -1 });
+    res.json({ user, projects });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

@@ -2,7 +2,7 @@ const router = require('express').Router();
 const { protect } = require('../middleware/auth');
 const { upload } = require('../middleware/upload');
 const {
-  getProjects, getProject, getMyProjects,
+  getProjects, getProject, getMyProjects, getUserProjects,
   createProject, updateProject, deleteProject,
   toggleLike, rateProject, getComments, addComment, deleteComment,
 } = require('../controllers/projectController');
@@ -15,6 +15,7 @@ const projectUpload = upload.fields([
 
 router.get('/', getProjects);
 router.get('/my', protect, getMyProjects);
+router.get('/user/:userId', getUserProjects);
 router.get('/:id', getProject);
 router.post('/', protect, projectUpload, createProject);
 router.put('/:id', protect, projectUpload, updateProject);

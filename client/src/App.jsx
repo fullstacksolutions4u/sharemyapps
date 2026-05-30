@@ -16,6 +16,7 @@ import NotFound from './pages/NotFound';
 import AdminPanel from './pages/AdminPanel';
 import Messages from './pages/Messages';
 import Profile from './pages/Profile';
+import PublicPortfolio from './pages/PublicPortfolio';
 
 function GuestRoute({ children }) {
   const { user, loading } = useAuth();
@@ -43,6 +44,7 @@ function AppRoutes() {
           <Route path="/dashboard/edit/:id" element={<ProtectedRoute><ProjectForm /></ProtectedRoute>} />
           <Route path="/messages" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
           <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+          <Route path="/portfolio/:userId" element={<PublicPortfolio />} />
           <Route path="/admin" element={<AdminRoute><AdminPanel /></AdminRoute>} />
           <Route path="*" element={<NotFound />} />
         </Routes>

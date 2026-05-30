@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Plus, Pencil, Trash2, ExternalLink, LayoutDashboard, Clock, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
+import { Plus, Pencil, Trash2, ExternalLink, LayoutDashboard, Clock, CheckCircle, XCircle, AlertCircle, Share2, Copy, Check, X } from 'lucide-react';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
@@ -14,10 +14,57 @@ const statusBadge = {
   rejected: { label: 'Rejected',       icon: XCircle,      cls: 'bg-red-50 text-red-700 border-red-200' },
 };
 
+function ShareModal({ userId, onClose }) {
+  const link = `${window.location.origin}/portfolio/${userId}`;
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(link).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm" onClick={onClose}>
+      <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6" onClick={e => e.stopPropagation()}>
+        <div className="flex items-start justify-between mb-4">
+          <div>
+            <h2 className="text-base font-semibold text-[#1A1A1A]">Share your portfolio</h2>
+            <p className="text-xs text-[#6B7280] mt-0.5">Anyone with this link can view all your approved projects.</p>
+          </div>
+          <button onClick={onClose} className="text-[#6B7280] hover:text-[#1A1A1A] transition-colors p-1 -mr-1 -mt-1">
+            <X size={18} />
+          </button>
+        </div>
+
+        <div className="flex items-center gap-2 bg-[#F3F0EB] border border-[#E5E1DA] rounded-xl px-3 py-2.5">
+          <span className="flex-1 text-xs text-[#1A1A1A] truncate font-mono select-all">{link}</span>
+          <button
+            onClick={handleCopy}
+            className={`flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg transition-all shrink-0 ${
+              copied
+                ? 'bg-green-100 text-green-700'
+                : 'bg-[#00A693] hover:bg-[#007D6F] text-white'
+            }`}
+          >
+            {copied ? <><Check size={12} /> Copied!</> : <><Copy size={12} /> Copy</>}
+          </button>
+        </div>
+
+        <p className="text-xs text-[#6B7280] mt-3">
+          Great for sharing with recruiters — they'll see your live projects without needing an account.
+        </p>
+      </div>
+    </div>
+  );
+}
+
 export default function Dashboard() {
   const { user } = useAuth();
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [showShare, setShowShare] = useState(false);
 
   useEffect(() => {
     api.get('/projects/my')
@@ -50,13 +97,23 @@ export default function Dashboard() {
           </h1>
           <p className="text-sm text-[#6B7280] mt-1">{projects.length} project{projects.length !== 1 ? 's' : ''} listed</p>
         </div>
-        <Link
-          to="/dashboard/add"
-          className="flex items-center gap-2 bg-[#00A693] hover:bg-[#007D6F] text-white px-4 py-2.5 rounded-xl font-medium text-sm transition-colors"
-        >
-          <Plus size={15} /> Add project
-        </Link>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setShowShare(true)}
+            className="flex items-center gap-2 border border-[#E5E1DA] hover:border-[#00A693]/50 text-[#6B7280] hover:text-[#00A693] px-4 py-2.5 rounded-xl font-medium text-sm transition-colors bg-white"
+          >
+            <Share2 size={15} /> Share
+          </button>
+          <Link
+            to="/dashboard/add"
+            className="flex items-center gap-2 bg-[#00A693] hover:bg-[#007D6F] text-white px-4 py-2.5 rounded-xl font-medium text-sm transition-colors"
+          >
+            <Plus size={15} /> Add project
+          </Link>
+        </div>
       </div>
+
+      {showShare && <ShareModal userId={user?._id} onClose={() => setShowShare(false)} />}
 
       {loading ? (
         <div className="space-y-3">
