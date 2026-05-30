@@ -1,6 +1,7 @@
 const Project = require('../models/Project');
 const User = require('../models/User');
 const Notification = require('../models/Notification');
+const { sendProjectApprovedEmail, sendProjectRejectedEmail } = require('../utils/email');
 
 exports.getPendingProjects = async (req, res) => {
   try {
@@ -44,7 +45,7 @@ exports.updateProjectStatus = async (req, res) => {
     if (adminNote !== undefined) project.adminNote = adminNote || '';
     await project.save();
 
-    // Create notification for the project owner
+    // Create in-app notification + send email to project owner
     if (status === 'approved') {
       await Notification.create({
         user: project.owner._id,
@@ -55,6 +56,13 @@ exports.updateProjectStatus = async (req, res) => {
           : `Your project "${project.title}" has been approved and is now live.`,
         project: project._id,
       });
+      sendProjectApprovedEmail({
+        to: project.owner.email,
+        name: project.owner.name,
+        projectTitle: project.title,
+        projectId: project._id,
+        adminNote,
+      }).catch(err => console.error('Approval email failed:', err.message));
     } else if (status === 'rejected') {
       await Notification.create({
         user: project.owner._id,
@@ -65,6 +73,13 @@ exports.updateProjectStatus = async (req, res) => {
           : `Your project "${project.title}" was not approved. Please review and resubmit.`,
         project: project._id,
       });
+      sendProjectRejectedEmail({
+        to: project.owner.email,
+        name: project.owner.name,
+        projectTitle: project.title,
+        projectId: project._id,
+        adminNote,
+      }).catch(err => console.error('Rejection email failed:', err.message));
     }
 
     res.json(project);
