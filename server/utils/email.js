@@ -1,17 +1,20 @@
-const { Resend } = require('resend');
+const Brevo = require('@getbrevo/brevo');
 
-const resend = new Resend(process.env.RESEND_API_KEY);
-const FROM = process.env.EMAIL_FROM || 'ShareMyApps <noreply@sharemyapps.app>';
+const client = Brevo.ApiClient.instance;
+client.authentications['api-key'].apiKey = process.env.BREVO_API_KEY;
+
+const api = new Brevo.TransactionalEmailsApi();
 const BASE_URL = process.env.CLIENT_URL || 'http://localhost:5173';
+const FROM = { name: 'ShareMyApps', email: process.env.EMAIL_FROM || 'sharemyappsportal@gmail.com' };
 
 exports.sendProjectApprovedEmail = async ({ to, name, projectTitle, projectId, adminNote }) => {
   const projectUrl = `${BASE_URL}/project/${projectId}`;
 
-  await resend.emails.send({
-    from: FROM,
-    to,
+  await api.sendTransacEmail({
+    sender: FROM,
+    to: [{ email: to, name }],
     subject: `Your project "${projectTitle}" is now live!`,
-    html: `
+    htmlContent: `
       <div style="font-family:Inter,Arial,sans-serif;max-width:560px;margin:0 auto;background:#fff;border-radius:12px;overflow:hidden;border:1px solid #E5E1DA;">
         <div style="background:#00A693;padding:24px 32px;text-align:center;">
           <img src="https://sharemyapps.vercel.app/logo.png" alt="ShareMyApps" style="height:40px;object-fit:contain;" />
@@ -44,11 +47,11 @@ exports.sendProjectApprovedEmail = async ({ to, name, projectTitle, projectId, a
 exports.sendProjectRejectedEmail = async ({ to, name, projectTitle, projectId, adminNote }) => {
   const editUrl = `${BASE_URL}/dashboard`;
 
-  await resend.emails.send({
-    from: FROM,
-    to,
+  await api.sendTransacEmail({
+    sender: FROM,
+    to: [{ email: to, name }],
     subject: `Action needed on your project "${projectTitle}"`,
-    html: `
+    htmlContent: `
       <div style="font-family:Inter,Arial,sans-serif;max-width:560px;margin:0 auto;background:#fff;border-radius:12px;overflow:hidden;border:1px solid #E5E1DA;">
         <div style="background:#00A693;padding:24px 32px;text-align:center;">
           <img src="https://sharemyapps.vercel.app/logo.png" alt="ShareMyApps" style="height:40px;object-fit:contain;" />
