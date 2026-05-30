@@ -54,9 +54,8 @@ export default function Explore() {
 
   useEffect(() => {
     const type = searchParams.get('type') || '';
-    fetchProjects(1, '', '', '', type);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchParams]);
+    fetchProjects(1, '', '', '', type); // eslint-disable-line react-hooks/set-state-in-effect
+  }, [searchParams]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const debounceRef = useRef(null);
 
