@@ -28,7 +28,7 @@ function MessagesBadge() {
   }, []);
 
   return (
-    <Link to="/messages" className="relative p-1.5 text-[#6B7280] hover:text-[#1A1A1A] transition-colors">
+    <Link to="/messages" className="relative p-1.5 text-muted hover:text-text transition-colors">
       <MessageSquare size={18} />
       {unread > 0 && (
         <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-[#00A693] text-white text-[10px] font-bold flex items-center justify-center rounded-full">
@@ -87,7 +87,7 @@ function NotificationBell() {
     <div className="relative" ref={ref}>
       <button
         onClick={() => { setOpen(v => !v); if (!open) fetchNotifications(); }}
-        className="relative p-1.5 text-[#6B7280] hover:text-[#1A1A1A] transition-colors"
+        className="relative p-1.5 text-muted hover:text-text transition-colors"
       >
         <Bell size={18} />
         {unread > 0 && (
@@ -163,20 +163,24 @@ export default function Navbar() {
 
   return (
     <header className="sticky top-0 z-50 bg-white border-b border-[#E5E1DA]">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+      <div className="w-full pl-7.5 pr-6 h-16 flex items-center justify-between">
         {/* Logo */}
         <Link to="/" className="flex items-center gap-2">
           <img src={logo} alt="ShareMyApps" className="h-8 w-auto" />
-          <span className="hidden sm:inline font-semibold text-sm text-text">ShareMyApps</span>
+          <span className="hidden sm:inline font-bold text-lg">
+            <span className="text-blue-500">Share</span>
+            <span className="text-accent">My</span>
+            <span className="text-violet-600">Apps</span>
+          </span>
         </Link>
 
         {/* Desktop Nav */}
         <nav className="hidden md:flex items-center gap-6">
-          <Link to="/explore" className="text-sm text-[#6B7280] hover:text-[#1A1A1A] transition-colors">All Apps</Link>
-          <Link to="/explore?type=web" className="text-sm text-[#6B7280] hover:text-[#1A1A1A] transition-colors">Web Applications</Link>
-          <Link to="/explore?type=mobile" className="text-sm text-[#6B7280] hover:text-[#1A1A1A] transition-colors">Mobile Applications</Link>
+          <Link to="/explore" className="text-base text-muted hover:text-text transition-colors">All Apps</Link>
+          <Link to="/explore?type=web" className="text-base text-muted hover:text-text transition-colors">Web Applications</Link>
+          <Link to="/explore?type=mobile" className="text-base text-muted hover:text-text transition-colors">Mobile Applications</Link>
           {user && user.userType !== 'client' && (
-            <Link to="/dashboard" className="text-sm text-[#6B7280] hover:text-[#1A1A1A] transition-colors">My Projects</Link>
+            <Link to="/dashboard" className="text-base text-muted hover:text-text transition-colors">My Projects</Link>
           )}
 
           {user ? (
@@ -187,7 +191,7 @@ export default function Navbar() {
                   to="/dashboard/add"
                   className="flex items-center gap-1.5 text-sm bg-accent hover:bg-accent-hover text-white px-3.5 py-2 rounded-lg font-medium transition-colors"
                 >
-                  <Plus size={14} /> Add project
+                  <Plus size={14} /> Add Projects
                 </Link>
               )}
 
@@ -234,7 +238,7 @@ export default function Navbar() {
             </div>
           ) : (
             <div className="flex items-center gap-3">
-              <Link to="/login" className="text-sm text-[#6B7280] hover:text-[#1A1A1A] transition-colors">Sign in</Link>
+              <Link to="/login" className="text-sm text-muted hover:text-text transition-colors">Sign in</Link>
               <Link to="/register" className="text-sm bg-[#00A693] hover:bg-[#007D6F] text-white px-4 py-2 rounded-lg transition-colors font-medium">
                 Get started
               </Link>
@@ -254,14 +258,14 @@ export default function Navbar() {
       {/* Mobile menu */}
       {menuOpen && (
         <div className="md:hidden bg-white border-t border-[#E5E1DA] px-4 py-4 space-y-3">
-          <Link to="/explore" onClick={() => setMenuOpen(false)} className="block text-sm text-[#6B7280] hover:text-[#1A1A1A]">All Apps</Link>
+          <Link to="/explore" onClick={() => setMenuOpen(false)} className="block text-sm text-muted hover:text-text">All Apps</Link>
           <Link to="/explore?type=web" onClick={() => setMenuOpen(false)} className="block text-sm text-muted hover:text-text">Web Applications</Link>
           <Link to="/explore?type=mobile" onClick={() => setMenuOpen(false)} className="block text-sm text-muted hover:text-text">Mobile Applications</Link>
           {user ? (
             <>
-              <Link to="/dashboard" onClick={() => setMenuOpen(false)} className="block text-sm text-[#6B7280] hover:text-[#1A1A1A]">My Projects</Link>
-              <Link to="/messages" onClick={() => setMenuOpen(false)} className="block text-sm text-[#6B7280] hover:text-[#1A1A1A]">Messages</Link>
-              <Link to="/dashboard/add" onClick={() => setMenuOpen(false)} className="block text-sm text-[#1A1A1A]">Add Project</Link>
+              <Link to="/dashboard" onClick={() => setMenuOpen(false)} className="block text-sm text-muted hover:text-text">My Projects</Link>
+              <Link to="/messages" onClick={() => setMenuOpen(false)} className="block text-sm text-muted hover:text-text">Messages</Link>
+              <Link to="/dashboard/add" onClick={() => setMenuOpen(false)} className="block text-sm text-[#1A1A1A]">Add Projects</Link>
               <button onClick={handleLogout} className="block text-sm text-red-500">Logout</button>
             </>
           ) : (

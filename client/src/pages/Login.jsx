@@ -3,7 +3,7 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
 import logo from '../assets/logo.png';
-import { Code2, Briefcase } from 'lucide-react';
+import { Code2, Briefcase, Eye, EyeOff } from 'lucide-react';
 
 const ROLES = [
   { key: 'developer', icon: Code2,     label: 'Developer / Applicant' },
@@ -17,6 +17,7 @@ export default function Login() {
   const [userType, setUserType] = useState('developer');
   const [form, setForm] = useState({ email: '', password: '' });
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   if (params.get('error') === 'oauth') {
     toast.error('Google sign-in failed. Try again.');
@@ -113,14 +114,20 @@ export default function Login() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-text mb-2">Password</label>
-                <input
-                  type="password"
-                  required
-                  value={form.password}
-                  onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
-                  placeholder="••••••••"
-                  className="w-full px-4 py-3.5 border border-border rounded-xl text-sm text-text placeholder-[#9CA3AF] focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/10 transition"
-                />
+                <div className="relative">
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    required
+                    value={form.password}
+                    onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
+                    placeholder="••••••••"
+                    className="w-full px-4 py-3.5 pr-11 border border-border rounded-xl text-sm text-text placeholder-[#9CA3AF] focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/10 transition"
+                  />
+                  <button type="button" onClick={() => setShowPassword(v => !v)}
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#9CA3AF] hover:text-muted transition-colors">
+                    {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                  </button>
+                </div>
               </div>
               <button
                 type="submit"
