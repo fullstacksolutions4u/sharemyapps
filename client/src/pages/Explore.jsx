@@ -22,14 +22,14 @@ const getPageNumbers = (current, total) => {
 };
 
 export default function Explore() {
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [projects, setProjects] = useState([]);
   const [newlyAdded, setNewlyAdded] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [activeTag, setActiveTag] = useState('');
   const [activeCategory, setActiveCategory] = useState('');
-  const [activeType, setActiveType] = useState('');
+  const activeType = searchParams.get('type') || '';
   const [page, setPage] = useState(1);
   const [pages, setPages] = useState(1);
   const [total, setTotal] = useState(0);
@@ -54,9 +54,9 @@ export default function Explore() {
 
   useEffect(() => {
     const type = searchParams.get('type') || '';
-    setActiveType(type);
     fetchProjects(1, '', '', '', type);
-  }, [searchParams]); // eslint-disable-line react-hooks/exhaustive-deps, react-hooks/set-state-in-effect
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
 
   const debounceRef = useRef(null);
 
@@ -84,7 +84,8 @@ export default function Explore() {
   };
 
   const clearAll = () => {
-    setSearch(''); setActiveTag(''); setActiveCategory(''); setActiveType('');
+    setSearch(''); setActiveTag(''); setActiveCategory('');
+    setSearchParams({});
     fetchProjects(1, '', '', '', '');
   };
 

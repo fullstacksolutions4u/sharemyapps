@@ -228,7 +228,7 @@ export default function ProjectDetail() {
 
   if (!project) return null;
 
-  const { title, description, liveUrl, bannerImage, screenshots = [], techTags = [], owner, createdAt, githubUrl, githubUrls = [], githubVisible } = project;
+  const { title, description, liveUrl, bannerImage, screenshots = [], techTags = [], owner, githubUrl, githubUrls = [], githubVisible } = project;
   const images = [getbanner(bannerImage, liveUrl), ...screenshots].filter(Boolean);
   const isOwner = user && owner && user._id === owner._id;
   const allGithubUrls = githubUrls.length ? githubUrls : (githubUrl ? [githubUrl] : []);
