@@ -833,7 +833,17 @@ function MessagesSection({ onUnreadChange }) {
     finally { setLoading(false); }
   };
 
-  useEffect(() => { load(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    const fetch = async () => {
+      try {
+        const res = await api.get('/messages');
+        setMessages(res.data.messages);
+        if (onUnreadChange) onUnreadChange(res.data.unreadCount);
+      } catch { toast.error('Failed to load messages'); }
+      finally { setLoading(false); }
+    };
+    fetch();
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const markRead = async (id) => {
     try {
