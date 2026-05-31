@@ -60,7 +60,9 @@ export default function Explore() {
   }, [searchParams]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
-    const load = () => api.get('/announcements/feed').then(res => setAnnouncements(res.data)).catch(() => {});
+    const load = () => api.get('/announcements/feed')
+      .then(res => { setAnnouncements(res.data); setTickerIndex(0); })
+      .catch(() => {});
     load();
     const interval = setInterval(load, 60000);
     return () => clearInterval(interval);
@@ -69,12 +71,11 @@ export default function Explore() {
   useEffect(() => {
     if (announcements.length === 0) return;
     const len = announcements.length;
-    setTickerIndex(0);
     const timer = setInterval(() => {
       setTickerIndex(i => (i + 1) % len);
     }, 6000);
     return () => clearInterval(timer);
-  }, [announcements]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [announcements]);
 
   const debounceRef = useRef(null);
 
