@@ -7,7 +7,7 @@ import {
   CheckCircle, AlertCircle, ChevronRight, Menu,
   Mail, Phone, Tag, Link as LinkIcon, LogOut,
   ArrowLeft, Plus, Save, Megaphone, Trash2, ToggleLeft, ToggleRight, Pencil,
-  MessageSquare, Send, CornerDownRight, UserCircle2, Zap, Award, Trophy, ChevronDown as ChevronDownIcon, Heart, Star, FolderOpen as FolderOpenIcon, Sparkles,
+  MessageSquare, Send, CornerDownRight, UserCircle2, Zap, Award, Trophy, ChevronDown as ChevronDownIcon, Heart, Star, FolderOpen as FolderOpenIcon, Sparkles, Eye, EyeOff,
 } from 'lucide-react';
 import api from '../api/axios';
 import toast from 'react-hot-toast';
@@ -475,6 +475,17 @@ function ProjectsSection({ stats }) {
     }
   };
 
+  const toggleHidden = async (e, id) => {
+    e.stopPropagation();
+    try {
+      const res = await api.patch(`/admin/projects/${id}/hide`);
+      setProjects(p => p.map(x => x._id === id ? { ...x, hidden: res.data.hidden } : x));
+      toast.success(res.data.hidden ? 'Project hidden from listing' : 'Project visible again');
+    } catch {
+      toast.error('Failed to update visibility');
+    }
+  };
+
   if (selected) {
     return (
       <ProjectReviewPage
@@ -539,6 +550,11 @@ function ProjectsSection({ stats }) {
                         <Sparkles size={10} /> Featured for feedback
                       </span>
                     )}
+                    {project.hidden && (
+                      <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-gray-100 text-gray-500 border border-gray-200 font-medium">
+                        <EyeOff size={10} /> Hidden
+                      </span>
+                    )}
                   </div>
                   <p className="text-xs text-[#6B7280] truncate mb-1">{project.description}</p>
                   <div className="flex items-center gap-3 text-xs text-[#9CA3AF]">
@@ -561,6 +577,18 @@ function ProjectsSection({ stats }) {
                     <span className="hidden sm:inline">{project.featured ? 'Unfeature' : 'Feature'}</span>
                   </button>
                 )}
+                <button
+                  onClick={e => toggleHidden(e, project._id)}
+                  title={project.hidden ? 'Show in listing' : 'Hide from listing'}
+                  className={`shrink-0 flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border font-medium transition-colors ${
+                    project.hidden
+                      ? 'bg-gray-100 text-gray-600 border-gray-300 hover:bg-gray-200'
+                      : 'text-muted border-border hover:border-gray-400 hover:text-gray-600'
+                  }`}
+                >
+                  {project.hidden ? <Eye size={12} /> : <EyeOff size={12} />}
+                  <span className="hidden sm:inline">{project.hidden ? 'Show' : 'Hide'}</span>
+                </button>
                 <ChevronRight size={16} className="text-[#9CA3AF] shrink-0" />
               </div>
             ))}

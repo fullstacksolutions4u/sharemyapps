@@ -198,6 +198,16 @@ exports.toggleFeatured = async (req, res) => {
   } catch (err) { res.status(500).json({ message: err.message }); }
 };
 
+exports.adminToggleHidden = async (req, res) => {
+  try {
+    const project = await Project.findById(req.params.id);
+    if (!project) return res.status(404).json({ message: 'Project not found' });
+    project.hidden = !project.hidden;
+    await project.save();
+    res.json({ hidden: project.hidden });
+  } catch (err) { res.status(500).json({ message: err.message }); }
+};
+
 exports.setBadge = async (req, res) => {
   try {
     const { badge } = req.body;

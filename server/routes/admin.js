@@ -9,6 +9,7 @@ const {
   getStats,
   setBadge,
   toggleFeatured,
+  adminToggleHidden,
 } = require('../controllers/adminController');
 
 router.use(protect, requireAdmin);
@@ -21,5 +22,6 @@ router.put('/projects/:id', adminUpdateProject);
 router.get('/users', getAllUsers);
 router.patch('/users/:id/badge', setBadge);
 router.patch('/projects/:id/featured', toggleFeatured);
+router.patch('/projects/:id/hide', adminToggleHidden);
 
 module.exports = router;
