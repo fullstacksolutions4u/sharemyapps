@@ -16,7 +16,7 @@ const userRoutes = require('./routes/users');
 const announcementRoutes = require('./routes/announcements');
 
 const app = express();
-// test
+
 app.use(cors({
   origin: process.env.CLIENT_URL || 'http://localhost:5173',
   credentials: true,
