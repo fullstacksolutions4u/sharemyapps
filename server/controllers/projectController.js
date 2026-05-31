@@ -35,6 +35,17 @@ const ownerLookupStages = [
   { $project: { _ownerProjects: 0 } },
 ];
 
+exports.getFeaturedProjects = async (req, res) => {
+  try {
+    const projects = await Project.aggregate([
+      { $match: { featured: true, status: 'approved' } },
+      { $sort: { updatedAt: -1 } },
+      ...ownerLookupStages,
+    ]);
+    res.json(projects);
+  } catch (err) { res.status(500).json({ message: err.message }); }
+};
+
 const popularityPipeline = (filter, skip, limit) => [
   { $match: filter },
   {
@@ -46,7 +57,7 @@ const popularityPipeline = (filter, skip, limit) => [
     },
   },
   { $addFields: { popularityScore: { $add: ['$likesCount', { $multiply: ['$avgRating', 2] }] } } },
-  { $sort: { popularityScore: -1, createdAt: -1 } },
+  { $sort: { featured: -1, popularityScore: -1, createdAt: -1 } },
   { $skip: skip },
   { $limit: limit },
   ...ownerLookupStages,

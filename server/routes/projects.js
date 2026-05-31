@@ -5,7 +5,7 @@ const {
   getProjects, getProject, getMyProjects, getUserProjects,
   createProject, updateProject, deleteProject,
   toggleLike, rateProject, getComments, addComment, deleteComment,
-  recordView,
+  recordView, getFeaturedProjects,
 } = require('../controllers/projectController');
 const { sendMessage } = require('../controllers/messageController');
 
@@ -15,6 +15,7 @@ const projectUpload = upload.fields([
 ]);
 
 router.get('/', getProjects);
+router.get('/featured', getFeaturedProjects);
 router.get('/my', protect, getMyProjects);
 router.get('/user/:userId', getUserProjects);
 router.get('/:id', getProject);

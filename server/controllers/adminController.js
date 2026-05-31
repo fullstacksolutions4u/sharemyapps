@@ -161,17 +161,41 @@ exports.getAllUsers = async (req, res) => {
     const statsMap = Object.fromEntries(stats.map(s => [s._id.toString(), s]));
     const result = users.map(u => {
       const s = statsMap[u._id.toString()] || {};
+      const projectCount = s.projectCount || 0;
+      const totalLikes   = s.totalLikes   || 0;
+      const avgRating    = s.avgRating    || 0;
       return {
         ...u.toObject(),
-        projectCount: s.projectCount || 0,
-        totalLikes:   s.totalLikes   || 0,
-        avgRating:    s.avgRating    || 0,
+        projectCount,
+        totalLikes,
+        avgRating,
+        engagementScore: totalLikes + (avgRating * projectCount * 2) + projectCount,
       };
     });
+
+    result.sort((a, b) => b.engagementScore - a.engagementScore);
 
     res.json(result);
   } catch (err) {
     res.status(500).json({ message: err.message }); }
+};
+
+exports.toggleFeatured = async (req, res) => {
+  try {
+    const project = await Project.findById(req.params.id);
+    if (!project) return res.status(404).json({ message: 'Project not found' });
+    if (project.status !== 'approved')
+      return res.status(400).json({ message: 'Only approved projects can be featured' });
+
+    if (!project.featured) {
+      const count = await Project.countDocuments({ featured: true });
+      if (count >= 2) return res.status(400).json({ message: 'Only 2 projects can be featured at a time. Unfeature one first.' });
+    }
+
+    project.featured = !project.featured;
+    await project.save();
+    res.json({ featured: project.featured });
+  } catch (err) { res.status(500).json({ message: err.message }); }
 };
 
 exports.setBadge = async (req, res) => {

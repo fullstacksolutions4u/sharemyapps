@@ -7,12 +7,13 @@ import {
   CheckCircle, AlertCircle, ChevronRight, Menu,
   Mail, Phone, Tag, Link as LinkIcon, LogOut,
   ArrowLeft, Plus, Save, Megaphone, Trash2, ToggleLeft, ToggleRight, Pencil,
-  MessageSquare, Send, CornerDownRight, UserCircle2, Zap, Award, Trophy, ChevronDown as ChevronDownIcon, Heart, Star, FolderOpen as FolderOpenIcon,
+  MessageSquare, Send, CornerDownRight, UserCircle2, Zap, Award, Trophy, ChevronDown as ChevronDownIcon, Heart, Star, FolderOpen as FolderOpenIcon, Sparkles,
 } from 'lucide-react';
 import api from '../api/axios';
 import toast from 'react-hot-toast';
 
 const PLACEHOLDER = 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=400&q=80';
+const getBanner = (bannerImage, liveUrl) => bannerImage || (liveUrl ? `https://s0.wp.com/mshots/v1/${encodeURIComponent(liveUrl)}?w=400` : PLACEHOLDER);
 
 const statusStyle = {
   pending:  'bg-yellow-50 text-yellow-700 border-yellow-200',
@@ -463,6 +464,17 @@ function ProjectsSection({ stats }) {
     }
   };
 
+  const toggleFeatured = async (e, id) => {
+    e.stopPropagation();
+    try {
+      const res = await api.patch(`/admin/projects/${id}/featured`);
+      setProjects(p => p.map(x => x._id === id ? { ...x, featured: res.data.featured } : x));
+      toast.success(res.data.featured ? 'Project featured!' : 'Removed from featured');
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to update featured status');
+    }
+  };
+
   if (selected) {
     return (
       <ProjectReviewPage
@@ -513,7 +525,7 @@ function ProjectsSection({ stats }) {
             {projects.map(project => (
               <div key={project._id} onClick={() => setSelected(project)}
                 className="bg-white border border-[#E5E1DA] rounded-xl p-4 flex items-center gap-4 hover:border-[#00A693]/40 hover:shadow-sm transition-all cursor-pointer">
-                <img src={project.bannerImage || PLACEHOLDER} alt={project.title}
+                <img src={getBanner(project.bannerImage, project.liveUrl)} alt={project.title}
                   className="w-14 h-14 rounded-lg object-cover shrink-0"
                   onError={e => { e.target.src = PLACEHOLDER; }} />
                 <div className="flex-1 min-w-0">
@@ -522,6 +534,11 @@ function ProjectsSection({ stats }) {
                     <span className={`text-xs px-2 py-0.5 rounded-full border font-medium capitalize ${statusStyle[project.status]}`}>
                       {project.status}
                     </span>
+                    {project.featured && (
+                      <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-amber-50 text-amber-600 border border-amber-200 font-medium">
+                        <Sparkles size={10} /> Featured for feedback
+                      </span>
+                    )}
                   </div>
                   <p className="text-xs text-[#6B7280] truncate mb-1">{project.description}</p>
                   <div className="flex items-center gap-3 text-xs text-[#9CA3AF]">
@@ -530,29 +547,48 @@ function ProjectsSection({ stats }) {
                     <span>{new Date(project.createdAt).toLocaleDateString()}</span>
                   </div>
                 </div>
+                {tab === 'approved' && (
+                  <button
+                    onClick={e => toggleFeatured(e, project._id)}
+                    title={project.featured ? 'Remove from featured' : 'Feature this project'}
+                    className={`shrink-0 flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border font-medium transition-colors ${
+                      project.featured
+                        ? 'bg-amber-50 text-amber-600 border-amber-200 hover:bg-amber-100'
+                        : 'text-muted border-border hover:border-amber-300 hover:text-amber-600'
+                    }`}
+                  >
+                    <Sparkles size={12} />
+                    <span className="hidden sm:inline">{project.featured ? 'Unfeature' : 'Feature'}</span>
+                  </button>
+                )}
                 <ChevronRight size={16} className="text-[#9CA3AF] shrink-0" />
               </div>
             ))}
           </div>
 
           {pages > 1 && (
-            <div className="flex items-center justify-between pt-2">
-              <span className="text-xs text-[#9CA3AF]">{total} project{total !== 1 ? 's' : ''}</span>
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => fetchProjects(tab, page - 1)}
-                  disabled={page === 1}
-                  className="px-3 py-1.5 text-xs border border-[#E5E1DA] rounded-lg text-[#6B7280] hover:border-[#00A693] hover:text-[#00A693] disabled:opacity-40 disabled:cursor-not-allowed transition">
-                  Previous
+            <div className="flex flex-col items-center gap-2 pt-2">
+              <div className="flex items-center gap-1 flex-wrap justify-center">
+                <button onClick={() => fetchProjects(tab, page - 1)} disabled={page === 1}
+                  className="px-3 h-8 text-xs border border-border rounded-lg text-muted hover:border-accent hover:text-accent disabled:opacity-40 disabled:cursor-not-allowed transition">
+                  ‹
                 </button>
-                <span className="text-xs text-[#6B7280] px-1">Page {page} of {pages}</span>
-                <button
-                  onClick={() => fetchProjects(tab, page + 1)}
-                  disabled={page === pages}
-                  className="px-3 py-1.5 text-xs border border-[#E5E1DA] rounded-lg text-[#6B7280] hover:border-[#00A693] hover:text-[#00A693] disabled:opacity-40 disabled:cursor-not-allowed transition">
-                  Next
+                {Array.from({ length: pages }, (_, i) => i + 1).map(p => (
+                  <button key={p} onClick={() => fetchProjects(tab, p)}
+                    className={`w-8 h-8 text-xs rounded-lg border transition ${
+                      p === page
+                        ? 'bg-accent text-white border-accent font-medium'
+                        : 'border-border text-muted hover:border-accent hover:text-accent'
+                    }`}>
+                    {p}
+                  </button>
+                ))}
+                <button onClick={() => fetchProjects(tab, page + 1)} disabled={page === pages}
+                  className="px-3 h-8 text-xs border border-border rounded-lg text-muted hover:border-accent hover:text-accent disabled:opacity-40 disabled:cursor-not-allowed transition">
+                  ›
                 </button>
               </div>
+              <span className="text-xs text-[#9CA3AF]">Showing page {page} of {pages} · {total} project{total !== 1 ? 's' : ''}</span>
             </div>
           )}
         </>

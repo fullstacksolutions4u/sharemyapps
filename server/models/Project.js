@@ -24,6 +24,7 @@ const projectSchema = new mongoose.Schema({
     value: { type: Number, min: 1, max: 5 },
   }],
   viewCount: { type: Number, default: 0 },
+  featured: { type: Boolean, default: false },
 }, { timestamps: true });
 
 projectSchema.index({ title: 'text', description: 'text' });

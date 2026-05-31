@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { ExternalLink, Heart, Star, Eye, UserCircle2, Zap, Award, Trophy } from 'lucide-react';
+import { ExternalLink, Heart, Star, Eye, UserCircle2, Zap, Award, Trophy, Sparkles } from 'lucide-react';
 
 const BADGE_CFG = {
   new_member: { label: 'New Member',         Icon: UserCircle2, cls: 'text-[#6B7280]' },
@@ -24,13 +24,18 @@ function avgRating(ratings = []) {
 }
 
 export default function ProjectCard({ project }) {
-  const { _id, title, description, liveUrl, bannerImage, owner, likes = [], ratings = [], viewCount = 0 } = project;
+  const { _id, title, description, liveUrl, bannerImage, owner, likes = [], ratings = [], viewCount = 0, featured } = project;
   const avg = avgRating(ratings);
 
   return (
     <div className="group bg-white border border-accent/30 rounded-xl overflow-hidden shadow-md hover:shadow-xl hover:-translate-y-1 hover:border-accent/60 transition-all duration-200 flex flex-col">
       {/* Banner */}
-      <Link to={`/project/${_id}`} className="block overflow-hidden">
+      <Link to={`/project/${_id}`} className="block overflow-hidden relative">
+        {featured && (
+          <span className="absolute top-2 left-2 z-10 flex items-center gap-1 bg-amber-500 text-white text-[10px] font-semibold px-2 py-0.5 rounded-full shadow">
+            <Sparkles size={9} /> Featured for feedback
+          </span>
+        )}
         <img
           src={getbanner(bannerImage, liveUrl)}
           alt={title}

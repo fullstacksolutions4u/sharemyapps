@@ -8,6 +8,7 @@ const {
   getAllUsers,
   getStats,
   setBadge,
+  toggleFeatured,
 } = require('../controllers/adminController');
 
 router.use(protect, requireAdmin);
@@ -19,5 +20,6 @@ router.patch('/projects/:id/status', updateProjectStatus);
 router.put('/projects/:id', adminUpdateProject);
 router.get('/users', getAllUsers);
 router.patch('/users/:id/badge', setBadge);
+router.patch('/projects/:id/featured', toggleFeatured);
 
 module.exports = router;
