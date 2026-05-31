@@ -1327,15 +1327,12 @@ function VacanciesSection() {
   const [replyText, setReplyText] = useState('');
   const [replySending, setReplySending] = useState(false);
 
-  const load = async () => {
-    try {
-      const res = await api.get('/admin/vacancies');
-      setVacancies(res.data);
-    } catch { toast.error('Failed to load vacancies'); }
-    finally { setLoading(false); }
-  };
-
-  useEffect(() => { load(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    api.get('/admin/vacancies')
+      .then(res => setVacancies(res.data))
+      .catch(() => toast.error('Failed to load vacancies'))
+      .finally(() => setLoading(false));
+  }, []);
 
   const handleField = e => setForm(f => ({ ...f, [e.target.name]: e.target.value }));
 
