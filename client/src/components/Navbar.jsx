@@ -181,6 +181,11 @@ export default function Navbar() {
     setDropOpen(false);
   };
 
+  const goAllApps = () => {
+    navigate('/explore', { state: { _ts: Date.now() } });
+    setMenuOpen(false);
+  };
+
   return (
     <header className="sticky top-0 z-50 bg-white border-b border-[#E5E1DA]">
       <div className="w-full pl-7.5 pr-6 h-16 flex items-center justify-between">
@@ -196,7 +201,7 @@ export default function Navbar() {
 
         {/* Desktop Nav */}
         <nav className="hidden md:flex items-center gap-6">
-          <Link to="/explore" className="text-base text-muted hover:text-text transition-colors">All Apps</Link>
+          <button onClick={goAllApps} className="text-base text-muted hover:text-text transition-colors">All Apps</button>
           <Link to="/explore?type=web" className="text-base text-muted hover:text-text transition-colors">Web Applications</Link>
           <Link to="/explore?type=mobile" className="text-base text-muted hover:text-text transition-colors">Mobile Applications</Link>
           {user && user.userType !== 'client' && (
@@ -287,7 +292,7 @@ export default function Navbar() {
       {/* Mobile menu */}
       {menuOpen && (
         <div className="md:hidden bg-white border-t border-[#E5E1DA] px-4 py-4 space-y-3">
-          <Link to="/explore" onClick={() => setMenuOpen(false)} className="block text-sm text-muted hover:text-text">All Apps</Link>
+          <button onClick={goAllApps} className="block text-sm text-muted hover:text-text w-full text-left">All Apps</button>
           <Link to="/explore?type=web" onClick={() => setMenuOpen(false)} className="block text-sm text-muted hover:text-text">Web Applications</Link>
           <Link to="/explore?type=mobile" onClick={() => setMenuOpen(false)} className="block text-sm text-muted hover:text-text">Mobile Applications</Link>
           {user ? (

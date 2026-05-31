@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useLocation } from 'react-router-dom';
 import { Search, X, Megaphone, Heart, Star, MessageCircle } from 'lucide-react';
 import api from '../api/axios';
 import ProjectCard from '../components/ProjectCard';
@@ -15,14 +15,15 @@ const CATEGORIES = [
 ];
 
 const getPageNumbers = (current, total) => {
-  if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
-  if (current <= 4) return [1, 2, 3, 4, 5, '...', total];
-  if (current >= total - 3) return [1, '...', total - 4, total - 3, total - 2, total - 1, total];
-  return [1, '...', current - 1, current, current + 1, '...', total];
+  if (total <= 15) return Array.from({ length: total }, (_, i) => i + 1);
+  if (current <= 8)  return [...Array.from({ length: 13 }, (_, i) => i + 1), '...', total];
+  if (current >= total - 7) return [1, '...', ...Array.from({ length: 13 }, (_, i) => total - 12 + i)];
+  return [1, '...', current - 5, current - 4, current - 3, current - 2, current - 1, current, current + 1, current + 2, current + 3, current + 4, current + 5, '...', total];
 };
 
 export default function Explore() {
   const [searchParams, setSearchParams] = useSearchParams();
+  const location = useLocation();
   const [projects, setProjects] = useState([]);
   const [newlyAdded, setNewlyAdded] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -55,9 +56,15 @@ export default function Explore() {
   }, [search, activeTag, activeCategory, activeType]);
 
   useEffect(() => {
-    const type = searchParams.get('type') || '';
-    fetchProjects(1, '', '', '', type); // eslint-disable-line react-hooks/set-state-in-effect
-  }, [searchParams]); // eslint-disable-line react-hooks/exhaustive-deps
+    const reset = async () => {
+      const type = searchParams.get('type') || '';
+      setSearch('');
+      setActiveTag('');
+      setActiveCategory('');
+      await fetchProjects(1, '', '', '', type);
+    };
+    reset();
+  }, [location.key]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     const load = () => api.get('/announcements/feed')
@@ -236,7 +243,7 @@ export default function Explore() {
 
       {/* Pagination */}
       {pages > 1 && (
-        <div className="flex items-center justify-center gap-1.5 mt-12 flex-wrap">
+        <div className="w-3/4 mx-auto flex items-center justify-center gap-1 mt-12 flex-wrap">
           <button onClick={() => fetchProjects(page - 1)} disabled={page === 1}
             className="px-3 h-9 text-sm border border-border rounded-lg text-muted hover:border-accent hover:text-accent disabled:opacity-40 disabled:cursor-not-allowed transition">
             ‹
