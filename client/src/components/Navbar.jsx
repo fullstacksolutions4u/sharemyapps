@@ -1,15 +1,18 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Menu, X, ChevronDown, LogOut, Plus, ShieldCheck, Bell, CheckCircle, XCircle, Clock, MessageSquare, UserCircle, AlertCircle } from 'lucide-react';
+import { Menu, X, ChevronDown, LogOut, Plus, ShieldCheck, Bell, CheckCircle, XCircle, Clock, MessageSquare, UserCircle, AlertCircle, Heart, Star, MessageCircle } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import api from '../api/axios';
 import toast from 'react-hot-toast';
 import logo from '../assets/logo.png';
 
 const typeIcon = {
-  approved: <CheckCircle size={14} className="text-green-500 shrink-0" />,
-  rejected: <XCircle size={14} className="text-red-500 shrink-0" />,
-  resubmit: <Clock size={14} className="text-yellow-500 shrink-0" />,
+  approved:  <CheckCircle size={14} className="text-green-500 shrink-0" />,
+  rejected:  <XCircle size={14} className="text-red-500 shrink-0" />,
+  resubmit:  <Clock size={14} className="text-yellow-500 shrink-0" />,
+  like:      <Heart size={14} className="text-pink-500 shrink-0" />,
+  rated:     <Star size={14} className="text-amber-400 shrink-0" />,
+  commented: <MessageCircle size={14} className="text-blue-400 shrink-0" />,
 };
 
 function MessagesBadge() {

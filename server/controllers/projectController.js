@@ -1,6 +1,7 @@
 const Project = require('../models/Project');
 const Comment = require('../models/Comment');
 const User = require('../models/User');
+const Notification = require('../models/Notification');
 const { cloudinary } = require('../middleware/upload');
 
 const PAGE_SIZE = 12;
@@ -236,8 +237,21 @@ exports.toggleLike = async (req, res) => {
     if (!project) return res.status(404).json({ message: 'Project not found' });
     const uid = req.user._id.toString();
     const idx = project.likes.findIndex(l => l.toString() === uid);
-    if (idx >= 0) project.likes.splice(idx, 1);
-    else project.likes.push(req.user._id);
+    if (idx >= 0) {
+      project.likes.splice(idx, 1);
+    } else {
+      project.likes.push(req.user._id);
+      // notify owner (not if they liked their own project)
+      if (project.owner.toString() !== uid) {
+        await Notification.create({
+          user: project.owner,
+          type: 'like',
+          title: 'Someone liked your project',
+          message: `Your project "${project.title}" received a new like.`,
+          project: project._id,
+        });
+      }
+    }
     await project.save();
     res.json({ likes: project.likes.length, liked: idx < 0 });
   } catch (err) {
@@ -252,10 +266,22 @@ exports.rateProject = async (req, res) => {
       return res.status(400).json({ message: 'Rating must be 1–5' });
     const project = await Project.findById(req.params.id);
     if (!project) return res.status(404).json({ message: 'Project not found' });
-    const idx = project.ratings.findIndex(r => r.user.toString() === req.user._id.toString());
+    const uid = req.user._id.toString();
+    const idx = project.ratings.findIndex(r => r.user.toString() === uid);
+    const isNew = idx < 0;
     if (idx >= 0) project.ratings[idx].value = value;
     else project.ratings.push({ user: req.user._id, value });
     await project.save();
+    // notify owner only on first-time rating, not updates
+    if (isNew && project.owner.toString() !== uid) {
+      await Notification.create({
+        user: project.owner,
+        type: 'rated',
+        title: 'Your project received a rating',
+        message: `Your project "${project.title}" received a new rating.`,
+        project: project._id,
+      });
+    }
     const avg = project.ratings.reduce((s, r) => s + r.value, 0) / project.ratings.length;
     res.json({ avg: Math.round(avg * 10) / 10, count: project.ratings.length, userRating: value });
   } catch (err) {
@@ -278,8 +304,20 @@ exports.addComment = async (req, res) => {
   try {
     const text = req.body.text?.trim();
     if (!text) return res.status(400).json({ message: 'Comment text required' });
+    const project = await Project.findById(req.params.id).select('owner title');
+    if (!project) return res.status(404).json({ message: 'Project not found' });
     const comment = await Comment.create({ project: req.params.id, user: req.user._id, text });
     await comment.populate('user', 'name avatar');
+    // notify owner, not if they commented on their own project
+    if (project.owner.toString() !== req.user._id.toString()) {
+      await Notification.create({
+        user: project.owner,
+        type: 'commented',
+        title: 'New comment on your project',
+        message: `Someone left a comment on your project "${project.title}".`,
+        project: project._id,
+      });
+    }
     res.status(201).json(comment);
   } catch (err) {
     res.status(500).json({ message: err.message });

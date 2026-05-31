@@ -1,17 +1,23 @@
 import { useEffect, useState } from 'react';
-import { CheckCircle, XCircle, Clock, Bell, CheckCheck } from 'lucide-react';
+import { CheckCircle, XCircle, Clock, Bell, CheckCheck, Heart, Star, MessageCircle } from 'lucide-react';
 import api from '../api/axios';
 
 const typeIcon = {
-  approved: <CheckCircle size={18} className="text-green-500 shrink-0 mt-0.5" />,
-  rejected: <XCircle   size={18} className="text-red-500 shrink-0 mt-0.5" />,
-  resubmit: <Clock     size={18} className="text-yellow-500 shrink-0 mt-0.5" />,
+  approved:  <CheckCircle size={18} className="text-green-500 shrink-0 mt-0.5" />,
+  rejected:  <XCircle size={18} className="text-red-500 shrink-0 mt-0.5" />,
+  resubmit:  <Clock size={18} className="text-yellow-500 shrink-0 mt-0.5" />,
+  like:      <Heart size={18} className="text-pink-500 shrink-0 mt-0.5" />,
+  rated:     <Star size={18} className="text-amber-400 shrink-0 mt-0.5" />,
+  commented: <MessageCircle size={18} className="text-blue-400 shrink-0 mt-0.5" />,
 };
 
 const typeBadge = {
-  approved: 'bg-green-50 text-green-700 border-green-200',
+  approved:  'bg-green-50 text-green-700 border-green-200',
   rejected:  'bg-red-50 text-red-700 border-red-200',
   resubmit:  'bg-yellow-50 text-yellow-700 border-yellow-200',
+  like:      'bg-pink-50 text-pink-700 border-pink-200',
+  rated:     'bg-amber-50 text-amber-700 border-amber-200',
+  commented: 'bg-blue-50 text-blue-700 border-blue-200',
 };
 
 function timeAgo(date) {
