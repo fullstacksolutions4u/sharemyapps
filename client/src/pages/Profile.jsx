@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, User, Mail, Phone, Link2, GitBranch, Globe, Save, Trash2, AlertTriangle, Camera, Loader2 } from 'lucide-react';
+import { ArrowLeft, User, Mail, Phone, Link2, GitBranch, Globe, Save, Trash2, AlertTriangle, Camera, Loader2, FileText } from 'lucide-react';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
@@ -79,6 +79,7 @@ export default function Profile() {
     githubUrl: user?.githubUrl || '',
     leetcodeUrl: user?.leetcodeUrl || '',
     portfolioUrl: user?.portfolioUrl || '',
+    cvUrl: user?.cvUrl || '',
   });
   const [saving, setSaving] = useState(false);
   const [showDelete, setShowDelete] = useState(false);
@@ -249,6 +250,40 @@ export default function Profile() {
             onChange={handle}
             placeholder="yourportfolio.com"
           />
+        </div>
+
+        {/* Resume / CV */}
+        <div className="bg-white border border-border rounded-2xl p-5 space-y-4">
+          <div className="flex items-start gap-3">
+            <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center shrink-0 mt-0.5">
+              <FileText size={15} className="text-blue-500" />
+            </div>
+            <div>
+              <h2 className="text-sm font-semibold text-text">Resume / CV</h2>
+              <p className="text-xs text-muted mt-0.5">
+                Upload your CV as a <span className="font-medium text-text">PDF</span> to <span className="font-medium text-text">Google Drive</span> and paste the shareable link here.
+                Make sure sharing is set to <span className="font-medium text-text">"Anyone with the link can view"</span> so recruiters can open it.
+              </p>
+            </div>
+          </div>
+          <Field
+            icon={<FileText size={15} />}
+            label={<>Google Drive CV link <span className="text-xs text-[#9CA3AF] font-normal">(optional)</span></>}
+            name="cvUrl"
+            value={form.cvUrl}
+            onChange={handle}
+            placeholder="drive.google.com/file/d/…"
+          />
+          {form.cvUrl && (
+            <a
+              href={form.cvUrl.startsWith('http') ? form.cvUrl : `https://${form.cvUrl}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 text-xs text-accent hover:underline font-medium"
+            >
+              <FileText size={12} /> Preview your CV
+            </a>
+          )}
         </div>
 
         <button

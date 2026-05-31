@@ -7,6 +7,11 @@ const { cloudinary } = require('../middleware/upload');
 const signToken = (id) =>
   jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: '7d' });
 
+const getNextRegNumber = async () => {
+  const last = await User.findOne({ regNumber: { $exists: true } }).sort({ regNumber: -1 }).select('regNumber');
+  return last?.regNumber ? last.regNumber + 1 : 101;
+};
+
 const setCookie = (res, token) => {
   res.cookie('token', token, {
     httpOnly: true,
@@ -26,7 +31,8 @@ exports.register = async (req, res) => {
       return res.status(409).json({ message: 'Email already in use' });
 
     const type = userType === 'client' ? 'client' : 'developer';
-    const user = await User.create({ name, email, password, userType: type });
+    const regNumber = await getNextRegNumber();
+    const user = await User.create({ name, email, password, userType: type, regNumber });
     const token = signToken(user._id);
     setCookie(res, token);
     res.status(201).json({ user: user.toPublicJSON(), token });
@@ -67,7 +73,7 @@ exports.getMe = (req, res) => {
 
 exports.updateProfile = async (req, res) => {
   try {
-    const { name, phone, linkedinUrl, githubUrl, leetcodeUrl, portfolioUrl, companyName, companyWebsite, industry, requirements } = req.body;
+    const { name, phone, linkedinUrl, githubUrl, leetcodeUrl, portfolioUrl, cvUrl, companyName, companyWebsite, industry, requirements } = req.body;
     const user = await User.findById(req.user._id);
     if (!user) return res.status(404).json({ message: 'User not found' });
 
@@ -77,6 +83,7 @@ exports.updateProfile = async (req, res) => {
     if (githubUrl !== undefined) user.githubUrl = githubUrl.trim();
     if (leetcodeUrl !== undefined) user.leetcodeUrl = leetcodeUrl.trim();
     if (portfolioUrl !== undefined) user.portfolioUrl = portfolioUrl.trim();
+    if (cvUrl !== undefined) user.cvUrl = cvUrl.trim();
     if (companyName !== undefined) user.companyName = companyName.trim();
     if (companyWebsite !== undefined) user.companyWebsite = companyWebsite.trim();
     if (industry !== undefined) user.industry = industry.trim();

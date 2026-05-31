@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
-import { CheckCircle, XCircle, Clock, Bell, CheckCheck, Heart, Star, MessageCircle } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { CheckCircle, XCircle, Clock, Bell, CheckCheck, Heart, Star, MessageCircle, AlertTriangle, FileText } from 'lucide-react';
 import api from '../api/axios';
+import { useAuth } from '../context/AuthContext';
 
 const typeIcon = {
   approved:  <CheckCircle size={18} className="text-green-500 shrink-0 mt-0.5" />,
@@ -30,6 +32,7 @@ function timeAgo(date) {
 }
 
 export default function Notifications() {
+  const { user } = useAuth();
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -78,6 +81,24 @@ export default function Notifications() {
           </button>
         )}
       </div>
+
+      {user?.userType !== 'client' && !user?.cvUrl && (
+        <div className="flex items-start gap-3 bg-amber-50 border border-amber-200 rounded-2xl p-4 mb-6">
+          <AlertTriangle size={18} className="text-amber-500 shrink-0 mt-0.5" />
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-semibold text-amber-800">Your CV / Resume is missing</p>
+            <p className="text-xs text-amber-700 mt-0.5">
+              Upload your CV as a PDF to Google Drive and add the link to your profile so recruiters and clients can view it.
+            </p>
+          </div>
+          <Link
+            to="/profile"
+            className="shrink-0 flex items-center gap-1.5 text-xs font-medium bg-amber-500 hover:bg-amber-600 text-white px-3 py-1.5 rounded-lg transition-colors"
+          >
+            <FileText size={12} /> Add CV
+          </Link>
+        </div>
+      )}
 
       {loading ? (
         <div className="space-y-3">

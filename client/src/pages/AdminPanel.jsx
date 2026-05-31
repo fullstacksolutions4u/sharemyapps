@@ -7,7 +7,7 @@ import {
   CheckCircle, AlertCircle, ChevronRight, Menu,
   Mail, Phone, Tag, Link as LinkIcon, LogOut,
   ArrowLeft, Plus, Save, Megaphone, Trash2, ToggleLeft, ToggleRight, Pencil,
-  MessageSquare, Send, CornerDownRight, UserCircle2, Zap, Award, Trophy, ChevronDown as ChevronDownIcon, Heart, Star, FolderOpen as FolderOpenIcon, Sparkles, Eye, EyeOff,
+  MessageSquare, Send, CornerDownRight, UserCircle2, Zap, Award, Trophy, ChevronDown as ChevronDownIcon, Heart, Star, FolderOpen as FolderOpenIcon, Sparkles, Eye, EyeOff, Search,
 } from 'lucide-react';
 import api from '../api/axios';
 import toast from 'react-hot-toast';
@@ -432,11 +432,15 @@ function ProjectsSection({ stats }) {
   const [page, setPage] = useState(1);
   const [pages, setPages] = useState(1);
   const [total, setTotal] = useState(0);
+  const [search, setSearch] = useState('');
+  const [searchInput, setSearchInput] = useState('');
 
-  const fetchProjects = async (status, p = 1) => {
+  const fetchProjects = async (status, p = 1, q = search) => {
     setLoading(true);
     try {
-      const res = await api.get(`/admin/projects?status=${status}&page=${p}&limit=12`);
+      const params = new URLSearchParams({ status, page: p, limit: 12 });
+      if (q.trim()) params.set('search', q.trim());
+      const res = await api.get(`/admin/projects?${params}`);
       setProjects(res.data.projects);
       setPages(res.data.pages);
       setTotal(res.data.total);
@@ -448,7 +452,19 @@ function ProjectsSection({ stats }) {
     }
   };
 
-  useEffect(() => { fetchProjects(tab, 1); }, [tab]); // eslint-disable-line react-hooks/set-state-in-effect
+  useEffect(() => { fetchProjects(tab, 1, search); }, [tab]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const handleSearch = (e) => {
+    e.preventDefault();
+    setSearch(searchInput);
+    fetchProjects(tab, 1, searchInput);
+  };
+
+  const handleClearSearch = () => {
+    setSearchInput('');
+    setSearch('');
+    fetchProjects(tab, 1, '');
+  };
 
   const updateStatus = async (id, status, adminNote = '') => {
     setUpdating(id);
@@ -507,6 +523,36 @@ function ProjectsSection({ stats }) {
           <RefreshCw size={12} /> Refresh
         </button>
       </div>
+
+      <form onSubmit={handleSearch} className="flex items-center gap-2">
+        <div className="relative flex-1 max-w-sm">
+          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#9CA3AF] pointer-events-none" />
+          <input
+            type="text"
+            value={searchInput}
+            onChange={e => setSearchInput(e.target.value)}
+            placeholder="Search by title, description, or owner…"
+            className="w-full pl-9 pr-8 py-2 text-sm border border-[#E5E1DA] rounded-xl bg-white text-[#1A1A1A] placeholder-[#9CA3AF] focus:outline-none focus:border-[#00A693] focus:ring-2 focus:ring-[#00A693]/10 transition"
+          />
+          {searchInput && (
+            <button type="button" onClick={handleClearSearch}
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#9CA3AF] hover:text-[#6B7280] transition-colors">
+              <X size={13} />
+            </button>
+          )}
+        </div>
+        <button type="submit"
+          className="flex items-center gap-1.5 text-xs font-medium bg-[#00A693] hover:bg-[#007D6F] text-white px-4 py-2 rounded-xl transition-colors">
+          <Search size={12} /> Search
+        </button>
+      </form>
+
+      {search && (
+        <p className="text-xs text-[#6B7280]">
+          Showing results for <span className="font-medium text-[#1A1A1A]">"{search}"</span> · {total} found
+          <button onClick={handleClearSearch} className="ml-2 text-[#00A693] hover:underline">Clear</button>
+        </p>
+      )}
 
       <div className="flex gap-1 bg-[#F3F0EB] p-1 rounded-xl w-fit">
         {['pending', 'approved', 'rejected'].map(t => (

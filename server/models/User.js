@@ -14,6 +14,7 @@ const userSchema = new mongoose.Schema({
   githubUrl: { type: String, trim: true, default: '' },
   leetcodeUrl: { type: String, trim: true, default: '' },
   portfolioUrl: { type: String, trim: true, default: '' },
+  cvUrl: { type: String, trim: true, default: '' },
   // Client-specific fields
   companyName: { type: String, trim: true, default: '' },
   companyWebsite: { type: String, trim: true, default: '' },
@@ -21,6 +22,7 @@ const userSchema = new mongoose.Schema({
   requirements: { type: String, trim: true, default: '' },
   followers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
   badge: { type: String, enum: ['new_member', 'active', 'top', 'champion'], default: 'new_member' },
+  regNumber: { type: Number, unique: true, sparse: true },
 }, { timestamps: true });
 
 userSchema.pre('save', async function (next) {
@@ -46,6 +48,7 @@ userSchema.methods.toPublicJSON = function () {
     githubUrl: this.githubUrl,
     leetcodeUrl: this.leetcodeUrl,
     portfolioUrl: this.portfolioUrl,
+    cvUrl: this.cvUrl,
     companyName: this.companyName,
     companyWebsite: this.companyWebsite,
     industry: this.industry,
@@ -54,6 +57,7 @@ userSchema.methods.toPublicJSON = function () {
     createdAt: this.createdAt,
     followersCount: this.followers?.length || 0,
     badge: this.badge || 'new_member',
+    regNumber: this.regNumber,
   };
 };
 
