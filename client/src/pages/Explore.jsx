@@ -30,6 +30,8 @@ export default function Explore() {
   const [activeTag, setActiveTag] = useState('');
   const [activeCategory, setActiveCategory] = useState('');
   const [announcements, setAnnouncements] = useState([]);
+  const [tickerIndex, setTickerIndex] = useState(0);
+  const [tickerFade, setTickerFade] = useState(true);
   const activeType = searchParams.get('type') || '';
   const [page, setPage] = useState(1);
   const [pages, setPages] = useState(1);
@@ -64,6 +66,18 @@ export default function Explore() {
     const interval = setInterval(load, 60000);
     return () => clearInterval(interval);
   }, []);
+
+  useEffect(() => {
+    if (announcements.length <= 1) return;
+    const timer = setInterval(() => {
+      setTickerFade(false);
+      setTimeout(() => {
+        setTickerIndex(i => (i + 1) % announcements.length);
+        setTickerFade(true);
+      }, 350);
+    }, 4500);
+    return () => clearInterval(timer);
+  }, [announcements.length]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const debounceRef = useRef(null);
 
@@ -124,20 +138,14 @@ export default function Explore() {
         {announcements.length > 0 ? (
           <div className="flex items-center gap-2 flex-4 overflow-hidden border-b border-border px-3">
             <Megaphone size={15} className="text-orange-500 shrink-0" />
-            <div className="overflow-hidden flex-1 h-full flex items-center">
-              <span className="animate-marquee text-sm whitespace-nowrap">
-                {announcements.map((a, i) => (
-                  <span key={a._id}>
-                    <span className={a.kind === 'activity' ? 'text-violet-500' : 'text-accent'}>
-                      {a.text}
-                    </span>
-                    {i < announcements.length - 1 && (
-                      <span className="text-border mx-3">•</span>
-                    )}
-                  </span>
-                ))}
-              </span>
-            </div>
+            <span
+              className={`text-sm truncate transition-opacity duration-300 ${
+                announcements[tickerIndex]?.kind === 'activity' ? 'text-violet-500' : 'text-accent'
+              }`}
+              style={{ opacity: tickerFade ? 1 : 0 }}
+            >
+              {announcements[tickerIndex]?.text}
+            </span>
           </div>
         ) : (
           <div className="flex-4 border-b border-border" />

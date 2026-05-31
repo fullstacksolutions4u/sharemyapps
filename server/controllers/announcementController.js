@@ -7,21 +7,32 @@ exports.getFeed = async (req, res) => {
       Announcement.find({ active: true }).sort({ createdAt: -1 }),
       Notification.find({ type: { $in: ['like', 'rated', 'commented'] } })
         .sort({ createdAt: -1 })
-        .limit(3)
+        .limit(20)
         .populate({ path: 'project', select: 'title owner', populate: { path: 'owner', select: 'name' } }),
     ]);
 
-    const activityItems = activity
-      .filter(n => n.project?.title && n.project?.owner?.name)
-      .map(n => {
-        const title = n.project.title;
-        const owner = n.project.owner.name.split(' ')[0];
-        let text = '';
-        if (n.type === 'like')      text = `${title} by ${owner} got a new like`;
-        else if (n.type === 'rated')     text = `${title} by ${owner} received a rating`;
-        else if (n.type === 'commented') text = `New comment on ${title} by ${owner}`;
-        return { _id: n._id.toString() + '_a', text, kind: 'activity' };
-      });
+    // Group by project, collect unique action types per project
+    const byProject = new Map();
+    for (const n of activity) {
+      if (!n.project?.title || !n.project?.owner?.name) continue;
+      const pid = n.project._id.toString();
+      if (!byProject.has(pid)) {
+        byProject.set(pid, { project: n.project, types: new Set(), id: n._id.toString() });
+      }
+      byProject.get(pid).types.add(n.type);
+    }
+
+    const actionLabel = { like: 'a new like', rated: 'a rating', commented: 'a comment' };
+
+    const activityItems = [...byProject.values()].slice(0, 3).map(({ project, types, id }) => {
+      const title = project.title;
+      const owner = project.owner.name.split(' ')[0];
+      const parts = [...types].map(t => actionLabel[t]).filter(Boolean);
+      const joined = parts.length === 1
+        ? parts[0]
+        : parts.slice(0, -1).join(', ') + ' & ' + parts[parts.length - 1];
+      return { _id: id + '_a', text: `${title} by ${owner} got ${joined}`, kind: 'activity' };
+    });
 
     const announcementItems = announcements.map(a => ({
       _id: a._id,
