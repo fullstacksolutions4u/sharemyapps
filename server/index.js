@@ -14,6 +14,7 @@ const notificationRoutes = require('./routes/notifications');
 const messageRoutes = require('./routes/messages');
 const userRoutes = require('./routes/users');
 const announcementRoutes = require('./routes/announcements');
+const vacancyRoutes = require('./routes/vacancies');
 
 const app = express();
 
@@ -32,6 +33,7 @@ app.use('/api/notifications', notificationRoutes);
 app.use('/api/messages', messageRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/announcements', announcementRoutes);
+app.use('/api/vacancies', vacancyRoutes);
 
 app.get('/api/health', (_req, res) => res.json({ status: 'ok' }));
 

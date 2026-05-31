@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { CheckCircle, XCircle, Clock, Bell, CheckCheck, Heart, Star, MessageCircle, AlertTriangle, FileText } from 'lucide-react';
+import { CheckCircle, XCircle, Clock, Bell, CheckCheck, Heart, Star, MessageCircle, AlertTriangle, FileText, Briefcase } from 'lucide-react';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 
@@ -10,7 +10,8 @@ const typeIcon = {
   resubmit:  <Clock size={18} className="text-yellow-500 shrink-0 mt-0.5" />,
   like:      <Heart size={18} className="text-pink-500 shrink-0 mt-0.5" />,
   rated:     <Star size={18} className="text-amber-400 shrink-0 mt-0.5" />,
-  commented: <MessageCircle size={18} className="text-blue-400 shrink-0 mt-0.5" />,
+  commented:     <MessageCircle size={18} className="text-blue-400 shrink-0 mt-0.5" />,
+  vacancy_reply: <Briefcase size={18} className="text-accent shrink-0 mt-0.5" />,
 };
 
 const typeBadge = {
@@ -19,7 +20,8 @@ const typeBadge = {
   resubmit:  'bg-yellow-50 text-yellow-700 border-yellow-200',
   like:      'bg-pink-50 text-pink-700 border-pink-200',
   rated:     'bg-amber-50 text-amber-700 border-amber-200',
-  commented: 'bg-blue-50 text-blue-700 border-blue-200',
+  commented:     'bg-blue-50 text-blue-700 border-blue-200',
+  vacancy_reply: 'bg-accent-light text-accent border-accent/20',
 };
 
 function timeAgo(date) {
@@ -134,7 +136,7 @@ export default function Notifications() {
                     </span>
                     {n.type && (
                       <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full border capitalize ${typeBadge[n.type] || ''}`}>
-                        {n.type}
+                        {n.type === 'vacancy_reply' ? 'vacancy' : n.type}
                       </span>
                     )}
                     {!n.read && <span className="w-2 h-2 bg-[#00A693] rounded-full shrink-0" />}

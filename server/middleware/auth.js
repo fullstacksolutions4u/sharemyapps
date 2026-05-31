@@ -1,6 +1,19 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 
+const optionalAuth = async (req, res, next) => {
+  let token = req.cookies.token;
+  if (!token && req.headers.authorization?.startsWith('Bearer ')) {
+    token = req.headers.authorization.split(' ')[1];
+  }
+  if (!token) return next();
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    req.user = await User.findById(decoded.id).select('-password');
+  } catch { /* invalid token — treat as guest */ }
+  next();
+};
+
 const protect = async (req, res, next) => {
   let token = req.cookies.token;
   if (!token && req.headers.authorization?.startsWith('Bearer ')) {
@@ -23,4 +36,4 @@ const requireAdmin = (req, res, next) => {
   next();
 };
 
-module.exports = { protect, requireAdmin };
+module.exports = { protect, requireAdmin, optionalAuth };

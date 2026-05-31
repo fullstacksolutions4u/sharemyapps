@@ -174,7 +174,14 @@ export default function Profile() {
           <input ref={avatarInputRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarChange} />
         </div>
         <div>
-          <p className="font-semibold text-[#1A1A1A]">{user?.name}</p>
+          <div className="flex items-center gap-2 flex-wrap">
+            <p className="font-semibold text-text">{user?.name}</p>
+            {user?.regNumber && (
+              <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-accent-light text-accent border border-accent/20">
+                {user.userType === 'client' ? 'C' : 'D'}{user.regNumber}
+              </span>
+            )}
+          </div>
           <p className="text-sm text-[#6B7280]">{user?.email}</p>
           {user?.isGoogleUser
             ? <span className="text-xs text-[#9CA3AF] mt-0.5 block">Signed in with Google</span>

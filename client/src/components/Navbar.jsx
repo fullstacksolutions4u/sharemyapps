@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Menu, X, ChevronDown, LogOut, Plus, ShieldCheck, Bell, CheckCircle, XCircle, Clock, MessageSquare, UserCircle, AlertCircle, Heart, Star, MessageCircle, Headphones } from 'lucide-react';
+import { Menu, X, ChevronDown, LogOut, Plus, ShieldCheck, Bell, CheckCircle, XCircle, Clock, MessageSquare, UserCircle, AlertCircle, Heart, Star, MessageCircle, Headphones, Briefcase } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import api from '../api/axios';
 import toast from 'react-hot-toast';
@@ -12,7 +12,8 @@ const typeIcon = {
   resubmit:  <Clock size={14} className="text-yellow-500 shrink-0" />,
   like:      <Heart size={14} className="text-pink-500 shrink-0" />,
   rated:     <Star size={14} className="text-amber-400 shrink-0" />,
-  commented: <MessageCircle size={14} className="text-blue-400 shrink-0" />,
+  commented:     <MessageCircle size={14} className="text-blue-400 shrink-0" />,
+  vacancy_reply: <Briefcase size={14} className="text-accent shrink-0" />,
 };
 
 function MessagesBadge() {
@@ -207,6 +208,7 @@ export default function Navbar() {
           <button onClick={goAllApps} className="text-base text-muted hover:text-text transition-colors">All Apps</button>
           <Link to="/explore?type=web" className="text-base text-muted hover:text-text transition-colors">Web Applications</Link>
           <Link to="/explore?type=mobile" className="text-base text-muted hover:text-text transition-colors">Mobile Applications</Link>
+          <Link to="/vacancies" className="text-base text-muted hover:text-text transition-colors">Vacancies</Link>
           {user && user.userType !== 'client' && (
             <Link to="/dashboard" className="text-base text-muted hover:text-text transition-colors">My Projects</Link>
           )}
@@ -298,6 +300,7 @@ export default function Navbar() {
           <button onClick={goAllApps} className="block text-sm text-muted hover:text-text w-full text-left">All Apps</button>
           <Link to="/explore?type=web" onClick={() => setMenuOpen(false)} className="block text-sm text-muted hover:text-text">Web Applications</Link>
           <Link to="/explore?type=mobile" onClick={() => setMenuOpen(false)} className="block text-sm text-muted hover:text-text">Mobile Applications</Link>
+          <Link to="/vacancies" onClick={() => setMenuOpen(false)} className="block text-sm text-muted hover:text-text">Vacancies</Link>
           {user ? (
             <>
               <Link to="/dashboard" onClick={() => setMenuOpen(false)} className="block text-sm text-muted hover:text-text">My Projects</Link>

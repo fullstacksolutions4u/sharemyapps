@@ -21,6 +21,7 @@ import Profile from './pages/Profile';
 import PublicPortfolio from './pages/PublicPortfolio';
 import ClientProfile from './pages/ClientProfile';
 import ChatAdmin from './pages/ChatAdmin';
+import Vacancies from './pages/Vacancies';
 
 function homeFor(user) {
   if (user.role === 'admin') return '/admin';
@@ -46,7 +47,7 @@ function AppRoutes() {
   const isAdmin = location.pathname.startsWith('/admin');
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#FAF9F6]">
+    <div className="min-h-screen flex flex-col bg-bg">
       <ScrollToTop />
       {!isAdmin && <Navbar />}
       <main className="flex-1">
@@ -64,6 +65,7 @@ function AppRoutes() {
           <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
           <Route path="/client-profile" element={<ProtectedRoute><ClientProfile /></ProtectedRoute>} />
           <Route path="/chat-admin" element={<ProtectedRoute><ChatAdmin /></ProtectedRoute>} />
+          <Route path="/vacancies" element={<Vacancies />} />
           <Route path="/portfolio/:userId" element={<PublicPortfolio />} />
           <Route path="/admin" element={<AdminRoute><AdminPanel /></AdminRoute>} />
           <Route path="*" element={<NotFound />} />
