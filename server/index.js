@@ -35,6 +35,19 @@ app.use('/api/announcements', announcementRoutes);
 
 app.get('/api/health', (_req, res) => res.json({ status: 'ok' }));
 
+// TEMPORARY — remove after running once in production
+app.get('/api/migrate-reg-numbers', async (_req, res) => {
+  const User = require('./models/User');
+  const last = await User.findOne({ regNumber: { $exists: true } }).sort({ regNumber: -1 }).select('regNumber');
+  let next = last?.regNumber ? last.regNumber + 1 : 101;
+  const users = await User.find({ regNumber: { $exists: false } }).sort({ createdAt: 1 }).select('_id name email');
+  for (const user of users) {
+    await User.updateOne({ _id: user._id }, { $set: { regNumber: next } });
+    next++;
+  }
+  res.json({ assigned: users.length, upTo: next - 1 });
+});
+
 mongoose.connect(process.env.MONGO_URI)
   .then(() => {
     console.log('MongoDB connected');
