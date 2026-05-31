@@ -103,6 +103,11 @@ function ProjectReviewPage({ project: initial, onBack, onApprove, onReject, upda
   const [rejectTitle, setRejectTitle] = useState('');
   const [rejectBody, setRejectBody] = useState('');
   const [approveOpen, setApproveOpen] = useState(false);
+  const DEFAULT_APPROVE_NOTE = `Complete your profile with your contact details and social links (LinkedIn, GitHub, portfolio, etc.), and showcase your best live projects. Clients often prefer reviewing real projects over resumes, so highlight projects with unique features and ensure they work flawlessly in production.
+
+Stay active on the platform by testing other developers' project features, exploring projects, liking projects, and sharing constructive feedback in the comments. Active developers and engaging projects gain better visibility and are more likely to be noticed by clients.
+
+Best wishes for your job search, and we look forward to reviewing your projects.`;
   const [approveNote, setApproveNote] = useState('');
 
   const input = 'w-full px-3.5 py-2.5 border border-[#E5E1DA] rounded-xl text-sm text-[#1A1A1A] bg-white placeholder-[#9CA3AF] focus:outline-none focus:border-[#00A693] focus:ring-2 focus:ring-[#00A693]/10 transition';
@@ -262,9 +267,8 @@ function ProjectReviewPage({ project: initial, onBack, onApprove, onReject, upda
                 <p className="text-xs text-green-600 mt-0.5">Optional — share tips, praise, or suggestions. This will be sent to the developer as a notification.</p>
               </div>
               <div className="p-5">
-                <textarea rows={4} value={approveNote} onChange={e => setApproveNote(e.target.value)}
-                  placeholder="e.g. Great work! Consider adding dark mode support and improving mobile responsiveness in future updates."
-                  className="w-full px-3 py-2.5 text-sm border border-[#E5E1DA] rounded-xl focus:outline-none focus:border-green-400 focus:ring-2 focus:ring-green-400/10 resize-none transition" />
+                <textarea rows={10} value={approveNote} onChange={e => setApproveNote(e.target.value)}
+                  className="w-full px-3 py-2.5 text-sm border border-[#E5E1DA] rounded-xl focus:outline-none focus:border-green-400 focus:ring-2 focus:ring-green-400/10 resize-y transition" />
               </div>
             </div>
           )}
@@ -308,7 +312,7 @@ function ProjectReviewPage({ project: initial, onBack, onApprove, onReject, upda
                       className="flex items-center gap-1.5 bg-[#00A693] hover:bg-[#007D6F] text-white px-5 py-2.5 rounded-xl font-medium text-sm transition-colors disabled:opacity-50">
                       <Check size={14} /> {updating === initial._id ? 'Approving...' : 'Approve'}
                     </button>
-                    <button onClick={() => setApproveOpen(true)}
+                    <button onClick={() => { setApproveNote(DEFAULT_APPROVE_NOTE); setApproveOpen(true); }}
                       className="flex items-center gap-1.5 bg-green-50 hover:bg-green-100 text-green-700 border border-green-200 px-5 py-2.5 rounded-xl font-medium text-sm transition-colors">
                       <Check size={14} /> Approve with Comment
                     </button>
