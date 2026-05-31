@@ -1,6 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { ExternalLink, Mail, ArrowLeft, ChevronLeft, ChevronRight, Pencil, Trash2, EyeOff, Heart, Star, Send, Trash, MessageSquare, X } from 'lucide-react';
+import { ExternalLink, Mail, ArrowLeft, ChevronLeft, ChevronRight, Pencil, Trash2, EyeOff, Heart, Star, Send, Trash, MessageSquare, X, Eye, UserCircle2, Zap, Award, Trophy } from 'lucide-react';
+
+const BADGE_CFG = {
+  new_member: { label: 'New Member',         Icon: UserCircle2, cls: 'bg-[#F3F0EB] text-muted border-border' },
+  active:     { label: 'Active Member',      Icon: Zap,         cls: 'bg-blue-50 text-blue-600 border-blue-200' },
+  top:        { label: 'Top Contributor',    Icon: Award,       cls: 'bg-amber-50 text-amber-600 border-amber-200' },
+  champion:   { label: 'Community Champion', Icon: Trophy,      cls: 'bg-purple-50 text-purple-600 border-purple-200' },
+};
 
 const GithubIcon = ({ size = 15 }) => (
   <svg viewBox="0 0 24 24" width={size} height={size} fill="currentColor">
@@ -125,6 +132,8 @@ export default function ProjectDetail() {
 
   const [otherProjects, setOtherProjects] = useState([]);
 
+  const [viewCount, setViewCount] = useState(0);
+
   const [following, setFollowing] = useState(false);
   const [followersCount, setFollowersCount] = useState(0);
   const [followLoading, setFollowLoading] = useState(false);
@@ -135,6 +144,7 @@ export default function ProjectDetail() {
         const p = res.data;
         setProject(p);
         setLikeCount(p.likes?.length || 0);
+        setViewCount(p.viewCount || 0);
         if (user) setLiked(p.likes?.some(l => (l._id || l) === user._id) || false);
         if (p.ratings?.length) {
           const avg = p.ratings.reduce((s, r) => s + r.value, 0) / p.ratings.length;
@@ -161,6 +171,15 @@ export default function ProjectDetail() {
     api.get(`/projects/${id}/comments`)
       .then(res => setComments(res.data))
       .catch(() => {});
+
+    // record view once per session per project
+    const key = `viewed_${id}`;
+    if (!sessionStorage.getItem(key)) {
+      sessionStorage.setItem(key, '1');
+      api.post(`/projects/${id}/view`)
+        .then(res => setViewCount(res.data.viewCount))
+        .catch(() => {});
+    }
   }, [id, navigate, user]);
 
   const handleLike = async () => {
@@ -369,7 +388,7 @@ export default function ProjectDetail() {
 
       {/* Likes left · Visit Live center · GitHub right */}
       <div className="grid grid-cols-3 items-center gap-4 py-4 mt-6 border-y border-[#E5E1DA]">
-        {/* Left — likes & rating */}
+        {/* Left — likes, views & rating */}
         <div className="flex items-center gap-4">
           <button
             onClick={handleLike}
@@ -379,6 +398,13 @@ export default function ProjectDetail() {
             <Heart size={17} className={liked ? 'fill-red-500' : ''} />
             <span>{likeCount} {likeCount === 1 ? 'like' : 'likes'}</span>
           </button>
+
+          <div className="w-px h-4 bg-[#E5E1DA]" />
+
+          <span className="flex items-center gap-1.5 text-sm text-[#6B7280]">
+            <Eye size={15} />
+            {viewCount.toLocaleString()} {viewCount === 1 ? 'view' : 'views'}
+          </span>
 
           <div className="w-px h-4 bg-[#E5E1DA]" />
 
@@ -538,7 +564,21 @@ export default function ProjectDetail() {
               </div>
 
               <p className="font-bold text-[#1A1A1A] text-base leading-tight">{owner.name}</p>
-              <p className="text-xs text-[#6B7280] mt-0.5 mb-3">Developer</p>
+              <div className="flex items-center gap-2 mt-0.5 mb-3">
+                <span className="text-xs text-muted">Developer</span>
+                {BADGE_CFG[owner.badge] ? (() => {
+                  const { label, Icon, cls } = BADGE_CFG[owner.badge];
+                  return (
+                    <span className={`inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full font-medium border ${cls}`}>
+                      <Icon size={11} /> {label}
+                    </span>
+                  );
+                })() : (
+                  <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full font-medium bg-[#F3F0EB] text-muted border border-border">
+                    Member
+                  </span>
+                )}
+              </div>
 
               {/* Followers count */}
               <div className="flex items-center gap-1 mb-4">

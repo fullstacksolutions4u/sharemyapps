@@ -5,6 +5,7 @@ const {
   getProjects, getProject, getMyProjects, getUserProjects,
   createProject, updateProject, deleteProject,
   toggleLike, rateProject, getComments, addComment, deleteComment,
+  recordView,
 } = require('../controllers/projectController');
 const { sendMessage } = require('../controllers/messageController');
 
@@ -21,6 +22,7 @@ router.post('/', protect, projectUpload, createProject);
 router.put('/:id', protect, projectUpload, updateProject);
 router.delete('/:id', protect, deleteProject);
 
+router.post('/:id/view', recordView);
 router.post('/:id/like', protect, toggleLike);
 router.post('/:id/rate', protect, rateProject);
 router.get('/:id/comments', getComments);

@@ -120,11 +120,70 @@ exports.adminUpdateProject = async (req, res) => {
 
 exports.getAllUsers = async (req, res) => {
   try {
-    const users = await User.find().select('-password').sort({ createdAt: -1 });
-    res.json(users);
+    const [users, stats] = await Promise.all([
+      User.find().select('-password').sort({ createdAt: -1 }),
+      Project.aggregate([
+        { $match: { status: 'approved' } },
+        {
+          $group: {
+            _id: '$owner',
+            projectCount: { $sum: 1 },
+            totalLikes: { $sum: { $size: '$likes' } },
+            allRatings: { $push: '$ratings' },
+          },
+        },
+        {
+          $addFields: {
+            flatRatings: {
+              $reduce: {
+                input: '$allRatings',
+                initialValue: [],
+                in: { $concatArrays: ['$$value', '$$this'] },
+              },
+            },
+          },
+        },
+        {
+          $addFields: {
+            avgRating: {
+              $cond: [
+                { $gt: [{ $size: '$flatRatings' }, 0] },
+                { $round: [{ $avg: '$flatRatings.value' }, 1] },
+                0,
+              ],
+            },
+          },
+        },
+        { $project: { allRatings: 0, flatRatings: 0 } },
+      ]),
+    ]);
+
+    const statsMap = Object.fromEntries(stats.map(s => [s._id.toString(), s]));
+    const result = users.map(u => {
+      const s = statsMap[u._id.toString()] || {};
+      return {
+        ...u.toObject(),
+        projectCount: s.projectCount || 0,
+        totalLikes:   s.totalLikes   || 0,
+        avgRating:    s.avgRating    || 0,
+      };
+    });
+
+    res.json(result);
   } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
+    res.status(500).json({ message: err.message }); }
+};
+
+exports.setBadge = async (req, res) => {
+  try {
+    const { badge } = req.body;
+    if (!['new_member', 'active', 'top', 'champion'].includes(badge)) {
+      return res.status(400).json({ message: 'Invalid badge value' });
+    }
+    const user = await User.findByIdAndUpdate(req.params.id, { badge }, { new: true }).select('-password');
+    if (!user) return res.status(404).json({ message: 'User not found' });
+    res.json(user);
+  } catch (err) { res.status(500).json({ message: err.message }); }
 };
 
 exports.getStats = async (req, res) => {

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Plus, Pencil, Trash2, ExternalLink, Clock, CheckCircle, XCircle, AlertCircle, Share2, Copy, Check, X } from 'lucide-react';
+import { Plus, Pencil, Trash2, ExternalLink, Clock, CheckCircle, XCircle, AlertCircle, Share2, Copy, Check, X, Eye, Heart, Star } from 'lucide-react';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
@@ -166,6 +166,21 @@ export default function Dashboard() {
                     {project.techTags.slice(0, 3).map(t => (
                       <span key={t} className="text-xs bg-[#F3F0EB] text-[#6B7280] px-2 py-0.5 rounded-full">{t}</span>
                     ))}
+                  </div>
+                )}
+                {project.status === 'approved' && (
+                  <div className="flex items-center gap-3 mt-2">
+                    <span className="flex items-center gap-1 text-xs text-[#9CA3AF]">
+                      <Eye size={11} /> {(project.viewCount || 0).toLocaleString()} views
+                    </span>
+                    <span className="flex items-center gap-1 text-xs text-red-400">
+                      <Heart size={11} /> {project.likes?.length || 0} likes
+                    </span>
+                    {project.ratings?.length > 0 && (
+                      <span className="flex items-center gap-1 text-xs text-[#F59E0B]">
+                        <Star size={11} /> {(project.ratings.reduce((s, r) => s + r.value, 0) / project.ratings.length).toFixed(1)}
+                      </span>
+                    )}
                   </div>
                 )}
                 {project.adminNote && project.status === 'rejected' && (

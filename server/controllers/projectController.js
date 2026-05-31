@@ -16,7 +16,7 @@ const ownerLookupStages = [
       localField: 'owner',
       foreignField: '_id',
       as: 'owner',
-      pipeline: [{ $project: { name: 1, email: 1, avatar: 1 } }],
+      pipeline: [{ $project: { name: 1, email: 1, avatar: 1, badge: 1 } }],
     },
   },
   { $unwind: { path: '$owner', preserveNullAndEmptyArrays: true } },
@@ -104,7 +104,7 @@ exports.getProjects = async (req, res) => {
 exports.getProject = async (req, res) => {
   try {
     const project = await Project.findById(req.params.id)
-      .populate('owner', 'name email avatar phone linkedinUrl githubUrl leetcodeUrl followers');
+      .populate('owner', 'name email avatar phone linkedinUrl githubUrl leetcodeUrl followers badge');
     if (!project) return res.status(404).json({ message: 'Project not found' });
     res.json(project);
   } catch (err) {
@@ -231,6 +231,19 @@ exports.updateProject = async (req, res) => {
   }
 };
 
+exports.recordView = async (req, res) => {
+  try {
+    const project = await Project.findById(req.params.id).select('owner viewCount');
+    if (!project) return res.status(404).json({ message: 'Not found' });
+    // don't count the project owner viewing their own project
+    if (req.user && project.owner.toString() === req.user._id.toString()) {
+      return res.json({ viewCount: project.viewCount });
+    }
+    await Project.findByIdAndUpdate(req.params.id, { $inc: { viewCount: 1 } });
+    res.json({ viewCount: project.viewCount + 1 });
+  } catch (err) { res.status(500).json({ message: err.message }); }
+};
+
 exports.toggleLike = async (req, res) => {
   try {
     const project = await Project.findById(req.params.id);
@@ -241,15 +254,19 @@ exports.toggleLike = async (req, res) => {
       project.likes.splice(idx, 1);
     } else {
       project.likes.push(req.user._id);
-      // notify owner (not if they liked their own project)
+      // notify owner once per user per project (not if they liked their own project)
       if (project.owner.toString() !== uid) {
-        await Notification.create({
-          user: project.owner,
-          type: 'like',
-          title: 'Someone liked your project',
-          message: `Your project "${project.title}" received a new like.`,
-          project: project._id,
-        });
+        const already = await Notification.exists({ user: project.owner, fromUser: req.user._id, type: 'like', project: project._id });
+        if (!already) {
+          await Notification.create({
+            user: project.owner,
+            fromUser: req.user._id,
+            type: 'like',
+            title: 'Someone liked your project',
+            message: `Your project "${project.title}" received a new like.`,
+            project: project._id,
+          });
+        }
       }
     }
     await project.save();
@@ -276,6 +293,7 @@ exports.rateProject = async (req, res) => {
     if (isNew && project.owner.toString() !== uid) {
       await Notification.create({
         user: project.owner,
+        fromUser: req.user._id,
         type: 'rated',
         title: 'Your project received a rating',
         message: `Your project "${project.title}" received a new rating.`,
@@ -312,6 +330,7 @@ exports.addComment = async (req, res) => {
     if (project.owner.toString() !== req.user._id.toString()) {
       await Notification.create({
         user: project.owner,
+        fromUser: req.user._id,
         type: 'commented',
         title: 'New comment on your project',
         message: `Someone left a comment on your project "${project.title}".`,

@@ -192,11 +192,14 @@ export default function Navbar() {
         {/* Logo */}
         <Link to="/" className="flex items-center gap-2">
           <img src={logo} alt="ShareMyApps" className="h-8 w-auto" />
-          <span className="hidden sm:inline font-bold text-lg">
-            <span className="text-blue-500">Share</span>
-            <span className="text-accent">My</span>
-            <span className="text-violet-600">Apps</span>
-          </span>
+          <div className="hidden sm:flex flex-col leading-tight">
+            <span className="font-bold text-lg leading-none">
+              <span className="text-blue-500">Share</span>
+              <span className="text-accent">My</span>
+              <span className="text-violet-600">Apps</span>
+            </span>
+            <span style={{ fontFamily: "'Caveat', cursive" }} className="text-sm leading-none text-orange-500">project based hiring platform</span>
+          </div>
         </Link>
 
         {/* Desktop Nav */}
@@ -230,17 +233,17 @@ export default function Navbar() {
               <div className="relative">
                 <button
                   onClick={() => setDropOpen(v => !v)}
-                  className="flex items-center gap-2 text-sm text-[#1A1A1A] hover:text-[#00A693] transition-colors"
+                  className="flex items-center gap-2 text-sm text-text hover:text-accent transition-colors"
                 >
                   {user.avatar
                     ? <img src={user.avatar} alt={user.name} className="w-7 h-7 rounded-full object-cover" />
-                    : <span className="w-7 h-7 rounded-full bg-[#00A693] text-white text-xs flex items-center justify-center font-medium">{user.name[0].toUpperCase()}</span>
+                    : <span className="w-7 h-7 rounded-full bg-accent text-white text-xs flex items-center justify-center font-medium">{user.name[0].toUpperCase()}</span>
                   }
                   <span>{user.name.split(' ')[0]}</span>
                   <ChevronDown size={14} />
                 </button>
                 {dropOpen && (
-                  <div className="absolute right-0 mt-2 w-44 bg-white border border-[#E5E1DA] rounded-xl shadow-lg py-1 z-50">
+                  <div className="absolute right-0 mt-2 w-44 bg-white border border-border rounded-xl shadow-lg py-1 z-50">
                     <Link
                       to={user.userType === 'client' ? '/client-profile' : '/profile'}
                       onClick={() => setDropOpen(false)}
@@ -258,12 +261,12 @@ export default function Navbar() {
                       </Link>
                     )}
                     {user.role === 'admin' && (
-                      <Link to="/admin" onClick={() => setDropOpen(false)} className="flex items-center gap-2 px-4 py-2 text-sm text-[#00A693] hover:bg-[#FAF9F6]">
+                      <Link to="/admin" onClick={() => setDropOpen(false)} className="flex items-center gap-2 px-4 py-2 text-sm text-accent hover:bg-bg">
                         <ShieldCheck size={14} /> Admin Panel
                       </Link>
                     )}
                     <div className="border-t border-[#F3F0EB] my-1" />
-                    <button onClick={handleLogout} className="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-500 hover:bg-[#FAF9F6]">
+                    <button onClick={handleLogout} className="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-500 hover:bg-bg">
                       <LogOut size={14} /> Logout
                     </button>
                   </div>
@@ -273,7 +276,7 @@ export default function Navbar() {
           ) : (
             <div className="flex items-center gap-3">
               <Link to="/login" className="text-sm text-muted hover:text-text transition-colors">Sign in</Link>
-              <Link to="/register" className="text-sm bg-[#00A693] hover:bg-[#007D6F] text-white px-4 py-2 rounded-lg transition-colors font-medium">
+              <Link to="/register" className="text-sm bg-accent hover:bg-accent-hover text-white px-4 py-2 rounded-lg transition-colors font-medium">
                 Get started
               </Link>
             </div>
@@ -283,7 +286,7 @@ export default function Navbar() {
         {/* Mobile toggle */}
         <div className="md:hidden flex items-center gap-2">
           {user && <NotificationBell />}
-          <button className="text-[#6B7280]" onClick={() => setMenuOpen(v => !v)}>
+          <button className="text-muted" onClick={() => setMenuOpen(v => !v)}>
             {menuOpen ? <X size={20} /> : <Menu size={20} />}
           </button>
         </div>
@@ -291,7 +294,7 @@ export default function Navbar() {
 
       {/* Mobile menu */}
       {menuOpen && (
-        <div className="md:hidden bg-white border-t border-[#E5E1DA] px-4 py-4 space-y-3">
+        <div className="md:hidden bg-white border-t border-border px-4 py-4 space-y-3">
           <button onClick={goAllApps} className="block text-sm text-muted hover:text-text w-full text-left">All Apps</button>
           <Link to="/explore?type=web" onClick={() => setMenuOpen(false)} className="block text-sm text-muted hover:text-text">Web Applications</Link>
           <Link to="/explore?type=mobile" onClick={() => setMenuOpen(false)} className="block text-sm text-muted hover:text-text">Mobile Applications</Link>
@@ -299,7 +302,7 @@ export default function Navbar() {
             <>
               <Link to="/dashboard" onClick={() => setMenuOpen(false)} className="block text-sm text-muted hover:text-text">My Projects</Link>
               <Link to="/messages" onClick={() => setMenuOpen(false)} className="block text-sm text-muted hover:text-text">Messages</Link>
-              <Link to="/dashboard/add" onClick={() => setMenuOpen(false)} className="block text-sm text-[#1A1A1A]">Add Projects</Link>
+              <Link to="/dashboard/add" onClick={() => setMenuOpen(false)} className="block text-sm text-text">Add Projects</Link>
               {user.role !== 'admin' && (
                 <Link to="/chat-admin" onClick={() => setMenuOpen(false)} className="block text-sm text-muted hover:text-text">Message Admin</Link>
               )}
@@ -307,8 +310,8 @@ export default function Navbar() {
             </>
           ) : (
             <>
-              <Link to="/login" onClick={() => setMenuOpen(false)} className="block text-sm text-[#6B7280]">Sign in</Link>
-              <Link to="/register" onClick={() => setMenuOpen(false)} className="block text-sm bg-[#00A693] text-white px-4 py-2 rounded-lg text-center">Get started</Link>
+              <Link to="/login" onClick={() => setMenuOpen(false)} className="block text-sm text-muted">Sign in</Link>
+              <Link to="/register" onClick={() => setMenuOpen(false)} className="block text-sm bg-accent text-white px-4 py-2 rounded-lg text-center">Get started</Link>
             </>
           )}
         </div>

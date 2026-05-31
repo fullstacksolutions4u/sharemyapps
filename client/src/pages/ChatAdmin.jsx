@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Send, MessageSquare, ShieldCheck, Inbox } from 'lucide-react';
+import { Send, MessageSquare, ShieldCheck, Inbox, Mail } from 'lucide-react';
 import api from '../api/axios';
 import toast from 'react-hot-toast';
 
@@ -36,6 +36,17 @@ export default function ChatAdmin() {
           <h1 className="text-xl font-bold text-text">Message Admin</h1>
           <p className="text-sm text-muted mt-0.5">Send a message directly to the platform admin</p>
         </div>
+      </div>
+
+      {/* Email feedback callout */}
+      <div className="flex items-center gap-3 bg-accent-light border border-accent/20 rounded-xl px-4 py-3 mb-6">
+        <Mail size={16} className="text-accent shrink-0" />
+        <p className="text-sm text-text">
+          You can also email us directly at{' '}
+          <a href="mailto:sharemyappsportal@gmail.com" className="text-accent hover:underline font-medium">
+            sharemyappsportal@gmail.com
+          </a>
+        </p>
       </div>
 
       {sent ? (

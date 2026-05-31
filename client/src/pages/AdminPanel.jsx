@@ -7,7 +7,7 @@ import {
   CheckCircle, AlertCircle, ChevronRight, Menu,
   Mail, Phone, Tag, Link as LinkIcon, LogOut,
   ArrowLeft, Plus, Save, Megaphone, Trash2, ToggleLeft, ToggleRight, Pencil,
-  MessageSquare, Send, CornerDownRight,
+  MessageSquare, Send, CornerDownRight, UserCircle2, Zap, Award, Trophy, ChevronDown as ChevronDownIcon, Heart, Star, FolderOpen as FolderOpenIcon,
 } from 'lucide-react';
 import api from '../api/axios';
 import toast from 'react-hot-toast';
@@ -561,11 +561,33 @@ function ProjectsSection({ stats }) {
   );
 }
 
+// ─── Badge config ─────────────────────────────────────────────────────────────
+const BADGES = [
+  { value: 'new_member', label: 'New Member',        icon: UserCircle2, cls: 'bg-[#F3F0EB] text-[#6B7280] border-[#E5E1DA]' },
+  { value: 'active',     label: 'Active Member',     icon: Zap,         cls: 'bg-blue-50 text-blue-600 border-blue-200' },
+  { value: 'top',        label: 'Top Contributor',   icon: Award,       cls: 'bg-amber-50 text-amber-600 border-amber-200' },
+  { value: 'champion',   label: 'Community Champion', icon: Trophy,      cls: 'bg-purple-50 text-purple-600 border-purple-200' },
+];
+
+function BadgeChip({ badge }) {
+  const cfg = BADGES.find(b => b.value === badge) || BADGES[0];
+  const Icon = cfg.icon;
+  return (
+    <span className={`inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full font-medium border ${cfg.cls}`}>
+      {Icon && <Icon size={11} />} {cfg.label}
+    </span>
+  );
+}
+
 // ─── Users ────────────────────────────────────────────────────────────────────
 function UsersSection() {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState('developers');
+  const [page, setPage] = useState(1);
+  const [badgeLoading, setBadgeLoading] = useState(null);
+  const [pickerOpen, setPickerOpen] = useState(null);
+  const PER_PAGE = 10;
 
   useEffect(() => {
     api.get('/admin/users')
@@ -574,9 +596,30 @@ function UsersSection() {
       .finally(() => setLoading(false));
   }, []);
 
+  useEffect(() => {
+    if (!pickerOpen) return;
+    const close = () => setPickerOpen(null);
+    document.addEventListener('mousedown', close);
+    return () => document.removeEventListener('mousedown', close);
+  }, [pickerOpen]);
+
+  const handleBadge = async (userId, badge) => {
+    setPickerOpen(null);
+    setBadgeLoading(userId);
+    try {
+      const res = await api.patch(`/admin/users/${userId}/badge`, { badge });
+      setUsers(prev => prev.map(u => u._id === userId ? { ...u, badge: res.data.badge } : u));
+      const label = BADGES.find(b => b.value === badge)?.label || badge;
+      toast.success(badge === 'member' ? 'Badge removed' : `${label} badge granted`);
+    } catch { toast.error('Failed to update badge'); }
+    finally { setBadgeLoading(null); }
+  };
+
   const developers = users.filter(u => u.userType !== 'client');
   const clients = users.filter(u => u.userType === 'client');
   const list = tab === 'developers' ? developers : clients;
+  const totalPages = Math.ceil(list.length / PER_PAGE);
+  const paged = list.slice((page - 1) * PER_PAGE, page * PER_PAGE);
 
   const Avatar = ({ u }) => u.avatar
     ? <img src={u.avatar} alt={u.name} className="w-8 h-8 rounded-full object-cover shrink-0" />
@@ -595,7 +638,7 @@ function UsersSection() {
           { key: 'developers', label: `Developers (${developers.length})` },
           { key: 'clients',    label: `Clients (${clients.length})` },
         ].map(t => (
-          <button key={t.key} onClick={() => setTab(t.key)}
+          <button key={t.key} onClick={() => { setTab(t.key); setPage(1); }}
             className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-colors ${
               tab === t.key ? 'bg-white text-[#1A1A1A] shadow-sm' : 'text-[#6B7280] hover:text-[#1A1A1A]'
             }`}>
@@ -621,12 +664,13 @@ function UsersSection() {
               <tr className="border-b border-[#E5E1DA] bg-[#FAF9F6]">
                 <th className="text-left px-4 py-3 text-xs font-semibold text-[#6B7280] uppercase tracking-wider">Developer</th>
                 <th className="text-left px-4 py-3 text-xs font-semibold text-[#6B7280] uppercase tracking-wider hidden sm:table-cell">Email</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-[#6B7280] uppercase tracking-wider">Role</th>
+                <th className="text-left px-4 py-3 text-xs font-semibold text-[#6B7280] uppercase tracking-wider hidden lg:table-cell">Engagement</th>
+                <th className="text-left px-4 py-3 text-xs font-semibold text-[#6B7280] uppercase tracking-wider">Badge</th>
                 <th className="text-left px-4 py-3 text-xs font-semibold text-[#6B7280] uppercase tracking-wider hidden md:table-cell">Joined</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[#F3F0EB]">
-              {list.map(u => (
+              {paged.map(u => (
                 <tr key={u._id} className="hover:bg-[#FAF9F6] transition-colors">
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-3">
@@ -638,14 +682,51 @@ function UsersSection() {
                     </div>
                   </td>
                   <td className="px-4 py-3 text-[#6B7280] hidden sm:table-cell text-xs">{u.email}</td>
+                  <td className="px-4 py-3 hidden lg:table-cell">
+                    <div className="flex items-center gap-3">
+                      <span className="flex items-center gap-1 text-xs text-[#6B7280]" title="Projects">
+                        <FolderOpenIcon size={12} className="text-[#9CA3AF]" /> {u.projectCount || 0}
+                      </span>
+                      <span className="flex items-center gap-1 text-xs text-red-400" title="Total likes">
+                        <Heart size={12} className="fill-red-400" /> {u.totalLikes || 0}
+                      </span>
+                      <span className="flex items-center gap-1 text-xs text-amber-500" title="Avg rating">
+                        <Star size={12} className="fill-amber-400" /> {u.avgRating > 0 ? u.avgRating : '—'}
+                      </span>
+                    </div>
+                  </td>
                   <td className="px-4 py-3">
-                    <span className={`text-xs px-2.5 py-1 rounded-full font-medium border ${
-                      u.role === 'admin'
-                        ? 'bg-[#E6F7F5] text-[#00A693] border-[#00A693]/20'
-                        : 'bg-[#F3F0EB] text-[#6B7280] border-[#E5E1DA]'
-                    }`}>
-                      {u.role}
-                    </span>
+                    <div className="relative flex items-center gap-2" onMouseDown={e => e.stopPropagation()}>
+                      <BadgeChip badge={u.badge || 'member'} />
+                      <button
+                        onClick={() => setPickerOpen(pickerOpen === u._id ? null : u._id)}
+                        disabled={badgeLoading === u._id}
+                        className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-lg border border-[#E5E1DA] text-[#6B7280] hover:border-accent hover:text-accent font-medium transition-colors disabled:opacity-50"
+                      >
+                        {badgeLoading === u._id ? '…' : 'Change'} <ChevronDownIcon size={11} />
+                      </button>
+                      {pickerOpen === u._id && (
+                        <div className="absolute left-0 top-full mt-1.5 z-50 bg-white border border-[#E5E1DA] rounded-xl shadow-lg py-1.5 w-52">
+                          <p className="px-3 pb-1.5 text-[10px] font-semibold text-[#9CA3AF] uppercase tracking-wider border-b border-[#F3F0EB] mb-1">Select badge</p>
+                          {BADGES.map(b => {
+                            const Icon = b.icon;
+                            const active = (u.badge || 'member') === b.value;
+                            return (
+                              <button
+                                key={b.value}
+                                onClick={() => handleBadge(u._id, b.value)}
+                                className={`w-full flex items-center gap-2.5 px-3 py-2 text-sm transition-colors hover:bg-[#FAF9F6] ${active ? 'font-semibold' : ''}`}
+                              >
+                                <span className={`inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full border ${b.cls}`}>
+                                  {Icon && <Icon size={10} />} {b.label}
+                                </span>
+                                {active && <Check size={12} className="ml-auto text-accent" />}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
                   </td>
                   <td className="px-4 py-3 text-[#6B7280] text-xs hidden md:table-cell">
                     {new Date(u.createdAt).toLocaleDateString()}
@@ -668,7 +749,7 @@ function UsersSection() {
               </tr>
             </thead>
             <tbody className="divide-y divide-[#F3F0EB]">
-              {list.map(u => (
+              {paged.map(u => (
                 <tr key={u._id} className="hover:bg-[#FAF9F6] transition-colors">
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-3">
@@ -697,6 +778,38 @@ function UsersSection() {
               ))}
             </tbody>
           </table>
+        </div>
+      )}
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="flex flex-col items-center gap-2 pt-2">
+          <p className="text-xs text-[#9CA3AF]">
+            Showing {(page - 1) * PER_PAGE + 1}–{Math.min(page * PER_PAGE, list.length)} of {list.length}
+          </p>
+          <div className="flex items-center gap-1">
+            <button
+              onClick={() => setPage(p => p - 1)}
+              disabled={page === 1}
+              className="px-3 h-8 text-sm border border-border rounded-lg text-muted hover:border-accent hover:text-accent disabled:opacity-40 disabled:cursor-not-allowed transition"
+            >‹</button>
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map(n => (
+              <button
+                key={n}
+                onClick={() => setPage(n)}
+                className={`w-8 h-8 text-sm rounded-lg border transition ${
+                  n === page
+                    ? 'bg-accent text-white border-accent font-medium'
+                    : 'border-border text-muted hover:border-accent hover:text-accent'
+                }`}
+              >{n}</button>
+            ))}
+            <button
+              onClick={() => setPage(p => p + 1)}
+              disabled={page === totalPages}
+              className="px-3 h-8 text-sm border border-border rounded-lg text-muted hover:border-accent hover:text-accent disabled:opacity-40 disabled:cursor-not-allowed transition"
+            >›</button>
+          </div>
         </div>
       )}
     </div>

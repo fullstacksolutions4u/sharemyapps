@@ -1,5 +1,12 @@
 import { Link } from 'react-router-dom';
-import { ExternalLink, Heart, Star } from 'lucide-react';
+import { ExternalLink, Heart, Star, Eye, UserCircle2, Zap, Award, Trophy } from 'lucide-react';
+
+const BADGE_CFG = {
+  new_member: { label: 'New Member',         Icon: UserCircle2, cls: 'text-[#6B7280]' },
+  active:     { label: 'Active Member',      Icon: Zap,         cls: 'text-blue-500' },
+  top:        { label: 'Top Contributor',    Icon: Award,       cls: 'text-amber-500' },
+  champion:   { label: 'Community Champion', Icon: Trophy,      cls: 'text-purple-500' },
+};
 
 const PLACEHOLDER = 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=600&q=80';
 
@@ -17,7 +24,7 @@ function avgRating(ratings = []) {
 }
 
 export default function ProjectCard({ project }) {
-  const { _id, title, description, liveUrl, bannerImage, owner, likes = [], ratings = [] } = project;
+  const { _id, title, description, liveUrl, bannerImage, owner, likes = [], ratings = [], viewCount = 0 } = project;
   const avg = avgRating(ratings);
 
   return (
@@ -36,12 +43,12 @@ export default function ProjectCard({ project }) {
       <div className="p-4 flex flex-col flex-1 gap-3">
         <div>
           <Link to={`/project/${_id}`}>
-            <h3 className="font-semibold text-[#1A1A1A] hover:text-[#00A693] transition-colors leading-tight mb-1">{title}</h3>
+            <h3 className="font-semibold text-text hover:text-accent transition-colors leading-tight mb-1">{title}</h3>
           </Link>
-          <p className="text-sm text-[#6B7280] line-clamp-2 leading-relaxed">{description}</p>
+          <p className="text-sm text-muted line-clamp-2 leading-relaxed">{description}</p>
         </div>
 
-        <div className="mt-auto pt-3 border-t border-[#E5E1DA] flex items-center justify-between gap-2">
+        <div className="mt-auto pt-3 border-t border-border flex items-center justify-between gap-2">
           {owner && (
             <div className="flex items-center gap-2 min-w-0">
               {owner.avatar
@@ -50,9 +57,16 @@ export default function ProjectCard({ project }) {
               }
               <div className="flex flex-col min-w-0">
                 <span className="text-xs text-muted truncate leading-tight">{owner.name}</span>
-                {owner.projectCount > 0 && (
+                {BADGE_CFG[owner.badge] ? (() => {
+                  const { label, Icon, cls } = BADGE_CFG[owner.badge];
+                  return (
+                    <span className={`inline-flex items-center gap-0.5 text-[10px] font-medium leading-tight ${cls}`}>
+                      <Icon size={10} /> {label}
+                    </span>
+                  );
+                })() : owner.projectCount > 0 ? (
                   <span className="text-[10px] text-[#9CA3AF] leading-tight">{owner.projectCount} project{owner.projectCount !== 1 ? 's' : ''}</span>
-                )}
+                ) : null}
               </div>
             </div>
           )}
@@ -65,6 +79,11 @@ export default function ProjectCard({ project }) {
             {likes.length > 0 && (
               <span className="flex items-center gap-0.5 text-xs text-red-500">
                 <Heart size={11} className="fill-red-500" /> {likes.length}
+              </span>
+            )}
+            {viewCount > 0 && (
+              <span className="flex items-center gap-0.5 text-xs text-[#9CA3AF]">
+                <Eye size={11} /> {viewCount >= 1000 ? `${(viewCount / 1000).toFixed(1)}k` : viewCount}
               </span>
             )}
             <a

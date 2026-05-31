@@ -20,6 +20,7 @@ const userSchema = new mongoose.Schema({
   industry: { type: String, trim: true, default: '' },
   requirements: { type: String, trim: true, default: '' },
   followers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+  badge: { type: String, enum: ['new_member', 'active', 'top', 'champion'], default: 'new_member' },
 }, { timestamps: true });
 
 userSchema.pre('save', async function (next) {
@@ -52,6 +53,7 @@ userSchema.methods.toPublicJSON = function () {
     isGoogleUser: !!this.googleId,
     createdAt: this.createdAt,
     followersCount: this.followers?.length || 0,
+    badge: this.badge || 'new_member',
   };
 };
 
