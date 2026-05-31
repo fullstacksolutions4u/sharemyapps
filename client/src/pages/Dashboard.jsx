@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Plus, Pencil, Trash2, ExternalLink, LayoutDashboard, Clock, CheckCircle, XCircle, AlertCircle, Share2, Copy, Check, X } from 'lucide-react';
+import { Plus, Pencil, Trash2, ExternalLink, Clock, CheckCircle, XCircle, AlertCircle, Share2, Copy, Check, X } from 'lucide-react';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
