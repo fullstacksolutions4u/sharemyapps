@@ -1,14 +1,20 @@
 const Announcement = require('../models/Announcement');
 const Notification = require('../models/Notification');
+const Project = require('../models/Project');
 
 exports.getFeed = async (req, res) => {
   try {
-    const [announcements, activity] = await Promise.all([
+    const [announcements, activity, recentProjects] = await Promise.all([
       Announcement.find({ active: true }).sort({ createdAt: -1 }),
       Notification.find({ type: { $in: ['like', 'rated', 'commented'] } })
         .sort({ createdAt: -1 })
         .limit(20)
         .populate({ path: 'project', select: 'title owner', populate: { path: 'owner', select: 'name' } }),
+      Project.find({ status: 'approved' })
+        .sort({ updatedAt: -1 })
+        .limit(2)
+        .populate('owner', 'name')
+        .select('title owner'),
     ]);
 
     // Group by project, collect unique action types per project
@@ -40,12 +46,21 @@ exports.getFeed = async (req, res) => {
       kind: 'announcement',
     }));
 
-    // interleave: announcement, activity, announcement, activity …
+    const newProjectItems = recentProjects
+      .filter(p => p.owner?.name)
+      .map(p => ({
+        _id: p._id + '_np',
+        text: `${p.title} by ${p.owner.name.split(' ')[0]} was just added — explore it and give your feedback!`,
+        kind: 'new_project',
+      }));
+
+    // interleave: announcement, activity, new_project, …
     const feed = [];
-    const max = Math.max(announcementItems.length, activityItems.length);
+    const max = Math.max(announcementItems.length, activityItems.length, newProjectItems.length);
     for (let i = 0; i < max; i++) {
       if (i < announcementItems.length) feed.push(announcementItems[i]);
       if (i < activityItems.length)     feed.push(activityItems[i]);
+      if (i < newProjectItems.length)   feed.push(newProjectItems[i]);
     }
 
     res.json(feed);

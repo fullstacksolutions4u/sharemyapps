@@ -67,8 +67,18 @@ exports.logout = (_req, res) => {
   res.json({ message: 'Logged out' });
 };
 
-exports.getMe = (req, res) => {
-  res.json({ user: req.user.toPublicJSON() });
+exports.getMe = async (req, res) => {
+  try {
+    const user = req.user;
+    const THREE_DAYS = 3 * 24 * 60 * 60 * 1000;
+    if (user.badge === 'new_member' && Date.now() - new Date(user.createdAt).getTime() >= THREE_DAYS) {
+      user.badge = 'active';
+      await user.save();
+    }
+    res.json({ user: user.toPublicJSON() });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
 };
 
 exports.updateProfile = async (req, res) => {

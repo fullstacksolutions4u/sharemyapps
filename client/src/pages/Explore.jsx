@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { useSearchParams, useLocation } from 'react-router-dom';
-import { Search, X, Megaphone, Heart, Star, MessageCircle } from 'lucide-react';
+import { Search, X, Megaphone, Heart, Star, MessageCircle, Sparkles } from 'lucide-react';
 import api from '../api/axios';
 import ProjectCard from '../components/ProjectCard';
 import ProjectSkeleton from '../components/ProjectSkeleton';
@@ -151,10 +151,17 @@ export default function Explore() {
                   {announcements[tickerIndex].types?.includes('commented') && <MessageCircle size={12} className="text-blue-400" />}
                 </span>
               )}
+              {announcements[tickerIndex]?.kind === 'new_project' && (
+                <span key={tickerIndex + '_np'} className="animate-ticker-up flex items-center shrink-0">
+                  <Sparkles size={12} className="text-amber-400" />
+                </span>
+              )}
               <span
                 key={tickerIndex}
                 className={`animate-ticker-up text-sm truncate block ${
-                  announcements[tickerIndex]?.kind === 'activity' ? 'text-violet-500' : 'text-accent'
+                  announcements[tickerIndex]?.kind === 'activity'    ? 'text-violet-500' :
+                  announcements[tickerIndex]?.kind === 'new_project' ? 'text-amber-500'  :
+                  'text-accent'
                 }`}
               >
                 {announcements[tickerIndex]?.text}

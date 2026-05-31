@@ -1,11 +1,10 @@
 import { Link } from 'react-router-dom';
-import { ExternalLink, Heart, Star, Eye, UserCircle2, Zap, Award, Trophy, Sparkles } from 'lucide-react';
+import { ExternalLink, Heart, Star, Eye, Zap, Award, Trophy, Sparkles, Sprout } from 'lucide-react';
 
 const BADGE_CFG = {
-  new_member: { label: 'New Member',         Icon: UserCircle2, cls: 'text-[#6B7280]' },
-  active:     { label: 'Active Member',      Icon: Zap,         cls: 'text-blue-500' },
-  top:        { label: 'Top Contributor',    Icon: Award,       cls: 'text-amber-500' },
-  champion:   { label: 'Community Champion', Icon: Trophy,      cls: 'text-purple-500' },
+  active:   { label: 'Active Member',      Icon: Zap,    cls: 'text-blue-500' },
+  top:      { label: 'Top Contributor',    Icon: Award,  cls: 'text-amber-500' },
+  champion: { label: 'Community Champion', Icon: Trophy, cls: 'text-purple-500' },
 };
 
 const PLACEHOLDER = 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=600&q=80';
@@ -61,17 +60,27 @@ export default function ProjectCard({ project }) {
                 : <span className={`w-6 h-6 rounded-full ${avatarColor(owner.name)} text-white text-xs flex items-center justify-center font-medium shrink-0`}>{owner.name?.[0]?.toUpperCase() || '?'}</span>
               }
               <div className="flex flex-col min-w-0">
-                <span className="text-xs text-muted truncate leading-tight">{owner.name}</span>
-                {BADGE_CFG[owner.badge] ? (() => {
-                  const { label, Icon, cls } = BADGE_CFG[owner.badge];
-                  return (
-                    <span className={`inline-flex items-center gap-0.5 text-[10px] font-medium leading-tight ${cls}`}>
-                      <Icon size={10} /> {label}
+                <div className="flex items-center gap-1.5 min-w-0">
+                  <span className="text-xs text-muted truncate leading-tight min-w-0">{owner.name}</span>
+                  {owner.badge === 'new_member' && (
+                    <span className="inline-flex items-center gap-1 text-[10px] font-medium text-emerald-600 bg-emerald-50 border border-emerald-200 rounded-full px-2 py-0.5 leading-tight shrink-0">
+                      <Sprout size={10} /> New
                     </span>
-                  );
-                })() : owner.projectCount > 0 ? (
-                  <span className="text-[10px] text-[#9CA3AF] leading-tight">{owner.projectCount} project{owner.projectCount !== 1 ? 's' : ''}</span>
-                ) : null}
+                  )}
+                </div>
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  {owner.badge !== 'new_member' && BADGE_CFG[owner.badge] && (() => {
+                    const { label, Icon, cls } = BADGE_CFG[owner.badge];
+                    return (
+                      <span className={`inline-flex items-center gap-0.5 text-[10px] font-medium leading-tight ${cls}`}>
+                        <Icon size={10} /> {label}
+                      </span>
+                    );
+                  })()}
+                  {owner.projectCount > 0 && (
+                    <span className="text-[10px] text-[#9CA3AF] leading-tight">{owner.projectCount} project{owner.projectCount !== 1 ? 's' : ''}</span>
+                  )}
+                </div>
               </div>
             </div>
           )}
