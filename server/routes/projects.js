@@ -5,7 +5,7 @@ const {
   getProjects, getProject, getMyProjects, getUserProjects,
   createProject, updateProject, deleteProject,
   toggleLike, rateProject, getComments, addComment, deleteComment,
-  recordView, getFeaturedProjects,
+  recordView, getFeaturedProjects, toggleHidden,
 } = require('../controllers/projectController');
 const { sendMessage } = require('../controllers/messageController');
 
@@ -24,6 +24,7 @@ router.put('/:id', protect, projectUpload, updateProject);
 router.delete('/:id', protect, deleteProject);
 
 router.post('/:id/view', recordView);
+router.patch('/:id/hide', protect, toggleHidden);
 router.post('/:id/like', protect, toggleLike);
 router.post('/:id/rate', protect, rateProject);
 router.get('/:id/comments', getComments);

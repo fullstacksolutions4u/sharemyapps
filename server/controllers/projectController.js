@@ -38,7 +38,7 @@ const ownerLookupStages = [
 exports.getFeaturedProjects = async (req, res) => {
   try {
     const projects = await Project.aggregate([
-      { $match: { featured: true, status: 'approved' } },
+      { $match: { featured: true, status: 'approved', hidden: { $ne: true } } },
       { $sort: { updatedAt: -1 } },
       ...ownerLookupStages,
     ]);
@@ -71,7 +71,7 @@ exports.getProjects = async (req, res) => {
     const category = req.query.category || '';
     const type = req.query.type || '';
 
-    const filter = { status: 'approved' };
+    const filter = { status: 'approved', hidden: { $ne: true } };
     if (search) filter.$or = [
       { title: { $regex: search, $options: 'i' } },
       { description: { $regex: search, $options: 'i' } },
@@ -127,7 +127,7 @@ exports.getUserProjects = async (req, res) => {
   try {
     const user = await User.findById(req.params.userId).select('name avatar linkedinUrl githubUrl leetcodeUrl phone email');
     if (!user) return res.status(404).json({ message: 'User not found' });
-    const projects = await Project.find({ owner: req.params.userId, status: 'approved' })
+    const projects = await Project.find({ owner: req.params.userId, status: 'approved', hidden: { $ne: true } })
       .sort({ createdAt: -1 });
     res.json({ user, projects });
   } catch (err) {
@@ -365,6 +365,18 @@ exports.deleteComment = async (req, res) => {
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
+};
+
+exports.toggleHidden = async (req, res) => {
+  try {
+    const project = await Project.findById(req.params.id).select('owner hidden');
+    if (!project) return res.status(404).json({ message: 'Not found' });
+    if (project.owner.toString() !== req.user._id.toString())
+      return res.status(403).json({ message: 'Forbidden' });
+    project.hidden = !project.hidden;
+    await project.save();
+    res.json({ hidden: project.hidden });
+  } catch (err) { res.status(500).json({ message: err.message }); }
 };
 
 exports.deleteProject = async (req, res) => {

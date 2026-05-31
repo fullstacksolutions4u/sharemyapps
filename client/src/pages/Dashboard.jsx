@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Plus, Pencil, Trash2, ExternalLink, Clock, CheckCircle, XCircle, AlertCircle, Share2, Copy, Check, X, Eye, Heart, Star } from 'lucide-react';
+import { Plus, Pencil, Trash2, ExternalLink, Clock, CheckCircle, XCircle, AlertCircle, Share2, Copy, Check, X, Eye, EyeOff, Heart, Star } from 'lucide-react';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
@@ -72,6 +72,16 @@ export default function Dashboard() {
       .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
+
+  const handleToggleHidden = async (id, hidden) => {
+    try {
+      const res = await api.patch(`/projects/${id}/hide`);
+      setProjects(p => p.map(x => x._id === id ? { ...x, hidden: res.data.hidden } : x));
+      toast.success(res.data.hidden ? 'Project hidden from listing' : 'Project visible again');
+    } catch {
+      toast.error('Failed to update visibility');
+    }
+  };
 
   const handleDelete = async (id, title) => {
     if (!confirm(`Delete "${title}"? This cannot be undone.`)) return;
@@ -159,6 +169,11 @@ export default function Dashboard() {
                       </span>
                     );
                   })()}
+                  {project.hidden && (
+                    <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full border font-medium bg-gray-100 text-gray-500 border-gray-200">
+                      <EyeOff size={10} /> Hidden
+                    </span>
+                  )}
                 </div>
                 <p className="text-xs text-[#6B7280] truncate mt-0.5">{project.description}</p>
                 {project.techTags?.length > 0 && (
@@ -223,6 +238,17 @@ export default function Dashboard() {
                   >
                     <Pencil size={13} />
                   </Link>
+                  <button
+                    onClick={() => handleToggleHidden(project._id, project.hidden)}
+                    className={`w-8 h-8 flex items-center justify-center rounded-lg transition-colors ${
+                      project.hidden
+                        ? 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                        : 'bg-gray-50 text-gray-400 hover:bg-gray-200 hover:text-gray-600'
+                    }`}
+                    title={project.hidden ? 'Show in listing' : 'Hide from listing'}
+                  >
+                    {project.hidden ? <Eye size={13} /> : <EyeOff size={13} />}
+                  </button>
                   <button
                     onClick={() => handleDelete(project._id, project.title)}
                     className="w-8 h-8 flex items-center justify-center rounded-lg bg-red-50 text-red-400 hover:bg-red-500 hover:text-white transition-colors"
