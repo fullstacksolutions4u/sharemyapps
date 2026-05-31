@@ -73,7 +73,7 @@ export default function Dashboard() {
       .finally(() => setLoading(false));
   }, []);
 
-  const handleToggleHidden = async (id, hidden) => {
+  const handleToggleHidden = async (id) => {
     try {
       const res = await api.patch(`/projects/${id}/hide`);
       setProjects(p => p.map(x => x._id === id ? { ...x, hidden: res.data.hidden } : x));
@@ -239,7 +239,7 @@ export default function Dashboard() {
                     <Pencil size={13} />
                   </Link>
                   <button
-                    onClick={() => handleToggleHidden(project._id, project.hidden)}
+                    onClick={() => handleToggleHidden(project._id)}
                     className={`w-8 h-8 flex items-center justify-center rounded-lg transition-colors ${
                       project.hidden
                         ? 'bg-gray-100 text-gray-500 hover:bg-gray-200'
