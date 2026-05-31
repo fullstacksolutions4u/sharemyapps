@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Search, X } from 'lucide-react';
+import { Search, X, Megaphone } from 'lucide-react';
 import api from '../api/axios';
 import ProjectCard from '../components/ProjectCard';
 import ProjectSkeleton from '../components/ProjectSkeleton';
@@ -29,6 +29,7 @@ export default function Explore() {
   const [search, setSearch] = useState('');
   const [activeTag, setActiveTag] = useState('');
   const [activeCategory, setActiveCategory] = useState('');
+  const [announcements, setAnnouncements] = useState([]);
   const activeType = searchParams.get('type') || '';
   const [page, setPage] = useState(1);
   const [pages, setPages] = useState(1);
@@ -56,6 +57,13 @@ export default function Explore() {
     const type = searchParams.get('type') || '';
     fetchProjects(1, '', '', '', type); // eslint-disable-line react-hooks/set-state-in-effect
   }, [searchParams]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    const load = () => api.get('/announcements/feed').then(res => setAnnouncements(res.data)).catch(() => {});
+    load();
+    const interval = setInterval(load, 60000);
+    return () => clearInterval(interval);
+  }, []);
 
   const debounceRef = useRef(null);
 
@@ -93,10 +101,10 @@ export default function Explore() {
   return (
     <div className="w-full px-4 sm:px-6 py-8">
 
-      {/* ── Top bar: search + categories ── */}
+      {/* ── Top bar: search + announcement + category ── */}
       <div className="flex items-stretch gap-0 mb-0">
         {/* Search bar */}
-        <form onSubmit={handleSearch} className="relative flex-2">
+        <form onSubmit={handleSearch} className="relative flex-[0.8]">
           <Search size={16} className="absolute left-0 top-1/2 -translate-y-1/2 text-muted" />
           <input
             type="text"
@@ -112,8 +120,28 @@ export default function Explore() {
           )}
         </form>
 
-        {/* Divider */}
-        <div className="w-px bg-border mx-0 self-stretch" />
+        {/* Announcement ticker (centre) */}
+        {announcements.length > 0 ? (
+          <div className="flex items-center gap-2 flex-4 overflow-hidden border-b border-border px-3">
+            <Megaphone size={15} className="text-orange-500 shrink-0" />
+            <div className="overflow-hidden flex-1 h-full flex items-center">
+              <span className="animate-marquee text-sm whitespace-nowrap">
+                {announcements.map((a, i) => (
+                  <span key={a._id}>
+                    <span className={a.kind === 'activity' ? 'text-violet-500' : 'text-accent'}>
+                      {a.text}
+                    </span>
+                    {i < announcements.length - 1 && (
+                      <span className="text-border mx-3">•</span>
+                    )}
+                  </span>
+                ))}
+              </span>
+            </div>
+          </div>
+        ) : (
+          <div className="flex-4 border-b border-border" />
+        )}
 
         {/* Category dropdown */}
         <div className="relative flex-1">

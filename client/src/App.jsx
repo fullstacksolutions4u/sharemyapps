@@ -20,6 +20,7 @@ import Notifications from './pages/Notifications';
 import Profile from './pages/Profile';
 import PublicPortfolio from './pages/PublicPortfolio';
 import ClientProfile from './pages/ClientProfile';
+import ChatAdmin from './pages/ChatAdmin';
 
 function homeFor(user) {
   if (user.role === 'admin') return '/admin';
@@ -62,6 +63,7 @@ function AppRoutes() {
           <Route path="/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
           <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
           <Route path="/client-profile" element={<ProtectedRoute><ClientProfile /></ProtectedRoute>} />
+          <Route path="/chat-admin" element={<ProtectedRoute><ChatAdmin /></ProtectedRoute>} />
           <Route path="/portfolio/:userId" element={<PublicPortfolio />} />
           <Route path="/admin" element={<AdminRoute><AdminPanel /></AdminRoute>} />
           <Route path="*" element={<NotFound />} />

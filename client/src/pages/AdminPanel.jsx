@@ -6,7 +6,8 @@ import {
   Users, FolderOpen, RefreshCw, ShieldCheck,
   CheckCircle, AlertCircle, ChevronRight, Menu,
   Mail, Phone, Tag, Link as LinkIcon, LogOut,
-  ArrowLeft, Plus, Save,
+  ArrowLeft, Plus, Save, Megaphone, Trash2, ToggleLeft, ToggleRight,
+  MessageSquare, Send, CornerDownRight,
 } from 'lucide-react';
 import api from '../api/axios';
 import toast from 'react-hot-toast';
@@ -702,11 +703,263 @@ function UsersSection() {
   );
 }
 
+// ─── Announcements ────────────────────────────────────────────────────────────
+function AnnouncementsSection() {
+  const [items, setItems] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [text, setText] = useState('');
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const res = await api.get('/announcements/all');
+        setItems(res.data);
+      } catch { toast.error('Failed to load announcements'); }
+      finally { setLoading(false); }
+    };
+    load();
+  }, []);
+
+  const handleAdd = async () => {
+    if (!text.trim()) return;
+    setSaving(true);
+    try {
+      const res = await api.post('/announcements', { text });
+      setItems(prev => [res.data, ...prev]);
+      setText('');
+      toast.success('Announcement added');
+    } catch { toast.error('Failed to add announcement'); }
+    finally { setSaving(false); }
+  };
+
+  const handleToggle = async (id) => {
+    try {
+      const res = await api.patch(`/announcements/${id}/toggle`);
+      setItems(prev => prev.map(i => i._id === id ? res.data : i));
+    } catch { toast.error('Failed to update'); }
+  };
+
+  const handleDelete = async (id) => {
+    try {
+      await api.delete(`/announcements/${id}`);
+      setItems(prev => prev.filter(i => i._id !== id));
+      toast.success('Deleted');
+    } catch { toast.error('Failed to delete'); }
+  };
+
+  return (
+    <div className="space-y-6">
+      <h2 className="text-xl font-bold text-[#1A1A1A]">Announcements</h2>
+
+      {/* Add new */}
+      <div className="bg-white border border-[#E5E1DA] rounded-2xl p-5 space-y-3">
+        <p className="text-sm font-medium text-[#1A1A1A]">New announcement</p>
+        <textarea
+          value={text}
+          onChange={e => setText(e.target.value)}
+          placeholder="Type your announcement message..."
+          rows={3}
+          className="w-full px-3.5 py-2.5 border border-[#E5E1DA] rounded-xl text-sm text-[#1A1A1A] bg-white placeholder-[#9CA3AF] focus:outline-none focus:border-[#00A693] focus:ring-2 focus:ring-[#00A693]/10 transition resize-none"
+        />
+        <button
+          onClick={handleAdd}
+          disabled={!text.trim() || saving}
+          className="flex items-center gap-1.5 px-4 py-2 bg-[#00A693] hover:bg-[#007D6F] text-white text-sm font-medium rounded-xl transition-colors disabled:opacity-50"
+        >
+          <Plus size={14} /> Add Announcement
+        </button>
+      </div>
+
+      {/* List */}
+      {loading ? (
+        <div className="space-y-3">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <div key={i} className="h-14 bg-white border border-[#E5E1DA] rounded-xl animate-pulse" />
+          ))}
+        </div>
+      ) : items.length === 0 ? (
+        <div className="bg-white border border-[#E5E1DA] rounded-2xl p-12 text-center">
+          <Megaphone size={28} className="text-[#9CA3AF] mx-auto mb-3" />
+          <p className="text-sm text-[#6B7280]">No announcements yet</p>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {items.map(item => (
+            <div key={item._id} className={`bg-white border rounded-2xl px-5 py-4 flex items-start gap-4 ${item.active ? 'border-[#E5E1DA]' : 'border-[#E5E1DA] opacity-60'}`}>
+              <Megaphone size={16} className={`mt-0.5 shrink-0 ${item.active ? 'text-[#00A693]' : 'text-[#9CA3AF]'}`} />
+              <p className="flex-1 text-sm text-[#1A1A1A] leading-relaxed">{item.text}</p>
+              <div className="flex items-center gap-2 shrink-0">
+                <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full border ${item.active ? 'bg-green-50 text-green-700 border-green-200' : 'bg-[#F3F0EB] text-[#6B7280] border-[#E5E1DA]'}`}>
+                  {item.active ? 'Active' : 'Hidden'}
+                </span>
+                <button
+                  onClick={() => handleToggle(item._id)}
+                  title={item.active ? 'Deactivate' : 'Activate'}
+                  className="p-1.5 rounded-lg hover:bg-[#F3F0EB] text-[#6B7280] hover:text-[#1A1A1A] transition-colors"
+                >
+                  {item.active ? <ToggleRight size={16} className="text-[#00A693]" /> : <ToggleLeft size={16} />}
+                </button>
+                <button
+                  onClick={() => handleDelete(item._id)}
+                  title="Delete"
+                  className="p-1.5 rounded-lg hover:bg-red-50 text-[#9CA3AF] hover:text-red-500 transition-colors"
+                >
+                  <Trash2 size={14} />
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Messages ─────────────────────────────────────────────────────────────────
+function MessagesSection({ onUnreadChange }) {
+  const [messages, setMessages] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [replyOpen, setReplyOpen] = useState(null);
+  const [replyText, setReplyText] = useState('');
+  const [sending, setSending] = useState(false);
+
+  const load = async () => {
+    try {
+      const res = await api.get('/messages');
+      setMessages(res.data.messages);
+      if (onUnreadChange) onUnreadChange(res.data.unreadCount);
+    } catch { toast.error('Failed to load messages'); }
+    finally { setLoading(false); }
+  };
+
+  useEffect(() => { load(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const markRead = async (id) => {
+    try {
+      await api.patch(`/messages/${id}/read`);
+      setMessages(prev => prev.map(m => m._id === id ? { ...m, read: true } : m));
+      if (onUnreadChange) onUnreadChange(messages.filter(m => !m.read && m._id !== id).length);
+    } catch { /* ignore */ }
+  };
+
+  const handleReply = async (msg) => {
+    if (!replyText.trim()) return;
+    setSending(true);
+    try {
+      await api.post(`/messages/${msg._id}/reply`, { text: replyText });
+      toast.success('Reply sent');
+      setReplyText('');
+      setReplyOpen(null);
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to send reply');
+    } finally {
+      setSending(false);
+    }
+  };
+
+  return (
+    <div className="space-y-5">
+      <div className="flex items-center justify-between">
+        <h2 className="text-xl font-bold text-text">Messages</h2>
+        <button onClick={load} className="flex items-center gap-1.5 text-xs text-muted hover:text-text border border-border px-3 py-1.5 rounded-lg transition-colors">
+          <RefreshCw size={12} /> Refresh
+        </button>
+      </div>
+
+      {loading ? (
+        <div className="space-y-3">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="h-20 bg-white border border-[#E5E1DA] rounded-xl animate-pulse" />
+          ))}
+        </div>
+      ) : messages.length === 0 ? (
+        <div className="bg-white border border-[#E5E1DA] rounded-2xl p-16 text-center">
+          <MessageSquare size={28} className="mx-auto text-[#D1D5DB] mb-3" />
+          <p className="text-sm text-[#6B7280]">No messages yet</p>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {messages.map(msg => (
+            <div
+              key={msg._id}
+              className={`bg-white border rounded-2xl transition-all ${!msg.read ? 'border-accent/30 bg-[#F0FBF9]' : 'border-border'}`}
+            >
+              <div
+                className="p-4 cursor-default"
+                onClick={() => !msg.read && markRead(msg._id)}
+              >
+                <div className="flex items-start gap-3">
+                  {msg.sender?.avatar
+                    ? <img src={msg.sender.avatar} alt={msg.sender.name} className="w-9 h-9 rounded-full object-cover shrink-0" />
+                    : <span className="w-9 h-9 rounded-full bg-accent text-white text-sm flex items-center justify-center font-medium shrink-0">
+                        {msg.sender?.name?.[0]?.toUpperCase() || '?'}
+                      </span>
+                  }
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between gap-2 mb-1">
+                      <span className={`text-sm ${!msg.read ? 'font-semibold text-text' : 'font-medium text-text'}`}>
+                        {msg.sender?.name || 'Unknown'}
+                      </span>
+                      <span className="text-xs text-[#9CA3AF] shrink-0">
+                        {new Date(msg.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                      </span>
+                    </div>
+                    <p className="text-xs text-[#9CA3AF] mb-1">{msg.sender?.email}</p>
+                    <p className={`text-sm leading-relaxed wrap-break-word ${!msg.read ? 'text-[#374151]' : 'text-muted'}`}>
+                      {msg.text}
+                    </p>
+                  </div>
+                  {!msg.read && <span className="w-2 h-2 bg-accent rounded-full mt-1.5 shrink-0" />}
+                </div>
+
+                <div className="mt-3 ml-12">
+                  <button
+                    onClick={e => { e.stopPropagation(); setReplyOpen(replyOpen === msg._id ? null : msg._id); setReplyText(''); }}
+                    className={`inline-flex items-center gap-1.5 text-xs font-medium transition-colors ${replyOpen === msg._id ? 'text-accent' : 'text-[#9CA3AF] hover:text-accent'}`}
+                  >
+                    <CornerDownRight size={12} /> Reply
+                  </button>
+                </div>
+              </div>
+
+              {replyOpen === msg._id && (
+                <div className="px-4 pb-4 ml-12 border-t border-[#F3F0EB] pt-3">
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={replyText}
+                      onChange={e => setReplyText(e.target.value)}
+                      onKeyDown={e => e.key === 'Enter' && handleReply(msg)}
+                      placeholder={`Reply to ${msg.sender?.name}…`}
+                      autoFocus
+                      className="flex-1 px-3.5 py-2 bg-bg border border-border rounded-lg text-sm text-text placeholder-[#9CA3AF] focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/10 transition"
+                    />
+                    <button
+                      onClick={() => handleReply(msg)}
+                      disabled={!replyText.trim() || sending}
+                      className="w-9 h-9 bg-accent hover:bg-accent-hover text-white rounded-lg flex items-center justify-center transition-colors disabled:opacity-40 disabled:cursor-not-allowed shrink-0"
+                    >
+                      <Send size={13} />
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ─── Sidebar nav items ────────────────────────────────────────────────────────
 const NAV = [
-  { key: 'overview', label: 'Overview', icon: LayoutDashboard },
-  { key: 'projects', label: 'Projects', icon: FolderOpen },
-  { key: 'users',    label: 'Users',    icon: Users },
+  { key: 'overview',      label: 'Overview',      icon: LayoutDashboard },
+  { key: 'projects',      label: 'Projects',       icon: FolderOpen },
+  { key: 'users',         label: 'Users',          icon: Users },
+  { key: 'announcements', label: 'Announcements',  icon: Megaphone },
+  { key: 'messages',      label: 'Messages',       icon: MessageSquare },
 ];
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
@@ -714,11 +967,13 @@ export default function AdminPanel() {
   const [section, setSection] = useState('overview');
   const [stats, setStats] = useState(null);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [unreadMessages, setUnreadMessages] = useState(0);
   const { logout } = useAuth();
   const nav = useNavigate();
 
   useEffect(() => {
     api.get('/admin/stats').then(res => setStats(res.data)).catch(() => {});
+    api.get('/messages').then(res => setUnreadMessages(res.data.unreadCount)).catch(() => {});
   }, []);
 
   const navigate = (key) => { setSection(key); setMobileOpen(false); };
@@ -765,6 +1020,11 @@ export default function AdminPanel() {
                   {stats.pending}
                 </span>
               )}
+              {key === 'messages' && unreadMessages > 0 && (
+                <span className="ml-auto bg-accent text-white text-xs w-5 h-5 flex items-center justify-center rounded-full leading-none shrink-0">
+                  {unreadMessages > 9 ? '9+' : unreadMessages}
+                </span>
+              )}
             </button>
           ))}
         </nav>
@@ -803,9 +1063,11 @@ export default function AdminPanel() {
 
         {/* Scrollable content */}
         <div className="flex-1 overflow-y-auto px-6 py-8">
-          {section === 'overview' && <Overview stats={stats} onNavigate={navigate} />}
-          {section === 'projects' && <ProjectsSection stats={stats} />}
-          {section === 'users'    && <UsersSection />}
+          {section === 'overview'      && <Overview stats={stats} onNavigate={navigate} />}
+          {section === 'projects'      && <ProjectsSection stats={stats} />}
+          {section === 'users'         && <UsersSection />}
+          {section === 'announcements' && <AnnouncementsSection />}
+          {section === 'messages'      && <MessagesSection onUnreadChange={setUnreadMessages} />}
         </div>
       </div>
     </div>

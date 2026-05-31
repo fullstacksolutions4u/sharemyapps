@@ -13,6 +13,7 @@ const adminRoutes = require('./routes/admin');
 const notificationRoutes = require('./routes/notifications');
 const messageRoutes = require('./routes/messages');
 const userRoutes = require('./routes/users');
+const announcementRoutes = require('./routes/announcements');
 
 const app = express();
 // test
@@ -30,6 +31,7 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/messages', messageRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/announcements', announcementRoutes);
 
 app.get('/api/health', (_req, res) => res.json({ status: 'ok' }));
 

@@ -1,5 +1,6 @@
 const Message = require('../models/Message');
 const Project = require('../models/Project');
+const User = require('../models/User');
 
 exports.replyMessage = async (req, res) => {
   try {
@@ -94,6 +95,28 @@ exports.markAllRead = async (req, res) => {
   try {
     await Message.updateMany({ recipient: req.user._id, read: false }, { read: true });
     res.json({ message: 'All marked as read' });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+exports.sendToAdmin = async (req, res) => {
+  try {
+    const admin = await User.findOne({ role: 'admin' });
+    if (!admin) return res.status(404).json({ message: 'No admin available' });
+    if (admin._id.toString() === req.user._id.toString())
+      return res.status(400).json({ message: 'You are the admin' });
+
+    const text = req.body.text?.trim();
+    if (!text) return res.status(400).json({ message: 'Message text required' });
+
+    const msg = await Message.create({
+      sender: req.user._id,
+      recipient: admin._id,
+      text,
+    });
+    await msg.populate('sender', 'name avatar');
+    res.status(201).json(msg);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Menu, X, ChevronDown, LogOut, Plus, ShieldCheck, Bell, CheckCircle, XCircle, Clock, MessageSquare, UserCircle, AlertCircle, Heart, Star, MessageCircle } from 'lucide-react';
+import { Menu, X, ChevronDown, LogOut, Plus, ShieldCheck, Bell, CheckCircle, XCircle, Clock, MessageSquare, UserCircle, AlertCircle, Heart, Star, MessageCircle, Headphones } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import api from '../api/axios';
 import toast from 'react-hot-toast';
@@ -243,6 +243,15 @@ export default function Navbar() {
                     >
                       <UserCircle size={14} /> Profile
                     </Link>
+                    {user.role !== 'admin' && (
+                      <Link
+                        to="/chat-admin"
+                        onClick={() => setDropOpen(false)}
+                        className="flex items-center gap-2 px-4 py-2 text-sm text-text hover:bg-bg"
+                      >
+                        <Headphones size={14} /> Message Admin
+                      </Link>
+                    )}
                     {user.role === 'admin' && (
                       <Link to="/admin" onClick={() => setDropOpen(false)} className="flex items-center gap-2 px-4 py-2 text-sm text-[#00A693] hover:bg-[#FAF9F6]">
                         <ShieldCheck size={14} /> Admin Panel
@@ -286,6 +295,9 @@ export default function Navbar() {
               <Link to="/dashboard" onClick={() => setMenuOpen(false)} className="block text-sm text-muted hover:text-text">My Projects</Link>
               <Link to="/messages" onClick={() => setMenuOpen(false)} className="block text-sm text-muted hover:text-text">Messages</Link>
               <Link to="/dashboard/add" onClick={() => setMenuOpen(false)} className="block text-sm text-[#1A1A1A]">Add Projects</Link>
+              {user.role !== 'admin' && (
+                <Link to="/chat-admin" onClick={() => setMenuOpen(false)} className="block text-sm text-muted hover:text-text">Message Admin</Link>
+              )}
               <button onClick={handleLogout} className="block text-sm text-red-500">Logout</button>
             </>
           ) : (
