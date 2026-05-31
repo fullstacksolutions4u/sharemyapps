@@ -245,6 +245,15 @@ exports.getAllUsers = async (req, res) => {
     res.status(500).json({ message: err.message }); }
 };
 
+exports.getResumes = async (req, res) => {
+  try {
+    const users = await User.find({ cvUrl: { $ne: '' }, userType: 'developer' })
+      .select('name email regNumber avatar cvUrl userType createdAt')
+      .sort({ updatedAt: -1 });
+    res.json(users);
+  } catch (err) { res.status(500).json({ message: err.message }); }
+};
+
 exports.toggleFeatured = async (req, res) => {
   try {
     const project = await Project.findById(req.params.id);
