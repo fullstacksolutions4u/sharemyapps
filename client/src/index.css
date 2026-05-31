@@ -24,6 +24,15 @@
   animation: marquee 28s linear infinite;
 }
 
+@keyframes ticker-up {
+  from { transform: translateY(110%); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+
+.animate-ticker-up {
+  animation: ticker-up 0.45s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
 * {
   box-sizing: border-box;
 }

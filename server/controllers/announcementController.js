@@ -31,7 +31,7 @@ exports.getFeed = async (req, res) => {
       const joined = parts.length === 1
         ? parts[0]
         : parts.slice(0, -1).join(', ') + ' & ' + parts[parts.length - 1];
-      return { _id: id + '_a', text: `${title} by ${owner} got ${joined}`, kind: 'activity' };
+      return { _id: id + '_a', text: `${title} by ${owner} got ${joined}`, kind: 'activity', types: [...types] };
     });
 
     const announcementItems = announcements.map(a => ({
@@ -81,6 +81,20 @@ exports.toggle = async (req, res) => {
     if (!item) return res.status(404).json({ message: 'Not found' });
     item.active = !item.active;
     await item.save();
+    res.json(item);
+  } catch (err) { res.status(500).json({ message: err.message }); }
+};
+
+exports.update = async (req, res) => {
+  try {
+    const { text } = req.body;
+    if (!text?.trim()) return res.status(400).json({ message: 'Text required' });
+    const item = await Announcement.findByIdAndUpdate(
+      req.params.id,
+      { text: text.trim() },
+      { new: true }
+    );
+    if (!item) return res.status(404).json({ message: 'Not found' });
     res.json(item);
   } catch (err) { res.status(500).json({ message: err.message }); }
 };

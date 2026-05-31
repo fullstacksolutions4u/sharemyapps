@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Search, X, Megaphone } from 'lucide-react';
+import { Search, X, Megaphone, Heart, Star, MessageCircle } from 'lucide-react';
 import api from '../api/axios';
 import ProjectCard from '../components/ProjectCard';
 import ProjectSkeleton from '../components/ProjectSkeleton';
@@ -31,7 +31,6 @@ export default function Explore() {
   const [activeCategory, setActiveCategory] = useState('');
   const [announcements, setAnnouncements] = useState([]);
   const [tickerIndex, setTickerIndex] = useState(0);
-  const [tickerFade, setTickerFade] = useState(true);
   const activeType = searchParams.get('type') || '';
   const [page, setPage] = useState(1);
   const [pages, setPages] = useState(1);
@@ -68,16 +67,14 @@ export default function Explore() {
   }, []);
 
   useEffect(() => {
-    if (announcements.length <= 1) return;
+    if (announcements.length === 0) return;
+    const len = announcements.length;
+    setTickerIndex(0);
     const timer = setInterval(() => {
-      setTickerFade(false);
-      setTimeout(() => {
-        setTickerIndex(i => (i + 1) % announcements.length);
-        setTickerFade(true);
-      }, 350);
-    }, 4500);
+      setTickerIndex(i => (i + 1) % len);
+    }, 6000);
     return () => clearInterval(timer);
-  }, [announcements.length]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [announcements]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const debounceRef = useRef(null);
 
@@ -138,14 +135,23 @@ export default function Explore() {
         {announcements.length > 0 ? (
           <div className="flex items-center gap-2 flex-4 overflow-hidden border-b border-border px-3">
             <Megaphone size={15} className="text-orange-500 shrink-0" />
-            <span
-              className={`text-sm truncate transition-opacity duration-300 ${
-                announcements[tickerIndex]?.kind === 'activity' ? 'text-violet-500' : 'text-accent'
-              }`}
-              style={{ opacity: tickerFade ? 1 : 0 }}
-            >
-              {announcements[tickerIndex]?.text}
-            </span>
+            <div className="flex-1 overflow-hidden h-full flex items-center gap-1.5">
+              {announcements[tickerIndex]?.kind === 'activity' && (
+                <span key={tickerIndex + '_icons'} className="animate-ticker-up flex items-center gap-1 shrink-0">
+                  {announcements[tickerIndex].types?.includes('like')      && <Heart size={12} className="text-pink-500" />}
+                  {announcements[tickerIndex].types?.includes('rated')     && <Star size={12} className="text-amber-400" />}
+                  {announcements[tickerIndex].types?.includes('commented') && <MessageCircle size={12} className="text-blue-400" />}
+                </span>
+              )}
+              <span
+                key={tickerIndex}
+                className={`animate-ticker-up text-sm truncate block ${
+                  announcements[tickerIndex]?.kind === 'activity' ? 'text-violet-500' : 'text-accent'
+                }`}
+              >
+                {announcements[tickerIndex]?.text}
+              </span>
+            </div>
           </div>
         ) : (
           <div className="flex-4 border-b border-border" />
