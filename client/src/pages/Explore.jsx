@@ -94,34 +94,45 @@ export default function Explore() {
     <div className="w-full px-4 sm:px-6 py-8">
 
       {/* ── Top bar: search + categories ── */}
-      <div className="flex items-center gap-3 mb-4">
+      <div className="flex items-stretch gap-0 mb-0">
         {/* Search bar */}
-        <form onSubmit={handleSearch} className="relative flex-1">
-          <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted" />
+        <form onSubmit={handleSearch} className="relative flex-2">
+          <Search size={16} className="absolute left-0 top-1/2 -translate-y-1/2 text-muted" />
           <input
             type="text"
             placeholder="Search projects..."
             value={search}
             onChange={handleSearchInput}
-            className="w-full pl-10 pr-10 py-3 bg-white border border-border rounded-xl text-sm text-text placeholder-muted focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/10 transition"
+            className="w-full pl-6 pr-8 py-3 bg-transparent border-0 border-b border-border text-sm text-text placeholder-muted focus:outline-none focus:border-text transition"
           />
-          {hasFilters && (
-            <button type="button" onClick={clearAll} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-muted hover:text-text">
-              <X size={16} />
+          {search && (
+            <button type="button" onClick={() => { setSearch(''); fetchProjects(1, '', activeTag, activeCategory); }} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted hover:text-text">
+              <X size={14} />
             </button>
           )}
         </form>
 
+        {/* Divider */}
+        <div className="w-px bg-border mx-0 self-stretch" />
+
         {/* Category dropdown */}
-        <select
-          value={activeCategory}
-          onChange={e => handleCategory(e.target.value)}
-          className="h-11.5 flex-1 px-3.5 py-2.5 bg-white border border-border rounded-xl text-sm text-text focus:outline-none focus:border-accent transition"
-        >
-          <option value="">All Categories</option>
-          {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
-        </select>
+        <div className="relative flex-1">
+          <select
+            value={activeCategory}
+            onChange={e => handleCategory(e.target.value)}
+            className="w-full appearance-none pl-4 pr-8 py-3 bg-transparent border-0 border-b border-border text-sm text-text focus:outline-none focus:border-text transition cursor-pointer"
+          >
+            <option value="">All Categories</option>
+            {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+          </select>
+          <svg className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-muted" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="6 9 12 15 18 9" />
+          </svg>
+        </div>
       </div>
+
+      {/* Full-width divider */}
+      <div className="h-px bg-border mb-4" />
 
       {/* Active filters */}
       {hasFilters && (

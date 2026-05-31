@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Menu, X, ChevronDown, LogOut, Plus, ShieldCheck, Bell, CheckCircle, XCircle, Clock, MessageSquare, UserCircle } from 'lucide-react';
+import { Menu, X, ChevronDown, LogOut, Plus, ShieldCheck, Bell, CheckCircle, XCircle, Clock, MessageSquare, UserCircle, AlertCircle } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import api from '../api/axios';
 import toast from 'react-hot-toast';
@@ -40,10 +40,14 @@ function MessagesBadge() {
 }
 
 function NotificationBell() {
+  const { user } = useAuth();
   const [open, setOpen] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const [unread, setUnread] = useState(0);
   const ref = useRef();
+
+  const devLinks = [user?.linkedinUrl, user?.githubUrl, user?.leetcodeUrl, user?.portfolioUrl];
+  const showProfileWarning = user?.userType !== 'client' && devLinks.filter(Boolean).length < 2;
 
   const fetchNotifications = async () => {
     try {
@@ -90,9 +94,9 @@ function NotificationBell() {
         className="relative p-1.5 text-muted hover:text-text transition-colors"
       >
         <Bell size={18} />
-        {unread > 0 && (
+        {(unread + (showProfileWarning ? 1 : 0)) > 0 && (
           <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-red-500 text-white text-[10px] font-bold flex items-center justify-center rounded-full">
-            {unread > 9 ? '9+' : unread}
+            {(unread + (showProfileWarning ? 1 : 0)) > 9 ? '9+' : (unread + (showProfileWarning ? 1 : 0))}
           </span>
         )}
       </button>
@@ -111,7 +115,20 @@ function NotificationBell() {
 
           {/* List */}
           <div className="max-h-80 overflow-y-auto divide-y divide-[#F3F0EB]">
-            {notifications.length === 0 ? (
+            {showProfileWarning && (
+              <Link
+                to="/profile"
+                onClick={() => setOpen(false)}
+                className="px-4 py-3 flex items-start gap-3 bg-amber-50 hover:bg-amber-100 transition-colors"
+              >
+                <AlertCircle size={14} className="text-amber-500 shrink-0 mt-0.5" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold text-amber-800 leading-snug">Complete your profile</p>
+                </div>
+                <span className="w-2 h-2 bg-amber-400 rounded-full mt-1.5 shrink-0" />
+              </Link>
+            )}
+            {notifications.length === 0 && !showProfileWarning ? (
               <div className="px-4 py-8 text-center text-sm text-[#6B7280]">No notifications yet</div>
             ) : (
               notifications.map(n => (

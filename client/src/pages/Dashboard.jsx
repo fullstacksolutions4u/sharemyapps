@@ -89,9 +89,6 @@ export default function Dashboard() {
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div>
-          <div className="flex items-center gap-2 text-[#6B7280] text-sm mb-1">
-            <LayoutDashboard size={14} /> Dashboard
-          </div>
           <h1 className="text-2xl font-bold text-[#1A1A1A] tracking-tight">
             Hey, {user?.name?.split(' ')[0]} 👋
           </h1>
@@ -139,6 +136,16 @@ export default function Dashboard() {
         <div className="space-y-3">
           {projects.map(project => (
             <div key={project._id} className="bg-white border border-[#E5E1DA] rounded-xl p-4 flex items-center gap-4 hover:border-[#00A693]/30 transition-colors">
+              {/* Thumbnail */}
+              <div className="w-28 h-20 rounded-lg overflow-hidden bg-[#F3F0EB] shrink-0">
+                <img
+                  src={getbanner(project.bannerImage, project.liveUrl)}
+                  alt={project.title}
+                  className="w-full h-full object-cover"
+                  onError={e => { e.target.src = PLACEHOLDER; }}
+                />
+              </div>
+
               {/* Info */}
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
@@ -183,39 +190,31 @@ export default function Dashboard() {
                 )}
               </div>
 
-              {/* Image with overlaid action buttons */}
-              <div className="relative w-28 h-20 rounded-lg overflow-hidden shrink-0">
-                <img
-                  src={getbanner(project.bannerImage, project.liveUrl)}
-                  alt={project.title}
-                  className="w-full h-full object-cover"
-                  onError={e => { e.target.src = PLACEHOLDER; }}
-                />
-                <div className="absolute inset-x-0 top-0 flex items-center justify-end gap-1 p-1 bg-gradient-to-b from-black/60 to-transparent">
+              {/* Vertical action buttons */}
+              <div className="flex flex-col gap-1.5 shrink-0">
                   <a
                     href={project.liveUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="w-6 h-6 flex items-center justify-center rounded bg-white/20 hover:bg-white/40 text-white transition-colors"
+                    className="w-8 h-8 flex items-center justify-center rounded-lg bg-accent-light text-accent hover:bg-accent hover:text-white transition-colors"
                     title="Visit live"
                   >
-                    <ExternalLink size={11} />
+                    <ExternalLink size={13} />
                   </a>
                   <Link
                     to={`/dashboard/edit/${project._id}`}
-                    className="w-6 h-6 flex items-center justify-center rounded bg-white/20 hover:bg-white/40 text-white transition-colors"
+                    className="w-8 h-8 flex items-center justify-center rounded-lg bg-blue-50 text-blue-500 hover:bg-blue-500 hover:text-white transition-colors"
                     title="Edit"
                   >
-                    <Pencil size={11} />
+                    <Pencil size={13} />
                   </Link>
                   <button
                     onClick={() => handleDelete(project._id, project.title)}
-                    className="w-6 h-6 flex items-center justify-center rounded bg-white/20 hover:bg-red-500/80 text-white transition-colors"
+                    className="w-8 h-8 flex items-center justify-center rounded-lg bg-red-50 text-red-400 hover:bg-red-500 hover:text-white transition-colors"
                     title="Delete"
                   >
-                    <Trash2 size={11} />
+                    <Trash2 size={13} />
                   </button>
-                </div>
               </div>
             </div>
           ))}

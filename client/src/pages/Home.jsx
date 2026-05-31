@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Layers, Globe, Mail } from 'lucide-react';
+import { ArrowRight, LayoutGrid, Users, MessageCircle, Star } from 'lucide-react';
 import api from '../api/axios';
 import ProjectCard from '../components/ProjectCard';
 import ProjectSkeleton from '../components/ProjectSkeleton';
@@ -29,8 +29,7 @@ export default function Home() {
           <span className="text-[#00A693]">opportunities and connections</span>
         </h1>
         <p className="text-lg text-[#6B7280] max-w-2xl mx-auto leading-relaxed mb-10">
-          A curated showcase of side projects. Browse live apps, explore what developers are building,
-          and connect with creators directly.
+          Build your professional presence by showcasing real projects and connecting with recruiters, potential clients, and fellow developers
         </p>
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
           <Link
@@ -50,20 +49,49 @@ export default function Home() {
 
       {/* How it works */}
       <section className="border-y border-[#E5E1DA] bg-white">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-14 grid grid-cols-1 sm:grid-cols-3 gap-8">
-          {[
-            { icon: Layers, title: 'List your project', desc: 'Share your side project with title, description, live URL, and screenshots.' },
-            { icon: Globe, title: 'Reach visitors', desc: 'Anyone can browse and visit your live project directly from the listing.' },
-            { icon: Mail, title: 'Get contacted', desc: 'Interested clients see your email and can reach you right from the project page.' },
-          ].map(({ icon: Icon, title, desc }) => (
-            <div key={title} className="flex flex-col items-center text-center gap-3">
-              <div className="w-10 h-10 bg-[#E6F7F5] rounded-xl flex items-center justify-center">
-                <Icon size={20} className="text-[#00A693]" />
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-14">
+          <p className="text-xs font-semibold uppercase tracking-widest text-accent text-center mb-8">How it works</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {[
+              {
+                step: '01',
+                icon: LayoutGrid,
+                title: 'List your projects',
+                desc: 'Showcase your work with a live URL and tech stack.',
+              },
+              {
+                step: '02',
+                icon: Users,
+                title: 'Get discovered',
+                desc: 'Recruiters and clients browse projects and reach out directly.',
+              },
+              {
+                step: '03',
+                icon: MessageCircle,
+                title: 'Connect with devs',
+                desc: 'Meet fellow developers, share ideas, and grow your network.',
+              },
+              {
+                step: '04',
+                icon: Star,
+                title: 'Explore & give feedback',
+                desc: 'Discover inspiring projects and leave ratings to help creators improve.',
+              },
+            ].map(({ step, icon: Icon, title, desc }) => (
+              <div key={step} className="relative flex flex-col gap-4 p-5 rounded-2xl border border-border hover:border-accent/40 hover:shadow-sm transition-all bg-[#FAFAF8]">
+                <div className="flex items-center justify-between">
+                  <div className="w-10 h-10 bg-accent-light rounded-xl flex items-center justify-center">
+                    <Icon size={19} className="text-accent" />
+                  </div>
+                  <span className="text-2xl font-bold text-border">{step}</span>
+                </div>
+                <div>
+                  <h3 className="font-semibold text-text text-sm mb-1">{title}</h3>
+                  <p className="text-xs text-muted leading-relaxed">{desc}</p>
+                </div>
               </div>
-              <h3 className="font-semibold text-[#1A1A1A] text-sm">{title}</h3>
-              <p className="text-sm text-[#6B7280] leading-relaxed">{desc}</p>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       </section>
 
