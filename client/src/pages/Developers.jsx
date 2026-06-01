@@ -39,10 +39,14 @@ const toAbs = (url) => {
 };
 
 function SocialBtn({ href, icon: Icon, label, cls }) {
-  if (!href) return null;
+  if (!href) return (
+    <div className="invisible pointer-events-none flex items-center gap-1.5 text-[11px] font-medium px-3 py-1 rounded-full border border-transparent">
+      <Icon size={11} />{label}
+    </div>
+  );
   return (
     <a href={toAbs(href)} target="_blank" rel="noopener noreferrer"
-      className={`flex items-center gap-1.5 text-[11px] font-medium px-3 py-1 rounded-full border transition-all hover:scale-105 hover:shadow-sm ${cls}`}>
+      className={`flex items-center justify-center gap-1.5 text-[11px] font-medium px-3 py-1 rounded-full border transition-all hover:scale-105 hover:shadow-sm ${cls}`}>
       <Icon size={11} />
       {label}
     </a>
@@ -115,15 +119,15 @@ function DeveloperCard({ dev, idx }) {
 
         {/* Social links */}
         {(dev.linkedinUrl || dev.githubUrl || dev.leetcodeUrl || dev.portfolioUrl) && (
-          <div className="flex flex-wrap gap-1.5">
+          <div className="grid grid-cols-2 gap-1.5">
             <SocialBtn href={dev.linkedinUrl} icon={Link2} label="LinkedIn"
               cls="bg-[#EEF4FF] text-[#0A66C2] border-[#0A66C2]/20" />
             <SocialBtn href={dev.githubUrl} icon={GitBranch} label="GitHub"
-              cls="bg-slate-50 text-slate-700 border-slate-200" />
-            <SocialBtn href={dev.leetcodeUrl} icon={Code2} label="LeetCode"
-              cls="bg-orange-50 text-orange-600 border-orange-200" />
+              cls="bg-gray-900 text-white border-gray-900 hover:bg-gray-800" />
             <SocialBtn href={dev.portfolioUrl} icon={Globe} label="Portfolio"
               cls="bg-teal-50 text-teal-600 border-teal-200" />
+            <SocialBtn href={dev.leetcodeUrl} icon={Code2} label="LeetCode"
+              cls="bg-orange-50 text-orange-600 border-orange-200" />
           </div>
         )}
 
@@ -133,19 +137,22 @@ function DeveloperCard({ dev, idx }) {
             <p className="flex items-center gap-1 text-[10px] font-semibold text-muted uppercase tracking-widest mb-2">
               <Layers size={10} /> Projects
             </p>
-            <div className="flex flex-wrap gap-1.5">
-              {dev.projects.slice(0, 5).map((p, pi) => {
+            <div className="grid grid-cols-2 gap-1.5">
+              {dev.projects.slice(0, 4).map((p, pi) => {
                 const TypeIcon = p.appType === 'mobile' ? Smartphone : Monitor;
                 return (
                   <Link key={p._id} to={`/project/${p._id}`} title={p.title}
-                    className={`inline-flex items-center gap-1 text-[11px] border px-2.5 py-0.5 rounded-full transition-colors truncate max-w-40 font-medium ${PROJECT_CHIP_COLORS[pi % PROJECT_CHIP_COLORS.length]}`}>
+                    className={`inline-flex items-center gap-1 text-[11px] border px-2.5 py-1 rounded-full transition-colors font-medium min-w-0 ${PROJECT_CHIP_COLORS[pi % PROJECT_CHIP_COLORS.length]}`}>
                     <TypeIcon size={9} className="shrink-0" />
-                    {p.title}
+                    <span className="truncate">{p.title}</span>
                   </Link>
                 );
               })}
-              {dev.projects.length > 5 && (
-                <span className="text-[11px] text-muted px-1">+{dev.projects.length - 5}</span>
+              {dev.projects.length > 4 && (
+                <Link to={`/portfolio/${dev._id}`}
+                  className="col-span-2 text-[11px] text-accent hover:underline font-medium px-1">
+                  +{dev.projects.length - 4} more
+                </Link>
               )}
             </div>
           </div>
