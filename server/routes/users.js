@@ -6,9 +6,9 @@ const { protect } = require('../middleware/auth');
 router.get('/developers', async (req, res) => {
   try {
     const page   = Math.max(1, parseInt(req.query.page) || 1);
+    const LIMIT  = 12;  // developers per page
     const COLS   = 3;   // cards per row
-    const ROWS   = 4;   // pairs of rows per page (4 engaging rows + 4 recent rows = 8 rows = 24 cards)
-    const half   = COLS * ROWS;  // 12 per list per page
+    const half   = LIMIT;  // fetch up to LIMIT from each list, deduplicate down to LIMIT
     const skip   = (page - 1) * half;
     const search = req.query.search?.trim();
 
@@ -72,10 +72,10 @@ router.get('/developers', async (req, res) => {
     }
 
     res.json({
-      developers: interleaved,
+      developers: interleaved.slice(0, LIMIT),
       total,
       currentPage: page,
-      totalPages: Math.ceil(total / half),
+      totalPages: Math.ceil(total / LIMIT),
     });
   } catch (err) {
     res.status(500).json({ message: err.message });
