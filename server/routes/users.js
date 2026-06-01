@@ -21,7 +21,7 @@ router.get('/developers', async (req, res) => {
         let: { uid: '$_id' },
         pipeline: [
           { $match: { $expr: { $and: [{ $eq: ['$owner', '$$uid'] }, { $eq: ['$status', 'approved'] }] } } },
-          { $project: { _id: 1, title: 1, appType: 1 } },
+          { $project: { _id: 1, title: 1, appType: 1, likes: 1, ratings: 1 } },
         ],
         as: 'projects',
       },
@@ -34,12 +34,26 @@ router.get('/developers', async (req, res) => {
     const [total, engaging, recent] = await Promise.all([
       User.countDocuments(matchStage),
 
-      // Top engaging: most followers + most projects
+      // Top engaging: most likes + ratings across all approved projects
       User.aggregate([
         { $match: matchStage },
         projectLookup,
-        { $addFields: { _followerCount: { $size: { $ifNull: ['$followers', []] } }, _projectCount: { $size: { $ifNull: ['$projects', []] } } } },
-        { $sort: { _followerCount: -1, _projectCount: -1, createdAt: -1 } },
+        {
+          $addFields: {
+            _totalLikes: { $sum: { $map: { input: '$projects', as: 'p', in: { $size: { $ifNull: ['$$p.likes', []] } } } } },
+            _totalRatings: { $sum: { $map: { input: '$projects', as: 'p', in: { $size: { $ifNull: ['$$p.ratings', []] } } } } },
+            _avgRating: {
+              $let: {
+                vars: {
+                  allRatings: { $reduce: { input: { $map: { input: '$projects', as: 'p', in: { $ifNull: ['$$p.ratings', []] } } }, initialValue: [], in: { $concatArrays: ['$$value', '$$this'] } } },
+                },
+                in: { $cond: [{ $gt: [{ $size: '$$allRatings' }, 0] }, { $avg: '$$allRatings.value' }, 0] },
+              },
+            },
+          },
+        },
+        { $addFields: { _engagementScore: { $add: [{ $multiply: ['$_totalLikes', 2] }, { $multiply: ['$_avgRating', 10] }, '$_totalRatings'] } } },
+        { $sort: { _engagementScore: -1, createdAt: -1 } },
         { $skip: skip },
         { $limit: half },
         cleanProject,

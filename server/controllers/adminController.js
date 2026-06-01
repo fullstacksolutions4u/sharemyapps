@@ -219,6 +219,7 @@ exports.getAllUsers = async (req, res) => {
             },
           },
         },
+        { $addFields: { ratingCount: { $size: '$flatRatings' } } },
         { $project: { allRatings: 0, flatRatings: 0 } },
       ]),
     ]);
@@ -229,12 +230,13 @@ exports.getAllUsers = async (req, res) => {
       const projectCount = s.projectCount || 0;
       const totalLikes   = s.totalLikes   || 0;
       const avgRating    = s.avgRating    || 0;
+      const ratingCount  = s.ratingCount  || 0;
       return {
         ...u.toObject(),
         projectCount,
         totalLikes,
         avgRating,
-        engagementScore: totalLikes + (avgRating * projectCount * 2) + projectCount,
+        engagementScore: totalLikes * 2 + avgRating * 10 + ratingCount,
       };
     });
 
