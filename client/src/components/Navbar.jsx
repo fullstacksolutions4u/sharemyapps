@@ -182,11 +182,6 @@ export default function Navbar() {
     setDropOpen(false);
   };
 
-  const goAllApps = () => {
-    navigate('/explore', { state: { _ts: Date.now() } });
-    setMenuOpen(false);
-  };
-
   return (
     <header className="sticky top-0 z-50 bg-white border-b border-[#E5E1DA]">
       <div className="w-full pl-7.5 pr-6 h-16 flex items-center justify-between">
@@ -204,10 +199,9 @@ export default function Navbar() {
         </Link>
 
         {/* Desktop Nav */}
-        <nav className="hidden md:flex items-center gap-6">
-          <button onClick={goAllApps} className="text-base text-muted hover:text-text transition-colors">All Apps</button>
-          <Link to="/explore?type=web" className="text-base text-muted hover:text-text transition-colors">Web Applications</Link>
-          <Link to="/explore?type=mobile" className="text-base text-muted hover:text-text transition-colors">Mobile Applications</Link>
+        <nav className="hidden md:flex items-center gap-6 mr-48">
+          <Link to="/explore" className="text-base text-muted hover:text-text transition-colors">Applications</Link>
+          <Link to="/developers" className="text-base text-muted hover:text-text transition-colors">Developers</Link>
           <Link to="/vacancies" className="text-base text-muted hover:text-text transition-colors">Vacancies</Link>
           {user && user.userType !== 'client' && (
             <Link to="/dashboard" className="text-base text-muted hover:text-text transition-colors">My Projects</Link>
@@ -297,9 +291,8 @@ export default function Navbar() {
       {/* Mobile menu */}
       {menuOpen && (
         <div className="md:hidden bg-white border-t border-border px-4 py-4 space-y-3">
-          <button onClick={goAllApps} className="block text-sm text-muted hover:text-text w-full text-left">All Apps</button>
-          <Link to="/explore?type=web" onClick={() => setMenuOpen(false)} className="block text-sm text-muted hover:text-text">Web Applications</Link>
-          <Link to="/explore?type=mobile" onClick={() => setMenuOpen(false)} className="block text-sm text-muted hover:text-text">Mobile Applications</Link>
+          <Link to="/explore" onClick={() => setMenuOpen(false)} className="block text-sm text-muted hover:text-text">Applications</Link>
+          <Link to="/developers" onClick={() => setMenuOpen(false)} className="block text-sm text-muted hover:text-text">Developers</Link>
           <Link to="/vacancies" onClick={() => setMenuOpen(false)} className="block text-sm text-muted hover:text-text">Vacancies</Link>
           {user ? (
             <>

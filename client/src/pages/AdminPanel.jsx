@@ -769,10 +769,10 @@ function UsersSection() {
           <p className="text-[#6B7280] text-sm">No {tab === 'developers' ? 'developer' : 'client'} accounts yet</p>
         </div>
       ) : tab === 'developers' ? (
-        <div className="bg-white border border-[#E5E1DA] rounded-2xl overflow-hidden">
+        <div className="bg-white border border-[#E5E1DA] rounded-2xl overflow-visible">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-[#E5E1DA] bg-[#FAF9F6]">
+              <tr className="border-b border-[#E5E1DA] bg-[#FAF9F6] rounded-t-2xl">
                 <th className="text-left px-4 py-3 text-xs font-semibold text-[#6B7280] uppercase tracking-wider">Developer</th>
                 <th className="text-left px-4 py-3 text-xs font-semibold text-[#6B7280] uppercase tracking-wider hidden sm:table-cell">Email</th>
                 <th className="text-left px-4 py-3 text-xs font-semibold text-[#6B7280] uppercase tracking-wider hidden lg:table-cell">Engagement</th>
@@ -817,7 +817,7 @@ function UsersSection() {
                         {badgeLoading === u._id ? '…' : 'Change'} <ChevronDownIcon size={11} />
                       </button>
                       {pickerOpen === u._id && (
-                        <div className="absolute left-0 top-full mt-1.5 z-50 bg-white border border-[#E5E1DA] rounded-xl shadow-lg py-1.5 w-52">
+                        <div className="absolute left-0 bottom-full mb-1.5 z-50 bg-white border border-[#E5E1DA] rounded-xl shadow-lg py-1.5 w-52">
                           <p className="px-3 pb-1.5 text-[10px] font-semibold text-[#9CA3AF] uppercase tracking-wider border-b border-[#F3F0EB] mb-1">Select badge</p>
                           {BADGES.map(b => {
                             const Icon = b.icon;

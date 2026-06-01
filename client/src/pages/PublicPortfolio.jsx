@@ -68,51 +68,62 @@ export default function PublicPortfolio() {
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-10">
 
         {/* Profile Card */}
-        <div className="bg-white border border-[#E5E1DA] rounded-2xl p-6 mb-8 shadow-sm">
-          <div className="flex flex-col sm:flex-row sm:items-center gap-5">
+        <div className="relative bg-white border border-border rounded-2xl mb-8 shadow-sm overflow-hidden">
 
-            {/* Left: Avatar + Name */}
-            <div className="flex items-center gap-4 shrink-0">
-              {user.avatar ? (
-                <img src={user.avatar} alt={user.name}
-                  className="w-16 h-16 rounded-xl object-cover border border-[#E5E1DA]" />
-              ) : (
-                <div className="w-16 h-16 rounded-xl bg-[#E6F7F5] flex items-center justify-center border border-[#E5E1DA] shrink-0">
-                  <span className="text-xl font-bold text-[#00A693]">{initials}</span>
-                </div>
-              )}
-              <div>
-                <h1 className="text-xl font-bold text-[#1A1A1A]">{user.name}</h1>
-                <p className="text-xs text-[#6B7280] mt-0.5">{approvedCount} deployed project{approvedCount !== 1 ? 's' : ''}</p>
+          {/* Gradient banner */}
+          <div className="h-20 bg-linear-to-r from-accent/20 via-teal-100/40 to-violet-100/40 relative">
+            <div className="absolute inset-0 opacity-20"
+              style={{ backgroundImage: 'radial-gradient(circle, #00A693 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
+          </div>
+
+          <div className="px-6 pb-6">
+            {/* Avatar row — overlaps banner */}
+            <div className="flex flex-col sm:flex-row sm:items-end gap-4 -mt-10 mb-5">
+              <div className="shrink-0">
+                {user.avatar ? (
+                  <img src={user.avatar} alt={user.name}
+                    className="w-20 h-20 rounded-2xl object-cover border-4 border-white shadow-md" />
+                ) : (
+                  <div className="w-20 h-20 rounded-2xl bg-linear-to-br from-accent/30 to-teal-200 flex items-center justify-center border-4 border-white shadow-md">
+                    <span className="text-2xl font-bold text-accent">{initials}</span>
+                  </div>
+                )}
+              </div>
+              <div className="pb-1">
+                <h1 className="text-xl font-extrabold text-text leading-tight">{user.name}</h1>
+                <span className="inline-flex items-center gap-1 text-xs font-semibold bg-accent-light text-accent px-2.5 py-0.5 rounded-full mt-1 border border-accent/20">
+                  <span className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse" />
+                  {approvedCount} deployed project{approvedCount !== 1 ? 's' : ''}
+                </span>
               </div>
             </div>
 
-            {/* Divider */}
-            {(hasContact || hasSocial) && (
-              <div className="hidden sm:block w-px h-12 bg-[#E5E1DA] shrink-0 mx-2" />
-            )}
+            {/* Contact + Social row */}
+            <div className="flex flex-wrap items-center gap-3">
 
-            {/* Right: Contact + Social */}
-            <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center sm:flex-wrap sm:gap-x-6 sm:gap-y-2">
-
-              {/* Contact items */}
+              {/* Contact chips */}
               {user.email && (
                 <a href={`mailto:${user.email}`}
-                  className="flex items-center gap-2 text-sm text-[#1A1A1A] hover:text-[#00A693] transition-colors group">
-                  <span className="w-6 h-6 rounded-md bg-[#F3F0EB] group-hover:bg-[#E6F7F5] flex items-center justify-center transition-colors shrink-0">
-                    <Mail size={12} className="text-[#6B7280] group-hover:text-[#00A693]" />
+                  className="flex items-center gap-2 text-xs font-medium px-3 py-2 rounded-xl bg-linear-to-r from-teal-50 to-emerald-50 hover:from-teal-100 hover:to-emerald-100 text-teal-800 border border-teal-200 transition-all hover:shadow-sm group">
+                  <span className="w-6 h-6 rounded-lg bg-teal-100 group-hover:bg-teal-200 flex items-center justify-center shrink-0 transition-colors">
+                    <Mail size={12} className="text-teal-600" />
                   </span>
                   {user.email}
                 </a>
               )}
               {user.phone && (
                 <a href={`tel:${user.phone}`}
-                  className="flex items-center gap-2 text-sm text-[#1A1A1A] hover:text-[#00A693] transition-colors group">
-                  <span className="w-6 h-6 rounded-md bg-[#F3F0EB] group-hover:bg-[#E6F7F5] flex items-center justify-center transition-colors shrink-0">
-                    <Phone size={12} className="text-[#6B7280] group-hover:text-[#00A693]" />
+                  className="flex items-center gap-2 text-xs font-medium px-3 py-2 rounded-xl bg-linear-to-r from-teal-50 to-emerald-50 hover:from-teal-100 hover:to-emerald-100 text-teal-800 border border-teal-200 transition-all hover:shadow-sm group">
+                  <span className="w-6 h-6 rounded-lg bg-teal-100 group-hover:bg-teal-200 flex items-center justify-center shrink-0 transition-colors">
+                    <Phone size={12} className="text-teal-600" />
                   </span>
                   {user.phone}
                 </a>
+              )}
+
+              {/* Divider */}
+              {(hasContact && hasSocial) && (
+                <div className="hidden sm:block w-px h-6 bg-border" />
               )}
 
               {/* Social pills */}
@@ -121,19 +132,19 @@ export default function PublicPortfolio() {
                   <SocialPill
                     href={toAbsoluteUrl(user.linkedinUrl)}
                     label="LinkedIn"
-                    colorClass="bg-[#EEF4FF] text-[#0A66C2] border-[#0A66C2]/20 hover:border-[#0A66C2]/50"
+                    colorClass="bg-[#EEF4FF] text-[#0A66C2] border-[#0A66C2]/20 hover:border-[#0A66C2]/50 hover:shadow-sm"
                     dotClass="bg-[#0A66C2]"
                   />
                   <SocialPill
                     href={toAbsoluteUrl(user.githubUrl)}
                     label="GitHub"
-                    colorClass="bg-[#F3F0EB] text-[#1A1A1A] border-[#1A1A1A]/15 hover:border-[#1A1A1A]/40"
-                    dotClass="bg-[#1A1A1A]"
+                    colorClass="bg-slate-50 text-slate-700 border-slate-200 hover:border-slate-400 hover:shadow-sm"
+                    dotClass="bg-slate-700"
                   />
                   <SocialPill
                     href={toAbsoluteUrl(user.leetcodeUrl)}
                     label="LeetCode"
-                    colorClass="bg-[#FFF7ED] text-[#EA580C] border-[#EA580C]/20 hover:border-[#EA580C]/50"
+                    colorClass="bg-[#FFF7ED] text-[#EA580C] border-[#EA580C]/20 hover:border-[#EA580C]/50 hover:shadow-sm"
                     dotClass="bg-[#EA580C]"
                   />
                 </div>
