@@ -700,6 +700,7 @@ function UsersSection() {
   const [badgeLoading, setBadgeLoading] = useState(null);
   const [pickerOpen, setPickerOpen] = useState(null);
   const [hideLoading, setHideLoading] = useState(null);
+  const [search, setSearch] = useState('');
   const PER_PAGE = 10;
 
   useEffect(() => {
@@ -740,7 +741,9 @@ function UsersSection() {
 
   const developers = users.filter(u => u.userType !== 'client');
   const clients = users.filter(u => u.userType === 'client');
-  const list = tab === 'developers' ? developers : clients;
+  const q = search.trim().toLowerCase();
+  const list = (tab === 'developers' ? developers : clients)
+    .filter(u => !q || u.name?.toLowerCase().includes(q) || u.email?.toLowerCase().includes(q));
   const totalPages = Math.ceil(list.length / PER_PAGE);
   const paged = list.slice((page - 1) * PER_PAGE, page * PER_PAGE);
 
@@ -755,19 +758,42 @@ function UsersSection() {
         <div className="text-xs text-[#9CA3AF]">{users.length} total</div>
       </div>
 
-      {/* Tab switcher */}
-      <div className="flex gap-1 bg-[#F3F0EB] p-1 rounded-xl w-fit">
-        {[
-          { key: 'developers', label: `Developers (${developers.length})` },
-          { key: 'clients',    label: `Clients (${clients.length})` },
-        ].map(t => (
-          <button key={t.key} onClick={() => { setTab(t.key); setPage(1); }}
-            className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-              tab === t.key ? 'bg-white text-[#1A1A1A] shadow-sm' : 'text-[#6B7280] hover:text-[#1A1A1A]'
-            }`}>
-            {t.label}
-          </button>
-        ))}
+      {/* Tab switcher + search */}
+      <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+        <div className="flex gap-1 bg-[#F3F0EB] p-1 rounded-xl w-fit">
+          {[
+            { key: 'developers', label: `Developers (${developers.length})` },
+            { key: 'clients',    label: `Clients (${clients.length})` },
+          ].map(t => (
+            <button key={t.key} onClick={() => { setTab(t.key); setPage(1); setSearch(''); }}
+              className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                tab === t.key ? 'bg-white text-[#1A1A1A] shadow-sm' : 'text-[#6B7280] hover:text-[#1A1A1A]'
+              }`}>
+              {t.label}
+            </button>
+          ))}
+        </div>
+        <div className="relative max-w-xs w-full">
+          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#9CA3AF] pointer-events-none" />
+          <input
+            type="text"
+            value={search}
+            onChange={e => { setSearch(e.target.value); setPage(1); }}
+            placeholder="Search by name or email…"
+            className="w-full pl-9 pr-8 py-2 text-sm border border-[#E5E1DA] rounded-xl bg-white text-[#1A1A1A] placeholder-[#9CA3AF] focus:outline-none focus:border-[#00A693] focus:ring-2 focus:ring-[#00A693]/10 transition"
+          />
+          {search && (
+            <button type="button" onClick={() => { setSearch(''); setPage(1); }}
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#9CA3AF] hover:text-[#6B7280] transition-colors">
+              <X size={13} />
+            </button>
+          )}
+        </div>
+        {search && (
+          <p className="text-xs text-[#6B7280]">
+            {list.length} result{list.length !== 1 ? 's' : ''} for <span className="font-medium text-[#1A1A1A]">"{search}"</span>
+          </p>
+        )}
       </div>
 
       {loading ? (
@@ -962,12 +988,17 @@ function AnnouncementsSection() {
   const [editId, setEditId] = useState(null);
   const [editText, setEditText] = useState('');
   const [editSaving, setEditSaving] = useState(false);
+  const [recentProjects, setRecentProjects] = useState([]);
 
   useEffect(() => {
     const load = async () => {
       try {
-        const res = await api.get('/announcements/all');
-        setItems(res.data);
+        const [annRes, projRes] = await Promise.all([
+          api.get('/announcements/all'),
+          api.get('/admin/projects?status=approved&limit=5&page=1'),
+        ]);
+        setItems(annRes.data);
+        setRecentProjects(projRes.data.projects || []);
       } catch { toast.error('Failed to load announcements'); }
       finally { setLoading(false); }
     };
@@ -1040,6 +1071,28 @@ function AnnouncementsSection() {
           <Plus size={14} /> Add Announcement
         </button>
       </div>
+
+      {/* Recent projects */}
+      {recentProjects.length > 0 && (
+        <div className="bg-white border border-[#E5E1DA] rounded-2xl p-5 space-y-3">
+          <p className="text-sm font-medium text-[#1A1A1A]">Last 5 added projects</p>
+          <div className="space-y-2">
+            {recentProjects.map(p => (
+              <div key={p._id} className="flex items-center gap-3 py-2 border-b border-[#F3F0EB] last:border-0">
+                {p.bannerImage
+                  ? <img src={p.bannerImage} alt={p.title} className="w-10 h-10 rounded-lg object-cover shrink-0" />
+                  : <div className="w-10 h-10 rounded-lg bg-[#E6F7F5] flex items-center justify-center shrink-0"><FolderOpen size={16} className="text-[#00A693]" /></div>
+                }
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-[#1A1A1A] truncate">{p.title}</p>
+                  <p className="text-xs text-[#9CA3AF] truncate">{p.owner?.name || 'Unknown'}</p>
+                </div>
+                <span className="text-xs text-[#9CA3AF] shrink-0">{new Date(p.createdAt).toLocaleDateString()}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* List */}
       {loading ? (
@@ -1401,6 +1454,14 @@ function VacanciesSection() {
     } catch { toast.error('Failed to delete'); }
   };
 
+  const handleToggleStatus = async (id, current) => {
+    try {
+      const res = await api.patch(`/admin/vacancies/${id}/toggle-status`);
+      setVacancies(prev => prev.map(v => v._id === id ? { ...v, status: res.data.status } : v));
+      toast.success(res.data.status === 'closed' ? 'Vacancy closed' : 'Vacancy reopened');
+    } catch { toast.error('Failed to update status'); }
+  };
+
   const startEdit = (v) => {
     setEditId(v._id);
     setForm({
@@ -1542,6 +1603,13 @@ function VacanciesSection() {
                         <UsersIcon size={13} />
                         <span>{v.interests?.length || 0}</span>
                         <ChevronDown size={11} className={`transition-transform ${expandedInterests === v._id ? 'rotate-180' : ''}`} />
+                      </button>
+                      <button
+                        onClick={() => handleToggleStatus(v._id, v.status)}
+                        className={`p-1.5 rounded-lg transition-colors ${v.status === 'active' ? 'hover:bg-orange-50 text-[#9CA3AF] hover:text-orange-500' : 'hover:bg-green-50 text-[#9CA3AF] hover:text-green-600'}`}
+                        title={v.status === 'active' ? 'Close vacancy' : 'Reopen vacancy'}
+                      >
+                        {v.status === 'active' ? <ToggleRight size={16} /> : <ToggleLeft size={16} />}
                       </button>
                       <button onClick={() => startEdit(v)} className="p-1.5 rounded-lg hover:bg-[#F3F0EB] text-[#6B7280] hover:text-[#1A1A1A] transition-colors">
                         <Pencil size={14} />

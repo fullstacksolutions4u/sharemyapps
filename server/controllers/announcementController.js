@@ -12,7 +12,7 @@ exports.getFeed = async (req, res) => {
         .populate({ path: 'project', select: 'title owner', populate: { path: 'owner', select: 'name' } }),
       Project.find({ status: 'approved' })
         .sort({ updatedAt: -1 })
-        .limit(2)
+        .limit(5)
         .populate('owner', 'name')
         .select('title owner'),
     ]);

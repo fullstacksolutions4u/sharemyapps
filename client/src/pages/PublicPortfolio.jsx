@@ -1,9 +1,97 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { ExternalLink, Layers, AlertCircle, Mail, Phone, Monitor, Smartphone } from 'lucide-react';
+import { ExternalLink, Layers, AlertCircle, Mail, Phone, Monitor, Smartphone, FileText } from 'lucide-react';
 import api from '../api/axios';
 
 const PLACEHOLDER = 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=400&q=80';
+
+// Rotating color palette for tech pills
+const PILL_PALETTE = [
+  { bg: 'bg-sky-50',     text: 'text-sky-600',     border: 'border-sky-200',     hex: '0284C7' },
+  { bg: 'bg-violet-50',  text: 'text-violet-600',  border: 'border-violet-200',  hex: '7C3AED' },
+  { bg: 'bg-emerald-50', text: 'text-emerald-600', border: 'border-emerald-200', hex: '059669' },
+  { bg: 'bg-amber-50',   text: 'text-amber-600',   border: 'border-amber-200',   hex: 'D97706' },
+  { bg: 'bg-rose-50',    text: 'text-rose-600',    border: 'border-rose-200',    hex: 'E11D48' },
+  { bg: 'bg-blue-50',    text: 'text-blue-600',    border: 'border-blue-200',    hex: '2563EB' },
+  { bg: 'bg-pink-50',    text: 'text-pink-600',    border: 'border-pink-200',    hex: 'DB2777' },
+  { bg: 'bg-teal-50',    text: 'text-teal-600',    border: 'border-teal-200',    hex: '0D9488' },
+  { bg: 'bg-orange-50',  text: 'text-orange-600',  border: 'border-orange-200',  hex: 'EA580C' },
+  { bg: 'bg-indigo-50',  text: 'text-indigo-600',  border: 'border-indigo-200',  hex: '4338CA' },
+];
+
+// Simple Icons slug map for common tech tags
+const ICON_SLUG = {
+  'react': 'react',
+  'vue': 'vuedotjs',
+  'angular': 'angular',
+  'svelte': 'svelte',
+  'nextjs': 'nextdotjs',
+  'next.js': 'nextdotjs',
+  'nuxt': 'nuxtdotjs',
+  'node': 'nodedotjs',
+  'nodejs': 'nodedotjs',
+  'node.js': 'nodedotjs',
+  'express': 'express',
+  'fastapi': 'fastapi',
+  'django': 'django',
+  'flask': 'flask',
+  'laravel': 'laravel',
+  'spring': 'spring',
+  'mongodb': 'mongodb',
+  'postgresql': 'postgresql',
+  'postgres': 'postgresql',
+  'mysql': 'mysql',
+  'sqlite': 'sqlite',
+  'redis': 'redis',
+  'firebase': 'firebase',
+  'supabase': 'supabase',
+  'prisma': 'prisma',
+  'graphql': 'graphql',
+  'typescript': 'typescript',
+  'javascript': 'javascript',
+  'python': 'python',
+  'java': 'java',
+  'kotlin': 'kotlin',
+  'swift': 'swift',
+  'dart': 'dart',
+  'flutter': 'flutter',
+  'c#': 'csharp',
+  'dotnet': 'dotnet',
+  '.net': 'dotnet',
+  'php': 'php',
+  'go': 'go',
+  'rust': 'rust',
+  'tailwind': 'tailwindcss',
+  'tailwindcss': 'tailwindcss',
+  'bootstrap': 'bootstrap',
+  'sass': 'sass',
+  'redux': 'redux',
+  'docker': 'docker',
+  'kubernetes': 'kubernetes',
+  'aws': 'amazonaws',
+  'vercel': 'vercel',
+  'netlify': 'netlify',
+  'git': 'git',
+  'github': 'github',
+  'figma': 'figma',
+  'vite': 'vite',
+  'webpack': 'webpack',
+  'stripe': 'stripe',
+  'tensorflow': 'tensorflow',
+  'pytorch': 'pytorch',
+  'socket.io': 'socketdotio',
+  'three.js': 'threedotjs',
+  'nginx': 'nginx',
+  'linux': 'linux',
+  'electron': 'electron',
+  'expo': 'expo',
+  'react native': 'react',
+};
+
+function getIconUrl(tag, hex = '374151') {
+  const slug = ICON_SLUG[tag.toLowerCase()];
+  return slug ? `https://cdn.simpleicons.org/${slug}/${hex}` : null;
+}
 
 const APP_TYPE_CFG = {
   mobile: { label: 'Mobile App', Icon: Smartphone, cls: 'bg-violet-500/90 text-white' },
@@ -66,7 +154,10 @@ export default function PublicPortfolio() {
   const initials = user.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
   const approvedCount = projects.length;
   const hasContact = user.email || user.phone;
-  const hasSocial = user.linkedinUrl || user.githubUrl || user.leetcodeUrl;
+  const hasSocial = user.linkedinUrl || user.githubUrl || user.leetcodeUrl || user.cvUrl;
+
+  // Aggregate unique tech tags from all projects (max 12)
+  const techStack = [...new Set(projects.flatMap(p => p.techTags || []))].slice(0, 12); // hard cap at 12
 
   return (
     <div className="min-h-screen bg-[#FAF9F6]">
@@ -76,14 +167,28 @@ export default function PublicPortfolio() {
         <div className="relative bg-white border border-border rounded-2xl mb-8 shadow-sm overflow-hidden">
 
           {/* Gradient banner */}
-          <div className="h-20 bg-linear-to-r from-accent/20 via-teal-100/40 to-violet-100/40 relative">
+          <div className={`${techStack.length > 0 ? 'h-28' : 'h-20'} bg-linear-to-r from-accent/20 via-teal-100/40 to-violet-100/40 relative overflow-hidden`}>
             <div className="absolute inset-0 opacity-20"
               style={{ backgroundImage: 'radial-gradient(circle, #00A693 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
+            {techStack.length > 0 && (
+              <div className="absolute top-3 left-5 right-5 grid grid-cols-6 gap-x-6 gap-y-2 justify-items-center">
+                {techStack.map((tag, i) => {
+                  const palette = PILL_PALETTE[i % PILL_PALETTE.length];
+                  const iconUrl = getIconUrl(tag, palette.hex);
+                  return (
+                    <span key={tag} className={`inline-flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-1 rounded-full border ${palette.bg} ${palette.text} ${palette.border}`}>
+                      {iconUrl && <img src={iconUrl} alt={tag} className="w-3.5 h-3.5 object-contain shrink-0" onError={e => { e.target.style.display = 'none'; }} />}
+                      {tag}
+                    </span>
+                  );
+                })}
+              </div>
+            )}
           </div>
 
           <div className="px-6 pb-6">
             {/* Avatar row — overlaps banner */}
-            <div className="flex flex-col sm:flex-row sm:items-end gap-4 -mt-10 mb-5">
+            <div className="relative z-10 flex flex-col sm:flex-row sm:items-end gap-4 -mt-10 mb-5">
               <div className="shrink-0">
                 {user.avatar ? (
                   <img src={user.avatar} alt={user.name}
@@ -95,7 +200,9 @@ export default function PublicPortfolio() {
                 )}
               </div>
               <div className="pb-1">
-                <h1 className="text-xl font-extrabold text-text leading-tight">{user.name}</h1>
+                <h1 className="text-2xl font-extrabold leading-tight bg-gradient-to-r from-slate-700 via-slate-500 to-slate-400 bg-clip-text text-transparent drop-shadow-sm tracking-tight">
+                  {user.name}
+                </h1>
                 <span className="inline-flex items-center gap-1 text-xs font-semibold bg-accent-light text-accent px-2.5 py-0.5 rounded-full mt-1 border border-accent/20">
                   <span className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse" />
                   {approvedCount} deployed project{approvedCount !== 1 ? 's' : ''}
@@ -104,24 +211,19 @@ export default function PublicPortfolio() {
             </div>
 
             {/* Contact + Social row */}
-            <div className="flex flex-wrap items-center gap-3">
+            <div className="flex flex-wrap items-center justify-center gap-3">
 
-              {/* Contact chips */}
               {user.email && (
                 <a href={`mailto:${user.email}`}
-                  className="flex items-center gap-2 text-xs font-medium px-3 py-2 rounded-xl bg-linear-to-r from-teal-50 to-emerald-50 hover:from-teal-100 hover:to-emerald-100 text-teal-800 border border-teal-200 transition-all hover:shadow-sm group">
-                  <span className="w-6 h-6 rounded-lg bg-teal-100 group-hover:bg-teal-200 flex items-center justify-center shrink-0 transition-colors">
-                    <Mail size={12} className="text-teal-600" />
-                  </span>
+                  className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full border bg-teal-50 text-teal-700 border-teal-200 hover:border-teal-400 hover:scale-105 transition-all">
+                  <Mail size={11} className="shrink-0" />
                   {user.email}
                 </a>
               )}
               {user.phone && (
                 <a href={`tel:${user.phone}`}
-                  className="flex items-center gap-2 text-xs font-medium px-3 py-2 rounded-xl bg-linear-to-r from-teal-50 to-emerald-50 hover:from-teal-100 hover:to-emerald-100 text-teal-800 border border-teal-200 transition-all hover:shadow-sm group">
-                  <span className="w-6 h-6 rounded-lg bg-teal-100 group-hover:bg-teal-200 flex items-center justify-center shrink-0 transition-colors">
-                    <Phone size={12} className="text-teal-600" />
-                  </span>
+                  className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full border bg-teal-50 text-teal-700 border-teal-200 hover:border-teal-400 hover:scale-105 transition-all">
+                  <Phone size={11} className="shrink-0" />
                   {user.phone}
                 </a>
               )}
@@ -131,9 +233,8 @@ export default function PublicPortfolio() {
                 <div className="hidden sm:block w-px h-6 bg-border" />
               )}
 
-              {/* Social pills */}
               {hasSocial && (
-                <div className="flex flex-wrap gap-2">
+                <div className="flex items-center gap-2 flex-wrap">
                   <SocialPill
                     href={toAbsoluteUrl(user.linkedinUrl)}
                     label="LinkedIn"
@@ -152,6 +253,16 @@ export default function PublicPortfolio() {
                     colorClass="bg-[#FFF7ED] text-[#EA580C] border-[#EA580C]/20 hover:border-[#EA580C]/50 hover:shadow-sm"
                     dotClass="bg-[#EA580C]"
                   />
+                  {user.cvUrl && (
+                    <a
+                      href={toAbsoluteUrl(user.cvUrl)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full border bg-emerald-50 text-emerald-700 border-emerald-200 hover:border-emerald-400 hover:scale-105 transition-all"
+                    >
+                      <FileText size={11} /> View Resume
+                    </a>
+                  )}
                 </div>
               )}
             </div>

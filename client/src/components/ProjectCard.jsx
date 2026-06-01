@@ -28,7 +28,7 @@ const APP_TYPE_CFG = {
 };
 
 export default function ProjectCard({ project }) {
-  const { _id, title, description, liveUrl, bannerImage, owner, likes = [], ratings = [], viewCount = 0, featured, appType } = project;
+  const { _id, title, description, liveUrl, bannerImage, owner, likes = [], ratings = [], viewCount = 0, featured, appType, category } = project;
   const appTypeCfg = APP_TYPE_CFG[appType] || APP_TYPE_CFG.web;
   const avg = avgRating(ratings);
 
@@ -36,11 +36,18 @@ export default function ProjectCard({ project }) {
     <div className="group bg-white border border-accent/30 rounded-xl overflow-hidden shadow-md hover:shadow-xl hover:-translate-y-1 hover:border-accent/60 transition-all duration-200 flex flex-col">
       {/* Banner */}
       <Link to={`/project/${_id}`} className="block overflow-hidden relative">
-        {featured && (
-          <span className="absolute top-2 left-2 z-10 flex items-center gap-1 bg-amber-500 text-white text-[10px] font-semibold px-2 py-0.5 rounded-full shadow">
-            <Sparkles size={9} /> Featured for feedback
-          </span>
-        )}
+        <div className="absolute top-2 left-2 z-10 flex flex-col items-start gap-1">
+          {featured && (
+            <span className="flex items-center gap-1 bg-amber-500 text-white text-[10px] font-semibold px-2 py-0.5 rounded-full shadow">
+              <Sparkles size={9} /> Featured for feedback
+            </span>
+          )}
+          {category && (
+            <span className="flex items-center gap-1 bg-violet-500/80 text-white text-[10px] font-semibold px-2 py-0.5 rounded-full shadow backdrop-blur-sm">
+              {category}
+            </span>
+          )}
+        </div>
         <span className={`absolute top-2 right-2 z-10 flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full shadow backdrop-blur-sm ${appTypeCfg.cls}`}>
           <appTypeCfg.Icon size={9} /> {appTypeCfg.label}
         </span>

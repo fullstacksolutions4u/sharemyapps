@@ -115,7 +115,7 @@ export default function Vacancies() {
           {vacancies.map(v => {
             const initial = (v.company || v.title || '?')[0].toUpperCase();
             return (
-              <div key={v._id} className="bg-white rounded-2xl shadow-[0_2px_16px_rgba(0,0,0,0.08)] hover:shadow-[0_4px_24px_rgba(0,0,0,0.13)] border border-border/60 p-5 flex flex-col gap-4 transition-shadow">
+              <div key={v._id} className={`bg-white rounded-2xl shadow-[0_2px_16px_rgba(0,0,0,0.08)] hover:shadow-[0_4px_24px_rgba(0,0,0,0.13)] border border-border/60 p-5 flex flex-col gap-4 transition-shadow ${v.status === 'closed' ? 'opacity-70' : ''}`}>
 
                 {/* Header: avatar + title + type badge */}
                 <div className="flex items-start gap-3">
@@ -123,7 +123,12 @@ export default function Vacancies() {
                     {initial}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h2 className="font-bold text-text leading-snug">{v.title}</h2>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <h2 className="font-bold text-text leading-snug">{v.title}</h2>
+                      {v.status === 'closed' && (
+                        <span className="text-xs px-2 py-0.5 rounded-full bg-gray-100 text-gray-500 border border-gray-200 font-medium">Closed</span>
+                      )}
+                    </div>
                     {v.industry && (
                       <p className="text-sm text-muted mt-0.5">{v.industry}</p>
                     )}
@@ -188,7 +193,9 @@ export default function Vacancies() {
                     <span>{v.interestCount} interested</span>
                   </div>
 
-                  {!user ? (
+                  {v.status === 'closed' ? (
+                    <span className="text-sm text-gray-400 font-medium px-5 py-2.5">Applications closed</span>
+                  ) : !user ? (
                     <Link
                       to="/login"
                       className="flex items-center gap-2 text-sm font-semibold bg-accent hover:bg-accent-hover text-white px-5 py-2.5 rounded-xl transition-colors"

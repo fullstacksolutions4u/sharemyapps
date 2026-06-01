@@ -19,6 +19,7 @@ const {
   updateVacancy,
   deleteVacancy,
   replyToInterest,
+  toggleVacancyStatus,
 } = require('../controllers/vacancyController');
 
 router.use(protect, requireAdmin);
@@ -40,5 +41,6 @@ router.post('/vacancies', createVacancy);
 router.put('/vacancies/:id', updateVacancy);
 router.delete('/vacancies/:id', deleteVacancy);
 router.post('/vacancies/:id/reply', replyToInterest);
+router.patch('/vacancies/:id/toggle-status', toggleVacancyStatus);
 
 module.exports = router;

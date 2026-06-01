@@ -10,7 +10,7 @@ const parseSkills = (skills) =>
 
 exports.getVacancies = async (req, res) => {
   try {
-    const vacancies = await Vacancy.find({ status: 'active' }).sort({ createdAt: -1 });
+    const vacancies = await Vacancy.find().sort({ status: 1, createdAt: -1 }); // active first (a < c)
     const userId = req.user?._id?.toString();
     const result = vacancies.map(v => ({
       ...v.toObject(),
@@ -105,6 +105,16 @@ exports.replyToInterest = async (req, res) => {
     });
 
     res.json({ success: true });
+  } catch (err) { res.status(500).json({ message: err.message }); }
+};
+
+exports.toggleVacancyStatus = async (req, res) => {
+  try {
+    const vacancy = await Vacancy.findById(req.params.id);
+    if (!vacancy) return res.status(404).json({ message: 'Vacancy not found' });
+    vacancy.status = vacancy.status === 'active' ? 'closed' : 'active';
+    await vacancy.save();
+    res.json({ status: vacancy.status });
   } catch (err) { res.status(500).json({ message: err.message }); }
 };
 
