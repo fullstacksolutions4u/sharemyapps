@@ -12,7 +12,7 @@ router.get('/developers', async (req, res) => {
     const skip   = (page - 1) * half;
     const search = req.query.search?.trim();
 
-    const matchStage = { userType: 'developer', role: { $ne: 'admin' } };
+    const matchStage = { userType: 'developer', role: { $ne: 'admin' }, hidden: { $ne: true } };
     if (search) matchStage.name = { $regex: search, $options: 'i' };
 
     const projectLookup = {

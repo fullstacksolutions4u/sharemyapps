@@ -282,6 +282,16 @@ exports.adminToggleHidden = async (req, res) => {
   } catch (err) { res.status(500).json({ message: err.message }); }
 };
 
+exports.toggleUserHidden = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+    user.hidden = !user.hidden;
+    await user.save();
+    res.json({ hidden: user.hidden });
+  } catch (err) { res.status(500).json({ message: err.message }); }
+};
+
 exports.setBadge = async (req, res) => {
   try {
     const { badge } = req.body;

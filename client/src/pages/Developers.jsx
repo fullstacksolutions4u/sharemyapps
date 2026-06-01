@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
-  Search, Mail, Phone, GitBranch, Link2, Code2,
+  Search, Phone, GitBranch, Link2, Code2,
   Globe, Layers, ChevronLeft, ChevronRight, Users, Sparkles, Monitor, Smartphone,
 } from 'lucide-react';
 import api from '../api/axios';
@@ -94,26 +94,15 @@ function DeveloperCard({ dev, idx }) {
         </div>
 
         {/* Contact */}
-        {(dev.email || dev.phone) && (
+        {dev.phone && (
           <div className="rounded-xl overflow-hidden border border-teal-200">
-            {dev.email && (
-              <a href={`mailto:${dev.email}`}
-                className="flex items-center gap-2.5 text-xs px-3 py-2 bg-linear-to-r from-teal-50 to-emerald-50 hover:from-teal-100 hover:to-emerald-100 text-teal-800 transition-colors truncate group border-b border-teal-100 last:border-b-0">
-                <span className="w-6 h-6 rounded-lg bg-teal-100 group-hover:bg-teal-200 flex items-center justify-center shrink-0 transition-colors">
-                  <Mail size={11} className="text-teal-600" />
-                </span>
-                <span className="truncate font-medium">{dev.email}</span>
-              </a>
-            )}
-            {dev.phone && (
-              <a href={`tel:${dev.phone}`}
-                className="flex items-center gap-2.5 text-xs px-3 py-2 bg-linear-to-r from-teal-50 to-emerald-50 hover:from-teal-100 hover:to-emerald-100 text-teal-800 transition-colors group border-b border-teal-100 last:border-b-0">
-                <span className="w-6 h-6 rounded-lg bg-teal-100 group-hover:bg-teal-200 flex items-center justify-center shrink-0 transition-colors">
-                  <Phone size={11} className="text-teal-600" />
-                </span>
-                <span className="font-medium">{dev.phone}</span>
-              </a>
-            )}
+            <a href={`tel:${dev.phone}`}
+              className="flex items-center gap-2.5 text-xs px-3 py-2 bg-linear-to-r from-teal-50 to-emerald-50 hover:from-teal-100 hover:to-emerald-100 text-teal-800 transition-colors group">
+              <span className="w-6 h-6 rounded-lg bg-teal-100 group-hover:bg-teal-200 flex items-center justify-center shrink-0 transition-colors">
+                <Phone size={11} className="text-teal-600" />
+              </span>
+              <span className="font-medium">{dev.phone}</span>
+            </a>
           </div>
         )}
 

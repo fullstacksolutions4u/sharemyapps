@@ -10,6 +10,7 @@ const {
   setBadge,
   toggleFeatured,
   adminToggleHidden,
+  toggleUserHidden,
   getResumes,
 } = require('../controllers/adminController');
 const {
@@ -30,6 +31,7 @@ router.put('/projects/:id', adminUpdateProject);
 router.get('/users', getAllUsers);
 router.get('/resumes', getResumes);
 router.patch('/users/:id/badge', setBadge);
+router.patch('/users/:id/hide', toggleUserHidden);
 router.patch('/projects/:id/featured', toggleFeatured);
 router.patch('/projects/:id/hide', adminToggleHidden);
 

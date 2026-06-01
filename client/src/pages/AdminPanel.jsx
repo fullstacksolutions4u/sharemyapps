@@ -699,6 +699,7 @@ function UsersSection() {
   const [page, setPage] = useState(1);
   const [badgeLoading, setBadgeLoading] = useState(null);
   const [pickerOpen, setPickerOpen] = useState(null);
+  const [hideLoading, setHideLoading] = useState(null);
   const PER_PAGE = 10;
 
   useEffect(() => {
@@ -714,6 +715,16 @@ function UsersSection() {
     document.addEventListener('mousedown', close);
     return () => document.removeEventListener('mousedown', close);
   }, [pickerOpen]);
+
+  const handleToggleHidden = async (userId) => {
+    setHideLoading(userId);
+    try {
+      const res = await api.patch(`/admin/users/${userId}/hide`);
+      setUsers(prev => prev.map(u => u._id === userId ? { ...u, hidden: res.data.hidden } : u));
+      toast.success(res.data.hidden ? 'Developer hidden from public list' : 'Developer visible again');
+    } catch { toast.error('Failed to update visibility'); }
+    finally { setHideLoading(null); }
+  };
 
   const handleBadge = async (userId, badge) => {
     setPickerOpen(null);
@@ -841,7 +852,21 @@ function UsersSection() {
                     </div>
                   </td>
                   <td className="px-4 py-3 text-[#6B7280] text-xs hidden md:table-cell">
-                    {new Date(u.createdAt).toLocaleDateString()}
+                    <div className="flex items-center gap-2">
+                      <span>{new Date(u.createdAt).toLocaleDateString()}</span>
+                      <button
+                        onClick={() => handleToggleHidden(u._id)}
+                        disabled={hideLoading === u._id}
+                        title={u.hidden ? 'Show in developers list' : 'Hide from developers list'}
+                        className={`inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-lg border font-medium transition-colors disabled:opacity-50 ${
+                          u.hidden
+                            ? 'bg-red-50 text-red-500 border-red-200 hover:bg-red-100'
+                            : 'bg-green-50 text-green-600 border-green-200 hover:bg-green-100'
+                        }`}
+                      >
+                        {hideLoading === u._id ? '…' : u.hidden ? <><EyeOff size={10} /> Hidden</> : <><Eye size={10} /> Visible</>}
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}

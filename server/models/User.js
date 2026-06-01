@@ -23,6 +23,7 @@ const userSchema = new mongoose.Schema({
   followers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
   badge: { type: String, enum: ['new_member', 'active', 'top', 'champion'], default: 'new_member' },
   regNumber: { type: Number, unique: true, sparse: true },
+  hidden: { type: Boolean, default: false },
 }, { timestamps: true });
 
 userSchema.pre('save', async function (next) {
