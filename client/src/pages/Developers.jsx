@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Search, Mail, Phone, GitBranch, Link2, Code2,
@@ -195,22 +195,27 @@ export default function Developers() {
     return () => clearTimeout(t);
   }, [search]);
 
-  const fetchDevelopers = useCallback(async () => {
-    setLoading(true);
-    try {
-      const params = new URLSearchParams({ page });
-      if (debouncedSearch) params.set('search', debouncedSearch);
-      const res = await api.get(`/users/developers?${params}`);
-      setDevelopers(res.data.developers);
-      setTotalPages(res.data.totalPages);
-    } catch {
-      setDevelopers([]);
-    } finally {
-      setLoading(false);
-    }
+  useEffect(() => {
+    let cancelled = false;
+    const fetchDevelopers = async () => {
+      setLoading(true);
+      try {
+        const params = new URLSearchParams({ page });
+        if (debouncedSearch) params.set('search', debouncedSearch);
+        const res = await api.get(`/users/developers?${params}`);
+        if (!cancelled) {
+          setDevelopers(res.data.developers);
+          setTotalPages(res.data.totalPages);
+        }
+      } catch {
+        if (!cancelled) setDevelopers([]);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    };
+    fetchDevelopers();
+    return () => { cancelled = true; };
   }, [page, debouncedSearch]);
-
-  useEffect(() => { fetchDevelopers(); }, [fetchDevelopers]);
 
   const goPage = (p) => { setPage(p); window.scrollTo({ top: 0, behavior: 'smooth' }); };
 
