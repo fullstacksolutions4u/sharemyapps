@@ -1454,7 +1454,7 @@ function VacanciesSection() {
     } catch { toast.error('Failed to delete'); }
   };
 
-  const handleToggleStatus = async (id, current) => {
+  const handleToggleStatus = async (id) => {
     try {
       const res = await api.patch(`/admin/vacancies/${id}/toggle-status`);
       setVacancies(prev => prev.map(v => v._id === id ? { ...v, status: res.data.status } : v));

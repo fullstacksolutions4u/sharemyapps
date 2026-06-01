@@ -1,7 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { ExternalLink, Layers, AlertCircle, Mail, Phone, Monitor, Smartphone, FileText } from 'lucide-react';
+import { ExternalLink, Layers, AlertCircle, Mail, Phone, Monitor, Smartphone, FileText, Camera } from 'lucide-react';
 import api from '../api/axios';
+import { useAuth } from '../context/AuthContext';
+import toast from 'react-hot-toast';
 
 const PLACEHOLDER = 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=400&q=80';
 
@@ -118,9 +120,32 @@ function SocialPill({ href, label, colorClass, dotClass }) {
 
 export default function PublicPortfolio() {
   const { userId } = useParams();
+  const { user: authUser, setUser } = useAuth();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const avatarInputRef = useRef(null);
+
+  const isOwner = authUser?._id === userId;
+
+  const handleAvatarChange = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const formData = new FormData();
+    formData.append('avatar', file);
+    setUploadingAvatar(true);
+    try {
+      const res = await api.put('/auth/profile', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
+      setData(prev => ({ ...prev, user: { ...prev.user, avatar: res.data.user.avatar } }));
+      setUser(res.data.user);
+      toast.success('Profile photo updated');
+    } catch {
+      toast.error('Failed to update photo');
+    } finally {
+      setUploadingAvatar(false);
+    }
+  };
 
   useEffect(() => {
     api.get(`/projects/user/${userId}`)
@@ -189,7 +214,7 @@ export default function PublicPortfolio() {
           <div className="px-6 pb-6">
             {/* Avatar row — overlaps banner */}
             <div className="relative z-10 flex flex-col sm:flex-row sm:items-end gap-4 -mt-10 mb-5">
-              <div className="shrink-0">
+              <div className="shrink-0 relative group/avatar">
                 {user.avatar ? (
                   <img src={user.avatar} alt={user.name}
                     className="w-20 h-20 rounded-2xl object-cover border-4 border-white shadow-md" />
@@ -197,6 +222,21 @@ export default function PublicPortfolio() {
                   <div className="w-20 h-20 rounded-2xl bg-linear-to-br from-accent/30 to-teal-200 flex items-center justify-center border-4 border-white shadow-md">
                     <span className="text-2xl font-bold text-accent">{initials}</span>
                   </div>
+                )}
+                {isOwner && (
+                  <>
+                    <button
+                      onClick={() => avatarInputRef.current?.click()}
+                      disabled={uploadingAvatar}
+                      className="absolute inset-0 rounded-2xl bg-black/40 flex items-center justify-center opacity-0 group-hover/avatar:opacity-100 transition-opacity cursor-pointer"
+                    >
+                      {uploadingAvatar
+                        ? <span className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                        : <Camera size={20} className="text-white" />
+                      }
+                    </button>
+                    <input ref={avatarInputRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarChange} />
+                  </>
                 )}
               </div>
               <div className="pb-1">
