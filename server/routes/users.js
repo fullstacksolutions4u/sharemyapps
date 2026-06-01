@@ -21,7 +21,7 @@ router.get('/developers', async (req, res) => {
         let: { uid: '$_id' },
         pipeline: [
           { $match: { $expr: { $and: [{ $eq: ['$owner', '$$uid'] }, { $eq: ['$status', 'approved'] }] } } },
-          { $project: { _id: 1, title: 1 } },
+          { $project: { _id: 1, title: 1, appType: 1 } },
         ],
         as: 'projects',
       },

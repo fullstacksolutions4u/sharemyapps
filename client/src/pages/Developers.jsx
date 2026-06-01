@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Search, Mail, Phone, GitBranch, Link2, Code2,
-  Globe, Layers, ChevronLeft, ChevronRight, Users, Sparkles,
+  Globe, Layers, ChevronLeft, ChevronRight, Users, Sparkles, Monitor, Smartphone,
 } from 'lucide-react';
 import api from '../api/axios';
 
@@ -134,12 +134,16 @@ function DeveloperCard({ dev, idx }) {
               <Layers size={10} /> Projects
             </p>
             <div className="flex flex-wrap gap-1.5">
-              {dev.projects.slice(0, 5).map((p, pi) => (
-                <Link key={p._id} to={`/project/${p._id}`} title={p.title}
-                  className={`text-[11px] border px-2.5 py-0.5 rounded-full transition-colors truncate max-w-40 font-medium ${PROJECT_CHIP_COLORS[pi % PROJECT_CHIP_COLORS.length]}`}>
-                  {p.title}
-                </Link>
-              ))}
+              {dev.projects.slice(0, 5).map((p, pi) => {
+                const TypeIcon = p.appType === 'mobile' ? Smartphone : Monitor;
+                return (
+                  <Link key={p._id} to={`/project/${p._id}`} title={p.title}
+                    className={`inline-flex items-center gap-1 text-[11px] border px-2.5 py-0.5 rounded-full transition-colors truncate max-w-40 font-medium ${PROJECT_CHIP_COLORS[pi % PROJECT_CHIP_COLORS.length]}`}>
+                    <TypeIcon size={9} className="shrink-0" />
+                    {p.title}
+                  </Link>
+                );
+              })}
               {dev.projects.length > 5 && (
                 <span className="text-[11px] text-muted px-1">+{dev.projects.length - 5}</span>
               )}

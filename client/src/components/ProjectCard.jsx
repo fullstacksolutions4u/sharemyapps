@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { ExternalLink, Heart, Star, Eye, Zap, Award, Trophy, Sparkles, Sprout } from 'lucide-react';
+import { ExternalLink, Heart, Star, Eye, Zap, Award, Trophy, Sparkles, Sprout, Monitor, Smartphone } from 'lucide-react';
 
 const BADGE_CFG = {
   active:   { label: 'Active Member',      Icon: Zap,    cls: 'text-blue-500' },
@@ -22,8 +22,14 @@ function avgRating(ratings = []) {
   return (ratings.reduce((s, r) => s + r.value, 0) / ratings.length).toFixed(1);
 }
 
+const APP_TYPE_CFG = {
+  mobile: { label: 'Mobile App', Icon: Smartphone, cls: 'bg-violet-500/90 text-white' },
+  web:    { label: 'Web App',    Icon: Monitor,    cls: 'bg-sky-500/90 text-white' },
+};
+
 export default function ProjectCard({ project }) {
-  const { _id, title, description, liveUrl, bannerImage, owner, likes = [], ratings = [], viewCount = 0, featured } = project;
+  const { _id, title, description, liveUrl, bannerImage, owner, likes = [], ratings = [], viewCount = 0, featured, appType } = project;
+  const appTypeCfg = APP_TYPE_CFG[appType] || APP_TYPE_CFG.web;
   const avg = avgRating(ratings);
 
   return (
@@ -35,6 +41,9 @@ export default function ProjectCard({ project }) {
             <Sparkles size={9} /> Featured for feedback
           </span>
         )}
+        <span className={`absolute top-2 right-2 z-10 flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full shadow backdrop-blur-sm ${appTypeCfg.cls}`}>
+          <appTypeCfg.Icon size={9} /> {appTypeCfg.label}
+        </span>
         <img
           src={getbanner(bannerImage, liveUrl)}
           alt={title}

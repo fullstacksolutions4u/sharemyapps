@@ -1,9 +1,14 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { ExternalLink, Layers, AlertCircle, Mail, Phone } from 'lucide-react';
+import { ExternalLink, Layers, AlertCircle, Mail, Phone, Monitor, Smartphone } from 'lucide-react';
 import api from '../api/axios';
 
 const PLACEHOLDER = 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=400&q=80';
+
+const APP_TYPE_CFG = {
+  mobile: { label: 'Mobile App', Icon: Smartphone, cls: 'bg-violet-500/90 text-white' },
+  web:    { label: 'Web App',    Icon: Monitor,    cls: 'bg-sky-500/90 text-white' },
+};
 const getbanner = (bannerImage, liveUrl) =>
   bannerImage || `https://s0.wp.com/mshots/v1/${encodeURIComponent(liveUrl)}?w=400`;
 
@@ -182,6 +187,14 @@ export default function PublicPortfolio() {
                       <span className="w-1.5 h-1.5 rounded-full bg-[#00A693] animate-pulse" /> Live
                     </span>
                   </div>
+                  {(() => {
+                    const cfg = APP_TYPE_CFG[project.appType] || APP_TYPE_CFG.web;
+                    return (
+                      <span className={`absolute top-2 right-2 inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full shadow backdrop-blur-sm ${cfg.cls}`}>
+                        <cfg.Icon size={9} /> {cfg.label}
+                      </span>
+                    );
+                  })()}
                 </div>
 
                 {/* Body */}
