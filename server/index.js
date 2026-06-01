@@ -18,7 +18,7 @@ const vacancyRoutes = require('./routes/vacancies');
 
 const app = express();
 
-const allowedOrigins = (process.env.CLIENT_URL || 'http://localhost:5173')
+const allowedOrigins = (process.env.ALLOWED_ORIGINS || process.env.CLIENT_URL || 'http://localhost:5173')
   .split(',').map(o => o.trim());
 
 app.use(cors({
