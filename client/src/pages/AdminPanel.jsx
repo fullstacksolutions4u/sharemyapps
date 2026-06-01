@@ -453,7 +453,7 @@ function ProjectsSection({ stats }) {
     }
   };
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+  // eslint-disable-next-line react-hooks/exhaustive-deps, react-hooks/set-state-in-effect
   useEffect(() => { fetchProjects(tab, 1, search); }, [tab]);
 
   const handleSearch = (e) => {
