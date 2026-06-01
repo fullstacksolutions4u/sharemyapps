@@ -988,17 +988,11 @@ function AnnouncementsSection() {
   const [editId, setEditId] = useState(null);
   const [editText, setEditText] = useState('');
   const [editSaving, setEditSaving] = useState(false);
-  const [recentProjects, setRecentProjects] = useState([]);
-
   useEffect(() => {
     const load = async () => {
       try {
-        const [annRes, projRes] = await Promise.all([
-          api.get('/announcements/all'),
-          api.get('/admin/projects?status=approved&limit=5&page=1'),
-        ]);
+        const annRes = await api.get('/announcements/all');
         setItems(annRes.data);
-        setRecentProjects(projRes.data.projects || []);
       } catch { toast.error('Failed to load announcements'); }
       finally { setLoading(false); }
     };
@@ -1071,28 +1065,6 @@ function AnnouncementsSection() {
           <Plus size={14} /> Add Announcement
         </button>
       </div>
-
-      {/* Recent projects */}
-      {recentProjects.length > 0 && (
-        <div className="bg-white border border-[#E5E1DA] rounded-2xl p-5 space-y-3">
-          <p className="text-sm font-medium text-[#1A1A1A]">Last 5 added projects</p>
-          <div className="space-y-2">
-            {recentProjects.map(p => (
-              <div key={p._id} className="flex items-center gap-3 py-2 border-b border-[#F3F0EB] last:border-0">
-                {p.bannerImage
-                  ? <img src={p.bannerImage} alt={p.title} className="w-10 h-10 rounded-lg object-cover shrink-0" />
-                  : <div className="w-10 h-10 rounded-lg bg-[#E6F7F5] flex items-center justify-center shrink-0"><FolderOpen size={16} className="text-[#00A693]" /></div>
-                }
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-[#1A1A1A] truncate">{p.title}</p>
-                  <p className="text-xs text-[#9CA3AF] truncate">{p.owner?.name || 'Unknown'}</p>
-                </div>
-                <span className="text-xs text-[#9CA3AF] shrink-0">{new Date(p.createdAt).toLocaleDateString()}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
 
       {/* List */}
       {loading ? (
