@@ -315,9 +315,9 @@ exports.adminUpdateUser = async (req, res) => {
     if (update.userType && !['developer', 'client'].includes(update.userType))
       return res.status(400).json({ message: 'Invalid userType value' });
 
-    const user = await User.findByIdAndUpdate(req.params.id, update, { new: true }).select('-password');
+    const user = await User.findByIdAndUpdate(req.params.id, update, { new: true });
     if (!user) return res.status(404).json({ message: 'User not found' });
-    res.json(user);
+    res.json(user.toPublicJSON());
   } catch (err) { res.status(500).json({ message: err.message }); }
 };
 

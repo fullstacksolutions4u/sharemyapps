@@ -695,7 +695,7 @@ function BadgeChip({ badge }) {
 function UserEditPage({ user: initial, onBack, onSaved }) {
   const [form, setForm] = useState({
     name:           initial.name           || '',
-    designations:   initial.designations?.length ? initial.designations : [''],
+    designations:   initial.designations?.length ? [...initial.designations] : [''],
     phone:          initial.phone          || '',
     linkedinUrl:    initial.linkedinUrl    || '',
     githubUrl:      initial.githubUrl      || '',

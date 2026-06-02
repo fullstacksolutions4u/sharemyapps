@@ -74,41 +74,48 @@ router.get('/developers', async (req, res) => {
       },
     };
 
-    const [total, developers] = await Promise.all([
-      User.countDocuments(matchStage),
-
-      User.aggregate([
-        { $match: matchStage },
-        ownProjectsLookup,
-        likedProjectsLookup,
-        ratedProjectsLookup,
-        commentsLookup,
-        {
-          $addFields: {
-            likesGiven:    { $size: '$_likedProjects' },
-            ratingsGiven:  { $size: '$_ratedProjects' },
-            commentsGiven: { $size: '$_userComments' },
-            communityScore: {
-              $add: [
-                { $size: '$_likedProjects' },
-                { $multiply: [{ $size: '$_ratedProjects' }, 2] },
-                { $multiply: [{ $size: '$_userComments' }, 3] },
-              ],
+    const [result] = await User.aggregate([
+      { $match: matchStage },
+      ownProjectsLookup,
+      { $match: { $expr: { $gt: [{ $size: '$projects' }, 0] } } },
+      likedProjectsLookup,
+      ratedProjectsLookup,
+      commentsLookup,
+      {
+        $addFields: {
+          likesGiven:    { $size: '$_likedProjects' },
+          ratingsGiven:  { $size: '$_ratedProjects' },
+          commentsGiven: { $size: '$_userComments' },
+          communityScore: {
+            $add: [
+              { $size: '$_likedProjects' },
+              { $multiply: [{ $size: '$_ratedProjects' }, 2] },
+              { $multiply: [{ $size: '$_userComments' }, 3] },
+            ],
+          },
+        },
+      },
+      { $sort: { communityScore: -1, createdAt: -1 } },
+      {
+        $facet: {
+          total: [{ $count: 'n' }],
+          developers: [
+            { $skip: skip },
+            { $limit: LIMIT },
+            {
+              $project: {
+                password: 0, googleId: 0, companyName: 0, companyWebsite: 0,
+                industry: 0, requirements: 0,
+                _likedProjects: 0, _ratedProjects: 0, _userComments: 0,
+              },
             },
-          },
+          ],
         },
-        { $sort: { communityScore: -1, createdAt: -1 } },
-        { $skip: skip },
-        { $limit: LIMIT },
-        {
-          $project: {
-            password: 0, googleId: 0, companyName: 0, companyWebsite: 0,
-            industry: 0, requirements: 0,
-            _likedProjects: 0, _ratedProjects: 0, _userComments: 0,
-          },
-        },
-      ]),
+      },
     ]);
+
+    const total = result.total[0]?.n || 0;
+    const developers = result.developers;
 
     res.json({
       developers,
