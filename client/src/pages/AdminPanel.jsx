@@ -693,8 +693,6 @@ function BadgeChip({ badge }) {
 
 // ─── User Edit Page ───────────────────────────────────────────────────────────
 function UserEditPage({ user: initial, onBack, onSaved }) {
-  const isDeveloper = initial.userType !== 'client';
-
   const [form, setForm] = useState({
     name:           initial.name           || '',
     designations:   initial.designations?.length ? initial.designations : [''],
@@ -728,10 +726,6 @@ function UserEditPage({ user: initial, onBack, onSaved }) {
     finally { setSaving(false); }
   };
 
-  const AvatarDisplay = () => initial.avatar
-    ? <img src={initial.avatar} alt={initial.name} className="w-12 h-12 rounded-2xl object-cover border-2 border-[#E5E1DA]" />
-    : <span className="w-12 h-12 rounded-2xl bg-[#00A693] text-white text-lg flex items-center justify-center font-bold border-2 border-[#E5E1DA]">{initial.name[0].toUpperCase()}</span>;
-
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -740,7 +734,10 @@ function UserEditPage({ user: initial, onBack, onSaved }) {
           <ArrowLeft size={14} /> Back to Users
         </button>
         <div className="flex items-center gap-3">
-          <AvatarDisplay />
+          {initial.avatar
+            ? <img src={initial.avatar} alt={initial.name} className="w-12 h-12 rounded-2xl object-cover border-2 border-[#E5E1DA]" />
+            : <span className="w-12 h-12 rounded-2xl bg-[#00A693] text-white text-lg flex items-center justify-center font-bold border-2 border-[#E5E1DA]">{initial.name[0].toUpperCase()}</span>
+          }
           <div>
             <p className="text-sm font-semibold text-[#1A1A1A]">{initial.name}</p>
             <p className="text-xs text-[#6B7280]">{initial.email}</p>
