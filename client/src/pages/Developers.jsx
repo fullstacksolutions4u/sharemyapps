@@ -63,10 +63,25 @@ function DeveloperCard({ dev, idx }) {
     <div className="group bg-white rounded-2xl border border-border overflow-hidden hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col">
 
       {/* Gradient banner */}
-      <div className={`h-16 bg-linear-to-r ${accent} relative`}>
-        <div className="absolute inset-0 opacity-30"
-          style={{ backgroundImage: 'radial-gradient(circle at 20% 50%, white 1px, transparent 1px)', backgroundSize: '18px 18px' }} />
-      </div>
+      {(() => {
+        const bannerItems = [
+          ...(dev.designations || []),
+          ...(dev.mentorshipAvailable ? ['Mentor'] : []),
+        ];
+        return (
+          <div className={`bg-linear-to-r ${accent} relative overflow-hidden ${bannerItems.length ? 'h-24' : 'h-16'}`}>
+            <div className="absolute inset-0 opacity-30"
+              style={{ backgroundImage: 'radial-gradient(circle at 20% 50%, white 1px, transparent 1px)', backgroundSize: '18px 18px' }} />
+            {bannerItems.length > 0 && (
+              <div className="absolute inset-0 flex items-center justify-center px-4">
+                <span className="text-[11px] font-semibold text-accent/90 leading-tight text-center">
+                  {bannerItems.join(' | ')}
+                </span>
+              </div>
+            )}
+          </div>
+        );
+      })()}
 
       {/* Avatar — overlapping the banner */}
       <div className="px-5 -mt-8 mb-3 flex items-end justify-between">
@@ -246,7 +261,7 @@ export default function Developers() {
 
           <p className="text-sm text-muted items-center gap-1.5 hidden sm:flex">
             <Sparkles size={13} className="text-accent shrink-0" />
-            Connect with our developers for hiring and freelance projects
+            Connect with our developers for hiring, freelance, and mentorship
           </p>
 
           {/* Search */}

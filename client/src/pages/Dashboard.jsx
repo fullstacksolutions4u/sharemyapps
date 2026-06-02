@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Plus, Pencil, Trash2, ExternalLink, Clock, CheckCircle, XCircle, AlertCircle, Share2, Copy, Check, X, Eye, EyeOff, Heart, Star } from 'lucide-react';
+import { Plus, Pencil, Trash2, ExternalLink, Clock, CheckCircle, XCircle, AlertCircle, Share2, Copy, Check, X, Eye, EyeOff, Heart, Star, UserCircle, ChevronRight } from 'lucide-react';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
@@ -60,11 +60,37 @@ function ShareModal({ userId, onClose }) {
   );
 }
 
+function isProfileIncomplete(user) {
+  if (!user || user.userType === 'client') return false;
+  const hasPhone = !!user.phone;
+  const hasSocialLink = !!(user.linkedinUrl || user.githubUrl || user.portfolioUrl || user.leetcodeUrl);
+  const hasOpportunityPref = !!(user.freelanceAvailable || user.mentorshipAvailable);
+  return !hasPhone || !hasSocialLink || !hasOpportunityPref;
+}
+
+function getMissingItems(user) {
+  const items = [];
+  if (!user?.phone) items.push('phone number');
+  if (!(user?.linkedinUrl || user?.githubUrl || user?.portfolioUrl || user?.leetcodeUrl)) items.push('at least one social link');
+  if (!(user?.freelanceAvailable || user?.mentorshipAvailable)) items.push('freelance / mentorship preferences');
+  return items;
+}
+
 export default function Dashboard() {
   const { user } = useAuth();
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showShare, setShowShare] = useState(false);
+  const [bannerDismissed, setBannerDismissed] = useState(
+    () => sessionStorage.getItem('profile_banner_dismissed') === '1'
+  );
+
+  const showProfileBanner = !bannerDismissed && isProfileIncomplete(user);
+
+  const handleDismissBanner = () => {
+    sessionStorage.setItem('profile_banner_dismissed', '1');
+    setBannerDismissed(true);
+  };
 
   useEffect(() => {
     api.get('/projects/my')
@@ -121,6 +147,32 @@ export default function Dashboard() {
       </div>
 
       {showShare && <ShareModal userId={user?._id} onClose={() => setShowShare(false)} />}
+
+      {showProfileBanner && (
+        <div className="mb-6 bg-amber-50 border border-amber-200 rounded-2xl px-4 py-3.5 flex items-start gap-3">
+          <div className="w-8 h-8 rounded-xl bg-amber-100 flex items-center justify-center shrink-0 mt-0.5">
+            <UserCircle size={16} className="text-amber-600" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-semibold text-amber-800">Complete your profile</p>
+            <p className="text-xs text-amber-700 mt-0.5">
+              Still missing: {getMissingItems(user).join(', ')}. A complete profile helps clients and recruiters find you.
+            </p>
+            <Link
+              to="/profile"
+              className="inline-flex items-center gap-1 text-xs font-semibold text-amber-700 hover:text-amber-900 mt-2 underline underline-offset-2 transition-colors"
+            >
+              Go to Profile <ChevronRight size={12} />
+            </Link>
+          </div>
+          <button
+            onClick={handleDismissBanner}
+            className="text-amber-400 hover:text-amber-600 transition-colors shrink-0 mt-0.5"
+          >
+            <X size={15} />
+          </button>
+        </div>
+      )}
 
       {loading ? (
         <div className="space-y-3">

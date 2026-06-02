@@ -8,6 +8,8 @@ const {
   getAllUsers,
   getStats,
   setBadge,
+  setDesignation,
+  adminUpdateUser,
   toggleFeatured,
   adminToggleHidden,
   toggleUserHidden,
@@ -32,6 +34,8 @@ router.put('/projects/:id', adminUpdateProject);
 router.get('/users', getAllUsers);
 router.get('/resumes', getResumes);
 router.patch('/users/:id/badge', setBadge);
+router.patch('/users/:id/designation', setDesignation);
+router.put('/users/:id', adminUpdateUser);
 router.patch('/users/:id/hide', toggleUserHidden);
 router.patch('/projects/:id/featured', toggleFeatured);
 router.patch('/projects/:id/hide', adminToggleHidden);

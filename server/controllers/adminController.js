@@ -294,6 +294,44 @@ exports.toggleUserHidden = async (req, res) => {
   } catch (err) { res.status(500).json({ message: err.message }); }
 };
 
+exports.adminUpdateUser = async (req, res) => {
+  try {
+    const allowed = [
+      'name', 'phone',
+      'linkedinUrl', 'githubUrl', 'leetcodeUrl', 'portfolioUrl', 'cvUrl',
+      'companyName', 'companyWebsite', 'industry', 'requirements',
+      'badge', 'hidden', 'userType',
+    ];
+    const update = {};
+    for (const key of allowed) {
+      if (req.body[key] !== undefined) update[key] = req.body[key];
+    }
+    if (req.body.designations !== undefined) {
+      update.designations = (Array.isArray(req.body.designations) ? req.body.designations : [req.body.designations])
+        .map(d => d.trim()).filter(Boolean);
+    }
+    if (update.badge && !['new_member', 'active', 'top', 'champion'].includes(update.badge))
+      return res.status(400).json({ message: 'Invalid badge value' });
+    if (update.userType && !['developer', 'client'].includes(update.userType))
+      return res.status(400).json({ message: 'Invalid userType value' });
+
+    const user = await User.findByIdAndUpdate(req.params.id, update, { new: true }).select('-password');
+    if (!user) return res.status(404).json({ message: 'User not found' });
+    res.json(user);
+  } catch (err) { res.status(500).json({ message: err.message }); }
+};
+
+exports.setDesignation = async (req, res) => {
+  try {
+    const raw = req.body.designations ?? req.body.designation;
+    const designations = (Array.isArray(raw) ? raw : [raw])
+      .map(d => String(d).trim()).filter(Boolean);
+    const user = await User.findByIdAndUpdate(req.params.id, { designations }, { new: true }).select('-password');
+    if (!user) return res.status(404).json({ message: 'User not found' });
+    res.json({ designations: user.designations });
+  } catch (err) { res.status(500).json({ message: err.message }); }
+};
+
 exports.setBadge = async (req, res) => {
   try {
     const { badge } = req.body;

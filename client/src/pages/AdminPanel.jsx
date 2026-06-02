@@ -691,6 +691,267 @@ function BadgeChip({ badge }) {
   );
 }
 
+// ─── User Edit Page ───────────────────────────────────────────────────────────
+function UserEditPage({ user: initial, onBack, onSaved }) {
+  const isDeveloper = initial.userType !== 'client';
+
+  const [form, setForm] = useState({
+    name:           initial.name           || '',
+    designations:   initial.designations?.length ? initial.designations : [''],
+    phone:          initial.phone          || '',
+    linkedinUrl:    initial.linkedinUrl    || '',
+    githubUrl:      initial.githubUrl      || '',
+    leetcodeUrl:    initial.leetcodeUrl    || '',
+    portfolioUrl:   initial.portfolioUrl   || '',
+    cvUrl:          initial.cvUrl          || '',
+    companyName:    initial.companyName    || '',
+    companyWebsite: initial.companyWebsite || '',
+    industry:       initial.industry       || '',
+    requirements:   initial.requirements   || '',
+    badge:          initial.badge          || 'new_member',
+    hidden:         initial.hidden         || false,
+    userType:       initial.userType       || 'developer',
+  });
+  const [saving, setSaving] = useState(false);
+
+  const inp = 'w-full px-3.5 py-2.5 border border-[#E5E1DA] rounded-xl text-sm text-[#1A1A1A] bg-white placeholder-[#9CA3AF] focus:outline-none focus:border-[#00A693] focus:ring-2 focus:ring-[#00A693]/10 transition';
+  const set = (key) => (e) => setForm(f => ({ ...f, [key]: e.target.value }));
+
+  const handleSave = async () => {
+    if (!form.name.trim()) return toast.error('Name is required');
+    setSaving(true);
+    try {
+      const res = await api.put(`/admin/users/${initial._id}`, form);
+      onSaved(res.data);
+      toast.success('User updated successfully');
+    } catch { toast.error('Failed to save changes'); }
+    finally { setSaving(false); }
+  };
+
+  const AvatarDisplay = () => initial.avatar
+    ? <img src={initial.avatar} alt={initial.name} className="w-12 h-12 rounded-2xl object-cover border-2 border-[#E5E1DA]" />
+    : <span className="w-12 h-12 rounded-2xl bg-[#00A693] text-white text-lg flex items-center justify-center font-bold border-2 border-[#E5E1DA]">{initial.name[0].toUpperCase()}</span>;
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between flex-wrap gap-3">
+        <button onClick={onBack} className="flex items-center gap-1.5 text-sm text-[#6B7280] hover:text-[#1A1A1A] transition-colors">
+          <ArrowLeft size={14} /> Back to Users
+        </button>
+        <div className="flex items-center gap-3">
+          <AvatarDisplay />
+          <div>
+            <p className="text-sm font-semibold text-[#1A1A1A]">{initial.name}</p>
+            <p className="text-xs text-[#6B7280]">{initial.email}</p>
+          </div>
+          <span className={`text-xs px-2.5 py-1 rounded-full border font-medium ${
+            form.userType === 'client'
+              ? 'bg-purple-50 text-purple-600 border-purple-200'
+              : 'bg-[#E6F7F5] text-[#00A693] border-[#00A693]/20'
+          }`}>
+            {form.userType === 'client' ? 'Client' : 'Developer'}
+          </span>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* ── Left: editable form ── */}
+        <div className="lg:col-span-2 space-y-5">
+
+          {/* Profile */}
+          <div className="bg-white border border-[#E5E1DA] rounded-2xl p-5 space-y-4">
+            <h3 className="text-sm font-semibold text-[#1A1A1A] flex items-center gap-2">
+              <UserCircle2 size={15} className="text-[#00A693]" /> Profile
+            </h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-medium text-[#6B7280] mb-1.5">Full Name <span className="text-red-400">*</span></label>
+                <input type="text" value={form.name} onChange={set('name')} className={inp} placeholder="Full name" />
+              </div>
+              <div className="sm:col-span-2">
+                <label className="block text-xs font-medium text-[#6B7280] mb-1.5">Designations</label>
+                <div className="space-y-2">
+                  {form.designations.map((d, i) => (
+                    <div key={i} className="flex gap-2 items-center">
+                      <input
+                        type="text"
+                        value={d}
+                        onChange={e => setForm(f => ({ ...f, designations: f.designations.map((v, j) => j === i ? e.target.value : v) }))}
+                        className={`flex-1 ${inp}`}
+                        placeholder="e.g. MERN Stack Developer"
+                      />
+                      {form.designations.length > 1 && (
+                        <button type="button"
+                          onClick={() => setForm(f => ({ ...f, designations: f.designations.filter((_, j) => j !== i) }))}
+                          className="w-8 h-8 flex items-center justify-center text-[#9CA3AF] hover:text-red-400 hover:bg-red-50 rounded-lg transition-colors">
+                          <X size={13} />
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                  <button type="button"
+                    onClick={() => setForm(f => ({ ...f, designations: [...f.designations, ''] }))}
+                    className="inline-flex items-center gap-1 text-xs text-[#00A693] hover:text-[#007D6F] font-medium transition-colors">
+                    <Plus size={12} /> Add another
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-[#6B7280] mb-1.5">User Type</label>
+              <div className="flex gap-1.5 p-1 bg-[#F3F0EB] rounded-xl w-fit">
+                {[{ value: 'developer', label: 'Developer' }, { value: 'client', label: 'Client' }].map(opt => (
+                  <button key={opt.value} type="button"
+                    onClick={() => setForm(f => ({ ...f, userType: opt.value }))}
+                    className={`px-4 py-1.5 rounded-lg text-xs font-medium transition-colors ${form.userType === opt.value ? 'bg-white text-[#1A1A1A] shadow-sm' : 'text-[#6B7280] hover:text-[#1A1A1A]'}`}>
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Developer: Contact & Links */}
+          {form.userType !== 'client' && (
+            <div className="bg-white border border-[#E5E1DA] rounded-2xl p-5 space-y-4">
+              <h3 className="text-sm font-semibold text-[#1A1A1A] flex items-center gap-2">
+                <LinkIcon size={15} className="text-[#00A693]" /> Contact & Social Links
+              </h3>
+              <div>
+                <label className="block text-xs font-medium text-[#6B7280] mb-1.5"><Phone size={11} className="inline mr-1" />Phone</label>
+                <input type="tel" value={form.phone} onChange={set('phone')} className={inp} placeholder="+91 00000 00000" />
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-medium text-[#6B7280] mb-1.5">LinkedIn URL</label>
+                  <input type="text" value={form.linkedinUrl} onChange={set('linkedinUrl')} className={inp} placeholder="linkedin.com/in/username" />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-[#6B7280] mb-1.5">GitHub URL</label>
+                  <input type="text" value={form.githubUrl} onChange={set('githubUrl')} className={inp} placeholder="github.com/username" />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-[#6B7280] mb-1.5">LeetCode URL</label>
+                  <input type="text" value={form.leetcodeUrl} onChange={set('leetcodeUrl')} className={inp} placeholder="leetcode.com/username" />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-[#6B7280] mb-1.5">Portfolio URL</label>
+                  <input type="text" value={form.portfolioUrl} onChange={set('portfolioUrl')} className={inp} placeholder="yourportfolio.com" />
+                </div>
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-[#6B7280] mb-1.5"><FileText size={11} className="inline mr-1" />CV / Resume URL</label>
+                <input type="text" value={form.cvUrl} onChange={set('cvUrl')} className={inp} placeholder="Link to CV or resume" />
+              </div>
+            </div>
+          )}
+
+          {/* Client: Company Info */}
+          {form.userType === 'client' && (
+            <div className="bg-white border border-[#E5E1DA] rounded-2xl p-5 space-y-4">
+              <h3 className="text-sm font-semibold text-[#1A1A1A] flex items-center gap-2">
+                <Briefcase size={15} className="text-[#00A693]" /> Company Information
+              </h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-medium text-[#6B7280] mb-1.5">Company Name</label>
+                  <input type="text" value={form.companyName} onChange={set('companyName')} className={inp} placeholder="Company name" />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-[#6B7280] mb-1.5">Company Website</label>
+                  <input type="text" value={form.companyWebsite} onChange={set('companyWebsite')} className={inp} placeholder="company.com" />
+                </div>
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-[#6B7280] mb-1.5">Industry</label>
+                <input type="text" value={form.industry} onChange={set('industry')} className={inp} placeholder="e.g. Fintech, Healthcare" />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-[#6B7280] mb-1.5">Requirements</label>
+                <textarea rows={3} value={form.requirements} onChange={set('requirements')} className={`${inp} resize-none`} placeholder="Hiring needs or project requirements" />
+              </div>
+            </div>
+          )}
+
+          {/* Save */}
+          <div className="flex gap-2">
+            <button onClick={handleSave} disabled={saving}
+              className="flex items-center gap-1.5 bg-[#00A693] hover:bg-[#007D6F] text-white px-6 py-2.5 rounded-xl font-medium text-sm transition-colors disabled:opacity-50">
+              <Save size={14} /> {saving ? 'Saving…' : 'Save Changes'}
+            </button>
+            <button onClick={onBack}
+              className="flex items-center gap-1.5 border border-[#E5E1DA] text-[#6B7280] hover:text-[#1A1A1A] px-6 py-2.5 rounded-xl text-sm font-medium transition-colors">
+              Cancel
+            </button>
+          </div>
+        </div>
+
+        {/* ── Right: badge, visibility, meta ── */}
+        <div className="space-y-4">
+
+          {/* Badge */}
+          <div className="bg-white border border-[#E5E1DA] rounded-2xl p-5">
+            <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wider mb-3">Badge</p>
+            <div className="space-y-1.5">
+              {BADGES.map(b => {
+                const Icon = b.icon;
+                const active = form.badge === b.value;
+                return (
+                  <button key={b.value} type="button"
+                    onClick={() => setForm(f => ({ ...f, badge: b.value }))}
+                    className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl border text-sm transition-colors ${
+                      active ? 'border-[#00A693] bg-[#E6F7F5]' : 'border-[#E5E1DA] hover:border-[#00A693]/40 hover:bg-[#FAF9F6]'
+                    }`}>
+                    <span className={`inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full border font-medium ${b.cls}`}>
+                      {Icon && <Icon size={11} />} {b.label}
+                    </span>
+                    {active && <Check size={13} className="ml-auto text-[#00A693]" />}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Visibility */}
+          <div className="bg-white border border-[#E5E1DA] rounded-2xl p-5">
+            <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wider mb-3">Visibility</p>
+            <label className="flex items-center justify-between cursor-pointer select-none">
+              <div>
+                <p className="text-sm font-medium text-[#1A1A1A]">{form.hidden ? 'Hidden from public' : 'Visible in listings'}</p>
+                <p className="text-xs text-[#9CA3AF] mt-0.5">{form.hidden ? 'This user won\'t appear in the Developers page' : 'User appears in the Developers page'}</p>
+              </div>
+              <div onClick={() => setForm(f => ({ ...f, hidden: !f.hidden }))}
+                className={`ml-4 w-10 h-6 rounded-full transition-colors relative shrink-0 cursor-pointer ${form.hidden ? 'bg-red-400' : 'bg-[#00A693]'}`}>
+                <span className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-transform ${form.hidden ? 'translate-x-1' : 'translate-x-5'}`} />
+              </div>
+            </label>
+          </div>
+
+          {/* Account meta (read-only) */}
+          <div className="bg-white border border-[#E5E1DA] rounded-2xl p-5 space-y-2.5">
+            <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wider">Account Info</p>
+            <div className="flex items-center gap-2 text-xs text-[#6B7280]">
+              <Mail size={12} className="shrink-0" />
+              <span className="truncate">{initial.email}</span>
+            </div>
+            {initial.regNumber && (
+              <div className="flex items-center gap-2 text-xs text-[#6B7280]">
+                <Tag size={12} className="shrink-0" />
+                <span>Reg #{initial.regNumber}</span>
+              </div>
+            )}
+            <div className="flex items-center gap-2 text-xs text-[#6B7280]">
+              <Clock size={12} className="shrink-0" />
+              <span>Joined {new Date(initial.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── Users ────────────────────────────────────────────────────────────────────
 function UsersSection() {
   const [users, setUsers] = useState([]);
@@ -700,6 +961,7 @@ function UsersSection() {
   const [badgeLoading, setBadgeLoading] = useState(null);
   const [pickerOpen, setPickerOpen] = useState(null);
   const [hideLoading, setHideLoading] = useState(null);
+  const [editingUser, setEditingUser] = useState(null);
   const [search, setSearch] = useState('');
   const PER_PAGE = 10;
 
@@ -739,10 +1001,17 @@ function UsersSection() {
     finally { setBadgeLoading(null); }
   };
 
-  const developers = users.filter(u => u.userType !== 'client');
-  const clients = users.filter(u => u.userType === 'client');
+  const handleUserSaved = (updated) => {
+    setUsers(prev => prev.map(u => u._id === updated._id ? { ...u, ...updated } : u));
+    setEditingUser(null);
+  };
+
+  const activeUsers = users.filter(u => !u.isDeleted);
+  const developers = activeUsers.filter(u => u.userType !== 'client');
+  const clients = activeUsers.filter(u => u.userType === 'client');
+  const deletedUsers = users.filter(u => u.isDeleted);
   const q = search.trim().toLowerCase();
-  const list = (tab === 'developers' ? developers : clients)
+  const list = (tab === 'developers' ? developers : tab === 'clients' ? clients : deletedUsers)
     .filter(u => !q || u.name?.toLowerCase().includes(q) || u.email?.toLowerCase().includes(q));
   const totalPages = Math.ceil(list.length / PER_PAGE);
   const paged = list.slice((page - 1) * PER_PAGE, page * PER_PAGE);
@@ -750,6 +1019,16 @@ function UsersSection() {
   const Avatar = ({ u }) => u.avatar
     ? <img src={u.avatar} alt={u.name} className="w-8 h-8 rounded-full object-cover shrink-0" />
     : <span className="w-8 h-8 rounded-full bg-[#00A693] text-white text-xs flex items-center justify-center font-medium shrink-0">{u.name[0].toUpperCase()}</span>;
+
+  if (editingUser) {
+    return (
+      <UserEditPage
+        user={editingUser}
+        onBack={() => setEditingUser(null)}
+        onSaved={handleUserSaved}
+      />
+    );
+  }
 
   return (
     <div className="space-y-5">
@@ -760,14 +1039,19 @@ function UsersSection() {
 
       {/* Tab switcher + search */}
       <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-        <div className="flex gap-1 bg-[#F3F0EB] p-1 rounded-xl w-fit">
+        <div className="flex gap-1 bg-[#F3F0EB] p-1 rounded-xl w-fit flex-wrap">
           {[
             { key: 'developers', label: `Developers (${developers.length})` },
             { key: 'clients',    label: `Clients (${clients.length})` },
+            { key: 'deleted',    label: `Deleted (${deletedUsers.length})` },
           ].map(t => (
             <button key={t.key} onClick={() => { setTab(t.key); setPage(1); setSearch(''); }}
               className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-                tab === t.key ? 'bg-white text-[#1A1A1A] shadow-sm' : 'text-[#6B7280] hover:text-[#1A1A1A]'
+                tab === t.key
+                  ? t.key === 'deleted'
+                    ? 'bg-white text-red-600 shadow-sm'
+                    : 'bg-white text-[#1A1A1A] shadow-sm'
+                  : 'text-[#6B7280] hover:text-[#1A1A1A]'
               }`}>
               {t.label}
             </button>
@@ -804,7 +1088,9 @@ function UsersSection() {
         </div>
       ) : list.length === 0 ? (
         <div className="bg-white border border-[#E5E1DA] rounded-2xl p-16 text-center">
-          <p className="text-[#6B7280] text-sm">No {tab === 'developers' ? 'developer' : 'client'} accounts yet</p>
+          <p className="text-[#6B7280] text-sm">
+            {tab === 'deleted' ? 'No deleted accounts' : `No ${tab === 'developers' ? 'developer' : 'client'} accounts yet`}
+          </p>
         </div>
       ) : tab === 'developers' ? (
         <div className="bg-white border border-[#E5E1DA] rounded-2xl overflow-visible">
@@ -814,6 +1100,7 @@ function UsersSection() {
                 <th className="text-left px-4 py-3 text-xs font-semibold text-[#6B7280] uppercase tracking-wider">Developer</th>
                 <th className="text-left px-4 py-3 text-xs font-semibold text-[#6B7280] uppercase tracking-wider hidden sm:table-cell">Email</th>
                 <th className="text-left px-4 py-3 text-xs font-semibold text-[#6B7280] uppercase tracking-wider hidden lg:table-cell">Engagement</th>
+                <th className="text-left px-4 py-3 text-xs font-semibold text-[#6B7280] uppercase tracking-wider hidden xl:table-cell">Designation</th>
                 <th className="text-left px-4 py-3 text-xs font-semibold text-[#6B7280] uppercase tracking-wider">Badge</th>
                 <th className="text-left px-4 py-3 text-xs font-semibold text-[#6B7280] uppercase tracking-wider hidden md:table-cell">Joined</th>
               </tr>
@@ -843,6 +1130,14 @@ function UsersSection() {
                         <Star size={12} className="fill-amber-400" /> {u.avgRating > 0 ? u.avgRating : '—'}
                       </span>
                     </div>
+                  </td>
+                  <td className="px-4 py-3 hidden xl:table-cell">
+                    {u.designations?.length
+                      ? <div className="flex flex-wrap gap-1">{u.designations.map((d, i) => (
+                          <span key={i} className="text-xs px-2.5 py-0.5 rounded-full bg-[#E6F7F5] text-[#00A693] border border-[#00A693]/20 font-medium">{d}</span>
+                        ))}</div>
+                      : <span className="text-xs text-[#9CA3AF]">—</span>
+                    }
                   </td>
                   <td className="px-4 py-3">
                     <div className="relative flex items-center gap-2" onMouseDown={e => e.stopPropagation()}>
@@ -878,7 +1173,7 @@ function UsersSection() {
                     </div>
                   </td>
                   <td className="px-4 py-3 text-[#6B7280] text-xs hidden md:table-cell">
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 flex-wrap">
                       <span>{new Date(u.createdAt).toLocaleDateString()}</span>
                       <button
                         onClick={() => handleToggleHidden(u._id)}
@@ -892,6 +1187,13 @@ function UsersSection() {
                       >
                         {hideLoading === u._id ? '…' : u.hidden ? <><EyeOff size={10} /> Hidden</> : <><Eye size={10} /> Visible</>}
                       </button>
+                      <button
+                        onClick={() => setEditingUser(u)}
+                        title="Edit user"
+                        className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-lg border border-[#E5E1DA] text-[#6B7280] hover:border-[#00A693] hover:text-[#00A693] font-medium transition-colors"
+                      >
+                        <Pencil size={10} /> Edit
+                      </button>
                     </div>
                   </td>
                 </tr>
@@ -899,7 +1201,7 @@ function UsersSection() {
             </tbody>
           </table>
         </div>
-      ) : (
+      ) : tab === 'clients' ? (
         <div className="bg-white border border-[#E5E1DA] rounded-2xl overflow-hidden">
           <table className="w-full text-sm">
             <thead>
@@ -935,7 +1237,66 @@ function UsersSection() {
                       : <span className="text-xs text-[#9CA3AF]">—</span>}
                   </td>
                   <td className="px-4 py-3 text-[#6B7280] text-xs hidden md:table-cell">
-                    {new Date(u.createdAt).toLocaleDateString()}
+                    <div className="flex items-center gap-2">
+                      <span>{new Date(u.createdAt).toLocaleDateString()}</span>
+                      <button
+                        onClick={() => setEditingUser(u)}
+                        title="Edit user"
+                        className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-lg border border-[#E5E1DA] text-[#6B7280] hover:border-[#00A693] hover:text-[#00A693] font-medium transition-colors"
+                      >
+                        <Pencil size={10} /> Edit
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      ) : (
+        /* Deleted accounts table */
+        <div className="bg-white border border-red-100 rounded-2xl overflow-hidden">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-red-100 bg-red-50/50">
+                <th className="text-left px-4 py-3 text-xs font-semibold text-[#6B7280] uppercase tracking-wider">User</th>
+                <th className="text-left px-4 py-3 text-xs font-semibold text-[#6B7280] uppercase tracking-wider hidden sm:table-cell">Email</th>
+                <th className="text-left px-4 py-3 text-xs font-semibold text-[#6B7280] uppercase tracking-wider hidden md:table-cell">Type</th>
+                <th className="text-left px-4 py-3 text-xs font-semibold text-[#6B7280] uppercase tracking-wider">Status</th>
+                <th className="text-left px-4 py-3 text-xs font-semibold text-[#6B7280] uppercase tracking-wider hidden md:table-cell">Deleted On</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-red-50">
+              {paged.map(u => (
+                <tr key={u._id} className="opacity-70">
+                  <td className="px-4 py-3">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center shrink-0">
+                        <span className="text-xs font-medium text-red-400">{u.name?.[0]?.toUpperCase() || '?'}</span>
+                      </div>
+                      <div className="min-w-0">
+                        <p className="font-medium text-[#6B7280] truncate line-through decoration-red-300">{u.name}</p>
+                        <p className="text-xs text-[#9CA3AF] sm:hidden truncate">{u.email}</p>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="px-4 py-3 text-[#9CA3AF] hidden sm:table-cell text-xs">{u.email}</td>
+                  <td className="px-4 py-3 hidden md:table-cell">
+                    <span className={`text-xs px-2.5 py-0.5 rounded-full border font-medium ${
+                      u.userType === 'client'
+                        ? 'bg-purple-50 text-purple-400 border-purple-200'
+                        : 'bg-[#E6F7F5] text-[#00A693]/60 border-[#00A693]/20'
+                    }`}>
+                      {u.userType === 'client' ? 'Client' : 'Developer'}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3">
+                    <span className="inline-flex items-center gap-1 text-xs px-2.5 py-0.5 rounded-full bg-red-50 text-red-500 border border-red-200 font-medium">
+                      <Trash2 size={10} /> Deleted
+                    </span>
+                  </td>
+                  <td className="px-4 py-3 text-[#9CA3AF] text-xs hidden md:table-cell">
+                    {u.deletedAt ? new Date(u.deletedAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : '—'}
                   </td>
                 </tr>
               ))}

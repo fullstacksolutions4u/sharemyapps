@@ -21,9 +21,18 @@ const userSchema = new mongoose.Schema({
   industry: { type: String, trim: true, default: '' },
   requirements: { type: String, trim: true, default: '' },
   followers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+  designations: [{ type: String, trim: true }],
+  freelanceAvailable: { type: Boolean, default: false },
+  freelanceRate: { type: Number, default: null },
+  mentorshipAvailable: { type: Boolean, default: false },
+  mentorshipRate: { type: Number, default: null },
+  mentorshipTech: [{ type: String, trim: true }],
+  languagePreference: [{ type: String, trim: true }],
   badge: { type: String, enum: ['new_member', 'active', 'top', 'champion'], default: 'new_member' },
   regNumber: { type: Number, unique: true, sparse: true },
   hidden: { type: Boolean, default: false },
+  isDeleted: { type: Boolean, default: false },
+  deletedAt: { type: Date, default: null },
 }, { timestamps: true });
 
 userSchema.pre('save', async function (next) {
@@ -58,7 +67,16 @@ userSchema.methods.toPublicJSON = function () {
     createdAt: this.createdAt,
     followersCount: this.followers?.length || 0,
     badge: this.badge || 'new_member',
+    designations: this.designations || [],
+    freelanceAvailable: this.freelanceAvailable || false,
+    freelanceRate: this.freelanceRate ?? null,
+    mentorshipAvailable: this.mentorshipAvailable || false,
+    mentorshipRate: this.mentorshipRate ?? null,
+    mentorshipTech: this.mentorshipTech || [],
+    languagePreference: this.languagePreference || [],
     regNumber: this.regNumber,
+    isDeleted: this.isDeleted || false,
+    deletedAt: this.deletedAt ?? null,
   };
 };
 

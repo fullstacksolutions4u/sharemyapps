@@ -51,6 +51,9 @@ exports.login = async (req, res) => {
     if (!user || !user.password)
       return res.status(401).json({ message: 'Invalid credentials' });
 
+    if (user.isDeleted)
+      return res.status(403).json({ message: 'This account has been deleted' });
+
     const match = await user.comparePassword(password);
     if (!match) return res.status(401).json({ message: 'Invalid credentials' });
 
@@ -83,7 +86,8 @@ exports.getMe = async (req, res) => {
 
 exports.updateProfile = async (req, res) => {
   try {
-    const { name, phone, linkedinUrl, githubUrl, leetcodeUrl, portfolioUrl, cvUrl, companyName, companyWebsite, industry, requirements } = req.body;
+    const { name, phone, linkedinUrl, githubUrl, leetcodeUrl, portfolioUrl, cvUrl, companyName, companyWebsite, industry, requirements,
+      freelanceAvailable, freelanceRate, mentorshipAvailable, mentorshipRate, mentorshipTech, languagePreference } = req.body;
     const user = await User.findById(req.user._id);
     if (!user) return res.status(404).json({ message: 'User not found' });
 
@@ -98,6 +102,12 @@ exports.updateProfile = async (req, res) => {
     if (companyWebsite !== undefined) user.companyWebsite = companyWebsite.trim();
     if (industry !== undefined) user.industry = industry.trim();
     if (requirements !== undefined) user.requirements = requirements.trim();
+    if (freelanceAvailable !== undefined) user.freelanceAvailable = Boolean(freelanceAvailable);
+    if (freelanceRate !== undefined) user.freelanceRate = freelanceRate === '' || freelanceRate === null ? null : Number(freelanceRate);
+    if (mentorshipAvailable !== undefined) user.mentorshipAvailable = Boolean(mentorshipAvailable);
+    if (mentorshipRate !== undefined) user.mentorshipRate = mentorshipRate === '' || mentorshipRate === null ? null : Number(mentorshipRate);
+    if (mentorshipTech !== undefined) user.mentorshipTech = (Array.isArray(mentorshipTech) ? mentorshipTech : [mentorshipTech]).map(t => t.trim()).filter(Boolean);
+    if (languagePreference !== undefined) user.languagePreference = (Array.isArray(languagePreference) ? languagePreference : [languagePreference]).map(l => l.trim()).filter(Boolean);
 
     if (req.file) {
       if (user.avatar && user.avatar.includes('cloudinary')) {
@@ -127,7 +137,12 @@ exports.deleteAccount = async (req, res) => {
       await Comment.deleteMany({ project: project._id });
       await project.deleteOne();
     }
-    await User.findByIdAndDelete(userId);
+    const user = await User.findById(userId);
+    if (user) {
+      user.isDeleted = true;
+      user.deletedAt = new Date();
+      await user.save();
+    }
     res.clearCookie('token');
     res.json({ message: 'Account deleted' });
   } catch (err) {

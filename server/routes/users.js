@@ -10,7 +10,7 @@ router.get('/developers', async (req, res) => {
     const skip  = (page - 1) * LIMIT;
     const search = req.query.search?.trim();
 
-    const matchStage = { userType: 'developer', role: { $ne: 'admin' }, hidden: { $ne: true } };
+    const matchStage = { userType: 'developer', role: { $ne: 'admin' }, hidden: { $ne: true }, isDeleted: { $ne: true } };
     if (search) matchStage.name = { $regex: search, $options: 'i' };
 
     // Projects owned by this developer (for the card display)
