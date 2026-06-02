@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom';
 import {
   Search, Phone, GitBranch, Link2, Code2,
   Globe, Layers, ChevronLeft, ChevronRight, Users, Sparkles, Monitor, Smartphone,
-  Heart, Star, MessageSquare, Flame,
 } from 'lucide-react';
 import api from '../api/axios';
 
@@ -54,30 +53,6 @@ function SocialBtn({ href, icon: Icon, label, cls }) {
   );
 }
 
-function CommunityBar({ dev }) {
-  const { likesGiven = 0, ratingsGiven = 0, commentsGiven = 0, communityScore = 0 } = dev;
-  if (communityScore === 0) return null;
-  return (
-    <div className="rounded-xl border border-amber-200 bg-amber-50/60 px-3 py-2">
-      <div className="flex items-center gap-1.5 mb-1.5">
-        <Flame size={11} className="text-amber-500" />
-        <span className="text-[10px] font-bold text-amber-600 uppercase tracking-widest">Community Engager</span>
-        <span className="ml-auto text-[10px] font-bold text-amber-700 bg-amber-100 border border-amber-200 px-1.5 py-0.5 rounded-full">{communityScore}</span>
-      </div>
-      <div className="flex items-center gap-3">
-        <span className="flex items-center gap-1 text-[10px] text-amber-700">
-          <Heart size={9} className="fill-amber-400 text-amber-400" /> {likesGiven}
-        </span>
-        <span className="flex items-center gap-1 text-[10px] text-amber-700">
-          <Star size={9} className="fill-amber-400 text-amber-400" /> {ratingsGiven}
-        </span>
-        <span className="flex items-center gap-1 text-[10px] text-amber-700">
-          <MessageSquare size={9} className="fill-amber-400 text-amber-400" /> {commentsGiven}
-        </span>
-      </div>
-    </div>
-  );
-}
 
 function DeveloperCard({ dev, idx }) {
   const initials = dev.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
@@ -118,9 +93,6 @@ function DeveloperCard({ dev, idx }) {
             {dev.projects.length} project{dev.projects.length !== 1 ? 's' : ''}
           </p>
         </div>
-
-        {/* Community engagement bar */}
-        <CommunityBar dev={dev} />
 
         {/* Contact */}
         {dev.phone && (
