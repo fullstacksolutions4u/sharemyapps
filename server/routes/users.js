@@ -2,91 +2,116 @@ const router = require('express').Router();
 const User = require('../models/User');
 const { protect } = require('../middleware/auth');
 
-// GET /api/users/developers — alternating rows of top-engaging and newest developers
+// GET /api/users/developers — sorted by community engagement (likes/ratings/comments given to others)
 router.get('/developers', async (req, res) => {
   try {
-    const page   = Math.max(1, parseInt(req.query.page) || 1);
-    const LIMIT  = 12;  // developers per page
-    const COLS   = 3;   // cards per row
-    const half   = LIMIT;  // fetch up to LIMIT from each list, deduplicate down to LIMIT
-    const skip   = (page - 1) * half;
+    const page  = Math.max(1, parseInt(req.query.page) || 1);
+    const LIMIT = 12;
+    const skip  = (page - 1) * LIMIT;
     const search = req.query.search?.trim();
 
     const matchStage = { userType: 'developer', role: { $ne: 'admin' }, hidden: { $ne: true } };
     if (search) matchStage.name = { $regex: search, $options: 'i' };
 
-    const projectLookup = {
+    // Projects owned by this developer (for the card display)
+    const ownProjectsLookup = {
       $lookup: {
         from: 'projects',
         let: { uid: '$_id' },
         pipeline: [
           { $match: { $expr: { $and: [{ $eq: ['$owner', '$$uid'] }, { $eq: ['$status', 'approved'] }] } } },
-          { $project: { _id: 1, title: 1, appType: 1, likes: 1, ratings: 1 } },
+          { $project: { _id: 1, title: 1, appType: 1 } },
         ],
         as: 'projects',
       },
     };
 
-    const cleanProject = {
-      $project: { password: 0, googleId: 0, companyName: 0, companyWebsite: 0, industry: 0, requirements: 0 },
+    // Projects they liked on OTHER developers' work
+    const likedProjectsLookup = {
+      $lookup: {
+        from: 'projects',
+        let: { uid: '$_id' },
+        pipeline: [
+          { $match: { $expr: { $and: [
+            { $ne: ['$owner', '$$uid'] },
+            { $in: ['$$uid', '$likes'] },
+          ] } } },
+          { $project: { _id: 1 } },
+        ],
+        as: '_likedProjects',
+      },
     };
 
-    const [total, engaging, recent] = await Promise.all([
+    // Projects they rated on OTHER developers' work
+    const ratedProjectsLookup = {
+      $lookup: {
+        from: 'projects',
+        let: { uid: '$_id' },
+        pipeline: [
+          { $match: { $expr: { $and: [
+            { $ne: ['$owner', '$$uid'] },
+            { $gt: [
+              { $size: { $filter: { input: { $ifNull: ['$ratings', []] }, as: 'r', cond: { $eq: ['$$r.user', '$$uid'] } } } },
+              0,
+            ] },
+          ] } } },
+          { $project: { _id: 1 } },
+        ],
+        as: '_ratedProjects',
+      },
+    };
+
+    // Comments they wrote (on any project — Comment model stores project ref but not owner)
+    const commentsLookup = {
+      $lookup: {
+        from: 'comments',
+        let: { uid: '$_id' },
+        pipeline: [
+          { $match: { $expr: { $eq: ['$user', '$$uid'] } } },
+          { $project: { _id: 1 } },
+        ],
+        as: '_userComments',
+      },
+    };
+
+    const [total, developers] = await Promise.all([
       User.countDocuments(matchStage),
 
-      // Top engaging: most likes + ratings across all approved projects
       User.aggregate([
         { $match: matchStage },
-        projectLookup,
+        ownProjectsLookup,
+        likedProjectsLookup,
+        ratedProjectsLookup,
+        commentsLookup,
         {
           $addFields: {
-            _totalLikes: { $sum: { $map: { input: '$projects', as: 'p', in: { $size: { $ifNull: ['$$p.likes', []] } } } } },
-            _totalRatings: { $sum: { $map: { input: '$projects', as: 'p', in: { $size: { $ifNull: ['$$p.ratings', []] } } } } },
-            _avgRating: {
-              $let: {
-                vars: {
-                  allRatings: { $reduce: { input: { $map: { input: '$projects', as: 'p', in: { $ifNull: ['$$p.ratings', []] } } }, initialValue: [], in: { $concatArrays: ['$$value', '$$this'] } } },
-                },
-                in: { $cond: [{ $gt: [{ $size: '$$allRatings' }, 0] }, { $avg: '$$allRatings.value' }, 0] },
-              },
+            likesGiven:    { $size: '$_likedProjects' },
+            ratingsGiven:  { $size: '$_ratedProjects' },
+            commentsGiven: { $size: '$_userComments' },
+            communityScore: {
+              $add: [
+                { $size: '$_likedProjects' },
+                { $multiply: [{ $size: '$_ratedProjects' }, 2] },
+                { $multiply: [{ $size: '$_userComments' }, 3] },
+              ],
             },
           },
         },
-        { $addFields: { _engagementScore: { $add: [{ $multiply: ['$_totalLikes', 2] }, { $multiply: ['$_avgRating', 10] }, '$_totalRatings'] } } },
-        { $sort: { _engagementScore: -1, createdAt: -1 } },
+        { $sort: { communityScore: -1, createdAt: -1 } },
         { $skip: skip },
-        { $limit: half },
-        cleanProject,
-      ]),
-
-      // Newest: most recently registered
-      User.aggregate([
-        { $match: matchStage },
-        { $sort: { createdAt: -1 } },
-        { $skip: skip },
-        { $limit: half },
-        projectLookup,
-        cleanProject,
+        { $limit: LIMIT },
+        {
+          $project: {
+            password: 0, googleId: 0, companyName: 0, companyWebsite: 0,
+            industry: 0, requirements: 0,
+            _likedProjects: 0, _ratedProjects: 0, _userComments: 0,
+          },
+        },
       ]),
     ]);
 
-    // Interleave by rows: COLS from engaging, then COLS from recent, alternating
-    const seen = new Set();
-    const interleaved = [];
-    const rowCount = Math.max(Math.ceil(engaging.length / COLS), Math.ceil(recent.length / COLS));
-
-    for (let r = 0; r < rowCount; r++) {
-      for (const chunk of [engaging, recent]) {
-        const row = chunk.slice(r * COLS, (r + 1) * COLS);
-        for (const dev of row) {
-          const id = dev._id.toString();
-          if (!seen.has(id)) { seen.add(id); interleaved.push(dev); }
-        }
-      }
-    }
-
     res.json({
-      developers: interleaved.slice(0, LIMIT),
+      developers,
       total,
       currentPage: page,
       totalPages: Math.ceil(total / LIMIT),

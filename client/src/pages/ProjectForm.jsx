@@ -17,7 +17,7 @@ export default function ProjectForm() {
     'Healthcare & Fitness', 'Education & Learning Platforms', 'HR & Recruitment',
     'Marketing & SEO', 'Real Estate', 'Travel & Booking', 'Food Delivery & Restaurant',
     'Gaming', 'Blockchain & Web3', 'Automation Tools', 'Analytics & Reporting',
-    'Communication & Chat Apps', 'Inventory Management', 'Event Management', 'Others',
+    'Communication & Chat Apps', 'Inventory Management', 'Event Management', 'Open Source Project', 'Others',
   ];
 
   const [form, setForm] = useState({ title: '', description: '', liveUrl: '', techTags: '', appType: 'web', category: '' });

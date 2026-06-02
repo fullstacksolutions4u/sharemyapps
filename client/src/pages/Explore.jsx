@@ -11,7 +11,7 @@ const CATEGORIES = [
   'Healthcare & Fitness', 'Education & Learning Platforms', 'HR & Recruitment',
   'Marketing & SEO', 'Real Estate', 'Travel & Booking', 'Food Delivery & Restaurant',
   'Gaming', 'Blockchain & Web3', 'Automation Tools', 'Analytics & Reporting',
-  'Communication & Chat Apps', 'Inventory Management', 'Event Management', 'Others',
+  'Communication & Chat Apps', 'Inventory Management', 'Event Management', 'Open Source Project', 'Others',
 ];
 
 const getPageNumbers = (current, total) => {
@@ -120,7 +120,8 @@ export default function Explore() {
   return (
     <div className="w-full px-4 sm:px-6 py-8">
 
-      {/* ── Top bar: search + announcement + category ── */}
+      {/* ── Sticky top bar: search + announcement + category ── */}
+      <div className="sticky top-16 z-20 bg-white -mx-4 sm:-mx-6 px-4 sm:px-6">
       <div className="flex items-stretch gap-0 mb-0">
         {/* Search bar */}
         <form onSubmit={handleSearch} className="relative flex-[0.8]">
@@ -189,11 +190,12 @@ export default function Explore() {
       </div>
 
       {/* Full-width divider */}
-      <div className="h-px bg-border mb-4" />
+      <div className="h-px bg-border" />
+      </div>{/* end sticky bar */}
 
       {/* Active filters */}
       {hasFilters && (
-        <div className="flex items-center gap-2 mb-4 flex-wrap">
+        <div className="flex items-center gap-2 mt-4 mb-4 flex-wrap">
           {activeCategory && (
             <span className="inline-flex items-center gap-1.5 text-xs bg-accent-light text-accent px-3 py-1 rounded-full font-medium">
               {activeCategory}
