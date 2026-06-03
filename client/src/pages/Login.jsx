@@ -8,7 +8,8 @@ import { Eye, EyeOff } from 'lucide-react';
 function homeFor(user) {
   if (user.role === 'admin') return '/admin';
   if (!user.onboardingComplete) return '/select-role';
-  if (user.userType === 'client' || user.userType === 'recruiter') return '/client-profile';
+  if (user.userType === 'recruiter') return '/client-profile';
+  if (user.userType === 'client') return user.clientProfile?.projectName ? '/developers' : '/client-profile';
   if (user.userType === 'mentee') return '/developers';
   return '/dashboard';
 }
