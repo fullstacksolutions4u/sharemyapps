@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import {
   ArrowLeft, ArrowRight, User, Mail, Phone, Link2, GitBranch,
   Globe, Save, Trash2, AlertTriangle, Camera, Loader2, FileText, Check, Plus, X as XIcon,
-  Briefcase, BookOpen, IndianRupee, Code2, Languages, Clock,
+  Briefcase, BookOpen, IndianRupee, Code2, Languages, Clock, MapPin, Monitor,
 } from 'lucide-react';
 
 const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
@@ -106,6 +106,11 @@ export default function Profile() {
     mentorshipTech: user?.mentorshipTech?.length ? user.mentorshipTech : [''],
     mentorshipSchedule: user?.mentorshipSchedule || {},
     languagePreference: user?.languagePreference?.length ? user.languagePreference : [''],
+    joiningAvailability: user?.joiningAvailability || '',
+    currentSalary: user?.currentSalary ?? '',
+    expectedSalary: user?.expectedSalary ?? '',
+    preferredLocations: user?.preferredLocations?.length ? user.preferredLocations : [''],
+    jobMode: user?.jobMode || [],
   });
   const [saving, setSaving] = useState(false);
   const [showDelete, setShowDelete] = useState(false);
@@ -539,13 +544,15 @@ export default function Profile() {
 
             {/* Tab 3 — Resume / CV */}
             {activeTab === 3 && (
-              <div className="space-y-4">
+              <div className="space-y-5">
                 <div className="flex items-center gap-2 mb-1">
                   <div className="w-7 h-7 rounded-lg bg-blue-50 flex items-center justify-center shrink-0">
                     <FileText size={13} className="text-blue-500" />
                   </div>
                   <h2 className="text-sm font-semibold text-text">Resume / CV</h2>
                 </div>
+
+                {/* CV link */}
                 <Field
                   icon={<FileText size={15} />}
                   label={<>Google Drive CV link <span className="text-xs text-muted font-normal">(optional)</span></>}
@@ -560,6 +567,121 @@ export default function Profile() {
                     <FileText size={12} /> Preview your CV
                   </a>
                 )}
+
+                <hr className="border-border" />
+
+                {/* Joining availability */}
+                <div>
+                  <label className="block text-sm font-medium text-text mb-2">
+                    <span className="flex items-center gap-1.5"><Clock size={13} className="text-muted" /> Joining Availability</span>
+                  </label>
+                  <select
+                    name="joiningAvailability"
+                    value={form.joiningAvailability}
+                    onChange={handle}
+                    className="w-full px-3.5 py-2.5 border border-border rounded-xl text-sm text-text bg-white focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/10 transition"
+                  >
+                    <option value="">Select availability</option>
+                    {['Immediately', '15 days', '1 month', '2 months', '3 months', '3+ months'].map(o => (
+                      <option key={o} value={o}>{o}</option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Current & Expected salary */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-text mb-2">
+                      Current Salary <span className="text-xs text-muted font-normal">(per year)</span>
+                    </label>
+                    <div className="relative">
+                      <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted"><IndianRupee size={14} /></span>
+                      <input
+                        type="number" min="0" name="currentSalary"
+                        value={form.currentSalary}
+                        onChange={handle}
+                        placeholder="e.g. 350000"
+                        className="w-full pl-10 pr-4 py-2.5 border border-border rounded-xl text-sm text-text placeholder-muted focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/10 transition bg-white"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-text mb-2">
+                      Expected Salary <span className="text-xs text-muted font-normal">(per year)</span>
+                    </label>
+                    <div className="relative">
+                      <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted"><IndianRupee size={14} /></span>
+                      <input
+                        type="number" min="0" name="expectedSalary"
+                        value={form.expectedSalary}
+                        onChange={handle}
+                        placeholder="e.g. 500000"
+                        className="w-full pl-10 pr-4 py-2.5 border border-border rounded-xl text-sm text-text placeholder-muted focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/10 transition bg-white"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Preferred locations */}
+                <div>
+                  <label className="flex items-center gap-1.5 text-sm font-medium text-text mb-2">
+                    <MapPin size={13} className="text-muted" /> Preferred Locations
+                  </label>
+                  <div className="space-y-2">
+                    {form.preferredLocations.map((loc, i) => (
+                      <div key={i} className="flex gap-2 items-center">
+                        <input
+                          type="text" value={loc}
+                          onChange={e => setForm(f => ({ ...f, preferredLocations: f.preferredLocations.map((v, j) => j === i ? e.target.value : v) }))}
+                          placeholder="e.g. Bangalore, Remote, Mumbai"
+                          className="flex-1 px-3.5 py-2.5 border border-border rounded-xl text-sm text-text placeholder-muted focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/10 transition bg-white"
+                        />
+                        {form.preferredLocations.length > 1 && (
+                          <button type="button"
+                            onClick={() => setForm(f => ({ ...f, preferredLocations: f.preferredLocations.filter((_, j) => j !== i) }))}
+                            className="w-8 h-8 flex items-center justify-center text-muted hover:text-red-400 hover:bg-red-50 rounded-lg transition-colors">
+                            <XIcon size={13} />
+                          </button>
+                        )}
+                      </div>
+                    ))}
+                    <button type="button"
+                      onClick={() => setForm(f => ({ ...f, preferredLocations: [...f.preferredLocations, ''] }))}
+                      className="inline-flex items-center gap-1 text-xs text-accent hover:text-accent-hover font-medium transition-colors">
+                      <Plus size={12} /> Add location
+                    </button>
+                  </div>
+                </div>
+
+                {/* Mode of job */}
+                <div>
+                  <label className="flex items-center gap-1.5 text-sm font-medium text-text mb-1">
+                    <Monitor size={13} className="text-muted" /> Mode of Job
+                  </label>
+                  <p className="text-xs text-muted mb-2">You can select multiple options</p>
+                  <div className="flex flex-wrap gap-2">
+                    {['Remote', 'Hybrid', 'On-site'].map(mode => {
+                      const active = form.jobMode.includes(mode);
+                      return (
+                        <button
+                          key={mode}
+                          type="button"
+                          onClick={() => setForm(f => ({
+                            ...f,
+                            jobMode: active ? f.jobMode.filter(m => m !== mode) : [...f.jobMode, mode],
+                          }))}
+                          className={`px-4 py-2 rounded-xl text-sm font-medium border transition-colors ${
+                            active
+                              ? 'bg-accent text-white border-accent'
+                              : 'bg-white text-muted border-border hover:border-accent/40 hover:text-accent'
+                          }`}
+                        >
+                          {mode}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
               </div>
             )}
           </div>

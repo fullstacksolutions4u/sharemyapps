@@ -110,7 +110,8 @@ exports.getMe = async (req, res) => {
 exports.updateProfile = async (req, res) => {
   try {
     const { name, phone, linkedinUrl, githubUrl, leetcodeUrl, portfolioUrl, cvUrl, companyName, companyWebsite, industry, requirements,
-      freelanceAvailable, freelanceRate, mentorshipAvailable, mentorshipRate, mentorshipTech, mentorshipSchedule, languagePreference } = req.body;
+      freelanceAvailable, freelanceRate, mentorshipAvailable, mentorshipRate, mentorshipTech, mentorshipSchedule, languagePreference,
+      joiningAvailability, currentSalary, expectedSalary, preferredLocations, jobMode } = req.body;
     const user = await User.findById(req.user._id);
     if (!user) return res.status(404).json({ message: 'User not found' });
 
@@ -132,6 +133,11 @@ exports.updateProfile = async (req, res) => {
     if (mentorshipTech !== undefined) user.mentorshipTech = (Array.isArray(mentorshipTech) ? mentorshipTech : [mentorshipTech]).map(t => t.trim()).filter(Boolean);
     if (mentorshipSchedule !== undefined) user.mentorshipSchedule = (mentorshipSchedule && typeof mentorshipSchedule === 'object') ? mentorshipSchedule : null;
     if (languagePreference !== undefined) user.languagePreference = (Array.isArray(languagePreference) ? languagePreference : [languagePreference]).map(l => l.trim()).filter(Boolean);
+    if (joiningAvailability !== undefined) user.joiningAvailability = joiningAvailability.trim();
+    if (currentSalary !== undefined) user.currentSalary = currentSalary === '' || currentSalary === null ? null : Number(currentSalary);
+    if (expectedSalary !== undefined) user.expectedSalary = expectedSalary === '' || expectedSalary === null ? null : Number(expectedSalary);
+    if (preferredLocations !== undefined) user.preferredLocations = (Array.isArray(preferredLocations) ? preferredLocations : [preferredLocations]).map(l => l.trim()).filter(Boolean);
+    if (jobMode !== undefined) user.jobMode = (Array.isArray(jobMode) ? jobMode : [jobMode]).map(m => m.trim()).filter(Boolean);
 
     const { clientProfile } = req.body;
     if (clientProfile !== undefined && clientProfile && typeof clientProfile === 'object') {

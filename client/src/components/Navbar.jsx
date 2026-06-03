@@ -202,7 +202,7 @@ export default function Navbar() {
 
         {/* Desktop Nav */}
         <nav className="hidden md:flex items-center gap-6 mr-48">
-          <Link to="/explore" className="text-base text-muted hover:text-text transition-colors">Applications</Link>
+          <Link to="/explore" className="text-base text-muted hover:text-text transition-colors">Web & Mobile Applications</Link>
           <Link to="/developers" className="text-base text-muted hover:text-text transition-colors">
             {isRecruiter ? 'Our Developers' : 'Developers'}
           </Link>
@@ -304,7 +304,7 @@ export default function Navbar() {
       {/* Mobile menu */}
       {menuOpen && (
         <div className="md:hidden bg-white border-t border-border px-4 py-4 space-y-3">
-          <Link to="/explore" onClick={() => setMenuOpen(false)} className="block text-sm text-muted hover:text-text">Applications</Link>
+          <Link to="/explore" onClick={() => setMenuOpen(false)} className="block text-sm text-muted hover:text-text">Web & Mobile Applications</Link>
           <Link to="/developers" onClick={() => setMenuOpen(false)} className="block text-sm text-muted hover:text-text">
             {isRecruiter ? 'Our Developers' : 'Developers'}
           </Link>

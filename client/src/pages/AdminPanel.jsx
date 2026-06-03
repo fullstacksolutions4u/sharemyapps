@@ -916,7 +916,19 @@ function UserEditPage({ user: initial, onBack, onSaved, allDesignations = [] }) 
               </div>
               <div>
                 <label className="block text-xs font-medium text-[#6B7280] mb-1.5"><FileText size={11} className="inline mr-1" />CV / Resume URL</label>
-                <input type="text" value={form.cvUrl} onChange={set('cvUrl')} className={inp} placeholder="Link to CV or resume" />
+                {!form.cvUrl && (
+                  <div className="flex items-start gap-2 bg-orange-50 border border-orange-200 rounded-xl px-3 py-2.5 mb-2">
+                    <AlertCircle size={14} className="text-orange-500 shrink-0 mt-0.5" />
+                    <p className="text-xs text-orange-700">No CV link yet. Upload the developer's PDF to your Google Drive and paste the shareable link below.</p>
+                  </div>
+                )}
+                <input type="text" value={form.cvUrl} onChange={set('cvUrl')} className={inp} placeholder="drive.google.com/file/d/…" />
+                {form.cvUrl && (
+                  <a href={form.cvUrl.startsWith('http') ? form.cvUrl : `https://${form.cvUrl}`} target="_blank" rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 mt-1.5 text-xs text-[#00A693] hover:underline font-medium">
+                    <FileText size={11} /> Preview CV
+                  </a>
+                )}
               </div>
             </div>
           )}
@@ -1269,6 +1281,7 @@ function UsersSection({ initialTab = 'developers' }) {
                 <th className="text-left px-4 py-3 text-xs font-semibold text-[#6B7280] uppercase tracking-wider hidden sm:table-cell">Email</th>
                 <th className="text-left px-4 py-3 text-xs font-semibold text-[#6B7280] uppercase tracking-wider hidden lg:table-cell">Engagement</th>
                 <th className="text-left px-4 py-3 text-xs font-semibold text-[#6B7280] uppercase tracking-wider hidden md:table-cell">Designation</th>
+                <th className="text-left px-4 py-3 text-xs font-semibold text-[#6B7280] uppercase tracking-wider hidden lg:table-cell">Resume</th>
                 <th className="text-right px-4 py-3 text-xs font-semibold text-[#6B7280] uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
@@ -1306,6 +1319,17 @@ function UsersSection({ initialTab = 'developers' }) {
                           ))}
                         </div>
                       : <span className="text-xs text-[#9CA3AF]">—</span>
+                    }
+                  </td>
+                  <td className="px-4 py-3 hidden lg:table-cell">
+                    {u.cvUrl
+                      ? <a href={u.cvUrl.startsWith('http') ? u.cvUrl : `https://${u.cvUrl}`} target="_blank" rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1 text-xs text-[#00A693] hover:underline font-medium">
+                          <FileText size={11} /> View CV
+                        </a>
+                      : <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-orange-50 text-orange-500 border border-orange-200 font-medium">
+                          <AlertCircle size={10} /> Missing
+                        </span>
                     }
                   </td>
                   <td className="px-4 py-3">
@@ -2527,6 +2551,7 @@ export default function AdminPanel() {
   const [stats, setStats] = useState(null);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [unreadMessages, setUnreadMessages] = useState(0);
+  const [usersOpen, setUsersOpen] = useState(true);
   const { logout } = useAuth();
   const nav = useNavigate();
 
@@ -2564,37 +2589,47 @@ export default function AdminPanel() {
         <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
           {NAV.map(({ key, label, icon: Icon, group }, i) => {
             const isFirstInGroup = group && !NAV[i - 1]?.group;
+            if (group && !usersOpen && !isFirstInGroup) return null;
             return (
               <div key={key}>
                 {isFirstInGroup && (
-                  <p className="px-3 pt-3 pb-1.5 text-[10px] font-bold text-[#9CA3AF] uppercase tracking-widest">
-                    {group}
-                  </p>
+                  <button
+                    onClick={() => setUsersOpen(v => !v)}
+                    className="w-full flex items-center justify-between px-3 pt-3 pb-1.5 text-[10px] font-bold text-[#9CA3AF] uppercase tracking-widest hover:text-[#6B7280] transition-colors"
+                  >
+                    <span>{group}</span>
+                    <ChevronDown
+                      size={12}
+                      className={`transition-transform duration-200 ${usersOpen ? 'rotate-0' : '-rotate-90'}`}
+                    />
+                  </button>
                 )}
-                <button
-                  onClick={() => navigate(key)}
-                  className={`w-full flex items-center gap-2.5 rounded-xl text-sm font-medium transition-colors text-left ${
-                    group ? 'px-3 py-2' : 'px-3 py-2.5'
-                  } ${
-                    section === key
-                      ? 'bg-[#E6F7F5] text-[#00A693]'
-                      : 'text-[#6B7280] hover:bg-[#F3F0EB] hover:text-[#1A1A1A]'
-                  }`}
-                >
-                  {group && <span className="w-1 shrink-0" />}
-                  <Icon size={group ? 13 : 15} />
-                  {label}
-                  {key === 'projects' && stats?.pending > 0 && (
-                    <span className="ml-auto bg-yellow-500 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full leading-none shrink-0">
-                      {stats.pending}
-                    </span>
-                  )}
-                  {key === 'messages' && unreadMessages > 0 && (
-                    <span className="ml-auto bg-accent text-white text-xs w-5 h-5 flex items-center justify-center rounded-full leading-none shrink-0">
-                      {unreadMessages > 9 ? '9+' : unreadMessages}
-                    </span>
-                  )}
-                </button>
+                {(!group || usersOpen) && (
+                  <button
+                    onClick={() => navigate(key)}
+                    className={`w-full flex items-center gap-2.5 rounded-xl text-sm font-medium transition-colors text-left ${
+                      group ? 'px-3 py-2' : 'px-3 py-2.5'
+                    } ${
+                      section === key
+                        ? 'bg-[#E6F7F5] text-[#00A693]'
+                        : 'text-[#6B7280] hover:bg-[#F3F0EB] hover:text-[#1A1A1A]'
+                    }`}
+                  >
+                    {group && <span className="w-1 shrink-0" />}
+                    <Icon size={group ? 13 : 15} />
+                    {label}
+                    {key === 'projects' && stats?.pending > 0 && (
+                      <span className="ml-auto bg-yellow-500 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full leading-none shrink-0">
+                        {stats.pending}
+                      </span>
+                    )}
+                    {key === 'messages' && unreadMessages > 0 && (
+                      <span className="ml-auto bg-accent text-white text-xs w-5 h-5 flex items-center justify-center rounded-full leading-none shrink-0">
+                        {unreadMessages > 9 ? '9+' : unreadMessages}
+                      </span>
+                    )}
+                  </button>
+                )}
               </div>
             );
           })}
