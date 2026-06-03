@@ -344,6 +344,21 @@ exports.setBadge = async (req, res) => {
   } catch (err) { res.status(500).json({ message: err.message }); }
 };
 
+exports.deleteUser = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+    if (user.isDeleted) return res.status(400).json({ message: 'User is already deleted' });
+    if (user.role === 'admin') return res.status(403).json({ message: 'Cannot delete admin accounts' });
+    user.isDeleted = true;
+    user.deletedAt = new Date();
+    await user.save();
+    res.json({ message: 'User deleted successfully' });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
 exports.getStats = async (req, res) => {
   try {
     const [total, pending, approved, rejected, users, developers, clients] = await Promise.all([

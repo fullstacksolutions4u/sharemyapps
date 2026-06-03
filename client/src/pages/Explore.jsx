@@ -14,11 +14,11 @@ const CATEGORIES = [
   'Communication & Chat Apps', 'Inventory Management', 'Event Management', 'Open Source Project', 'Others',
 ];
 
-const getPageNumbers = (current, total) => {
-  if (total <= 15) return Array.from({ length: total }, (_, i) => i + 1);
-  if (current <= 8)  return [...Array.from({ length: 13 }, (_, i) => i + 1), '...', total];
-  if (current >= total - 7) return [1, '...', ...Array.from({ length: 13 }, (_, i) => total - 12 + i)];
-  return [1, '...', current - 5, current - 4, current - 3, current - 2, current - 1, current, current + 1, current + 2, current + 3, current + 4, current + 5, '...', total];
+const GROUP = 10;
+const getPageGroup = (current, total) => {
+  const groupStart = Math.floor((current - 1) / GROUP) * GROUP + 1;
+  const groupEnd = Math.min(groupStart + GROUP - 1, total);
+  return { groupStart, groupEnd, hasPrev: groupStart > 1, hasNext: groupEnd < total };
 };
 
 export default function Explore() {
@@ -251,16 +251,22 @@ export default function Explore() {
       )}
 
       {/* Pagination */}
-      {pages > 1 && (
-        <div className="w-3/4 mx-auto flex items-center justify-center gap-1 mt-12 flex-wrap">
-          <button onClick={() => fetchProjects(page - 1)} disabled={page === 1}
-            className="px-3 h-9 text-sm border border-border rounded-lg text-muted hover:border-accent hover:text-accent disabled:opacity-40 disabled:cursor-not-allowed transition">
-            ‹
-          </button>
-          {getPageNumbers(page, pages).map((p, i) =>
-            p === '...' ? (
-              <span key={`e${i}`} className="w-9 h-9 flex items-center justify-center text-sm text-muted">…</span>
-            ) : (
+      {pages > 1 && (() => {
+        const { groupStart, groupEnd, hasPrev, hasNext } = getPageGroup(page, pages);
+        return (
+          <div className="w-3/4 mx-auto flex items-center justify-center gap-1 mt-12 flex-wrap">
+            <button onClick={() => fetchProjects(page - 1)} disabled={page === 1}
+              className="px-3 h-9 text-sm border border-border rounded-lg text-muted hover:border-accent hover:text-accent disabled:opacity-40 disabled:cursor-not-allowed transition">
+              ‹
+            </button>
+            {hasPrev && (
+              <button onClick={() => fetchProjects(groupStart - GROUP)}
+                className="px-2.5 h-9 text-sm border border-border rounded-lg text-muted hover:border-accent hover:text-accent transition"
+                title={`Pages ${groupStart - GROUP}–${groupStart - 1}`}>
+                «
+              </button>
+            )}
+            {Array.from({ length: groupEnd - groupStart + 1 }, (_, i) => groupStart + i).map(p => (
               <button key={p} onClick={() => fetchProjects(p)}
                 className={`w-9 h-9 text-sm rounded-lg border transition ${
                   p === page
@@ -269,14 +275,21 @@ export default function Explore() {
                 }`}>
                 {p}
               </button>
-            )
-          )}
-          <button onClick={() => fetchProjects(page + 1)} disabled={page === pages}
-            className="px-3 h-9 text-sm border border-border rounded-lg text-muted hover:border-accent hover:text-accent disabled:opacity-40 disabled:cursor-not-allowed transition">
-            ›
-          </button>
-        </div>
-      )}
+            ))}
+            {hasNext && (
+              <button onClick={() => fetchProjects(groupEnd + 1)}
+                className="px-2.5 h-9 text-sm border border-border rounded-lg text-muted hover:border-accent hover:text-accent transition"
+                title={`Pages ${groupEnd + 1}–${Math.min(groupEnd + GROUP, pages)}`}>
+                »
+              </button>
+            )}
+            <button onClick={() => fetchProjects(page + 1)} disabled={page === pages}
+              className="px-3 h-9 text-sm border border-border rounded-lg text-muted hover:border-accent hover:text-accent disabled:opacity-40 disabled:cursor-not-allowed transition">
+              ›
+            </button>
+          </div>
+        );
+      })()}
     </div>
   );
 }

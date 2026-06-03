@@ -692,10 +692,10 @@ function BadgeChip({ badge }) {
 }
 
 // ─── User Edit Page ───────────────────────────────────────────────────────────
-function UserEditPage({ user: initial, onBack, onSaved }) {
+function UserEditPage({ user: initial, onBack, onSaved, allDesignations = [] }) {
   const [form, setForm] = useState({
     name:           initial.name           || '',
-    designations:   initial.designations?.length ? [...initial.designations] : [''],
+    designations:   initial.designations?.filter(Boolean) || [],
     phone:          initial.phone          || '',
     linkedinUrl:    initial.linkedinUrl    || '',
     githubUrl:      initial.githubUrl      || '',
@@ -711,9 +711,19 @@ function UserEditPage({ user: initial, onBack, onSaved }) {
     userType:       initial.userType       || 'developer',
   });
   const [saving, setSaving] = useState(false);
+  const [designationInput, setDesignationInput] = useState('');
+  const [designationDropdownOpen, setDesignationDropdownOpen] = useState(false);
 
   const inp = 'w-full px-3.5 py-2.5 border border-[#E5E1DA] rounded-xl text-sm text-[#1A1A1A] bg-white placeholder-[#9CA3AF] focus:outline-none focus:border-[#00A693] focus:ring-2 focus:ring-[#00A693]/10 transition';
   const set = (key) => (e) => setForm(f => ({ ...f, [key]: e.target.value }));
+
+  const addDesignation = () => {
+    const val = designationInput.trim();
+    if (val && !form.designations.includes(val)) {
+      setForm(f => ({ ...f, designations: [...f.designations, val] }));
+      setDesignationInput('');
+    }
+  };
 
   const handleSave = async () => {
     if (!form.name.trim()) return toast.error('Name is required');
@@ -768,31 +778,70 @@ function UserEditPage({ user: initial, onBack, onSaved }) {
               </div>
               <div className="sm:col-span-2">
                 <label className="block text-xs font-medium text-[#6B7280] mb-1.5">Designations</label>
-                <div className="space-y-2">
-                  {form.designations.map((d, i) => (
-                    <div key={i} className="flex gap-2 items-center">
-                      <input
-                        type="text"
-                        value={d}
-                        onChange={e => setForm(f => ({ ...f, designations: f.designations.map((v, j) => j === i ? e.target.value : v) }))}
-                        className={`flex-1 ${inp}`}
-                        placeholder="e.g. MERN Stack Developer"
-                      />
-                      {form.designations.length > 1 && (
-                        <button type="button"
-                          onClick={() => setForm(f => ({ ...f, designations: f.designations.filter((_, j) => j !== i) }))}
-                          className="w-8 h-8 flex items-center justify-center text-[#9CA3AF] hover:text-red-400 hover:bg-red-50 rounded-lg transition-colors">
-                          <X size={13} />
-                        </button>
-                      )}
-                    </div>
-                  ))}
-                  <button type="button"
-                    onClick={() => setForm(f => ({ ...f, designations: [...f.designations, ''] }))}
-                    className="inline-flex items-center gap-1 text-xs text-[#00A693] hover:text-[#007D6F] font-medium transition-colors">
-                    <Plus size={12} /> Add another
+                <div className="relative flex gap-2">
+                  <div className="relative flex-1">
+                    <input
+                      type="text"
+                      value={designationInput}
+                      onChange={e => { setDesignationInput(e.target.value); setDesignationDropdownOpen(true); }}
+                      onFocus={() => setDesignationDropdownOpen(true)}
+                      onBlur={() => setTimeout(() => setDesignationDropdownOpen(false), 150)}
+                      onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addDesignation(); } if (e.key === 'Escape') setDesignationDropdownOpen(false); }}
+                      className={inp}
+                      placeholder="e.g. MERN Stack Developer"
+                      autoComplete="off"
+                    />
+                    {designationDropdownOpen && (() => {
+                      const q = designationInput.trim().toLowerCase();
+                      const suggestions = allDesignations.filter(d =>
+                        !form.designations.includes(d) && (!q || d.toLowerCase().includes(q))
+                      );
+                      return suggestions.length > 0 ? (
+                        <div className="absolute left-0 top-full mt-1 z-30 w-full bg-white border border-[#E5E1DA] rounded-xl shadow-lg py-1 max-h-48 overflow-y-auto">
+                          <p className="px-3 pt-1 pb-1.5 text-[10px] font-semibold text-[#9CA3AF] uppercase tracking-wider border-b border-[#F3F0EB]">Previously used</p>
+                          {suggestions.map(d => (
+                            <button
+                              key={d}
+                              type="button"
+                              onMouseDown={() => {
+                                setForm(f => ({ ...f, designations: [...f.designations, d] }));
+                                setDesignationInput('');
+                                setDesignationDropdownOpen(false);
+                              }}
+                              className="w-full text-left px-3 py-2 text-sm text-[#1A1A1A] hover:bg-[#E6F7F5] hover:text-[#00A693] transition-colors"
+                            >
+                              {d}
+                            </button>
+                          ))}
+                        </div>
+                      ) : null;
+                    })()}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={addDesignation}
+                    title="Add designation"
+                    className="w-10 h-10 flex items-center justify-center bg-[#00A693] hover:bg-[#007D6F] text-white rounded-xl transition-colors shrink-0"
+                  >
+                    <Plus size={16} />
                   </button>
                 </div>
+                {form.designations.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mt-2.5">
+                    {form.designations.map((d, i) => (
+                      <span key={i} className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full bg-[#E6F7F5] text-[#00A693] border border-[#00A693]/20 font-medium">
+                        {d}
+                        <button
+                          type="button"
+                          onClick={() => setForm(f => ({ ...f, designations: f.designations.filter((_, j) => j !== i) }))}
+                          className="hover:text-red-500 transition-colors ml-0.5"
+                        >
+                          <X size={11} />
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
             <div>
@@ -960,6 +1009,9 @@ function UsersSection() {
   const [hideLoading, setHideLoading] = useState(null);
   const [editingUser, setEditingUser] = useState(null);
   const [search, setSearch] = useState('');
+  const [confirmDelete, setConfirmDelete] = useState(null);
+  const [deleteLoading, setDeleteLoading] = useState(null);
+  const [viewingUser, setViewingUser] = useState(null);
   const PER_PAGE = 10;
 
   useEffect(() => {
@@ -1003,10 +1055,25 @@ function UsersSection() {
     setEditingUser(null);
   };
 
+  const handleDeleteUser = async (userId) => {
+    setDeleteLoading(userId);
+    try {
+      await api.delete(`/admin/users/${userId}`);
+      setUsers(prev => prev.map(u => u._id === userId ? { ...u, isDeleted: true, deletedAt: new Date().toISOString() } : u));
+      setConfirmDelete(null);
+      toast.success('User deleted successfully');
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to delete user');
+    } finally {
+      setDeleteLoading(null);
+    }
+  };
+
   const activeUsers = users.filter(u => !u.isDeleted);
   const developers = activeUsers.filter(u => u.userType !== 'client');
   const clients = activeUsers.filter(u => u.userType === 'client');
   const deletedUsers = users.filter(u => u.isDeleted);
+  const allDesignations = [...new Set(users.flatMap(u => u.designations || []).filter(Boolean))];
   const q = search.trim().toLowerCase();
   const list = (tab === 'developers' ? developers : tab === 'clients' ? clients : deletedUsers)
     .filter(u => !q || u.name?.toLowerCase().includes(q) || u.email?.toLowerCase().includes(q));
@@ -1023,6 +1090,7 @@ function UsersSection() {
         user={editingUser}
         onBack={() => setEditingUser(null)}
         onSaved={handleUserSaved}
+        allDesignations={allDesignations}
       />
     );
   }
@@ -1090,16 +1158,15 @@ function UsersSection() {
           </p>
         </div>
       ) : tab === 'developers' ? (
-        <div className="bg-white border border-[#E5E1DA] rounded-2xl overflow-visible">
+        <div className="bg-white border border-[#E5E1DA] rounded-2xl overflow-hidden">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-[#E5E1DA] bg-[#FAF9F6] rounded-t-2xl">
+              <tr className="border-b border-[#E5E1DA] bg-[#FAF9F6]">
                 <th className="text-left px-4 py-3 text-xs font-semibold text-[#6B7280] uppercase tracking-wider">Developer</th>
                 <th className="text-left px-4 py-3 text-xs font-semibold text-[#6B7280] uppercase tracking-wider hidden sm:table-cell">Email</th>
                 <th className="text-left px-4 py-3 text-xs font-semibold text-[#6B7280] uppercase tracking-wider hidden lg:table-cell">Engagement</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-[#6B7280] uppercase tracking-wider hidden xl:table-cell">Designation</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-[#6B7280] uppercase tracking-wider">Badge</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-[#6B7280] uppercase tracking-wider hidden md:table-cell">Joined</th>
+                <th className="text-left px-4 py-3 text-xs font-semibold text-[#6B7280] uppercase tracking-wider hidden md:table-cell">Designation</th>
+                <th className="text-right px-4 py-3 text-xs font-semibold text-[#6B7280] uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[#F3F0EB]">
@@ -1128,68 +1195,35 @@ function UsersSection() {
                       </span>
                     </div>
                   </td>
-                  <td className="px-4 py-3 hidden xl:table-cell">
-                    {u.designations?.length
-                      ? <div className="flex flex-wrap gap-1">{u.designations.map((d, i) => (
-                          <span key={i} className="text-xs px-2.5 py-0.5 rounded-full bg-[#E6F7F5] text-[#00A693] border border-[#00A693]/20 font-medium">{d}</span>
-                        ))}</div>
+                  <td className="px-4 py-3 hidden md:table-cell">
+                    {u.designations?.filter(Boolean).length
+                      ? <div className="flex flex-wrap gap-1">
+                          {u.designations.filter(Boolean).map((d, i) => (
+                            <span key={i} className="text-xs px-2 py-0.5 rounded-full bg-[#E6F7F5] text-[#00A693] border border-[#00A693]/20 font-medium">{d}</span>
+                          ))}
+                        </div>
                       : <span className="text-xs text-[#9CA3AF]">—</span>
                     }
                   </td>
                   <td className="px-4 py-3">
-                    <div className="relative flex items-center gap-2" onMouseDown={e => e.stopPropagation()}>
-                      <BadgeChip badge={u.badge || 'member'} />
+                    <div className="flex items-center justify-end gap-1.5 whitespace-nowrap">
                       <button
-                        onClick={() => setPickerOpen(pickerOpen === u._id ? null : u._id)}
-                        disabled={badgeLoading === u._id}
-                        className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-lg border border-[#E5E1DA] text-[#6B7280] hover:border-accent hover:text-accent font-medium transition-colors disabled:opacity-50"
+                        onClick={() => setViewingUser(u)}
+                        className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-lg border border-[#E5E1DA] text-[#6B7280] hover:border-[#00A693] hover:text-[#00A693] font-medium transition-colors"
                       >
-                        {badgeLoading === u._id ? '…' : 'Change'} <ChevronDownIcon size={11} />
-                      </button>
-                      {pickerOpen === u._id && (
-                        <div className="absolute left-0 bottom-full mb-1.5 z-50 bg-white border border-[#E5E1DA] rounded-xl shadow-lg py-1.5 w-52">
-                          <p className="px-3 pb-1.5 text-[10px] font-semibold text-[#9CA3AF] uppercase tracking-wider border-b border-[#F3F0EB] mb-1">Select badge</p>
-                          {BADGES.map(b => {
-                            const Icon = b.icon;
-                            const active = (u.badge || 'member') === b.value;
-                            return (
-                              <button
-                                key={b.value}
-                                onClick={() => handleBadge(u._id, b.value)}
-                                className={`w-full flex items-center gap-2.5 px-3 py-2 text-sm transition-colors hover:bg-[#FAF9F6] ${active ? 'font-semibold' : ''}`}
-                              >
-                                <span className={`inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full border ${b.cls}`}>
-                                  {Icon && <Icon size={10} />} {b.label}
-                                </span>
-                                {active && <Check size={12} className="ml-auto text-accent" />}
-                              </button>
-                            );
-                          })}
-                        </div>
-                      )}
-                    </div>
-                  </td>
-                  <td className="px-4 py-3 text-[#6B7280] text-xs hidden md:table-cell">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span>{new Date(u.createdAt).toLocaleDateString()}</span>
-                      <button
-                        onClick={() => handleToggleHidden(u._id)}
-                        disabled={hideLoading === u._id}
-                        title={u.hidden ? 'Show in developers list' : 'Hide from developers list'}
-                        className={`inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-lg border font-medium transition-colors disabled:opacity-50 ${
-                          u.hidden
-                            ? 'bg-red-50 text-red-500 border-red-200 hover:bg-red-100'
-                            : 'bg-green-50 text-green-600 border-green-200 hover:bg-green-100'
-                        }`}
-                      >
-                        {hideLoading === u._id ? '…' : u.hidden ? <><EyeOff size={10} /> Hidden</> : <><Eye size={10} /> Visible</>}
+                        <Eye size={10} /> View
                       </button>
                       <button
                         onClick={() => setEditingUser(u)}
-                        title="Edit user"
-                        className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-lg border border-[#E5E1DA] text-[#6B7280] hover:border-[#00A693] hover:text-[#00A693] font-medium transition-colors"
+                        className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-lg border border-[#E5E1DA] text-[#6B7280] hover:border-[#00A693] hover:text-[#00A693] font-medium transition-colors"
                       >
                         <Pencil size={10} /> Edit
+                      </button>
+                      <button
+                        onClick={() => setConfirmDelete(u)}
+                        className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-lg border border-red-200 text-red-500 hover:bg-red-50 font-medium transition-colors"
+                      >
+                        <Trash2 size={10} /> Delete
                       </button>
                     </div>
                   </td>
@@ -1206,8 +1240,7 @@ function UsersSection() {
                 <th className="text-left px-4 py-3 text-xs font-semibold text-[#6B7280] uppercase tracking-wider">Client</th>
                 <th className="text-left px-4 py-3 text-xs font-semibold text-[#6B7280] uppercase tracking-wider hidden sm:table-cell">Email</th>
                 <th className="text-left px-4 py-3 text-xs font-semibold text-[#6B7280] uppercase tracking-wider hidden md:table-cell">Company</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-[#6B7280] uppercase tracking-wider hidden lg:table-cell">Industry</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-[#6B7280] uppercase tracking-wider hidden md:table-cell">Joined</th>
+                <th className="text-right px-4 py-3 text-xs font-semibold text-[#6B7280] uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[#F3F0EB]">
@@ -1228,20 +1261,25 @@ function UsersSection() {
                       ? <span className="text-xs font-medium text-[#1A1A1A]">{u.companyName}</span>
                       : <span className="text-xs text-[#9CA3AF]">—</span>}
                   </td>
-                  <td className="px-4 py-3 hidden lg:table-cell">
-                    {u.industry
-                      ? <span className="text-xs px-2.5 py-1 rounded-full bg-[#F3F0EB] text-[#6B7280] border border-[#E5E1DA] font-medium">{u.industry}</span>
-                      : <span className="text-xs text-[#9CA3AF]">—</span>}
-                  </td>
-                  <td className="px-4 py-3 text-[#6B7280] text-xs hidden md:table-cell">
-                    <div className="flex items-center gap-2">
-                      <span>{new Date(u.createdAt).toLocaleDateString()}</span>
+                  <td className="px-4 py-3">
+                    <div className="flex items-center justify-end gap-1.5 whitespace-nowrap">
+                      <button
+                        onClick={() => setViewingUser(u)}
+                        className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-lg border border-[#E5E1DA] text-[#6B7280] hover:border-[#00A693] hover:text-[#00A693] font-medium transition-colors"
+                      >
+                        <Eye size={10} /> View
+                      </button>
                       <button
                         onClick={() => setEditingUser(u)}
-                        title="Edit user"
-                        className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-lg border border-[#E5E1DA] text-[#6B7280] hover:border-[#00A693] hover:text-[#00A693] font-medium transition-colors"
+                        className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-lg border border-[#E5E1DA] text-[#6B7280] hover:border-[#00A693] hover:text-[#00A693] font-medium transition-colors"
                       >
                         <Pencil size={10} /> Edit
+                      </button>
+                      <button
+                        onClick={() => setConfirmDelete(u)}
+                        className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-lg border border-red-200 text-red-500 hover:bg-red-50 font-medium transition-colors"
+                      >
+                        <Trash2 size={10} /> Delete
                       </button>
                     </div>
                   </td>
@@ -1330,6 +1368,141 @@ function UsersSection() {
               disabled={page === totalPages}
               className="px-3 h-8 text-sm border border-border rounded-lg text-muted hover:border-accent hover:text-accent disabled:opacity-40 disabled:cursor-not-allowed transition"
             >›</button>
+          </div>
+        </div>
+      )}
+
+      {/* User view modal */}
+      {viewingUser && (() => {
+        const u = users.find(x => x._id === viewingUser._id) || viewingUser;
+        return (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4" onClick={() => setViewingUser(null)}>
+            <div className="bg-white rounded-2xl shadow-xl border border-[#E5E1DA] w-full max-w-md" onClick={e => e.stopPropagation()}>
+              {/* Header */}
+              <div className="flex items-center justify-between px-5 py-4 border-b border-[#E5E1DA]">
+                <div className="flex items-center gap-3">
+                  {u.avatar
+                    ? <img src={u.avatar} alt={u.name} className="w-10 h-10 rounded-full object-cover" />
+                    : <span className="w-10 h-10 rounded-full bg-[#00A693] text-white text-sm flex items-center justify-center font-bold">{u.name?.[0]?.toUpperCase()}</span>
+                  }
+                  <div>
+                    <p className="font-semibold text-[#1A1A1A] text-sm">{u.name}</p>
+                    <p className="text-xs text-[#6B7280]">{u.email}</p>
+                  </div>
+                </div>
+                <button onClick={() => setViewingUser(null)} className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-[#F3F0EB] text-[#9CA3AF] hover:text-[#1A1A1A] transition-colors">
+                  <X size={15} />
+                </button>
+              </div>
+
+              {/* Body */}
+              <div className="px-5 py-4 space-y-4">
+                {/* Designations */}
+                <div>
+                  <p className="text-[10px] font-semibold text-[#9CA3AF] uppercase tracking-wider mb-1.5">Designations</p>
+                  {u.designations?.filter(Boolean).length
+                    ? <div className="flex flex-wrap gap-1.5">
+                        {u.designations.filter(Boolean).map((d, i) => (
+                          <span key={i} className="text-xs px-2.5 py-1 rounded-full bg-[#E6F7F5] text-[#00A693] border border-[#00A693]/20 font-medium">{d}</span>
+                        ))}
+                      </div>
+                    : <p className="text-xs text-[#9CA3AF]">—</p>
+                  }
+                </div>
+
+                {/* Badge */}
+                <div>
+                  <p className="text-[10px] font-semibold text-[#9CA3AF] uppercase tracking-wider mb-1.5">Badge</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {BADGES.map(b => {
+                      const Icon = b.icon;
+                      const active = (u.badge || 'new_member') === b.value;
+                      return (
+                        <button
+                          key={b.value}
+                          onClick={() => handleBadge(u._id, b.value)}
+                          disabled={badgeLoading === u._id}
+                          className={`inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full border font-medium transition-colors disabled:opacity-50 ${b.cls} ${active ? 'ring-2 ring-offset-1 ring-current' : 'opacity-50 hover:opacity-100'}`}
+                        >
+                          {Icon && <Icon size={10} />} {b.label}
+                          {active && <Check size={10} className="ml-0.5" />}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Joined + Visibility */}
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-[10px] font-semibold text-[#9CA3AF] uppercase tracking-wider mb-1">Joined</p>
+                    <p className="text-xs text-[#6B7280]">{new Date(u.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                  </div>
+                  <button
+                    onClick={() => handleToggleHidden(u._id)}
+                    disabled={hideLoading === u._id}
+                    className={`inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border font-medium transition-colors disabled:opacity-50 ${
+                      u.hidden
+                        ? 'bg-red-50 text-red-500 border-red-200 hover:bg-red-100'
+                        : 'bg-green-50 text-green-600 border-green-200 hover:bg-green-100'
+                    }`}
+                  >
+                    {hideLoading === u._id ? '…' : u.hidden ? <><EyeOff size={11} /> Hidden</> : <><Eye size={11} /> Visible</>}
+                  </button>
+                </div>
+              </div>
+
+              {/* Footer */}
+              <div className="flex gap-2 px-5 py-4 border-t border-[#E5E1DA]">
+                <button
+                  onClick={() => { setEditingUser(u); setViewingUser(null); }}
+                  className="flex-1 flex items-center justify-center gap-1.5 text-sm font-medium px-4 py-2 rounded-xl border border-[#E5E1DA] text-[#6B7280] hover:border-[#00A693] hover:text-[#00A693] transition-colors"
+                >
+                  <Pencil size={13} /> Edit
+                </button>
+                <button
+                  onClick={() => { setConfirmDelete(u); setViewingUser(null); }}
+                  className="flex-1 flex items-center justify-center gap-1.5 text-sm font-medium px-4 py-2 rounded-xl border border-red-200 text-red-500 hover:bg-red-50 transition-colors"
+                >
+                  <Trash2 size={13} /> Delete
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* Delete confirmation modal */}
+      {confirmDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4" onClick={() => setConfirmDelete(null)}>
+          <div className="bg-white rounded-2xl shadow-xl border border-red-100 p-6 max-w-sm w-full" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-full bg-red-50 flex items-center justify-center shrink-0">
+                <Trash2 size={18} className="text-red-500" />
+              </div>
+              <div>
+                <p className="font-semibold text-[#1A1A1A] text-sm">Delete User</p>
+                <p className="text-xs text-[#6B7280] mt-0.5">This action cannot be undone</p>
+              </div>
+            </div>
+            <p className="text-sm text-[#6B7280] mb-5">
+              Are you sure you want to delete <span className="font-semibold text-[#1A1A1A]">{confirmDelete.name}</span> ({confirmDelete.email})? Their account will be soft-deleted and removed from public listings.
+            </p>
+            <div className="flex gap-2 justify-end">
+              <button
+                onClick={() => setConfirmDelete(null)}
+                className="px-4 py-2 rounded-xl border border-[#E5E1DA] text-sm text-[#6B7280] hover:text-[#1A1A1A] font-medium transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => handleDeleteUser(confirmDelete._id)}
+                disabled={deleteLoading === confirmDelete._id}
+                className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-red-500 hover:bg-red-600 text-white text-sm font-medium transition-colors disabled:opacity-50"
+              >
+                <Trash2 size={13} /> {deleteLoading === confirmDelete._id ? 'Deleting…' : 'Delete User'}
+              </button>
+            </div>
           </div>
         </div>
       )}

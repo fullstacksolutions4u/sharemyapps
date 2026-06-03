@@ -235,14 +235,11 @@ export default function Developers() {
 
   const goPage = (p) => { setPage(p); window.scrollTo({ top: 0, behavior: 'smooth' }); };
 
-  const pageNumbers = () => {
-    const pages = [];
-    const win = 10;
-    let start = Math.max(1, page - Math.floor(win / 2));
-    let end = start + win - 1;
-    if (end > totalPages) { end = totalPages; start = Math.max(1, end - win + 1); }
-    for (let i = start; i <= end; i++) pages.push(i);
-    return pages;
+  const GROUP = 10;
+  const getPageGroup = () => {
+    const groupStart = Math.floor((page - 1) / GROUP) * GROUP + 1;
+    const groupEnd = Math.min(groupStart + GROUP - 1, totalPages);
+    return { groupStart, groupEnd, hasPrev: groupStart > 1, hasNext: groupEnd < totalPages };
   };
 
   return (
@@ -304,28 +301,45 @@ export default function Developers() {
         )}
 
         {/* Pagination */}
-        {totalPages > 1 && (
-          <div className="flex items-center justify-center gap-1.5 mt-12">
-            <button onClick={() => goPage(page - 1)} disabled={page === 1}
-              className="p-2 rounded-xl border border-border text-muted hover:border-accent hover:text-accent disabled:opacity-30 disabled:cursor-not-allowed transition-colors bg-white shadow-sm">
-              <ChevronLeft size={16} />
-            </button>
-            {pageNumbers().map(n => (
-              <button key={n} onClick={() => goPage(n)}
-                className={`w-9 h-9 rounded-xl border text-xs font-semibold transition-all shadow-sm ${
-                  n === page
-                    ? 'bg-accent border-accent text-white shadow-accent/30 shadow-md'
-                    : 'bg-white border-border text-muted hover:border-accent hover:text-accent'
-                }`}>
-                {n}
+        {totalPages > 1 && (() => {
+          const { groupStart, groupEnd, hasPrev, hasNext } = getPageGroup();
+          return (
+            <div className="flex items-center justify-center gap-1.5 mt-12 flex-wrap">
+              <button onClick={() => goPage(page - 1)} disabled={page === 1}
+                className="p-2 rounded-xl border border-border text-muted hover:border-accent hover:text-accent disabled:opacity-30 disabled:cursor-not-allowed transition-colors bg-white shadow-sm">
+                <ChevronLeft size={16} />
               </button>
-            ))}
-            <button onClick={() => goPage(page + 1)} disabled={page === totalPages}
-              className="p-2 rounded-xl border border-border text-muted hover:border-accent hover:text-accent disabled:opacity-30 disabled:cursor-not-allowed transition-colors bg-white shadow-sm">
-              <ChevronRight size={16} />
-            </button>
-          </div>
-        )}
+              {hasPrev && (
+                <button onClick={() => goPage(groupStart - GROUP)}
+                  className="w-9 h-9 rounded-xl border border-border bg-white text-muted hover:border-accent hover:text-accent transition-colors shadow-sm text-sm font-bold"
+                  title={`Pages ${groupStart - GROUP}–${groupStart - 1}`}>
+                  «
+                </button>
+              )}
+              {Array.from({ length: groupEnd - groupStart + 1 }, (_, i) => groupStart + i).map(n => (
+                <button key={n} onClick={() => goPage(n)}
+                  className={`w-9 h-9 rounded-xl border text-xs font-semibold transition-all shadow-sm ${
+                    n === page
+                      ? 'bg-accent border-accent text-white shadow-accent/30 shadow-md'
+                      : 'bg-white border-border text-muted hover:border-accent hover:text-accent'
+                  }`}>
+                  {n}
+                </button>
+              ))}
+              {hasNext && (
+                <button onClick={() => goPage(groupEnd + 1)}
+                  className="w-9 h-9 rounded-xl border border-border bg-white text-muted hover:border-accent hover:text-accent transition-colors shadow-sm text-sm font-bold"
+                  title={`Pages ${groupEnd + 1}–${Math.min(groupEnd + GROUP, totalPages)}`}>
+                  »
+                </button>
+              )}
+              <button onClick={() => goPage(page + 1)} disabled={page === totalPages}
+                className="p-2 rounded-xl border border-border text-muted hover:border-accent hover:text-accent disabled:opacity-30 disabled:cursor-not-allowed transition-colors bg-white shadow-sm">
+                <ChevronRight size={16} />
+              </button>
+            </div>
+          );
+        })()}
       </div>
     </div>
   );

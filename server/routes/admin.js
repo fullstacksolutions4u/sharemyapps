@@ -14,6 +14,7 @@ const {
   adminToggleHidden,
   toggleUserHidden,
   getResumes,
+  deleteUser,
 } = require('../controllers/adminController');
 const {
   getAllVacanciesAdmin,
@@ -37,6 +38,7 @@ router.patch('/users/:id/badge', setBadge);
 router.patch('/users/:id/designation', setDesignation);
 router.put('/users/:id', adminUpdateUser);
 router.patch('/users/:id/hide', toggleUserHidden);
+router.delete('/users/:id', deleteUser);
 router.patch('/projects/:id/featured', toggleFeatured);
 router.patch('/projects/:id/hide', adminToggleHidden);
 

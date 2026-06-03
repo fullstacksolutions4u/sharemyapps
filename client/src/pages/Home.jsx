@@ -132,6 +132,13 @@ export default function Home() {
           </Link>
         </div>
       </section>
+
+      {/* Footer */}
+      <footer className="border-t border-border py-5 text-center">
+        <p className="text-xs text-[#9CA3AF]">
+          Powered by <span className="font-semibold text-muted">Full Stack Solutions</span>
+        </p>
+      </footer>
     </div>
   );
 }
