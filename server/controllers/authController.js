@@ -207,7 +207,7 @@ exports.selectRole = async (req, res) => {
     }
 
     if (userType === 'client' && clientProfile) {
-      user.clientProfile = {
+      const cp = {
         projectName: clientProfile.projectName?.trim() || '',
         budget: clientProfile.budget ? Number(clientProfile.budget) : null,
         duration: clientProfile.duration?.trim() || '',
@@ -215,6 +215,16 @@ exports.selectRole = async (req, res) => {
         experienceLevel: clientProfile.experienceLevel?.trim() || '',
         description: clientProfile.description?.trim() || '',
       };
+      user.clientProfile = cp;
+      // Seed sign-up project as the first entry in clientProjects
+      if (cp.projectName) {
+        user.clientProjects = [{
+          _id: new (require('mongoose').Types.ObjectId)().toString(),
+          ...cp,
+          status: 'open',
+          createdAt: new Date(),
+        }];
+      }
     }
 
     await user.save();

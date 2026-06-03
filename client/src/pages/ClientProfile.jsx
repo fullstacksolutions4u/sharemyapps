@@ -408,12 +408,33 @@ function ClientFreelanceProfile({ user, setUser, navigate }) {
 
   const [activeTab, setActiveTab] = useState(isSetup ? 'profile' : 'projects');
 
-  // Fetch projects when on the My Projects tab
+  // Fetch projects when on the My Projects tab; auto-seed from clientProfile for existing clients
   useEffect(() => {
     if (activeTab !== 'projects' || isSetup) return;
     let cancelled = false;
     api.get('/users/client-projects')
-      .then(r => { if (!cancelled) { setProjects(r.data); setProjectsLoading(false); } })
+      .then(async r => {
+        if (cancelled) return;
+        const loaded = r.data;
+        if (loaded.length === 0 && cp.projectName) {
+          // First-time visit: seed sign-up project into clientProjects
+          try {
+            const res = await api.post('/users/client-projects', {
+              projectName: cp.projectName,
+              budget: cp.budget,
+              duration: cp.duration,
+              skillsNeeded: cp.skillsNeeded,
+              experienceLevel: cp.experienceLevel,
+              description: cp.description,
+              status: 'open',
+            });
+            if (!cancelled) setProjects([res.data]);
+          } catch { /* seed failed, just show empty */ }
+        } else {
+          if (!cancelled) setProjects(loaded);
+        }
+        if (!cancelled) setProjectsLoading(false);
+      })
       .catch(() => { if (!cancelled) { toast.error('Failed to load projects'); setProjectsLoading(false); } });
     return () => { cancelled = true; };
   }, [activeTab, isSetup]);
