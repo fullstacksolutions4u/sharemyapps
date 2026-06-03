@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   History, Trash2, Clock, ArrowLeft, Users, Search,
-  ChevronDown, ChevronUp, FileText, GitBranch, Globe,
+  ChevronUp, FileText, GitBranch, Globe,
   Link2, Phone,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';

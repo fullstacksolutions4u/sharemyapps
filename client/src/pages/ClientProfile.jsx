@@ -411,11 +411,13 @@ function ClientFreelanceProfile({ user, setUser, navigate }) {
   // Fetch projects when on the My Projects tab
   useEffect(() => {
     if (activeTab !== 'projects' || isSetup) return;
+    let cancelled = false;
     setProjectsLoading(true);
     api.get('/users/client-projects')
-      .then(r => setProjects(r.data))
-      .catch(() => toast.error('Failed to load projects'))
-      .finally(() => setProjectsLoading(false));
+      .then(r => { if (!cancelled) setProjects(r.data); })
+      .catch(() => { if (!cancelled) toast.error('Failed to load projects'); })
+      .finally(() => { if (!cancelled) setProjectsLoading(false); });
+    return () => { cancelled = true; };
   }, [activeTab, isSetup]);
 
   // ── Setup flow (first time) ──

@@ -28,7 +28,6 @@ function Avatar({ mentor }) {
 function MentorCard({ mentor }) {
   const [expanded, setExpanded] = useState(false);
   const designation = mentor.designations?.[0] || null;
-  const allTags = mentor.mentorshipTech || [];
   const LIMIT = 6;
   const flatTags = (mentor.mentorshipTech || []).flatMap(t => t.split(',').map(s => s.trim())).filter(Boolean);
   const visibleTags = expanded ? flatTags : flatTags.slice(0, LIMIT);
