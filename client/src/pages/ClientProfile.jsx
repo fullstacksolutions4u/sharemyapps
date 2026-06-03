@@ -401,7 +401,7 @@ function ClientFreelanceProfile({ user, setUser, navigate }) {
 
   // ── My Projects state ──
   const [projects, setProjects] = useState([]);
-  const [projectsLoading, setProjectsLoading] = useState(false);
+  const [projectsLoading, setProjectsLoading] = useState(true);
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingProject, setEditingProject] = useState(null);
   const [projectSaving, setProjectSaving] = useState(false);
@@ -412,11 +412,9 @@ function ClientFreelanceProfile({ user, setUser, navigate }) {
   useEffect(() => {
     if (activeTab !== 'projects' || isSetup) return;
     let cancelled = false;
-    setProjectsLoading(true);
     api.get('/users/client-projects')
-      .then(r => { if (!cancelled) setProjects(r.data); })
-      .catch(() => { if (!cancelled) toast.error('Failed to load projects'); })
-      .finally(() => { if (!cancelled) setProjectsLoading(false); });
+      .then(r => { if (!cancelled) { setProjects(r.data); setProjectsLoading(false); } })
+      .catch(() => { if (!cancelled) { toast.error('Failed to load projects'); setProjectsLoading(false); } });
     return () => { cancelled = true; };
   }, [activeTab, isSetup]);
 
