@@ -3,18 +3,20 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
 import logo from '../assets/logo.png';
-import { Code2, Briefcase, Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff } from 'lucide-react';
 
-const ROLES = [
-  { key: 'developer', icon: Code2,     label: 'Developer / Applicant' },
-  { key: 'client',    icon: Briefcase, label: 'Client / Recruiter' },
-];
+function homeFor(user) {
+  if (user.role === 'admin') return '/admin';
+  if (!user.onboardingComplete) return '/select-role';
+  if (user.userType === 'client' || user.userType === 'recruiter') return '/client-profile';
+  if (user.userType === 'mentee') return '/developers';
+  return '/dashboard';
+}
 
 export default function Login() {
   const { login } = useAuth();
   const navigate = useNavigate();
   const [params] = useSearchParams();
-  const [userType, setUserType] = useState('developer');
   const [form, setForm] = useState({ email: '', password: '' });
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -29,9 +31,7 @@ export default function Login() {
     try {
       const user = await login(form.email, form.password);
       toast.success('Welcome back!');
-      if (user.role === 'admin') navigate('/admin');
-      else if (user.userType === 'client') navigate('/client-profile');
-      else navigate('/dashboard');
+      navigate(homeFor(user));
     } catch (err) {
       toast.error(err.response?.data?.message || 'Login failed');
     } finally {
@@ -76,33 +76,12 @@ export default function Login() {
             </Link>
           </div>
 
-          <h1 className="text-2xl font-bold text-text tracking-tight mb-4 lg:hidden">Welcome back</h1>
-
-          {/* Role tabs */}
-          <div className="grid grid-cols-2 gap-2 mb-4">
-            {ROLES.map(({ key, icon: Icon, label }) => (
-              <button
-                key={key}
-                type="button"
-                onClick={() => setUserType(key)}
-                className={`flex flex-col items-center gap-1.5 px-3 py-3 rounded-xl border text-sm font-medium transition-all ${
-                  userType === key
-                    ? 'border-accent bg-accent-light text-accent'
-                    : 'border-border bg-white text-muted hover:border-accent/40 hover:text-text'
-                }`}
-              >
-                <Icon size={18} />
-                <span className="text-xs text-center leading-tight">{label}</span>
-              </button>
-            ))}
-          </div>
+          <h1 className="text-2xl font-bold text-text tracking-tight mb-6 lg:hidden">Welcome back</h1>
 
           <div className="bg-white border border-border rounded-2xl p-10 shadow-sm">
             <form onSubmit={handleSubmit} className="space-y-5">
               <div>
-                <label className="block text-sm font-medium text-text mb-2">
-                  {userType === 'client' ? 'Work email' : 'Email'}
-                </label>
+                <label className="block text-sm font-medium text-text mb-2">Email</label>
                 <input
                   type="email"
                   required
@@ -134,7 +113,7 @@ export default function Login() {
                 disabled={loading}
                 className="w-full bg-accent hover:bg-accent-hover text-white py-3.5 rounded-xl font-medium text-sm transition-colors disabled:opacity-60"
               >
-                {loading ? 'Signing in…' : userType === 'client' ? 'Sign in as Client' : 'Sign in as Developer'}
+                {loading ? 'Signing in…' : 'Sign in'}
               </button>
             </form>
           </div>

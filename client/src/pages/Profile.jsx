@@ -3,8 +3,11 @@ import { useNavigate } from 'react-router-dom';
 import {
   ArrowLeft, ArrowRight, User, Mail, Phone, Link2, GitBranch,
   Globe, Save, Trash2, AlertTriangle, Camera, Loader2, FileText, Check, Plus, X as XIcon,
-  Briefcase, BookOpen, IndianRupee, Code2, Languages,
+  Briefcase, BookOpen, IndianRupee, Code2, Languages, Clock,
 } from 'lucide-react';
+
+const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+const DAY_SHORT = { Monday: 'Mon', Tuesday: 'Tue', Wednesday: 'Wed', Thursday: 'Thu', Friday: 'Fri', Saturday: 'Sat', Sunday: 'Sun' };
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
@@ -101,6 +104,7 @@ export default function Profile() {
     mentorshipAvailable: user?.mentorshipAvailable || false,
     mentorshipRate: user?.mentorshipRate ?? '',
     mentorshipTech: user?.mentorshipTech?.length ? user.mentorshipTech : [''],
+    mentorshipSchedule: user?.mentorshipSchedule || {},
     languagePreference: user?.languagePreference?.length ? user.languagePreference : [''],
   });
   const [saving, setSaving] = useState(false);
@@ -476,6 +480,55 @@ export default function Profile() {
                             <Plus size={12} /> Add language
                           </button>
                         </div>
+                      </div>
+
+                      <div>
+                        <label className="flex items-center gap-1.5 text-sm font-medium text-text mb-3">
+                          <Clock size={13} className="text-muted" /> Weekly availability
+                          <span className="text-xs text-muted font-normal ml-1">(select days &amp; time)</span>
+                        </label>
+                        <div className="flex flex-wrap gap-1.5 mb-3">
+                          {DAYS.map(day => {
+                            const active = !!form.mentorshipSchedule[day];
+                            return (
+                              <button
+                                key={day}
+                                type="button"
+                                onClick={() => setForm(f => {
+                                  const sched = { ...f.mentorshipSchedule };
+                                  if (sched[day]) delete sched[day];
+                                  else sched[day] = { from: '09:00', to: '17:00' };
+                                  return { ...f, mentorshipSchedule: sched };
+                                })}
+                                className={`px-2.5 py-1 rounded-lg text-xs font-medium border transition-colors ${active ? 'bg-purple-100 text-purple-700 border-purple-300' : 'bg-[#F9F8F6] text-muted border-border hover:border-purple-200 hover:text-purple-600'}`}
+                              >
+                                {DAY_SHORT[day]}
+                              </button>
+                            );
+                          })}
+                        </div>
+                        {DAYS.filter(d => form.mentorshipSchedule[d]).length > 0 && (
+                          <div className="space-y-2 bg-[#F9F8F6] rounded-xl p-3">
+                            {DAYS.filter(d => form.mentorshipSchedule[d]).map(day => (
+                              <div key={day} className="flex items-center gap-2">
+                                <span className="w-8 text-xs font-semibold text-purple-700 shrink-0">{DAY_SHORT[day]}</span>
+                                <input
+                                  type="time"
+                                  value={form.mentorshipSchedule[day].from}
+                                  onChange={e => setForm(f => ({ ...f, mentorshipSchedule: { ...f.mentorshipSchedule, [day]: { ...f.mentorshipSchedule[day], from: e.target.value } } }))}
+                                  className="border border-border rounded-lg px-2 py-1 text-xs text-text bg-white focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/10 transition"
+                                />
+                                <span className="text-muted text-xs">–</span>
+                                <input
+                                  type="time"
+                                  value={form.mentorshipSchedule[day].to}
+                                  onChange={e => setForm(f => ({ ...f, mentorshipSchedule: { ...f.mentorshipSchedule, [day]: { ...f.mentorshipSchedule[day], to: e.target.value } } }))}
+                                  className="border border-border rounded-lg px-2 py-1 text-xs text-text bg-white focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/10 transition"
+                                />
+                              </div>
+                            ))}
+                          </div>
+                        )}
                       </div>
                     </div>
                   )}

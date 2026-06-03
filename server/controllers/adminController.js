@@ -344,6 +344,22 @@ exports.setBadge = async (req, res) => {
   } catch (err) { res.status(500).json({ message: err.message }); }
 };
 
+exports.setResumeData = async (req, res) => {
+  try {
+    const { resumeData } = req.body;
+    if (resumeData !== null && typeof resumeData !== 'object') {
+      return res.status(400).json({ message: 'resumeData must be a JSON object or null' });
+    }
+    const user = await User.findByIdAndUpdate(
+      req.params.id,
+      { resumeData: resumeData ?? null },
+      { new: true }
+    ).select('-password');
+    if (!user) return res.status(404).json({ message: 'User not found' });
+    res.json({ resumeData: user.resumeData });
+  } catch (err) { res.status(500).json({ message: err.message }); }
+};
+
 exports.deleteUser = async (req, res) => {
   try {
     const user = await User.findById(req.params.id);

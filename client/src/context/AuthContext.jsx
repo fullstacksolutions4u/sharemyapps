@@ -45,9 +45,15 @@ export function AuthProvider({ children }) {
     return res.data.user;
   };
 
-  const register = async (name, email, password, userType = 'developer') => {
-    const res = await api.post('/auth/register', { name, email, password, userType });
+  const register = async (name, email, password) => {
+    const res = await api.post('/auth/register', { name, email, password });
     if (res.data.token) localStorage.setItem('token', res.data.token);
+    setUser(res.data.user);
+    return res.data.user;
+  };
+
+  const selectRole = async (userType, extraData = {}) => {
+    const res = await api.post('/auth/select-role', { userType, ...extraData });
     setUser(res.data.user);
     return res.data.user;
   };
@@ -59,7 +65,7 @@ export function AuthProvider({ children }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, setUser, loading, login, register, logout }}>
+    <AuthContext.Provider value={{ user, setUser, loading, login, register, selectRole, logout }}>
       {children}
     </AuthContext.Provider>
   );

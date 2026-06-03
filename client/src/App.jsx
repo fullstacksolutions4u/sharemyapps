@@ -23,10 +23,18 @@ import ClientProfile from './pages/ClientProfile';
 import ChatAdmin from './pages/ChatAdmin';
 import Vacancies from './pages/Vacancies';
 import Developers from './pages/Developers';
+import SelectRole from './pages/SelectRole';
+import FindDevelopers from './pages/FindDevelopers';
+import FindDevelopersHistory from './pages/FindDevelopersHistory';
+import Mentors from './pages/Mentors';
+import FreelanceDevelopers from './pages/FreelanceDevelopers';
 
 function homeFor(user) {
   if (user.role === 'admin') return '/admin';
-  if (user.userType === 'client') return '/client-profile';
+  if (!user.onboardingComplete) return '/select-role';
+  if (user.userType === 'recruiter') return '/client-profile';
+  if (user.userType === 'client') return user.clientProfile?.projectName ? '/developers' : '/client-profile';
+  if (user.userType === 'mentee') return '/developers';
   return '/dashboard';
 }
 
@@ -68,6 +76,11 @@ function AppRoutes() {
           <Route path="/chat-admin" element={<ProtectedRoute><ChatAdmin /></ProtectedRoute>} />
           <Route path="/vacancies" element={<Vacancies />} />
           <Route path="/developers" element={<Developers />} />
+          <Route path="/select-role" element={<SelectRole />} />
+          <Route path="/find-developers" element={<ProtectedRoute><FindDevelopers /></ProtectedRoute>} />
+          <Route path="/find-developers/history" element={<ProtectedRoute><FindDevelopersHistory /></ProtectedRoute>} />
+          <Route path="/mentors" element={<ProtectedRoute><Mentors /></ProtectedRoute>} />
+          <Route path="/freelance-developers" element={<FreelanceDevelopers />} />
           <Route path="/portfolio/:userId" element={<PublicPortfolio />} />
           <Route path="/admin" element={<AdminRoute><AdminPanel /></AdminRoute>} />
           <Route path="*" element={<NotFound />} />

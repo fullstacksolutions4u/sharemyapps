@@ -35,7 +35,7 @@ function MessagesBadge() {
     <Link to="/messages" className="relative p-1.5 text-muted hover:text-text transition-colors">
       <MessageSquare size={18} />
       {unread > 0 && (
-        <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-[#00A693] text-white text-[10px] font-bold flex items-center justify-center rounded-full">
+        <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-accent text-white text-[10px] font-bold flex items-center justify-center rounded-full">
           {unread > 9 ? '9+' : unread}
         </span>
       )}
@@ -51,7 +51,7 @@ function NotificationBell() {
   const ref = useRef();
 
   const devLinks = [user?.linkedinUrl, user?.githubUrl, user?.leetcodeUrl, user?.portfolioUrl];
-  const showProfileWarning = user?.userType !== 'client' && devLinks.filter(Boolean).length < 2;
+  const showProfileWarning = user?.userType === 'developer' && devLinks.filter(Boolean).length < 2;
 
   const fetchNotifications = async () => {
     try {
@@ -68,7 +68,6 @@ function NotificationBell() {
     return () => clearInterval(interval);
   }, []);
 
-  // Close on outside click
   useEffect(() => {
     const handler = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
     document.addEventListener('mousedown', handler);
@@ -106,18 +105,16 @@ function NotificationBell() {
       </button>
 
       {open && (
-        <div className="absolute right-0 mt-2 w-80 bg-white border border-[#E5E1DA] rounded-2xl shadow-xl overflow-hidden z-50">
-          {/* Header */}
-          <div className="flex items-center justify-between px-4 py-3 border-b border-[#E5E1DA]">
-            <span className="text-sm font-semibold text-[#1A1A1A]">Notifications</span>
+        <div className="absolute right-0 mt-2 w-80 bg-white border border-border rounded-2xl shadow-xl overflow-hidden z-50">
+          <div className="flex items-center justify-between px-4 py-3 border-b border-border">
+            <span className="text-sm font-semibold text-text">Notifications</span>
             {unread > 0 && (
-              <button onClick={markAllRead} className="text-xs text-[#00A693] hover:text-[#007D6F] font-medium transition-colors">
+              <button onClick={markAllRead} className="text-xs text-accent hover:text-accent-hover font-medium transition-colors">
                 Mark all read
               </button>
             )}
           </div>
 
-          {/* List */}
           <div className="max-h-80 overflow-y-auto divide-y divide-[#F3F0EB]">
             {showProfileWarning && (
               <Link
@@ -133,27 +130,26 @@ function NotificationBell() {
               </Link>
             )}
             {notifications.length === 0 && !showProfileWarning ? (
-              <div className="px-4 py-8 text-center text-sm text-[#6B7280]">No notifications yet</div>
+              <div className="px-4 py-8 text-center text-sm text-muted">No notifications yet</div>
             ) : (
               notifications.map(n => (
                 <div
                   key={n._id}
                   onClick={() => { if (!n.read) markRead(n._id); }}
-                  className={`px-4 py-3 flex items-start gap-3 cursor-pointer hover:bg-[#FAF9F6] transition-colors ${!n.read ? 'bg-[#F0FBF9]' : ''}`}
+                  className={`px-4 py-3 flex items-start gap-3 cursor-pointer hover:bg-bg transition-colors ${!n.read ? 'bg-[#F0FBF9]' : ''}`}
                 >
-                  <div className="mt-0.5">{typeIcon[n.type] || <Bell size={14} className="text-[#6B7280] shrink-0" />}</div>
+                  <div className="mt-0.5">{typeIcon[n.type] || <Bell size={14} className="text-muted shrink-0" />}</div>
                   <div className="flex-1 min-w-0">
-                    <p className={`text-sm leading-snug ${!n.read ? 'font-semibold text-[#1A1A1A]' : 'text-[#1A1A1A]'}`}>{n.title}</p>
-                    <p className="text-xs text-[#6B7280] mt-0.5 leading-snug line-clamp-2">{n.message}</p>
+                    <p className={`text-sm leading-snug ${!n.read ? 'font-semibold text-text' : 'text-text'}`}>{n.title}</p>
+                    <p className="text-xs text-muted mt-0.5 leading-snug line-clamp-2">{n.message}</p>
                     <p className="text-xs text-[#9CA3AF] mt-1">{new Date(n.createdAt).toLocaleDateString()}</p>
                   </div>
-                  {!n.read && <span className="w-2 h-2 bg-[#00A693] rounded-full mt-1.5 shrink-0" />}
+                  {!n.read && <span className="w-2 h-2 bg-accent rounded-full mt-1.5 shrink-0" />}
                 </div>
               ))
             )}
           </div>
 
-          {/* Footer */}
           <div className="px-4 py-2.5 border-t border-border">
             <Link
               to="/notifications"
@@ -175,6 +171,12 @@ export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [dropOpen, setDropOpen] = useState(false);
 
+  const isDeveloper = user?.userType === 'developer';
+  const isRecruiter = user?.userType === 'recruiter';
+  const isClient = user?.userType === 'client';
+  const isMentee = user?.userType === 'mentee';
+  const profileLink = (isRecruiter || isClient) ? '/client-profile' : '/profile';
+
   const handleLogout = async () => {
     await logout();
     toast.success('Logged out');
@@ -183,7 +185,7 @@ export default function Navbar() {
   };
 
   return (
-    <header className="sticky top-0 z-50 bg-white border-b border-[#E5E1DA]">
+    <header className="sticky top-0 z-50 bg-white border-b border-border">
       <div className="w-full pl-7.5 pr-6 h-16 flex items-center justify-between">
         {/* Logo */}
         <Link to="/" className="flex items-center gap-2">
@@ -201,16 +203,31 @@ export default function Navbar() {
         {/* Desktop Nav */}
         <nav className="hidden md:flex items-center gap-6 mr-48">
           <Link to="/explore" className="text-base text-muted hover:text-text transition-colors">Applications</Link>
-          <Link to="/developers" className="text-base text-muted hover:text-text transition-colors">Developers</Link>
-          <Link to="/vacancies" className="text-base text-muted hover:text-text transition-colors">Vacancies</Link>
-          {user && user.userType !== 'client' && (
+          <Link to="/developers" className="text-base text-muted hover:text-text transition-colors">
+            {isRecruiter ? 'Our Developers' : 'Developers'}
+          </Link>
+          {isClient && (
+            <Link to="/freelance-developers" className="text-base text-muted hover:text-text transition-colors">Freelance Developers</Link>
+          )}
+          {isRecruiter && (
+            <Link to="/find-developers" className="text-base text-muted hover:text-text transition-colors">Find Developers</Link>
+          )}
+          {isRecruiter && (
+            <Link to="/find-developers/history" className="text-base text-muted hover:text-text transition-colors">Shortlisted Candidates</Link>
+          )}
+          {isMentee && (
+            <Link to="/mentors" className="text-base text-muted hover:text-text transition-colors">Mentors</Link>
+          )}
+          {!isRecruiter && !isClient && !isMentee && (
+            <Link to="/vacancies" className="text-base text-muted hover:text-text transition-colors">Vacancies</Link>
+          )}
+          {isDeveloper && (
             <Link to="/dashboard" className="text-base text-muted hover:text-text transition-colors">My Projects</Link>
           )}
 
           {user ? (
             <div className="flex items-center gap-3">
-              {/* Add Project — developers only */}
-              {user.userType !== 'client' && (
+              {isDeveloper && (
                 <Link
                   to="/dashboard/add"
                   className="flex items-center gap-1.5 text-sm bg-accent hover:bg-accent-hover text-white px-3.5 py-2 rounded-lg font-medium transition-colors"
@@ -219,13 +236,9 @@ export default function Navbar() {
                 </Link>
               )}
 
-              {/* Messages */}
               <MessagesBadge />
-
-              {/* Notification Bell */}
               <NotificationBell />
 
-              {/* User dropdown */}
               <div className="relative">
                 <button
                   onClick={() => setDropOpen(v => !v)}
@@ -241,7 +254,7 @@ export default function Navbar() {
                 {dropOpen && (
                   <div className="absolute right-0 mt-2 w-44 bg-white border border-border rounded-xl shadow-lg py-1 z-50">
                     <Link
-                      to={user.userType === 'client' ? '/client-profile' : '/profile'}
+                      to={profileLink}
                       onClick={() => setDropOpen(false)}
                       className="flex items-center gap-2 px-4 py-2 text-sm text-text hover:bg-bg"
                     >
@@ -292,13 +305,33 @@ export default function Navbar() {
       {menuOpen && (
         <div className="md:hidden bg-white border-t border-border px-4 py-4 space-y-3">
           <Link to="/explore" onClick={() => setMenuOpen(false)} className="block text-sm text-muted hover:text-text">Applications</Link>
-          <Link to="/developers" onClick={() => setMenuOpen(false)} className="block text-sm text-muted hover:text-text">Developers</Link>
-          <Link to="/vacancies" onClick={() => setMenuOpen(false)} className="block text-sm text-muted hover:text-text">Vacancies</Link>
+          <Link to="/developers" onClick={() => setMenuOpen(false)} className="block text-sm text-muted hover:text-text">
+            {isRecruiter ? 'Our Developers' : 'Developers'}
+          </Link>
+          {isClient && (
+            <Link to="/freelance-developers" onClick={() => setMenuOpen(false)} className="block text-sm text-muted hover:text-text">Freelance Developers</Link>
+          )}
+          {isRecruiter && (
+            <Link to="/find-developers" onClick={() => setMenuOpen(false)} className="block text-sm text-muted hover:text-text">Find Developers</Link>
+          )}
+          {isRecruiter && (
+            <Link to="/find-developers/history" onClick={() => setMenuOpen(false)} className="block text-sm text-muted hover:text-text">Shortlisted Candidates</Link>
+          )}
+          {isMentee && (
+            <Link to="/mentors" onClick={() => setMenuOpen(false)} className="block text-sm text-muted hover:text-text">Mentors</Link>
+          )}
+          {!isRecruiter && !isClient && !isMentee && (
+            <Link to="/vacancies" onClick={() => setMenuOpen(false)} className="block text-sm text-muted hover:text-text">Vacancies</Link>
+          )}
           {user ? (
             <>
-              <Link to="/dashboard" onClick={() => setMenuOpen(false)} className="block text-sm text-muted hover:text-text">My Projects</Link>
+              {isDeveloper && (
+                <Link to="/dashboard" onClick={() => setMenuOpen(false)} className="block text-sm text-muted hover:text-text">My Projects</Link>
+              )}
               <Link to="/messages" onClick={() => setMenuOpen(false)} className="block text-sm text-muted hover:text-text">Messages</Link>
-              <Link to="/dashboard/add" onClick={() => setMenuOpen(false)} className="block text-sm text-text">Add Projects</Link>
+              {isDeveloper && (
+                <Link to="/dashboard/add" onClick={() => setMenuOpen(false)} className="block text-sm text-text">Add Projects</Link>
+              )}
               {user.role !== 'admin' && (
                 <Link to="/chat-admin" onClick={() => setMenuOpen(false)} className="block text-sm text-muted hover:text-text">Message Admin</Link>
               )}

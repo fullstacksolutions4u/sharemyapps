@@ -1,7 +1,7 @@
 const router = require('express').Router();
 const passport = require('passport');
 const {
-  register, login, logout, getMe, updateProfile, deleteAccount, googleCallback,
+  register, login, logout, getMe, updateProfile, deleteAccount, googleCallback, selectRole,
 } = require('../controllers/authController');
 const { protect } = require('../middleware/auth');
 const { upload } = require('../middleware/upload');
@@ -10,6 +10,7 @@ router.post('/register', register);
 router.post('/login', login);
 router.get('/logout', logout);
 router.get('/me', protect, getMe);
+router.post('/select-role', protect, selectRole);
 router.put('/profile', protect, upload.single('avatar'), updateProfile);
 router.delete('/account', protect, deleteAccount);
 

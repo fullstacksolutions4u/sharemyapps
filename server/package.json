@@ -8,6 +8,8 @@
     "dev": "nodemon index.js"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.100.1",
+    "@getbrevo/brevo": "^2.0.0",
     "bcryptjs": "^2.4.3",
     "cloudinary": "^2.5.1",
     "cookie-parser": "^1.4.7",
@@ -17,7 +19,7 @@
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.5.1",
     "multer": "^1.4.5-lts.1",
-    "@getbrevo/brevo": "^2.0.0",
+    "openai": "^6.41.0",
     "passport": "^0.7.0",
     "passport-google-oauth20": "^2.0.0"
   },

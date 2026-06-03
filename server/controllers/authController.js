@@ -23,16 +23,30 @@ const setCookie = (res, token) => {
 
 exports.register = async (req, res) => {
   try {
-    const { name, email, password, userType } = req.body;
+    const { name, email, password } = req.body;
     if (!name || !email || !password)
       return res.status(400).json({ message: 'All fields are required' });
 
-    if (await User.findOne({ email }))
-      return res.status(409).json({ message: 'Email already in use' });
+    const existing = await User.findOne({ email });
+    if (existing) {
+      if (!existing.isDeleted)
+        return res.status(409).json({ message: 'Email already in use' });
 
-    const type = userType === 'client' ? 'client' : 'developer';
+      // Deleted account re-registering — reset it and send to role selection
+      existing.name = name.trim();
+      existing.password = password;
+      existing.isDeleted = false;
+      existing.deletedAt = null;
+      existing.onboardingComplete = false;
+      existing.userType = 'developer';
+      await existing.save();
+      const token = signToken(existing._id);
+      setCookie(res, token);
+      return res.status(201).json({ user: existing.toPublicJSON(), token });
+    }
+
     const regNumber = await getNextRegNumber();
-    const user = await User.create({ name, email, password, userType: type, regNumber });
+    const user = await User.create({ name, email, password, regNumber });
     const token = signToken(user._id);
     setCookie(res, token);
     res.status(201).json({ user: user.toPublicJSON(), token });
@@ -73,11 +87,20 @@ exports.logout = (_req, res) => {
 exports.getMe = async (req, res) => {
   try {
     const user = req.user;
+    let dirty = false;
+    // Auto-complete onboarding only for legacy users: field is undefined in DB (never set),
+    // meaning they registered before the onboarding feature was added.
+    // Re-registered or newly registered users have onboardingComplete explicitly set to false.
+    if (user._doc.onboardingComplete === undefined && (user.userType === 'developer' || user.userType === 'client')) {
+      user.onboardingComplete = true;
+      dirty = true;
+    }
     const THREE_DAYS = 3 * 24 * 60 * 60 * 1000;
     if (user.badge === 'new_member' && Date.now() - new Date(user.createdAt).getTime() >= THREE_DAYS) {
       user.badge = 'active';
-      await user.save();
+      dirty = true;
     }
+    if (dirty) await user.save();
     res.json({ user: user.toPublicJSON() });
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -87,7 +110,7 @@ exports.getMe = async (req, res) => {
 exports.updateProfile = async (req, res) => {
   try {
     const { name, phone, linkedinUrl, githubUrl, leetcodeUrl, portfolioUrl, cvUrl, companyName, companyWebsite, industry, requirements,
-      freelanceAvailable, freelanceRate, mentorshipAvailable, mentorshipRate, mentorshipTech, languagePreference } = req.body;
+      freelanceAvailable, freelanceRate, mentorshipAvailable, mentorshipRate, mentorshipTech, mentorshipSchedule, languagePreference } = req.body;
     const user = await User.findById(req.user._id);
     if (!user) return res.status(404).json({ message: 'User not found' });
 
@@ -107,7 +130,20 @@ exports.updateProfile = async (req, res) => {
     if (mentorshipAvailable !== undefined) user.mentorshipAvailable = Boolean(mentorshipAvailable);
     if (mentorshipRate !== undefined) user.mentorshipRate = mentorshipRate === '' || mentorshipRate === null ? null : Number(mentorshipRate);
     if (mentorshipTech !== undefined) user.mentorshipTech = (Array.isArray(mentorshipTech) ? mentorshipTech : [mentorshipTech]).map(t => t.trim()).filter(Boolean);
+    if (mentorshipSchedule !== undefined) user.mentorshipSchedule = (mentorshipSchedule && typeof mentorshipSchedule === 'object') ? mentorshipSchedule : null;
     if (languagePreference !== undefined) user.languagePreference = (Array.isArray(languagePreference) ? languagePreference : [languagePreference]).map(l => l.trim()).filter(Boolean);
+
+    const { clientProfile } = req.body;
+    if (clientProfile !== undefined && clientProfile && typeof clientProfile === 'object') {
+      user.clientProfile = {
+        projectName: clientProfile.projectName?.trim() || '',
+        budget: clientProfile.budget ? Number(clientProfile.budget) : null,
+        duration: clientProfile.duration?.trim() || '',
+        skillsNeeded: Array.isArray(clientProfile.skillsNeeded) ? clientProfile.skillsNeeded : [],
+        experienceLevel: clientProfile.experienceLevel?.trim() || '',
+        description: clientProfile.description?.trim() || '',
+      };
+    }
 
     if (req.file) {
       if (user.avatar && user.avatar.includes('cloudinary')) {
@@ -150,11 +186,53 @@ exports.deleteAccount = async (req, res) => {
   }
 };
 
+exports.selectRole = async (req, res) => {
+  try {
+    const { userType, menteeProfile, clientProfile } = req.body;
+    if (!['developer', 'recruiter', 'client', 'mentee', 'mentor'].includes(userType))
+      return res.status(400).json({ message: 'Invalid role' });
+    const user = await User.findById(req.user._id);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+    user.userType = userType;
+    user.onboardingComplete = true;
+
+    if (userType === 'mentee' && menteeProfile) {
+      user.menteeProfile = {
+        education: menteeProfile.education?.trim() || '',
+        location: menteeProfile.location?.trim() || '',
+        dateOfBirth: menteeProfile.dateOfBirth || null,
+        currentSkills: Array.isArray(menteeProfile.currentSkills) ? menteeProfile.currentSkills : [],
+        lookingToLearn: Array.isArray(menteeProfile.lookingToLearn) ? menteeProfile.lookingToLearn : [],
+      };
+    }
+
+    if (userType === 'client' && clientProfile) {
+      user.clientProfile = {
+        projectName: clientProfile.projectName?.trim() || '',
+        budget: clientProfile.budget ? Number(clientProfile.budget) : null,
+        duration: clientProfile.duration?.trim() || '',
+        skillsNeeded: Array.isArray(clientProfile.skillsNeeded) ? clientProfile.skillsNeeded : [],
+        experienceLevel: clientProfile.experienceLevel?.trim() || '',
+        description: clientProfile.description?.trim() || '',
+      };
+    }
+
+    await user.save();
+    res.json({ user: user.toPublicJSON() });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
 exports.googleCallback = (req, res) => {
   const token = signToken(req.user._id);
   setCookie(res, token);
-  let dest = '/dashboard';
+  let dest = '/select-role';
   if (req.user.role === 'admin') dest = '/admin';
-  else if (req.user.userType === 'client') dest = '/client-profile';
+  else if (req.user.onboardingComplete) {
+    if (req.user.userType === 'client' || req.user.userType === 'recruiter') dest = '/client-profile';
+    else if (req.user.userType === 'mentee') dest = '/developers';
+    else dest = '/dashboard';
+  }
   res.redirect(`${process.env.CLIENT_URL}${dest}?token=${token}`);
 };

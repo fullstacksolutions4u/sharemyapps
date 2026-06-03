@@ -9,6 +9,7 @@ import {
   ArrowLeft, Plus, Save, Megaphone, Trash2, ToggleLeft, ToggleRight, Pencil,
   MessageSquare, Send, CornerDownRight, UserCircle2, Zap, Award, Trophy, Heart, Star, FolderOpen as FolderOpenIcon, Sparkles, Eye, EyeOff, Search,
   Briefcase, MapPin, ChevronDown, Users as UsersIcon, FileText,
+  Code2, Building2, Handshake, GraduationCap,
 } from 'lucide-react';
 import api from '../api/axios';
 import toast from 'react-hot-toast';
@@ -705,6 +706,11 @@ function UserEditPage({ user: initial, onBack, onSaved, allDesignations = [] }) 
   const [saving, setSaving] = useState(false);
   const [designationInput, setDesignationInput] = useState('');
   const [designationDropdownOpen, setDesignationDropdownOpen] = useState(false);
+  const [resumeJson, setResumeJson] = useState(
+    initial.resumeData ? JSON.stringify(initial.resumeData, null, 2) : ''
+  );
+  const [resumeJsonError, setResumeJsonError] = useState('');
+  const [savingResume, setSavingResume] = useState(false);
 
   const inp = 'w-full px-3.5 py-2.5 border border-[#E5E1DA] rounded-xl text-sm text-[#1A1A1A] bg-white placeholder-[#9CA3AF] focus:outline-none focus:border-[#00A693] focus:ring-2 focus:ring-[#00A693]/10 transition';
   const set = (key) => (e) => setForm(f => ({ ...f, [key]: e.target.value }));
@@ -727,6 +733,36 @@ function UserEditPage({ user: initial, onBack, onSaved, allDesignations = [] }) 
     } catch { toast.error('Failed to save changes'); }
     finally { setSaving(false); }
   };
+
+  const handleSaveResume = async () => {
+    setResumeJsonError('');
+    let parsed = null;
+    if (resumeJson.trim()) {
+      try {
+        parsed = JSON.parse(resumeJson);
+      } catch {
+        setResumeJsonError('Invalid JSON — fix the syntax and try again.');
+        return;
+      }
+    }
+    setSavingResume(true);
+    try {
+      await api.put(`/admin/users/${initial._id}/resume`, { resumeData: parsed });
+      toast.success('Resume data saved');
+    } catch { toast.error('Failed to save resume data'); }
+    finally { setSavingResume(false); }
+  };
+
+  const RESUME_TEMPLATE = JSON.stringify({
+    summary: "Brief 2-3 line profile summary",
+    totalExperience: "3 years",
+    skills: ["React", "Node.js", "MongoDB"],
+    techStack: ["JavaScript", "TypeScript"],
+    experience: [{ company: "Company Name", role: "Role Title", duration: "2022 – 2024", highlights: ["Built X", "Improved Y"] }],
+    education: [{ institution: "University Name", degree: "B.Tech CS", year: "2022" }],
+    languages: ["English"],
+    certifications: ["AWS Certified Developer"],
+  }, null, 2);
 
   return (
     <div className="space-y-6">
@@ -912,6 +948,74 @@ function UserEditPage({ user: initial, onBack, onSaved, allDesignations = [] }) 
             </div>
           )}
 
+          {/* Resume Data — developer only */}
+          {form.userType !== 'client' && (
+            <div className="bg-white border border-[#E5E1DA] rounded-2xl p-5 space-y-3">
+              <div className="flex items-center justify-between flex-wrap gap-2">
+                <h3 className="text-sm font-semibold text-[#1A1A1A] flex items-center gap-2">
+                  <FileText size={15} className="text-[#00A693]" /> Resume Summary Data
+                </h3>
+                <div className="flex items-center gap-2">
+                  {!resumeJson.trim() && (
+                    <button
+                      type="button"
+                      onClick={() => { setResumeJson(RESUME_TEMPLATE); setResumeJsonError(''); }}
+                      className="text-xs text-[#00A693] hover:underline font-medium"
+                    >
+                      Load template
+                    </button>
+                  )}
+                  {resumeJson.trim() && (
+                    <button
+                      type="button"
+                      onClick={() => { setResumeJson(''); setResumeJsonError(''); }}
+                      className="text-xs text-red-400 hover:underline font-medium"
+                    >
+                      Clear
+                    </button>
+                  )}
+                </div>
+              </div>
+              <p className="text-xs text-[#9CA3AF]">
+                Paste structured JSON generated from the developer's CV. Used by AI for JD matching.
+              </p>
+              <textarea
+                rows={14}
+                value={resumeJson}
+                onChange={e => { setResumeJson(e.target.value); setResumeJsonError(''); }}
+                spellCheck={false}
+                placeholder={'Paste resume JSON here…\n\nExample:\n{\n  "summary": "Full stack developer…",\n  "skills": ["React", "Node.js"],\n  …\n}'}
+                className={`w-full px-3.5 py-2.5 border rounded-xl text-xs font-mono text-[#1A1A1A] bg-[#FAFAF9] placeholder-[#9CA3AF] focus:outline-none focus:ring-2 resize-y transition ${
+                  resumeJsonError
+                    ? 'border-red-400 focus:ring-red-400/20'
+                    : 'border-[#E5E1DA] focus:border-[#00A693] focus:ring-[#00A693]/10'
+                }`}
+              />
+              {resumeJsonError && (
+                <p className="text-xs text-red-500 flex items-center gap-1.5">
+                  <X size={12} /> {resumeJsonError}
+                </p>
+              )}
+              {initial.resumeData && !resumeJsonError && (
+                <div className="flex flex-wrap gap-1.5">
+                  {initial.resumeData.skills?.slice(0, 6).map(s => (
+                    <span key={s} className="text-xs px-2 py-0.5 rounded-full bg-[#E6F7F5] text-[#00A693] border border-[#00A693]/20 font-medium">{s}</span>
+                  ))}
+                  {(initial.resumeData.skills?.length || 0) > 6 && (
+                    <span className="text-xs text-[#9CA3AF]">+{initial.resumeData.skills.length - 6} more</span>
+                  )}
+                </div>
+              )}
+              <button
+                onClick={handleSaveResume}
+                disabled={savingResume}
+                className="flex items-center gap-1.5 bg-[#00A693] hover:bg-[#007D6F] disabled:opacity-50 text-white px-5 py-2 rounded-xl font-medium text-sm transition-colors"
+              >
+                <Save size={13} /> {savingResume ? 'Saving…' : 'Save Resume Data'}
+              </button>
+            </div>
+          )}
+
           {/* Save */}
           <div className="flex gap-2">
             <button onClick={handleSave} disabled={saving}
@@ -991,10 +1095,10 @@ function UserEditPage({ user: initial, onBack, onSaved, allDesignations = [] }) 
 }
 
 // ─── Users ────────────────────────────────────────────────────────────────────
-function UsersSection() {
+function UsersSection({ initialTab = 'developers' }) {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [tab, setTab] = useState('developers');
+  const [tab, setTab] = useState(initialTab);
   const [page, setPage] = useState(1);
   const [badgeLoading, setBadgeLoading] = useState(null);
   const [pickerOpen, setPickerOpen] = useState(null);
@@ -1062,12 +1166,15 @@ function UsersSection() {
   };
 
   const activeUsers = users.filter(u => !u.isDeleted);
-  const developers = activeUsers.filter(u => u.userType !== 'client');
-  const clients = activeUsers.filter(u => u.userType === 'client');
+  const developers = activeUsers.filter(u => u.userType === 'developer');
+  const recruiters  = activeUsers.filter(u => u.userType === 'recruiter');
+  const clients    = activeUsers.filter(u => u.userType === 'client');
+  const mentees    = activeUsers.filter(u => u.userType === 'mentee');
   const deletedUsers = users.filter(u => u.isDeleted);
   const allDesignations = [...new Set(users.flatMap(u => u.designations || []).filter(Boolean))];
   const q = search.trim().toLowerCase();
-  const list = (tab === 'developers' ? developers : tab === 'clients' ? clients : deletedUsers)
+  const listMap = { developers, recruiters, clients, mentees, deleted: deletedUsers };
+  const list = (listMap[tab] || [])
     .filter(u => !q || u.name?.toLowerCase().includes(q) || u.email?.toLowerCase().includes(q));
   const totalPages = Math.ceil(list.length / PER_PAGE);
   const paged = list.slice((page - 1) * PER_PAGE, page * PER_PAGE);
@@ -1090,8 +1197,10 @@ function UsersSection() {
   return (
     <div className="space-y-5">
       <div className="flex items-center justify-between">
-        <h2 className="text-xl font-bold text-[#1A1A1A]">Users</h2>
-        <div className="text-xs text-[#9CA3AF]">{users.length} total</div>
+        <h2 className="text-xl font-bold text-[#1A1A1A] capitalize">
+          {tab === 'deleted' ? 'Deleted Accounts' : tab}
+        </h2>
+        <div className="text-xs text-[#9CA3AF]">{list.length} {tab === 'deleted' ? 'accounts' : 'users'}</div>
       </div>
 
       {/* Tab switcher + search */}
@@ -1099,11 +1208,13 @@ function UsersSection() {
         <div className="flex gap-1 bg-[#F3F0EB] p-1 rounded-xl w-fit flex-wrap">
           {[
             { key: 'developers', label: `Developers (${developers.length})` },
+            { key: 'recruiters', label: `Recruiters (${recruiters.length})` },
             { key: 'clients',    label: `Clients (${clients.length})` },
+            { key: 'mentees',    label: `Mentees (${mentees.length})` },
             { key: 'deleted',    label: `Deleted (${deletedUsers.length})` },
           ].map(t => (
             <button key={t.key} onClick={() => { setTab(t.key); setPage(1); setSearch(''); }}
-              className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+              className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
                 tab === t.key
                   ? t.key === 'deleted'
                     ? 'bg-white text-red-600 shadow-sm'
@@ -1146,7 +1257,7 @@ function UsersSection() {
       ) : list.length === 0 ? (
         <div className="bg-white border border-[#E5E1DA] rounded-2xl p-16 text-center">
           <p className="text-[#6B7280] text-sm">
-            {tab === 'deleted' ? 'No deleted accounts' : `No ${tab === 'developers' ? 'developer' : 'client'} accounts yet`}
+            {tab === 'deleted' ? 'No deleted accounts' : `No ${tab} accounts yet`}
           </p>
         </div>
       ) : tab === 'developers' ? (
@@ -1224,14 +1335,15 @@ function UsersSection() {
             </tbody>
           </table>
         </div>
-      ) : tab === 'clients' ? (
+      ) : tab === 'recruiters' ? (
         <div className="bg-white border border-[#E5E1DA] rounded-2xl overflow-hidden">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-[#E5E1DA] bg-[#FAF9F6]">
-                <th className="text-left px-4 py-3 text-xs font-semibold text-[#6B7280] uppercase tracking-wider">Client</th>
+                <th className="text-left px-4 py-3 text-xs font-semibold text-[#6B7280] uppercase tracking-wider">Recruiter</th>
                 <th className="text-left px-4 py-3 text-xs font-semibold text-[#6B7280] uppercase tracking-wider hidden sm:table-cell">Email</th>
                 <th className="text-left px-4 py-3 text-xs font-semibold text-[#6B7280] uppercase tracking-wider hidden md:table-cell">Company</th>
+                <th className="text-left px-4 py-3 text-xs font-semibold text-[#6B7280] uppercase tracking-wider hidden lg:table-cell">Joined</th>
                 <th className="text-right px-4 py-3 text-xs font-semibold text-[#6B7280] uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
@@ -1250,29 +1362,124 @@ function UsersSection() {
                   <td className="px-4 py-3 text-[#6B7280] hidden sm:table-cell text-xs">{u.email}</td>
                   <td className="px-4 py-3 hidden md:table-cell">
                     {u.companyName
-                      ? <span className="text-xs font-medium text-[#1A1A1A]">{u.companyName}</span>
+                      ? <div><p className="text-xs font-medium text-[#1A1A1A]">{u.companyName}</p>{u.industry && <p className="text-xs text-[#9CA3AF]">{u.industry}</p>}</div>
+                      : <span className="text-xs text-[#9CA3AF]">—</span>}
+                  </td>
+                  <td className="px-4 py-3 hidden lg:table-cell text-xs text-[#9CA3AF]">
+                    {new Date(u.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="flex items-center justify-end gap-1.5 whitespace-nowrap">
+                      <button onClick={() => setViewingUser(u)} className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-lg border border-[#E5E1DA] text-[#6B7280] hover:border-[#00A693] hover:text-[#00A693] font-medium transition-colors"><Eye size={10} /> View</button>
+                      <button onClick={() => setEditingUser(u)} className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-lg border border-[#E5E1DA] text-[#6B7280] hover:border-[#00A693] hover:text-[#00A693] font-medium transition-colors"><Pencil size={10} /> Edit</button>
+                      <button onClick={() => setConfirmDelete(u)} className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-lg border border-red-200 text-red-500 hover:bg-red-50 font-medium transition-colors"><Trash2 size={10} /> Delete</button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      ) : tab === 'clients' ? (
+        <div className="bg-white border border-[#E5E1DA] rounded-2xl overflow-hidden">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-[#E5E1DA] bg-[#FAF9F6]">
+                <th className="text-left px-4 py-3 text-xs font-semibold text-[#6B7280] uppercase tracking-wider">Client</th>
+                <th className="text-left px-4 py-3 text-xs font-semibold text-[#6B7280] uppercase tracking-wider hidden sm:table-cell">Email</th>
+                <th className="text-left px-4 py-3 text-xs font-semibold text-[#6B7280] uppercase tracking-wider hidden md:table-cell">Project / Budget</th>
+                <th className="text-left px-4 py-3 text-xs font-semibold text-[#6B7280] uppercase tracking-wider hidden lg:table-cell">Skills needed</th>
+                <th className="text-right px-4 py-3 text-xs font-semibold text-[#6B7280] uppercase tracking-wider">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-[#F3F0EB]">
+              {paged.map(u => (
+                <tr key={u._id} className="hover:bg-[#FAF9F6] transition-colors">
+                  <td className="px-4 py-3">
+                    <div className="flex items-center gap-3">
+                      <Avatar u={u} />
+                      <div className="min-w-0">
+                        <p className="font-medium text-[#1A1A1A] truncate">{u.name}</p>
+                        <p className="text-xs text-[#6B7280] sm:hidden truncate">{u.email}</p>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="px-4 py-3 text-[#6B7280] hidden sm:table-cell text-xs">{u.email}</td>
+                  <td className="px-4 py-3 hidden md:table-cell">
+                    {u.clientProfile?.projectName
+                      ? <div>
+                          <p className="text-xs font-medium text-[#1A1A1A] truncate max-w-[160px]">{u.clientProfile.projectName}</p>
+                          {u.clientProfile.budget && <p className="text-xs text-[#9CA3AF]">₹{Number(u.clientProfile.budget).toLocaleString('en-IN')}</p>}
+                        </div>
+                      : <span className="text-xs text-[#9CA3AF]">—</span>}
+                  </td>
+                  <td className="px-4 py-3 hidden lg:table-cell">
+                    {u.clientProfile?.skillsNeeded?.length > 0
+                      ? <div className="flex flex-wrap gap-1">
+                          {u.clientProfile.skillsNeeded.slice(0, 3).map(s => (
+                            <span key={s} className="text-xs px-1.5 py-0.5 rounded-full bg-teal-50 text-teal-700 border border-teal-200">{s}</span>
+                          ))}
+                          {u.clientProfile.skillsNeeded.length > 3 && <span className="text-xs text-[#9CA3AF]">+{u.clientProfile.skillsNeeded.length - 3}</span>}
+                        </div>
                       : <span className="text-xs text-[#9CA3AF]">—</span>}
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center justify-end gap-1.5 whitespace-nowrap">
-                      <button
-                        onClick={() => setViewingUser(u)}
-                        className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-lg border border-[#E5E1DA] text-[#6B7280] hover:border-[#00A693] hover:text-[#00A693] font-medium transition-colors"
-                      >
-                        <Eye size={10} /> View
-                      </button>
-                      <button
-                        onClick={() => setEditingUser(u)}
-                        className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-lg border border-[#E5E1DA] text-[#6B7280] hover:border-[#00A693] hover:text-[#00A693] font-medium transition-colors"
-                      >
-                        <Pencil size={10} /> Edit
-                      </button>
-                      <button
-                        onClick={() => setConfirmDelete(u)}
-                        className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-lg border border-red-200 text-red-500 hover:bg-red-50 font-medium transition-colors"
-                      >
-                        <Trash2 size={10} /> Delete
-                      </button>
+                      <button onClick={() => setViewingUser(u)} className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-lg border border-[#E5E1DA] text-[#6B7280] hover:border-[#00A693] hover:text-[#00A693] font-medium transition-colors"><Eye size={10} /> View</button>
+                      <button onClick={() => setEditingUser(u)} className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-lg border border-[#E5E1DA] text-[#6B7280] hover:border-[#00A693] hover:text-[#00A693] font-medium transition-colors"><Pencil size={10} /> Edit</button>
+                      <button onClick={() => setConfirmDelete(u)} className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-lg border border-red-200 text-red-500 hover:bg-red-50 font-medium transition-colors"><Trash2 size={10} /> Delete</button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      ) : tab === 'mentees' ? (
+        <div className="bg-white border border-[#E5E1DA] rounded-2xl overflow-hidden">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-[#E5E1DA] bg-[#FAF9F6]">
+                <th className="text-left px-4 py-3 text-xs font-semibold text-[#6B7280] uppercase tracking-wider">Mentee</th>
+                <th className="text-left px-4 py-3 text-xs font-semibold text-[#6B7280] uppercase tracking-wider hidden sm:table-cell">Email</th>
+                <th className="text-left px-4 py-3 text-xs font-semibold text-[#6B7280] uppercase tracking-wider hidden md:table-cell">Education</th>
+                <th className="text-left px-4 py-3 text-xs font-semibold text-[#6B7280] uppercase tracking-wider hidden lg:table-cell">Looking to learn</th>
+                <th className="text-right px-4 py-3 text-xs font-semibold text-[#6B7280] uppercase tracking-wider">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-[#F3F0EB]">
+              {paged.map(u => (
+                <tr key={u._id} className="hover:bg-[#FAF9F6] transition-colors">
+                  <td className="px-4 py-3">
+                    <div className="flex items-center gap-3">
+                      <Avatar u={u} />
+                      <div className="min-w-0">
+                        <p className="font-medium text-[#1A1A1A] truncate">{u.name}</p>
+                        <p className="text-xs text-[#6B7280] sm:hidden truncate">{u.email}</p>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="px-4 py-3 text-[#6B7280] hidden sm:table-cell text-xs">{u.email}</td>
+                  <td className="px-4 py-3 hidden md:table-cell">
+                    {u.menteeProfile?.education
+                      ? <p className="text-xs text-[#1A1A1A] truncate max-w-[160px]">{u.menteeProfile.education}</p>
+                      : <span className="text-xs text-[#9CA3AF]">—</span>}
+                  </td>
+                  <td className="px-4 py-3 hidden lg:table-cell">
+                    {u.menteeProfile?.lookingToLearn?.length > 0
+                      ? <div className="flex flex-wrap gap-1">
+                          {u.menteeProfile.lookingToLearn.slice(0, 3).map(s => (
+                            <span key={s} className="text-xs px-1.5 py-0.5 rounded-full bg-violet-50 text-violet-700 border border-violet-200">{s}</span>
+                          ))}
+                          {u.menteeProfile.lookingToLearn.length > 3 && <span className="text-xs text-[#9CA3AF]">+{u.menteeProfile.lookingToLearn.length - 3}</span>}
+                        </div>
+                      : <span className="text-xs text-[#9CA3AF]">—</span>}
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="flex items-center justify-end gap-1.5 whitespace-nowrap">
+                      <button onClick={() => setViewingUser(u)} className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-lg border border-[#E5E1DA] text-[#6B7280] hover:border-[#00A693] hover:text-[#00A693] font-medium transition-colors"><Eye size={10} /> View</button>
+                      <button onClick={() => setEditingUser(u)} className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-lg border border-[#E5E1DA] text-[#6B7280] hover:border-[#00A693] hover:text-[#00A693] font-medium transition-colors"><Pencil size={10} /> Edit</button>
+                      <button onClick={() => setConfirmDelete(u)} className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-lg border border-red-200 text-red-500 hover:bg-red-50 font-medium transition-colors"><Trash2 size={10} /> Delete</button>
                     </div>
                   </td>
                 </tr>
@@ -1309,12 +1516,13 @@ function UsersSection() {
                   </td>
                   <td className="px-4 py-3 text-[#9CA3AF] hidden sm:table-cell text-xs">{u.email}</td>
                   <td className="px-4 py-3 hidden md:table-cell">
-                    <span className={`text-xs px-2.5 py-0.5 rounded-full border font-medium ${
-                      u.userType === 'client'
-                        ? 'bg-purple-50 text-purple-400 border-purple-200'
-                        : 'bg-[#E6F7F5] text-[#00A693]/60 border-[#00A693]/20'
+                    <span className={`text-xs px-2.5 py-0.5 rounded-full border font-medium capitalize ${
+                      u.userType === 'client'    ? 'bg-teal-50 text-teal-400 border-teal-200' :
+                      u.userType === 'recruiter' ? 'bg-blue-50 text-blue-400 border-blue-200' :
+                      u.userType === 'mentee'    ? 'bg-violet-50 text-violet-400 border-violet-200' :
+                      'bg-[#E6F7F5] text-[#00A693]/60 border-[#00A693]/20'
                     }`}>
-                      {u.userType === 'client' ? 'Client' : 'Developer'}
+                      {u.userType || 'developer'}
                     </span>
                   </td>
                   <td className="px-4 py-3">
@@ -2301,13 +2509,16 @@ function ResumesSection() {
 }
 
 const NAV = [
-  { key: 'overview',      label: 'Overview',      icon: LayoutDashboard },
-  { key: 'projects',      label: 'Projects',       icon: FolderOpen },
-  { key: 'users',         label: 'Users',          icon: Users },
-  { key: 'vacancies',     label: 'Vacancies',      icon: Briefcase },
-  { key: 'resumes',       label: 'Resumes',        icon: FileText },
-  { key: 'announcements', label: 'Announcements',  icon: Megaphone },
-  { key: 'messages',      label: 'Messages',       icon: MessageSquare },
+  { key: 'overview',           label: 'Overview',      icon: LayoutDashboard },
+  { key: 'projects',           label: 'Projects',       icon: FolderOpen },
+  { key: 'users_developers',   label: 'Developers',    icon: Code2,          group: 'Users' },
+  { key: 'users_recruiters',   label: 'Recruiters',    icon: Building2,      group: 'Users' },
+  { key: 'users_clients',      label: 'Clients',       icon: Handshake,      group: 'Users' },
+  { key: 'users_mentees',      label: 'Mentees',       icon: GraduationCap,  group: 'Users' },
+  { key: 'vacancies',          label: 'Vacancies',      icon: Briefcase },
+  { key: 'resumes',            label: 'Resumes',        icon: FileText },
+  { key: 'announcements',      label: 'Announcements',  icon: Megaphone },
+  { key: 'messages',           label: 'Messages',       icon: MessageSquare },
 ];
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
@@ -2351,30 +2562,42 @@ export default function AdminPanel() {
 
         {/* Nav items */}
         <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
-          {NAV.map(({ key, label, icon: Icon }) => (
-            <button
-              key={key}
-              onClick={() => navigate(key)}
-              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors text-left ${
-                section === key
-                  ? 'bg-[#E6F7F5] text-[#00A693]'
-                  : 'text-[#6B7280] hover:bg-[#F3F0EB] hover:text-[#1A1A1A]'
-              }`}
-            >
-              <Icon size={15} />
-              {label}
-              {key === 'projects' && stats?.pending > 0 && (
-                <span className="ml-auto bg-yellow-500 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full leading-none shrink-0">
-                  {stats.pending}
-                </span>
-              )}
-              {key === 'messages' && unreadMessages > 0 && (
-                <span className="ml-auto bg-accent text-white text-xs w-5 h-5 flex items-center justify-center rounded-full leading-none shrink-0">
-                  {unreadMessages > 9 ? '9+' : unreadMessages}
-                </span>
-              )}
-            </button>
-          ))}
+          {NAV.map(({ key, label, icon: Icon, group }, i) => {
+            const isFirstInGroup = group && !NAV[i - 1]?.group;
+            return (
+              <div key={key}>
+                {isFirstInGroup && (
+                  <p className="px-3 pt-3 pb-1.5 text-[10px] font-bold text-[#9CA3AF] uppercase tracking-widest">
+                    {group}
+                  </p>
+                )}
+                <button
+                  onClick={() => navigate(key)}
+                  className={`w-full flex items-center gap-2.5 rounded-xl text-sm font-medium transition-colors text-left ${
+                    group ? 'px-3 py-2' : 'px-3 py-2.5'
+                  } ${
+                    section === key
+                      ? 'bg-[#E6F7F5] text-[#00A693]'
+                      : 'text-[#6B7280] hover:bg-[#F3F0EB] hover:text-[#1A1A1A]'
+                  }`}
+                >
+                  {group && <span className="w-1 shrink-0" />}
+                  <Icon size={group ? 13 : 15} />
+                  {label}
+                  {key === 'projects' && stats?.pending > 0 && (
+                    <span className="ml-auto bg-yellow-500 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full leading-none shrink-0">
+                      {stats.pending}
+                    </span>
+                  )}
+                  {key === 'messages' && unreadMessages > 0 && (
+                    <span className="ml-auto bg-accent text-white text-xs w-5 h-5 flex items-center justify-center rounded-full leading-none shrink-0">
+                      {unreadMessages > 9 ? '9+' : unreadMessages}
+                    </span>
+                  )}
+                </button>
+              </div>
+            );
+          })}
         </nav>
 
         {/* Logout */}
@@ -2406,18 +2629,23 @@ export default function AdminPanel() {
           >
             <Menu size={18} />
           </button>
-          <span className="text-sm font-semibold text-[#1A1A1A] capitalize">{section}</span>
+          <span className="text-sm font-semibold text-[#1A1A1A]">
+            {NAV.find(n => n.key === section)?.label || section}
+          </span>
         </div>
 
         {/* Scrollable content */}
         <div className="flex-1 overflow-y-auto px-6 py-8">
-          {section === 'overview'      && <Overview stats={stats} onNavigate={navigate} />}
-          {section === 'projects'      && <ProjectsSection stats={stats} />}
-          {section === 'users'         && <UsersSection />}
-          {section === 'vacancies'     && <VacanciesSection />}
-          {section === 'resumes'       && <ResumesSection />}
-          {section === 'announcements' && <AnnouncementsSection />}
-          {section === 'messages'      && <MessagesSection onUnreadChange={setUnreadMessages} />}
+          {section === 'overview'           && <Overview stats={stats} onNavigate={navigate} />}
+          {section === 'projects'           && <ProjectsSection stats={stats} />}
+          {section === 'users_developers'   && <UsersSection initialTab="developers" />}
+          {section === 'users_recruiters'   && <UsersSection initialTab="recruiters" />}
+          {section === 'users_clients'      && <UsersSection initialTab="clients" />}
+          {section === 'users_mentees'      && <UsersSection initialTab="mentees" />}
+          {section === 'vacancies'          && <VacanciesSection />}
+          {section === 'resumes'            && <ResumesSection />}
+          {section === 'announcements'      && <AnnouncementsSection />}
+          {section === 'messages'           && <MessagesSection onUnreadChange={setUnreadMessages} />}
         </div>
       </div>
     </div>
