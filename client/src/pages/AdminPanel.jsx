@@ -7,7 +7,7 @@ import {
   CheckCircle, AlertCircle, ChevronRight, Menu,
   Mail, Phone, Tag, Link as LinkIcon, LogOut,
   ArrowLeft, Plus, Save, Megaphone, Trash2, ToggleLeft, ToggleRight, Pencil,
-  MessageSquare, Send, CornerDownRight, UserCircle2, Zap, Award, Trophy, ChevronDown as ChevronDownIcon, Heart, Star, FolderOpen as FolderOpenIcon, Sparkles, Eye, EyeOff, Search,
+  MessageSquare, Send, CornerDownRight, UserCircle2, Zap, Award, Trophy, Heart, Star, FolderOpen as FolderOpenIcon, Sparkles, Eye, EyeOff, Search,
   Briefcase, MapPin, ChevronDown, Users as UsersIcon, FileText,
 } from 'lucide-react';
 import api from '../api/axios';
@@ -681,15 +681,7 @@ const BADGES = [
   { value: 'champion',   label: 'Community Champion', icon: Trophy,      cls: 'bg-purple-50 text-purple-600 border-purple-200' },
 ];
 
-function BadgeChip({ badge }) {
-  const cfg = BADGES.find(b => b.value === badge) || BADGES[0];
-  const Icon = cfg.icon;
-  return (
-    <span className={`inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full font-medium border ${cfg.cls}`}>
-      {Icon && <Icon size={11} />} {cfg.label}
-    </span>
-  );
-}
+
 
 // ─── User Edit Page ───────────────────────────────────────────────────────────
 function UserEditPage({ user: initial, onBack, onSaved, allDesignations = [] }) {
