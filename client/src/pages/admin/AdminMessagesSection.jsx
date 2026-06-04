@@ -19,7 +19,18 @@ export default function AdminMessagesSection({ onUnreadChange }) {
     finally { setLoading(false); }
   };
 
-  useEffect(() => { load(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    api.get('/messages')
+      .then(res => {
+        setMessages(res.data.messages);
+        if (onUnreadChange) onUnreadChange(res.data.unreadCount);
+        setLoading(false);
+      })
+      .catch(() => {
+        toast.error('Failed to load messages');
+        setLoading(false);
+      });
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const markRead = async (id) => {
     try {
