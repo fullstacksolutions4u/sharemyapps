@@ -216,7 +216,7 @@ export default function PublicPortfolio() {
             <div className="relative z-10 flex flex-col sm:flex-row sm:items-end gap-4 -mt-10 mb-5">
               <div className="shrink-0 relative group/avatar">
                 {user.avatar ? (
-                  <img src={user.avatar} alt={user.name}
+                  <img src={user.avatar} alt={user.name} loading="lazy"
                     className="w-20 h-20 rounded-2xl object-cover border-4 border-white shadow-md" />
                 ) : (
                   <div className="w-20 h-20 rounded-2xl bg-linear-to-br from-accent/30 to-teal-200 flex items-center justify-center border-4 border-white shadow-md">

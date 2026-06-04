@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect } from 'react';
+import { lazy, Suspense, useEffect, Component } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider, useAuth } from './context/AuthContext';
@@ -28,6 +28,27 @@ const FindDevelopers     = lazy(() => import('./pages/FindDevelopers'));
 const FindDevelopersHistory = lazy(() => import('./pages/FindDevelopersHistory'));
 const Mentors            = lazy(() => import('./pages/Mentors'));
 const FreelanceDevelopers = lazy(() => import('./pages/FreelanceDevelopers'));
+
+class ErrorBoundary extends Component {
+  state = { error: null };
+  static getDerivedStateFromError(error) { return { error }; }
+  render() {
+    if (this.state.error) {
+      return (
+        <div className="min-h-[60vh] flex flex-col items-center justify-center gap-3">
+          <p className="text-muted text-sm">Something went wrong.</p>
+          <button
+            onClick={() => this.setState({ error: null })}
+            className="text-sm text-accent hover:underline"
+          >
+            Try again
+          </button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
 
 function PageLoader() {
   return (
@@ -69,6 +90,7 @@ function AppRoutes() {
       {!isAdmin && <Navbar />}
       <main className="flex-1">
         <Suspense fallback={<PageLoader />}>
+          <ErrorBoundary>
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/explore" element={<Explore />} />
@@ -94,6 +116,7 @@ function AppRoutes() {
             <Route path="/admin" element={<AdminRoute><AdminPanel /></AdminRoute>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
+          </ErrorBoundary>
         </Suspense>
       </main>
       <Toaster
