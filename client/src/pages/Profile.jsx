@@ -377,7 +377,7 @@ export default function Profile() {
                   {form.freelanceAvailable && (
                     <div>
                       <label className="block text-sm font-medium text-text mb-2">
-                        Rate / hour <span className="text-xs text-muted font-normal">(in ₹)</span>
+                        Rate / hour <span className="text-xs text-muted font-normal">(approximate, in ₹)</span>
                       </label>
                       <div className="relative">
                         <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted"><IndianRupee size={14} /></span>

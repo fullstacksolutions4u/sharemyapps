@@ -18,6 +18,8 @@ const messageRoutes = require('./routes/messages');
 const userRoutes = require('./routes/users');
 const announcementRoutes = require('./routes/announcements');
 const vacancyRoutes = require('./routes/vacancies');
+const freelanceRoutes = require('./routes/freelance');
+const mentorshipRoutes = require('./routes/mentorship');
 const jdAnalysisRoutes = require('./routes/jdAnalysis');
 
 const app = express();
@@ -53,6 +55,8 @@ app.use('/api/messages', generalLimiter, messageRoutes);
 app.use('/api/users', generalLimiter, userRoutes);
 app.use('/api/announcements', generalLimiter, announcementRoutes);
 app.use('/api/vacancies', generalLimiter, vacancyRoutes);
+app.use('/api/freelance', generalLimiter, freelanceRoutes);
+app.use('/api/mentorship', generalLimiter, mentorshipRoutes);
 
 app.get('/api/health', (_req, res) => res.json({ status: 'ok' }));
 

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { MapPin, Briefcase, CreditCard, Users, CheckCircle, ArrowRight, Laptop, GraduationCap } from 'lucide-react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import api from '../api/axios';
@@ -65,6 +65,7 @@ function SkeletonCard() {
 export default function Vacancies() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const [busy, setBusy] = useState(null);
   const [expanded, setExpanded] = useState({});
   const [activeTab, setActiveTab] = useState('vacancies');
@@ -75,28 +76,73 @@ export default function Vacancies() {
     { key: 'mentorship', label: 'Mentorship',          icon: GraduationCap },
   ];
 
-  const { data: vacancies = [], isLoading: loading, isError } = useQuery({
-    queryKey: ['vacancies'],
-    queryFn: () => api.get('/vacancies').then(r => r.data),
-    staleTime: 60 * 1000,
+  const { data: vacancies = [], isLoading: loadingV, isError: errV } = useQuery({
+    queryKey: ['vacancies'], queryFn: () => api.get('/vacancies').then(r => r.data), staleTime: 60000,
+  });
+  const { data: freelanceItems = [], isLoading: loadingF, isError: errF } = useQuery({
+    queryKey: ['freelance'], queryFn: () => api.get('/freelance').then(r => r.data), staleTime: 60000,
+  });
+  const { data: mentorshipItems = [], isLoading: loadingM, isError: errM } = useQuery({
+    queryKey: ['mentorship'], queryFn: () => api.get('/mentorship').then(r => r.data), staleTime: 60000,
   });
 
-  useEffect(() => {
-    if (isError) toast.error('Failed to load vacancies');
-  }, [isError]);
+  useEffect(() => { if (errV) toast.error('Failed to load vacancies'); }, [errV]);
+  useEffect(() => { if (errF) toast.error('Failed to load freelance projects'); }, [errF]);
+  useEffect(() => { if (errM) toast.error('Failed to load mentorship opportunities'); }, [errM]);
 
+  const TAB_CONFIG = {
+    vacancies:  { data: vacancies,       loading: loadingV, queryKey: 'vacancies',  route: '/vacancies'  },
+    freelance:  { data: freelanceItems,  loading: loadingF, queryKey: 'freelance',  route: '/freelance'  },
+    mentorship: { data: mentorshipItems, loading: loadingM, queryKey: 'mentorship', route: '/mentorship' },
+  };
 
-  const handleInterest = async (vacancy) => {
-    if (!user) {
-      toast.error('Please sign in to show interest');
-      return;
+  const handleInterest = async (item) => {
+    if (!user) { toast.error('Please sign in to show interest'); return; }
+
+    if (activeTab === 'freelance') {
+      const isProfileComplete = user.freelanceAvailable && user.freelanceRate;
+      if (!isProfileComplete) {
+        toast((t) => (
+          <span className="flex flex-col gap-1 text-sm">
+            <span className="font-semibold">Complete your freelance profile first</span>
+            <span className="text-xs text-gray-500">Enable freelance availability and set your rate in your profile to apply.</span>
+            <button
+              onClick={() => { toast.dismiss(t.id); navigate('/profile'); }}
+              className="mt-1 self-start text-xs font-medium text-accent hover:underline"
+            >
+              Go to Profile →
+            </button>
+          </span>
+        ), { duration: 6000, icon: '⚠️' });
+        return;
+      }
     }
-    setBusy(vacancy._id);
+
+    if (activeTab === 'mentorship') {
+      const isProfileComplete = user.mentorshipAvailable && user.mentorshipRate;
+      if (!isProfileComplete) {
+        toast((t) => (
+          <span className="flex flex-col gap-1 text-sm">
+            <span className="font-semibold">Complete your mentorship profile first</span>
+            <span className="text-xs text-gray-500">Enable mentorship availability and set your rate in your profile to apply.</span>
+            <button
+              onClick={() => { toast.dismiss(t.id); navigate('/profile'); }}
+              className="mt-1 self-start text-xs font-medium text-accent hover:underline"
+            >
+              Go to Profile →
+            </button>
+          </span>
+        ), { duration: 6000, icon: '⚠️' });
+        return;
+      }
+    }
+
+    const { queryKey, route } = TAB_CONFIG[activeTab];
+    setBusy(item._id);
     try {
-      const method = vacancy.interested ? 'delete' : 'post';
-      const res = await api[method](`/vacancies/${vacancy._id}/interest`);
-      queryClient.setQueryData(['vacancies'], prev =>
-        prev.map(v => v._id === vacancy._id
+      const res = await api.post(`${route}/${item._id}/interest`);
+      queryClient.setQueryData([queryKey], prev =>
+        prev.map(v => v._id === item._id
           ? { ...v, interested: res.data.interested, interestCount: res.data.interestCount }
           : v
         )
@@ -136,28 +182,21 @@ export default function Vacancies() {
       </div>
 
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8">
-      {activeTab !== 'vacancies' ? (
-        <div className="bg-white border border-border rounded-2xl shadow-sm p-16 text-center">
-          {activeTab === 'freelance' ? <Laptop size={32} className="text-[#D1D5DB] mx-auto mb-3" /> : <GraduationCap size={32} className="text-[#D1D5DB] mx-auto mb-3" />}
-          <p className="text-sm font-medium text-muted">
-            {activeTab === 'freelance' ? 'Freelance Projects' : 'Mentorship'} coming soon
-          </p>
-          <p className="text-xs text-[#9CA3AF] mt-1">We're working on it — check back soon.</p>
-        </div>
-      ) : loading ? (
+      {TAB_CONFIG[activeTab].loading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           {Array.from({ length: 4 }).map((_, i) => <SkeletonCard key={i} />)}
         </div>
-      ) : vacancies.length === 0 ? (
+      ) : TAB_CONFIG[activeTab].data.length === 0 ? (
         <div className="bg-white border border-border rounded-2xl shadow-sm p-16 text-center">
-          <Briefcase size={32} className="text-[#D1D5DB] mx-auto mb-3" />
-          <p className="text-sm font-medium text-muted">No vacancies available right now</p>
-          <p className="text-xs text-[#9CA3AF] mt-1">Check back soon — new positions are posted regularly.</p>
+          {activeTab === 'freelance' ? <Laptop size={32} className="text-[#D1D5DB] mx-auto mb-3" /> : activeTab === 'mentorship' ? <GraduationCap size={32} className="text-[#D1D5DB] mx-auto mb-3" /> : <Briefcase size={32} className="text-[#D1D5DB] mx-auto mb-3" />}
+          <p className="text-sm font-medium text-muted">No {activeTab === 'freelance' ? 'freelance projects' : activeTab === 'mentorship' ? 'mentorship opportunities' : 'vacancies'} available right now</p>
+          <p className="text-xs text-[#9CA3AF] mt-1">Check back soon — new listings are posted regularly.</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-          {vacancies.map(v => {
+          {TAB_CONFIG[activeTab].data.map(v => {
             const initial = (v.company || v.title || '?')[0].toUpperCase();
+            const subLabel = activeTab === 'freelance' ? (v.budget || v.duration) : activeTab === 'mentorship' ? (v.type === 'paid' ? 'Paid' : 'Free') : (v.industry || v.company);
             return (
               <div key={v._id} className={`bg-white rounded-2xl shadow-[0_2px_16px_rgba(0,0,0,0.08)] hover:shadow-[0_4px_24px_rgba(0,0,0,0.13)] border border-border/60 p-5 flex flex-col gap-4 transition-shadow ${v.status === 'closed' ? 'opacity-70' : ''}`}>
 
@@ -173,8 +212,8 @@ export default function Vacancies() {
                         <span className="text-xs px-2 py-0.5 rounded-full bg-gray-100 text-gray-500 border border-gray-200 font-medium">Closed</span>
                       )}
                     </div>
-                    {v.industry && (
-                      <p className="text-sm text-muted mt-0.5">{v.industry}</p>
+                    {subLabel && (
+                      <p className="text-sm text-muted mt-0.5">{subLabel}</p>
                     )}
                   </div>
                   <span className={`shrink-0 flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full border font-medium ${TYPE_STYLE[v.type]}`}>
@@ -183,8 +222,8 @@ export default function Vacancies() {
                   </span>
                 </div>
 
-                {/* Pills: location, job type, salary */}
-                {(v.location || v.jobType || v.salaryRange) && (
+                {/* Pills: metadata */}
+                {(v.location || v.jobType || v.salaryRange || v.budget || v.duration || v.availability) && (
                   <div className="flex items-center gap-2 flex-wrap">
                     {v.location && (
                       <span className="flex items-center gap-1.5 text-sm text-muted bg-[#F3F0EB] border border-border px-3 py-1.5 rounded-full">
@@ -199,6 +238,21 @@ export default function Vacancies() {
                     {v.salaryRange && (
                       <span className="flex items-center gap-1.5 text-sm font-semibold text-accent bg-accent-light border border-accent/20 px-3 py-1.5 rounded-full">
                         <CreditCard size={13} className="shrink-0" /> {v.salaryRange}
+                      </span>
+                    )}
+                    {v.budget && (
+                      <span className="flex items-center gap-1.5 text-sm font-semibold text-accent bg-accent-light border border-accent/20 px-3 py-1.5 rounded-full">
+                        <CreditCard size={13} className="shrink-0" /> {v.budget}
+                      </span>
+                    )}
+                    {v.duration && (
+                      <span className="flex items-center gap-1.5 text-sm text-muted bg-[#F3F0EB] border border-border px-3 py-1.5 rounded-full">
+                        {v.duration}
+                      </span>
+                    )}
+                    {v.availability && (
+                      <span className="flex items-center gap-1.5 text-sm text-muted bg-[#F3F0EB] border border-border px-3 py-1.5 rounded-full">
+                        {v.availability}
                       </span>
                     )}
                   </div>
@@ -219,10 +273,10 @@ export default function Vacancies() {
                   )}
                 </div>
 
-                {/* Skills */}
-                {v.skills?.length > 0 && (
+                {/* Skills / Topics */}
+                {(v.skills?.length > 0 || v.topics?.length > 0) && (
                   <div className="flex flex-wrap gap-2">
-                    {v.skills.map((s, i) => (
+                    {(v.skills || v.topics || []).map((s, i) => (
                       <span key={s} className={`text-sm font-medium px-3 py-1.5 rounded-xl border ${SKILL_COLORS[i % SKILL_COLORS.length]}`}>
                         {s}
                       </span>

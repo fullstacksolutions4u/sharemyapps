@@ -25,6 +25,8 @@ const {
   replyToInterest,
   toggleVacancyStatus,
 } = require('../controllers/vacancyController');
+const freelance = require('../controllers/freelanceOpportunityController');
+const mentorship = require('../controllers/mentorshipOpportunityController');
 
 router.use(protect, requireAdmin);
 
@@ -50,5 +52,21 @@ router.put('/vacancies/:id', updateVacancy);
 router.delete('/vacancies/:id', deleteVacancy);
 router.post('/vacancies/:id/reply', replyToInterest);
 router.patch('/vacancies/:id/toggle-status', toggleVacancyStatus);
+
+// Freelance opportunities
+router.get('/freelance', freelance.getAllAdmin);
+router.post('/freelance', freelance.create);
+router.put('/freelance/:id', freelance.update);
+router.delete('/freelance/:id', freelance.remove);
+router.patch('/freelance/:id/toggle-status', freelance.toggleStatus);
+router.post('/freelance/:id/reply', freelance.replyToInterest);
+
+// Mentorship opportunities
+router.get('/mentorship', mentorship.getAllAdmin);
+router.post('/mentorship', mentorship.create);
+router.put('/mentorship/:id', mentorship.update);
+router.delete('/mentorship/:id', mentorship.remove);
+router.patch('/mentorship/:id/toggle-status', mentorship.toggleStatus);
+router.post('/mentorship/:id/reply', mentorship.replyToInterest);
 
 module.exports = router;

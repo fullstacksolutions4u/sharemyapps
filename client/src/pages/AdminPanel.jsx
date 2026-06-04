@@ -11,14 +11,14 @@ import AdminProjectsSection from './admin/AdminProjectsSection';
 import AdminUsersSection from './admin/AdminUsersSection';
 import AdminAnnouncementsSection from './admin/AdminAnnouncementsSection';
 import AdminMessagesSection from './admin/AdminMessagesSection';
-import AdminVacanciesSection from './admin/AdminVacanciesSection';
+import AdminOpportunitiesSection from './admin/AdminOpportunitiesSection';
 import AdminResumesSection from './admin/AdminResumesSection';
 
 const NAV = [
   { key: 'overview',       label: 'Overview',      icon: LayoutDashboard },
   { key: 'projects',       label: 'Projects',       icon: FolderOpen },
   { key: 'users',          label: 'Users',          icon: Users },
-  { key: 'vacancies',      label: 'Vacancies',      icon: Briefcase },
+  { key: 'opportunities',  label: 'Opportunities',  icon: Briefcase },
   { key: 'resumes',        label: 'Resumes',        icon: FileText },
   { key: 'announcements',  label: 'Announcements',  icon: Megaphone },
   { key: 'messages',       label: 'Messages',       icon: MessageSquare },
@@ -105,7 +105,7 @@ const { logout } = useAuth();
           {section === 'overview'         && <AdminOverview stats={stats} onNavigate={navigate} />}
           {section === 'projects'         && <AdminProjectsSection stats={stats} />}
           {section === 'users'            && <AdminUsersSection initialTab="developers" />}
-          {section === 'vacancies'        && <AdminVacanciesSection />}
+          {section === 'opportunities'    && <AdminOpportunitiesSection />}
           {section === 'resumes'          && <AdminResumesSection />}
           {section === 'announcements'    && <AdminAnnouncementsSection />}
           {section === 'messages'         && <AdminMessagesSection onUnreadChange={setUnreadMessages} />}
