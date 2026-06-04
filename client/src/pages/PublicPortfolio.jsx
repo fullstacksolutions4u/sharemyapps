@@ -155,22 +155,22 @@ export default function PublicPortfolio() {
   }, [userId]);
 
   if (loading) return (
-    <div className="min-h-screen bg-[#FAF9F6]">
+    <div className="min-h-screen bg-bg">
       <div className="max-w-5xl mx-auto px-4 py-12 space-y-5">
-        <div className="h-40 bg-white border border-[#E5E1DA] rounded-3xl animate-pulse" />
+        <div className="h-40 bg-white border border-border rounded-3xl animate-pulse" />
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {[1,2,3].map(i => <div key={i} className="h-56 bg-white border border-[#E5E1DA] rounded-xl animate-pulse" />)}
+          {[1,2,3].map(i => <div key={i} className="h-56 bg-white border border-border rounded-xl animate-pulse" />)}
         </div>
       </div>
     </div>
   );
 
   if (error) return (
-    <div className="min-h-screen bg-[#FAF9F6] flex items-center justify-center">
+    <div className="min-h-screen bg-bg flex items-center justify-center">
       <div className="text-center">
         <AlertCircle size={44} className="text-[#D1CBC0] mx-auto mb-3" />
-        <p className="text-[#1A1A1A] font-semibold text-lg">{error}</p>
-        <Link to="/explore" className="text-sm text-[#00A693] hover:underline mt-2 inline-block">Browse all projects →</Link>
+        <p className="text-text font-semibold text-lg">{error}</p>
+        <Link to="/explore" className="text-sm text-accent hover:underline mt-2 inline-block">Browse all projects →</Link>
       </div>
     </div>
   );
@@ -185,7 +185,7 @@ export default function PublicPortfolio() {
   const techStack = [...new Set(projects.flatMap(p => p.techTags || []))].slice(0, 12); // hard cap at 12
 
   return (
-    <div className="min-h-screen bg-[#FAF9F6]">
+    <div className="min-h-screen bg-bg">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-10">
 
         {/* Profile Card */}
@@ -240,7 +240,7 @@ export default function PublicPortfolio() {
                 )}
               </div>
               <div className="pb-1">
-                <h1 className="text-2xl font-extrabold leading-tight bg-gradient-to-r from-slate-700 via-slate-500 to-slate-400 bg-clip-text text-transparent drop-shadow-sm tracking-tight">
+                <h1 className="text-2xl font-extrabold leading-tight bg-linear-to-r from-slate-700 via-slate-500 to-slate-400 bg-clip-text text-transparent drop-shadow-sm tracking-tight">
                   {user.name}
                 </h1>
                 <span className="inline-flex items-center gap-1 text-xs font-semibold bg-accent-light text-accent px-2.5 py-0.5 rounded-full mt-1 border border-accent/20">
@@ -311,20 +311,20 @@ export default function PublicPortfolio() {
 
         {/* Projects section */}
         <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-sm font-semibold text-[#1A1A1A]">Deployed Projects</h2>
-          <span className="text-xs text-[#6B7280]">{approvedCount} total</span>
+          <h2 className="text-sm font-semibold text-text">Deployed Projects</h2>
+          <span className="text-xs text-muted">{approvedCount} total</span>
         </div>
 
         {projects.length === 0 ? (
-          <div className="bg-white border border-[#E5E1DA] rounded-2xl p-16 text-center">
+          <div className="bg-white border border-border rounded-2xl p-16 text-center">
             <Layers size={36} className="text-[#D1CBC0] mx-auto mb-3" />
-            <p className="font-semibold text-[#1A1A1A]">No approved projects yet</p>
-            <p className="text-sm text-[#6B7280] mt-1">Check back later.</p>
+            <p className="font-semibold text-text">No approved projects yet</p>
+            <p className="text-sm text-muted mt-1">Check back later.</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {projects.map(project => (
-              <div key={project._id} className="bg-white border border-[#E5E1DA] rounded-xl overflow-hidden hover:border-[#00A693]/40 hover:shadow-md transition-all flex flex-col group">
+              <div key={project._id} className="bg-white border border-border rounded-xl overflow-hidden hover:border-accent/40 hover:shadow-md transition-all flex flex-col group">
                 {/* Banner */}
                 <div className="relative h-40 bg-[#F3F0EB] overflow-hidden">
                   <img
@@ -334,8 +334,8 @@ export default function PublicPortfolio() {
                     onError={e => { e.target.src = PLACEHOLDER; }}
                   />
                   <div className="absolute top-2 left-2">
-                    <span className="inline-flex items-center gap-1 text-[10px] font-semibold bg-white/90 backdrop-blur-sm text-[#00A693] px-2 py-0.5 rounded-full border border-[#00A693]/20">
-                      <span className="w-1.5 h-1.5 rounded-full bg-[#00A693] animate-pulse" /> Live
+                    <span className="inline-flex items-center gap-1 text-[10px] font-semibold bg-white/90 backdrop-blur-sm text-accent px-2 py-0.5 rounded-full border border-accent/20">
+                      <span className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse" /> Live
                     </span>
                   </div>
                   {(() => {
@@ -350,16 +350,16 @@ export default function PublicPortfolio() {
 
                 {/* Body */}
                 <div className="p-4 flex flex-col flex-1">
-                  <h3 className="font-semibold text-[#1A1A1A] truncate">{project.title}</h3>
-                  <p className="text-xs text-[#6B7280] mt-1 line-clamp-2 leading-relaxed">{project.description}</p>
+                  <h3 className="font-semibold text-text truncate">{project.title}</h3>
+                  <p className="text-xs text-muted mt-1 line-clamp-2 leading-relaxed">{project.description}</p>
 
                   {project.techTags?.length > 0 && (
                     <div className="flex flex-wrap gap-1 mt-2.5">
                       {project.techTags.slice(0, 4).map(t => (
-                        <span key={t} className="text-xs bg-[#F3F0EB] text-[#6B7280] px-2 py-0.5 rounded-full">{t}</span>
+                        <span key={t} className="text-xs bg-[#F3F0EB] text-muted px-2 py-0.5 rounded-full">{t}</span>
                       ))}
                       {project.techTags.length > 4 && (
-                        <span className="text-xs text-[#6B7280] px-1">+{project.techTags.length - 4}</span>
+                        <span className="text-xs text-muted px-1">+{project.techTags.length - 4}</span>
                       )}
                     </div>
                   )}
@@ -369,13 +369,13 @@ export default function PublicPortfolio() {
                       href={project.liveUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex-1 flex items-center justify-center gap-1.5 text-xs bg-[#00A693] hover:bg-[#007D6F] text-white rounded-lg px-3 py-2 font-medium transition-colors"
+                      className="flex-1 flex items-center justify-center gap-1.5 text-xs bg-accent hover:bg-accent-hover text-white rounded-lg px-3 py-2 font-medium transition-colors"
                     >
                       <ExternalLink size={12} /> Visit Live
                     </a>
                     <Link
                       to={`/project/${project._id}`}
-                      className="flex items-center justify-center gap-1.5 text-xs border border-[#E5E1DA] text-[#6B7280] hover:border-[#00A693]/40 hover:text-[#00A693] rounded-lg px-3 py-2 transition-colors"
+                      className="flex items-center justify-center gap-1.5 text-xs border border-border text-muted hover:border-accent/40 hover:text-accent rounded-lg px-3 py-2 transition-colors"
                     >
                       Details
                     </Link>
@@ -387,7 +387,7 @@ export default function PublicPortfolio() {
         )}
 
         <p className="text-center text-xs text-[#B0A99F] mt-10">
-          Powered by <a href="/" className="text-[#00A693] hover:underline font-medium">ShareMyApps</a>
+          Powered by <a href="/" className="text-accent hover:underline font-medium">ShareMyApps</a>
         </p>
       </div>
     </div>
