@@ -4,6 +4,7 @@ import {
   Search, Phone, GitBranch, Link2, Code2,
   Globe, Layers, ChevronLeft, ChevronRight, Users, Sparkles, Monitor, Smartphone,
 } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
 import api from '../api/axios';
 
 const BADGE = {
@@ -199,39 +200,29 @@ function SkeletonCard() {
 }
 
 export default function Developers() {
-  const [developers, setDevelopers] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
 
   useEffect(() => {
     const t = setTimeout(() => { setDebouncedSearch(search); setPage(1); }, 350);
     return () => clearTimeout(t);
   }, [search]);
 
-  useEffect(() => {
-    let cancelled = false;
-    const fetchDevelopers = async () => {
-      setLoading(true);
-      try {
-        const params = new URLSearchParams({ page });
-        if (debouncedSearch) params.set('search', debouncedSearch);
-        const res = await api.get(`/users/developers?${params}`);
-        if (!cancelled) {
-          setDevelopers(res.data.developers);
-          setTotalPages(res.data.totalPages);
-        }
-      } catch {
-        if (!cancelled) setDevelopers([]);
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    };
-    fetchDevelopers();
-    return () => { cancelled = true; };
-  }, [page, debouncedSearch]);
+  const { data, isFetching: loading } = useQuery({
+    queryKey: ['developers', page, debouncedSearch],
+    queryFn: async () => {
+      const params = new URLSearchParams({ page });
+      if (debouncedSearch) params.set('search', debouncedSearch);
+      const res = await api.get(`/users/developers?${params}`);
+      return res.data;
+    },
+    staleTime: 60 * 1000,
+    placeholderData: prev => prev,
+  });
+
+  const developers = data?.developers ?? [];
+  const totalPages = data?.totalPages ?? 1;
 
   const goPage = (p) => { setPage(p); window.scrollTo({ top: 0, behavior: 'smooth' }); };
 
@@ -248,7 +239,7 @@ export default function Developers() {
 
       {/* Hero banner */}
       <div className="relative border-b border-border overflow-hidden">
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 py-10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 py-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
           <div className="flex items-center gap-2.5">
             <div className="w-9 h-9 rounded-xl bg-accent flex items-center justify-center shadow-md shrink-0">
               <Users size={18} className="text-white" />

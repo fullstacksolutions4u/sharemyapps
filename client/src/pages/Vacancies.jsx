@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { MapPin, Briefcase, CreditCard, Users, CheckCircle, ArrowRight } from 'lucide-react';
+import { MapPin, Briefcase, CreditCard, Users, CheckCircle, ArrowRight, Info, Search } from 'lucide-react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
@@ -63,17 +64,31 @@ function SkeletonCard() {
 
 export default function Vacancies() {
   const { user } = useAuth();
-  const [vacancies, setVacancies] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
+  const [search, setSearch] = useState('');
   const [busy, setBusy] = useState(null);
   const [expanded, setExpanded] = useState({});
 
+  const { data: vacancies = [], isLoading: loading, isError } = useQuery({
+    queryKey: ['vacancies'],
+    queryFn: () => api.get('/vacancies').then(r => r.data),
+    staleTime: 60 * 1000,
+  });
+
   useEffect(() => {
-    api.get('/vacancies')
-      .then(res => setVacancies(res.data))
-      .catch(() => toast.error('Failed to load vacancies'))
-      .finally(() => setLoading(false));
-  }, []);
+    if (isError) toast.error('Failed to load vacancies');
+  }, [isError]);
+
+  const q = search.trim().toLowerCase();
+  const filtered = q
+    ? vacancies.filter(v =>
+        v.title?.toLowerCase().includes(q) ||
+        v.company?.toLowerCase().includes(q) ||
+        v.industry?.toLowerCase().includes(q) ||
+        v.location?.toLowerCase().includes(q) ||
+        v.skills?.some(s => s.toLowerCase().includes(q))
+      )
+    : vacancies;
 
   const handleInterest = async (vacancy) => {
     if (!user) {
@@ -84,7 +99,7 @@ export default function Vacancies() {
     try {
       const method = vacancy.interested ? 'delete' : 'post';
       const res = await api[method](`/vacancies/${vacancy._id}/interest`);
-      setVacancies(prev =>
+      queryClient.setQueryData(['vacancies'], prev =>
         prev.map(v => v._id === vacancy._id
           ? { ...v, interested: res.data.interested, interestCount: res.data.interestCount }
           : v
@@ -99,20 +114,60 @@ export default function Vacancies() {
   };
 
   return (
-    <div className="max-w-5xl mx-auto px-4 sm:px-6 py-10">
+    <div className="min-h-screen bg-linear-to-br from-accent/10 via-white to-violet-50 relative">
+      <div className="absolute inset-0 opacity-20 pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle, #00A693 1px, transparent 1px)', backgroundSize: '28px 28px' }} />
+
+      {/* Hero banner */}
+      <div className="relative border-b border-border overflow-hidden">
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 py-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
+          <div className="flex items-center gap-2.5 shrink-0">
+            <div className="w-9 h-9 rounded-xl bg-accent flex items-center justify-center shadow-md shrink-0">
+              <Briefcase size={18} className="text-white" />
+            </div>
+            <h1 className="text-3xl font-extrabold text-text tracking-tight">Vacancies</h1>
+          </div>
+
+          <p className="text-sm text-muted items-center gap-1.5 hidden sm:flex shrink-0">
+            <Info size={13} className="text-accent shrink-0" />
+            Show interest in matching roles — if shortlisted, our admin will reach out to you
+          </p>
+
+          <div className="relative w-full sm:w-72">
+            <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted" />
+            <input
+              type="text"
+              placeholder="Search by title, skill, location…"
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              className="w-full pl-10 pr-4 py-2.5 text-sm border border-border rounded-xl bg-white/80 backdrop-blur-sm focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/20 transition-all shadow-sm"
+            />
+          </div>
+        </div>
+      </div>
+
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8">
       {loading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           {Array.from({ length: 4 }).map((_, i) => <SkeletonCard key={i} />)}
         </div>
-      ) : vacancies.length === 0 ? (
+      ) : filtered.length === 0 ? (
         <div className="bg-white border border-border rounded-2xl shadow-sm p-16 text-center">
           <Briefcase size={32} className="text-[#D1D5DB] mx-auto mb-3" />
-          <p className="text-sm font-medium text-muted">No vacancies available right now</p>
-          <p className="text-xs text-[#9CA3AF] mt-1">Check back soon — new positions are posted regularly.</p>
+          {search ? (
+            <>
+              <p className="text-sm font-medium text-muted">No vacancies match "{search}"</p>
+              <button onClick={() => setSearch('')} className="text-xs text-accent hover:underline mt-2">Clear search</button>
+            </>
+          ) : (
+            <>
+              <p className="text-sm font-medium text-muted">No vacancies available right now</p>
+              <p className="text-xs text-[#9CA3AF] mt-1">Check back soon — new positions are posted regularly.</p>
+            </>
+          )}
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-          {vacancies.map(v => {
+          {filtered.map(v => {
             const initial = (v.company || v.title || '?')[0].toUpperCase();
             return (
               <div key={v._id} className={`bg-white rounded-2xl shadow-[0_2px_16px_rgba(0,0,0,0.08)] hover:shadow-[0_4px_24px_rgba(0,0,0,0.13)] border border-border/60 p-5 flex flex-col gap-4 transition-shadow ${v.status === 'closed' ? 'opacity-70' : ''}`}>
@@ -227,6 +282,7 @@ export default function Vacancies() {
           })}
         </div>
       )}
+      </div>
     </div>
   );
 }

@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { useSearchParams, useLocation } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { Search, X, Megaphone, Heart, Star, MessageCircle, Sparkles } from 'lucide-react';
@@ -64,6 +64,13 @@ export default function Explore() {
   });
 
   const announcements = feedQuery.data || [];
+  const [tickerIdx, setTickerIdx] = useState(0);
+
+  useEffect(() => {
+    if (announcements.length <= 1) return;
+    const t = setInterval(() => setTickerIdx(i => (i + 1) % announcements.length), 4000);
+    return () => clearInterval(t);
+  }, [announcements.length]);
   const projects = projectsQuery.data?.projects || [];
   const newlyAdded = projectsQuery.data?.newlyAdded || [];
   const pages = projectsQuery.data?.pages || 1;
@@ -104,7 +111,7 @@ export default function Explore() {
   const hasFilters = search || activeTag || activeCategory || activeType;
 
   return (
-    <div className="w-full px-4 sm:px-6 py-8">
+    <div className="w-full px-4 sm:px-6 pb-8">
 
       {/* ── Sticky top bar: search + announcement + category ── */}
       <div className="sticky top-16 z-20 bg-white -mx-4 sm:-mx-6 px-4 sm:px-6">
@@ -131,26 +138,26 @@ export default function Explore() {
           <div className="flex items-center gap-2 flex-4 overflow-hidden border-b border-border px-3">
             <Megaphone size={15} className="text-orange-500 shrink-0" />
             <div className="flex-1 overflow-hidden h-full flex items-center gap-1.5">
-              {announcements[0]?.kind === 'activity' && (
+              {announcements[tickerIdx]?.kind === 'activity' && (
                 <span className="animate-ticker-up flex items-center gap-1 shrink-0">
-                  {announcements[0].types?.includes('like')      && <Heart size={12} className="text-pink-500" />}
-                  {announcements[0].types?.includes('rated')     && <Star size={12} className="text-amber-400" />}
-                  {announcements[0].types?.includes('commented') && <MessageCircle size={12} className="text-blue-400" />}
+                  {announcements[tickerIdx].types?.includes('like')      && <Heart size={12} className="text-pink-500" />}
+                  {announcements[tickerIdx].types?.includes('rated')     && <Star size={12} className="text-amber-400" />}
+                  {announcements[tickerIdx].types?.includes('commented') && <MessageCircle size={12} className="text-blue-400" />}
                 </span>
               )}
-              {announcements[0]?.kind === 'new_project' && (
+              {announcements[tickerIdx]?.kind === 'new_project' && (
                 <span className="animate-ticker-up flex items-center shrink-0">
                   <Sparkles size={12} className="text-amber-400" />
                 </span>
               )}
               <span
                 className={`animate-ticker-up text-sm truncate block ${
-                  announcements[0]?.kind === 'activity'    ? 'text-violet-500' :
-                  announcements[0]?.kind === 'new_project' ? 'text-amber-500'  :
+                  announcements[tickerIdx]?.kind === 'activity'    ? 'text-violet-500' :
+                  announcements[tickerIdx]?.kind === 'new_project' ? 'text-amber-500'  :
                   'text-accent'
                 }`}
               >
-                {announcements[0]?.text}
+                {announcements[tickerIdx]?.text}
               </span>
             </div>
           </div>

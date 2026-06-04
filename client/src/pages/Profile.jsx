@@ -168,6 +168,7 @@ export default function Profile() {
 
   const handleSave = async () => {
     if (!form.name.trim()) { toast.error('Name is required'); return; }
+    if (!form.cvUrl.trim()) { toast.error('Google Drive CV link is required'); return; }
     setCompleted(prev => new Set(prev).add(activeTab));
     setSaving(true);
     try {
@@ -218,6 +219,11 @@ export default function Profile() {
                     : <Camera size={12} className="text-white" />
                   }
                 </button>
+                {!user?.avatar && (
+                  <span className="absolute -top-1 -left-1 w-6 h-6 bg-amber-400 rounded-full flex items-center justify-center border-2 border-white" title="No profile photo">
+                    <AlertTriangle size={11} className="text-white" />
+                  </span>
+                )}
                 <input ref={avatarInputRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarChange} />
               </div>
               <div>
@@ -555,7 +561,7 @@ export default function Profile() {
                 {/* CV link */}
                 <Field
                   icon={<FileText size={15} />}
-                  label={<>Google Drive CV link <span className="text-xs text-muted font-normal">(optional)</span></>}
+                  label={<>Google Drive CV link <span className="text-red-400">*</span></>}
                   name="cvUrl"
                   value={form.cvUrl}
                   onChange={handle}

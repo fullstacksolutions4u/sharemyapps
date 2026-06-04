@@ -185,7 +185,7 @@ export default function Navbar() {
     <header className="sticky top-0 z-50 bg-white border-b border-border">
       <div className="w-full pl-7.5 pr-6 h-16 flex items-center justify-between">
         {/* Logo */}
-        <Link to="/" className="flex items-center gap-2">
+        <Link to="/" className="flex items-center gap-2 ml-4">
           <img src={logo} alt="ShareMyApps" className="h-8 w-auto" />
           <div className="hidden sm:flex flex-col leading-tight">
             <span className="font-bold text-lg leading-none">
@@ -193,7 +193,7 @@ export default function Navbar() {
               <span className="text-accent">My</span>
               <span className="text-violet-600">Apps</span>
             </span>
-            <span style={{ fontFamily: "'Caveat', cursive" }} className="text-sm leading-none text-orange-500">project based hiring platform</span>
+            <span style={{ fontFamily: "'Caveat', cursive" }} className="text-sm leading-none text-orange-500">Where developers meet <span className="text-accent">opportunity</span></span>
           </div>
         </Link>
 
