@@ -196,7 +196,7 @@ export default function Vacancies() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           {TAB_CONFIG[activeTab].data.map(v => {
             const initial = (v.company || v.title || '?')[0].toUpperCase();
-            const subLabel = activeTab === 'freelance' ? (v.budget || v.duration) : activeTab === 'mentorship' ? (v.type === 'paid' ? 'Paid' : 'Free') : (v.industry || v.company);
+            const subLabel = activeTab === 'freelance' ? null : activeTab === 'mentorship' ? (v.type === 'paid' ? 'Paid' : 'Free') : (v.industry || v.company);
             return (
               <div key={v._id} className={`bg-white rounded-2xl shadow-[0_2px_16px_rgba(0,0,0,0.08)] hover:shadow-[0_4px_24px_rgba(0,0,0,0.13)] border border-border/60 p-5 flex flex-col gap-4 transition-shadow ${v.status === 'closed' ? 'opacity-70' : ''}`}>
 
@@ -242,7 +242,7 @@ export default function Vacancies() {
                     )}
                     {v.budget && (
                       <span className="flex items-center gap-1.5 text-sm font-semibold text-accent bg-accent-light border border-accent/20 px-3 py-1.5 rounded-full">
-                        <CreditCard size={13} className="shrink-0" /> {v.budget}
+                        <span className="shrink-0 font-bold">₹</span> {v.budget}
                       </span>
                     )}
                     {v.duration && (

@@ -198,7 +198,7 @@ export default function Navbar() {
         </Link>
 
         {/* Desktop Nav */}
-        <nav className="hidden md:flex items-center gap-6 mr-48">
+        <nav className="hidden md:flex items-center gap-6 mr-24">
           <Link to="/explore" className="text-base text-muted hover:text-text transition-colors">Web & Mobile Applications</Link>
           <Link to="/developers" className="text-base text-muted hover:text-text transition-colors">
             {isRecruiter ? 'Our Developers' : 'Developers'}
