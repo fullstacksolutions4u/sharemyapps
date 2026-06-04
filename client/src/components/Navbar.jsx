@@ -216,7 +216,7 @@ export default function Navbar() {
             <Link to="/mentors" className="text-base text-muted hover:text-text transition-colors">Mentors</Link>
           )}
           {!isRecruiter && !isClient && !isMentee && (
-            <Link to="/vacancies" className="text-base text-muted hover:text-text transition-colors">Vacancies</Link>
+            <Link to="/opportunities" className="text-base text-muted hover:text-text transition-colors">Opportunities</Link>
           )}
           {isDeveloper && (
             <Link to="/dashboard" className="text-base text-muted hover:text-text transition-colors">My Projects</Link>
@@ -318,7 +318,7 @@ export default function Navbar() {
             <Link to="/mentors" onClick={() => setMenuOpen(false)} className="block text-sm text-muted hover:text-text">Mentors</Link>
           )}
           {!isRecruiter && !isClient && !isMentee && (
-            <Link to="/vacancies" onClick={() => setMenuOpen(false)} className="block text-sm text-muted hover:text-text">Vacancies</Link>
+            <Link to="/opportunities" onClick={() => setMenuOpen(false)} className="block text-sm text-muted hover:text-text">Opportunities</Link>
           )}
           {user ? (
             <>

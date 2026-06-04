@@ -105,6 +105,7 @@ function AppRoutes() {
             <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
             <Route path="/client-profile" element={<ProtectedRoute><ClientProfile /></ProtectedRoute>} />
             <Route path="/chat-admin" element={<ProtectedRoute><ChatAdmin /></ProtectedRoute>} />
+            <Route path="/opportunities" element={<Vacancies />} />
             <Route path="/vacancies" element={<Vacancies />} />
             <Route path="/developers" element={<Developers />} />
             <Route path="/select-role" element={<SelectRole />} />

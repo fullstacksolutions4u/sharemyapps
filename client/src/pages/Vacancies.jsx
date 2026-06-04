@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { MapPin, Briefcase, CreditCard, Users, CheckCircle, ArrowRight, Info, Search } from 'lucide-react';
+import { MapPin, Briefcase, CreditCard, Users, CheckCircle, ArrowRight, Laptop, GraduationCap } from 'lucide-react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
@@ -65,9 +65,15 @@ function SkeletonCard() {
 export default function Vacancies() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
-  const [search, setSearch] = useState('');
   const [busy, setBusy] = useState(null);
   const [expanded, setExpanded] = useState({});
+  const [activeTab, setActiveTab] = useState('vacancies');
+
+  const TABS = [
+    { key: 'vacancies',  label: 'Vacancies',          icon: Briefcase },
+    { key: 'freelance',  label: 'Freelance Projects',  icon: Laptop },
+    { key: 'mentorship', label: 'Mentorship',          icon: GraduationCap },
+  ];
 
   const { data: vacancies = [], isLoading: loading, isError } = useQuery({
     queryKey: ['vacancies'],
@@ -79,16 +85,6 @@ export default function Vacancies() {
     if (isError) toast.error('Failed to load vacancies');
   }, [isError]);
 
-  const q = search.trim().toLowerCase();
-  const filtered = q
-    ? vacancies.filter(v =>
-        v.title?.toLowerCase().includes(q) ||
-        v.company?.toLowerCase().includes(q) ||
-        v.industry?.toLowerCase().includes(q) ||
-        v.location?.toLowerCase().includes(q) ||
-        v.skills?.some(s => s.toLowerCase().includes(q))
-      )
-    : vacancies;
 
   const handleInterest = async (vacancy) => {
     if (!user) {
@@ -117,57 +113,50 @@ export default function Vacancies() {
     <div className="min-h-screen bg-linear-to-br from-accent/10 via-white to-violet-50 relative">
       <div className="absolute inset-0 opacity-20 pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle, #00A693 1px, transparent 1px)', backgroundSize: '28px 28px' }} />
 
-      {/* Hero banner */}
+      {/* Tabs header */}
       <div className="relative border-b border-border overflow-hidden">
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 py-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
-          <div className="flex items-center gap-2.5 shrink-0">
-            <div className="w-9 h-9 rounded-xl bg-accent flex items-center justify-center shadow-md shrink-0">
-              <Briefcase size={18} className="text-white" />
-            </div>
-            <h1 className="text-3xl font-extrabold text-text tracking-tight">Vacancies</h1>
-          </div>
-
-          <p className="text-sm text-muted items-center gap-1.5 hidden sm:flex shrink-0">
-            <Info size={13} className="text-accent shrink-0" />
-            Show interest in matching roles — if shortlisted, our admin will reach out to you
-          </p>
-
-          <div className="relative w-full sm:w-72">
-            <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted" />
-            <input
-              type="text"
-              placeholder="Search by title, skill, location…"
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 text-sm border border-border rounded-xl bg-white/80 backdrop-blur-sm focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/20 transition-all shadow-sm"
-            />
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6">
+          <div className="flex gap-1 justify-center">
+            {TABS.map(({ key, label, icon: Icon }) => (
+              <button
+                key={key}
+                onClick={() => setActiveTab(key)}
+                className={`flex items-center gap-1.5 px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
+                  activeTab === key
+                    ? 'border-accent text-accent bg-accent/5'
+                    : 'border-transparent text-muted hover:text-text hover:bg-gray-50'
+                }`}
+              >
+                <Icon size={14} />
+                {label}
+              </button>
+            ))}
           </div>
         </div>
       </div>
 
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8">
-      {loading ? (
+      {activeTab !== 'vacancies' ? (
+        <div className="bg-white border border-border rounded-2xl shadow-sm p-16 text-center">
+          {activeTab === 'freelance' ? <Laptop size={32} className="text-[#D1D5DB] mx-auto mb-3" /> : <GraduationCap size={32} className="text-[#D1D5DB] mx-auto mb-3" />}
+          <p className="text-sm font-medium text-muted">
+            {activeTab === 'freelance' ? 'Freelance Projects' : 'Mentorship'} coming soon
+          </p>
+          <p className="text-xs text-[#9CA3AF] mt-1">We're working on it — check back soon.</p>
+        </div>
+      ) : loading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           {Array.from({ length: 4 }).map((_, i) => <SkeletonCard key={i} />)}
         </div>
-      ) : filtered.length === 0 ? (
+      ) : vacancies.length === 0 ? (
         <div className="bg-white border border-border rounded-2xl shadow-sm p-16 text-center">
           <Briefcase size={32} className="text-[#D1D5DB] mx-auto mb-3" />
-          {search ? (
-            <>
-              <p className="text-sm font-medium text-muted">No vacancies match "{search}"</p>
-              <button onClick={() => setSearch('')} className="text-xs text-accent hover:underline mt-2">Clear search</button>
-            </>
-          ) : (
-            <>
-              <p className="text-sm font-medium text-muted">No vacancies available right now</p>
-              <p className="text-xs text-[#9CA3AF] mt-1">Check back soon — new positions are posted regularly.</p>
-            </>
-          )}
+          <p className="text-sm font-medium text-muted">No vacancies available right now</p>
+          <p className="text-xs text-[#9CA3AF] mt-1">Check back soon — new positions are posted regularly.</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-          {filtered.map(v => {
+          {vacancies.map(v => {
             const initial = (v.company || v.title || '?')[0].toUpperCase();
             return (
               <div key={v._id} className={`bg-white rounded-2xl shadow-[0_2px_16px_rgba(0,0,0,0.08)] hover:shadow-[0_4px_24px_rgba(0,0,0,0.13)] border border-border/60 p-5 flex flex-col gap-4 transition-shadow ${v.status === 'closed' ? 'opacity-70' : ''}`}>
@@ -286,3 +275,4 @@ export default function Vacancies() {
     </div>
   );
 }
+

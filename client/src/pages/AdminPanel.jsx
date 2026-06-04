@@ -2,8 +2,8 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import {
-  LayoutDashboard, FolderOpen, ShieldCheck, ChevronDown, Menu, LogOut,
-  Code2, Building2, Handshake, GraduationCap, Briefcase, FileText, Megaphone, MessageSquare,
+  LayoutDashboard, FolderOpen, ShieldCheck, Menu, LogOut,
+  Users, Briefcase, FileText, Megaphone, MessageSquare,
 } from 'lucide-react';
 import api from '../api/axios';
 import AdminOverview from './admin/AdminOverview';
@@ -15,16 +15,13 @@ import AdminVacanciesSection from './admin/AdminVacanciesSection';
 import AdminResumesSection from './admin/AdminResumesSection';
 
 const NAV = [
-  { key: 'overview',         label: 'Overview',       icon: LayoutDashboard },
-  { key: 'projects',         label: 'Projects',        icon: FolderOpen },
-  { key: 'users_developers', label: 'Developers',      icon: Code2,         group: 'Users' },
-  { key: 'users_recruiters', label: 'Recruiters',      icon: Building2,     group: 'Users' },
-  { key: 'users_clients',    label: 'Clients',         icon: Handshake,     group: 'Users' },
-  { key: 'users_mentees',    label: 'Mentees',         icon: GraduationCap, group: 'Users' },
-  { key: 'vacancies',        label: 'Vacancies',       icon: Briefcase },
-  { key: 'resumes',          label: 'Resumes',         icon: FileText },
-  { key: 'announcements',    label: 'Announcements',   icon: Megaphone },
-  { key: 'messages',         label: 'Messages',        icon: MessageSquare },
+  { key: 'overview',       label: 'Overview',      icon: LayoutDashboard },
+  { key: 'projects',       label: 'Projects',       icon: FolderOpen },
+  { key: 'users',          label: 'Users',          icon: Users },
+  { key: 'vacancies',      label: 'Vacancies',      icon: Briefcase },
+  { key: 'resumes',        label: 'Resumes',        icon: FileText },
+  { key: 'announcements',  label: 'Announcements',  icon: Megaphone },
+  { key: 'messages',       label: 'Messages',       icon: MessageSquare },
 ];
 
 export default function AdminPanel() {
@@ -32,8 +29,7 @@ export default function AdminPanel() {
   const [stats, setStats] = useState(null);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [unreadMessages, setUnreadMessages] = useState(0);
-  const [usersOpen, setUsersOpen] = useState(true);
-  const { logout } = useAuth();
+const { logout } = useAuth();
   const nav = useNavigate();
 
   useEffect(() => {
@@ -66,39 +62,22 @@ export default function AdminPanel() {
         </div>
 
         <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
-          {NAV.map(({ key, label, icon: Icon, group }, i) => {
-            const isFirstInGroup = group && !NAV[i - 1]?.group;
-            if (group && !usersOpen && !isFirstInGroup) return null;
-            return (
-              <div key={key}>
-                {isFirstInGroup && (
-                  <button
-                    onClick={() => setUsersOpen(v => !v)}
-                    className="w-full flex items-center justify-between px-3 pt-3 pb-1.5 text-[10px] font-bold text-[#9CA3AF] uppercase tracking-widest hover:text-[#6B7280] transition-colors"
-                  >
-                    <span>{group}</span>
-                    <ChevronDown size={12} className={`transition-transform duration-200 ${usersOpen ? 'rotate-0' : '-rotate-90'}`} />
-                  </button>
-                )}
-                {(!group || usersOpen) && (
-                  <button
-                    onClick={() => navigate(key)}
-                    className={`w-full flex items-center gap-2.5 rounded-xl text-sm font-medium transition-colors text-left ${group ? 'px-3 py-2' : 'px-3 py-2.5'} ${section === key ? 'bg-[#E6F7F5] text-[#00A693]' : 'text-[#6B7280] hover:bg-[#F3F0EB] hover:text-[#1A1A1A]'}`}
-                  >
-                    {group && <span className="w-1 shrink-0" />}
-                    <Icon size={group ? 13 : 15} />
-                    {label}
-                    {key === 'projects' && stats?.pending > 0 && (
-                      <span className="ml-auto bg-yellow-500 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full leading-none shrink-0">{stats.pending}</span>
-                    )}
-                    {key === 'messages' && unreadMessages > 0 && (
-                      <span className="ml-auto bg-accent text-white text-xs w-5 h-5 flex items-center justify-center rounded-full leading-none shrink-0">{unreadMessages > 9 ? '9+' : unreadMessages}</span>
-                    )}
-                  </button>
-                )}
-              </div>
-            );
-          })}
+          {NAV.map(({ key, label, icon: Icon }) => (
+            <button
+              key={key}
+              onClick={() => navigate(key)}
+              className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors text-left ${section === key ? 'bg-accent-light text-accent' : 'text-muted hover:bg-[#F3F0EB] hover:text-text'}`}
+            >
+              <Icon size={15} />
+              {label}
+              {key === 'projects' && stats?.pending > 0 && (
+                <span className="ml-auto bg-yellow-500 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full leading-none shrink-0">{stats.pending}</span>
+              )}
+              {key === 'messages' && unreadMessages > 0 && (
+                <span className="ml-auto bg-accent text-white text-xs w-5 h-5 flex items-center justify-center rounded-full leading-none shrink-0">{unreadMessages > 9 ? '9+' : unreadMessages}</span>
+              )}
+            </button>
+          ))}
         </nav>
 
         <div className="px-3 py-3 border-t border-[#E5E1DA] shrink-0">
@@ -125,10 +104,7 @@ export default function AdminPanel() {
         <div className="flex-1 overflow-y-auto px-6 py-8">
           {section === 'overview'         && <AdminOverview stats={stats} onNavigate={navigate} />}
           {section === 'projects'         && <AdminProjectsSection stats={stats} />}
-          {section === 'users_developers' && <AdminUsersSection initialTab="developers" />}
-          {section === 'users_recruiters' && <AdminUsersSection initialTab="recruiters" />}
-          {section === 'users_clients'    && <AdminUsersSection initialTab="clients" />}
-          {section === 'users_mentees'    && <AdminUsersSection initialTab="mentees" />}
+          {section === 'users'            && <AdminUsersSection initialTab="developers" />}
           {section === 'vacancies'        && <AdminVacanciesSection />}
           {section === 'resumes'          && <AdminResumesSection />}
           {section === 'announcements'    && <AdminAnnouncementsSection />}

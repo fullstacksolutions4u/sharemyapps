@@ -28,8 +28,12 @@ export default function Home() {
           Turning side projects into<br />
           <span className="text-[#00A693]">opportunities and connections</span>
         </h1>
-        <p className="text-lg text-[#6B7280] max-w-2xl mx-auto leading-relaxed mb-10">
-          Build your professional presence by showcasing real projects and connecting with recruiters, potential clients, and fellow developers
+        <p className="text-lg text-[#6B7280] max-w-2xl mx-auto leading-relaxed mb-10" style={{ fontFamily: "'Caveat', cursive", fontSize: "1.35rem" }}>
+          Be active in this platform for{" "}
+          <span className="text-accent font-semibold">hiring</span>,{" "}
+          <span className="text-[#6366F1] font-semibold">freelance projects</span>{" "}
+          and{" "}
+          <span className="text-[#F59E0B] font-semibold">mentorship</span>
         </p>
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
           <Link
@@ -57,13 +61,13 @@ export default function Home() {
                 step: '01',
                 icon: LayoutGrid,
                 title: 'List your projects',
-                desc: 'Showcase your work with a live URL and tech stack.',
+                desc: 'Complete your profile & Showcase live projects.',
               },
               {
                 step: '02',
                 icon: Users,
                 title: 'Get discovered',
-                desc: 'Recruiters and clients browse projects and reach out directly.',
+                desc: 'Recruiters, clients, and mentors browse projects and reach out directly.',
               },
               {
                 step: '03',
