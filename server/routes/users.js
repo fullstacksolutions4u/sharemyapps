@@ -3,6 +3,7 @@ const User = require('../models/User');
 const Project = require('../models/Project');
 const { protect } = require('../middleware/auth');
 const { extractJDRequirements } = require('../utils/aiExtract');
+const aiLimit = require('../middleware/aiLimit');
 
 // GET /api/users/developers — sorted by community engagement (likes/ratings/comments given to others)
 router.get('/developers', async (req, res) => {
@@ -244,7 +245,7 @@ router.delete('/client-projects/:projectId', protect, async (req, res) => {
 });
 
 // POST /api/users/find-developers — AI-powered JD matching
-router.post('/find-developers', protect, async (req, res) => {
+router.post('/find-developers', protect, aiLimit, async (req, res) => {
   try {
     const { jd } = req.body;
     if (!jd?.trim() || jd.trim().length < 30) {

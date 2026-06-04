@@ -45,6 +45,8 @@ const userSchema = new mongoose.Schema({
   menteeProfile: { type: mongoose.Schema.Types.Mixed, default: null },
   clientProfile: { type: mongoose.Schema.Types.Mixed, default: null },
   clientProjects: [{ type: mongoose.Schema.Types.Mixed }],
+  aiUsageCount: { type: Number, default: 0 },
+  aiUsageDate:  { type: String, default: '' },
 }, { timestamps: true });
 
 userSchema.index({ userType: 1, hidden: 1, isDeleted: 1 });
