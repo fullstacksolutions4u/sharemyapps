@@ -44,7 +44,6 @@ export default function Explore() {
   const [search, setSearch] = useState('');
   const [activeTag, setActiveTag] = useState('');
   const [activeCategory, setActiveCategory] = useState('');
-  const [tickerIndex, setTickerIndex] = useState(0);
   const activeType = searchParams.get('type') || '';
   const [page, setPage] = useState(1);
   const debounceRef = useRef(null);
@@ -71,12 +70,6 @@ export default function Explore() {
   const total = projectsQuery.data?.total || 0;
   const loading = projectsQuery.isLoading || projectsQuery.isFetching;
 
-  // Ticker — advance index on a timer when feed loads
-  const prevFeedRef = useRef(null);
-  if (feedQuery.data && feedQuery.data !== prevFeedRef.current) {
-    prevFeedRef.current = feedQuery.data;
-    setTickerIndex(0);
-  }
 
   const goPage = useCallback((p) => {
     setPage(p);
@@ -138,27 +131,26 @@ export default function Explore() {
           <div className="flex items-center gap-2 flex-4 overflow-hidden border-b border-border px-3">
             <Megaphone size={15} className="text-orange-500 shrink-0" />
             <div className="flex-1 overflow-hidden h-full flex items-center gap-1.5">
-              {announcements[tickerIndex]?.kind === 'activity' && (
-                <span key={tickerIndex + '_icons'} className="animate-ticker-up flex items-center gap-1 shrink-0">
-                  {announcements[tickerIndex].types?.includes('like')      && <Heart size={12} className="text-pink-500" />}
-                  {announcements[tickerIndex].types?.includes('rated')     && <Star size={12} className="text-amber-400" />}
-                  {announcements[tickerIndex].types?.includes('commented') && <MessageCircle size={12} className="text-blue-400" />}
+              {announcements[0]?.kind === 'activity' && (
+                <span className="animate-ticker-up flex items-center gap-1 shrink-0">
+                  {announcements[0].types?.includes('like')      && <Heart size={12} className="text-pink-500" />}
+                  {announcements[0].types?.includes('rated')     && <Star size={12} className="text-amber-400" />}
+                  {announcements[0].types?.includes('commented') && <MessageCircle size={12} className="text-blue-400" />}
                 </span>
               )}
-              {announcements[tickerIndex]?.kind === 'new_project' && (
-                <span key={tickerIndex + '_np'} className="animate-ticker-up flex items-center shrink-0">
+              {announcements[0]?.kind === 'new_project' && (
+                <span className="animate-ticker-up flex items-center shrink-0">
                   <Sparkles size={12} className="text-amber-400" />
                 </span>
               )}
               <span
-                key={tickerIndex}
                 className={`animate-ticker-up text-sm truncate block ${
-                  announcements[tickerIndex]?.kind === 'activity'    ? 'text-violet-500' :
-                  announcements[tickerIndex]?.kind === 'new_project' ? 'text-amber-500'  :
+                  announcements[0]?.kind === 'activity'    ? 'text-violet-500' :
+                  announcements[0]?.kind === 'new_project' ? 'text-amber-500'  :
                   'text-accent'
                 }`}
               >
-                {announcements[tickerIndex]?.text}
+                {announcements[0]?.text}
               </span>
             </div>
           </div>

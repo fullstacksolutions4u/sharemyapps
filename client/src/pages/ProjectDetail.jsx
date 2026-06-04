@@ -116,24 +116,15 @@ export default function ProjectDetail() {
   const [msgText, setMsgText] = useState('');
   const [msgSending, setMsgSending] = useState(false);
 
-  const [liked, setLiked] = useState(false);
-  const [likeCount, setLikeCount] = useState(0);
   const [liking, setLiking] = useState(false);
-
-  const [userRating, setUserRating] = useState(0);
-  const [avgRating, setAvgRating] = useState(0);
-  const [ratingCount, setRatingCount] = useState(0);
   const [rating, setRating] = useState(false);
-
-  const [comments, setComments] = useState([]);
   const [commentText, setCommentText] = useState('');
   const [submitting, setSubmitting] = useState(false);
-
   const [otherProjects, setOtherProjects] = useState([]);
-  const [viewCount, setViewCount] = useState(0);
-  const [following, setFollowing] = useState(false);
-  const [followersCount, setFollowersCount] = useState(0);
   const [followLoading, setFollowLoading] = useState(false);
+  const [commentsLocal, setCommentsLocal] = useState(null);
+  const [iv, setIv] = useState({});
+  const setI = (k, v) => setIv(p => ({ ...p, [k]: v }));
 
   const { data: project, isLoading: loading } = useQuery({
     queryKey: ['project', id],
@@ -151,23 +142,19 @@ export default function ProjectDetail() {
     staleTime: 1000 * 60,
   });
 
+  const liked = iv.liked ?? (user ? project?.likes?.some(l => (l._id || l) === user._id) || false : false);
+  const likeCount = iv.likeCount ?? project?.likes?.length ?? 0;
+  const userRating = iv.userRating ?? (user ? project?.ratings?.find(r => (r.user?._id || r.user) === user._id)?.value || 0 : 0);
+  const avgRating = iv.avgRating ?? (project?.ratings?.length ? Math.round(project.ratings.reduce((s, r) => s + r.value, 0) / project.ratings.length * 10) / 10 : 0);
+  const ratingCount = iv.ratingCount ?? project?.ratings?.length ?? 0;
+  const viewCount = iv.viewCount ?? project?.viewCount ?? 0;
+  const ownerFollowers = project?.owner?.followers || [];
+  const following = iv.following ?? (user ? ownerFollowers.some(f => (f._id || f).toString() === user._id) : false);
+  const followersCount = iv.followersCount ?? ownerFollowers.length;
+  const comments = commentsLocal !== null ? commentsLocal : (commentsData ?? []);
+
   useEffect(() => {
     if (!project) return;
-    setLikeCount(project.likes?.length || 0);
-    setViewCount(project.viewCount || 0);
-    if (user) setLiked(project.likes?.some(l => (l._id || l) === user._id) || false);
-    if (project.ratings?.length) {
-      const avg = project.ratings.reduce((s, r) => s + r.value, 0) / project.ratings.length;
-      setAvgRating(Math.round(avg * 10) / 10);
-      setRatingCount(project.ratings.length);
-      if (user) {
-        const mine = project.ratings.find(r => (r.user?._id || r.user) === user._id);
-        if (mine) setUserRating(mine.value);
-      }
-    }
-    const ownerFollowers = project.owner?.followers || [];
-    setFollowersCount(ownerFollowers.length);
-    if (user) setFollowing(ownerFollowers.some(f => (f._id || f).toString() === user._id));
     if (project.owner?._id) {
       api.get(`/projects/user/${project.owner._id}`)
         .then(r => setOtherProjects((r.data.projects || []).filter(op => op._id !== id)))
@@ -177,22 +164,18 @@ export default function ProjectDetail() {
     if (!sessionStorage.getItem(key)) {
       sessionStorage.setItem(key, '1');
       api.post(`/projects/${id}/view`)
-        .then(res => setViewCount(res.data.viewCount))
+        .then(res => setI('viewCount', res.data.viewCount))
         .catch(() => {});
     }
-  }, [project, id, user]);
-
-  useEffect(() => {
-    if (commentsData) setComments(commentsData);
-  }, [commentsData]);
+  }, [project, id]);
 
   const handleLike = async () => {
     if (!user) { toast.error('Sign in to like projects'); return; }
     setLiking(true);
     try {
       const res = await api.post(`/projects/${id}/like`);
-      setLiked(res.data.liked);
-      setLikeCount(res.data.likes);
+      setI('liked', res.data.liked);
+      setI('likeCount', res.data.likes);
     } catch { toast.error('Failed to like'); }
     finally { setLiking(false); }
   };
@@ -202,8 +185,8 @@ export default function ProjectDetail() {
     setFollowLoading(true);
     try {
       const res = await api.post(`/users/${owner?._id}/follow`);
-      setFollowing(res.data.following);
-      setFollowersCount(res.data.followersCount);
+      setI('following', res.data.following);
+      setI('followersCount', res.data.followersCount);
       toast.success(res.data.following ? `Following ${owner?.name}` : 'Unfollowed');
     } catch { toast.error('Failed to follow'); }
     finally { setFollowLoading(false); }
@@ -214,9 +197,9 @@ export default function ProjectDetail() {
     setRating(true);
     try {
       const res = await api.post(`/projects/${id}/rate`, { value });
-      setUserRating(res.data.userRating);
-      setAvgRating(res.data.avg);
-      setRatingCount(res.data.count);
+      setI('userRating', res.data.userRating);
+      setI('avgRating', res.data.avg);
+      setI('ratingCount', res.data.count);
       toast.success('Rating saved!');
     } catch { toast.error('Failed to rate'); }
     finally { setRating(false); }
@@ -229,7 +212,7 @@ export default function ProjectDetail() {
     setSubmitting(true);
     try {
       const res = await api.post(`/projects/${id}/comments`, { text: commentText });
-      setComments(prev => [res.data, ...prev]);
+      setCommentsLocal([res.data, ...comments]);
       setCommentText('');
     } catch { toast.error('Failed to post comment'); }
     finally { setSubmitting(false); }
@@ -239,7 +222,7 @@ export default function ProjectDetail() {
     if (!confirm('Delete this comment?')) return;
     try {
       await api.delete(`/projects/${id}/comments/${commentId}`);
-      setComments(prev => prev.filter(c => c._id !== commentId));
+      setCommentsLocal(comments.filter(c => c._id !== commentId));
     } catch { toast.error('Failed to delete comment'); }
   };
 

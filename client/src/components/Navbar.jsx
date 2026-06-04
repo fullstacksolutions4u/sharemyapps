@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link, useNavigate } from 'react-router-dom';
 import { Menu, X, ChevronDown, LogOut, Plus, ShieldCheck, Bell, CheckCircle, XCircle, Clock, MessageSquare, UserCircle, AlertCircle, Heart, Star, MessageCircle, Headphones, Briefcase } from 'lucide-react';
@@ -60,7 +60,10 @@ function NotificationBell() {
   const unread = data?.unreadCount || 0;
 
   const handleClickOutside = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
-  if (open) document.addEventListener('mousedown', handleClickOutside, { once: true });
+  useEffect(() => {
+    if (!open) return;
+    document.addEventListener('mousedown', handleClickOutside, { once: true });
+  }, [open]);
 
   const markAllRead = async () => {
     try {
