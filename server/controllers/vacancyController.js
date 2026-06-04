@@ -13,7 +13,7 @@ exports.getVacancies = async (req, res) => {
     const vacancies = await Vacancy.find().sort({ status: 1, createdAt: -1 }).limit(200).lean(); // active first (a < c)
     const userId = req.user?._id?.toString();
     const result = vacancies.map(v => ({
-      ...v.toObject(),
+      ...v,
       interestCount: v.interests.length,
       interested: userId ? v.interests.some(id => id.toString() === userId) : false,
       interests: undefined,
