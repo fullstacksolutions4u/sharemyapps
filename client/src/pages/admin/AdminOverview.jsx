@@ -1,4 +1,4 @@
-import { FolderOpen, Clock, CheckCircle, Users, XCircle, ArrowRight, AlertCircle, TrendingUp, Briefcase } from 'lucide-react';
+import { FolderOpen, Clock, CheckCircle, XCircle, ArrowRight, AlertCircle, TrendingUp, Briefcase } from 'lucide-react';
 
 const STAT_CARDS = (stats) => [
   {
