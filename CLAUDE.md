@@ -37,10 +37,10 @@ cd client && npm run lint
 ### Stack
 - **Frontend**: React 19 + Vite (port 3000), React Router 7, Tailwind CSS 4, Axios
 - **Backend**: Express on Node.js (port 5000), MongoDB + Mongoose, Passport.js (Google OAuth), Cloudinary (image uploads)
-- **Deployment**: Vercel (client), Render (server)
+- **Deployment**: Firebase Hosting (client), Cloud Run on GCP (server)
 
 ### Client–Server Split
-In development, Vite proxies `/api/*` to `http://localhost:5000` — the client never calls the server directly by hostname. In production, `VITE_API_URL` points to the Render backend and Axios uses that as its base URL (see [client/src/api/axios.js](client/src/api/axios.js)).
+In development, Vite proxies `/api/*` to `http://localhost:5000` — the client never calls the server directly by hostname. In production, `VITE_API_URL` points to the Cloud Run backend and Axios uses that as its base URL (see [client/src/api/axios.js](client/src/api/axios.js)).
 
 ### Authentication Flow
 1. Register/login returns a JWT; stored in `localStorage` and set as an `httpOnly` cookie.
@@ -86,6 +86,6 @@ NODE_ENV=development
 
 **Client** (`client/.env.local`):
 ```
-VITE_API_URL=https://sharemyapps.onrender.com
+VITE_API_URL=https://sharemyapps-server-653466296307.us-central1.run.app
 ```
 In development, `VITE_API_URL` is not needed — the Vite proxy handles `/api` calls.

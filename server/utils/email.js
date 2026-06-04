@@ -15,7 +15,7 @@ exports.sendProjectApprovedEmail = async ({ to, name, projectTitle, projectId, a
     htmlContent: `
       <div style="font-family:Inter,Arial,sans-serif;max-width:560px;margin:0 auto;background:#fff;border-radius:12px;overflow:hidden;border:1px solid #E5E1DA;">
         <div style="background:#00A693;padding:24px 32px;text-align:center;">
-          <img src="https://sharemyapps.vercel.app/logo.png" alt="ShareMyApps" style="height:40px;object-fit:contain;" />
+          <img src="${BASE_URL}/logo.png" alt="ShareMyApps" style="height:40px;object-fit:contain;" />
         </div>
         <div style="padding:32px;">
           <h2 style="margin:0 0 8px;font-size:18px;color:#1A1A1A;">🎉 Your project is live!</h2>
@@ -52,7 +52,7 @@ exports.sendProjectRejectedEmail = async ({ to, name, projectTitle, projectId, a
     htmlContent: `
       <div style="font-family:Inter,Arial,sans-serif;max-width:560px;margin:0 auto;background:#fff;border-radius:12px;overflow:hidden;border:1px solid #E5E1DA;">
         <div style="background:#00A693;padding:24px 32px;text-align:center;">
-          <img src="https://sharemyapps.vercel.app/logo.png" alt="ShareMyApps" style="height:40px;object-fit:contain;" />
+          <img src="${BASE_URL}/logo.png" alt="ShareMyApps" style="height:40px;object-fit:contain;" />
         </div>
         <div style="padding:32px;">
           <h2 style="margin:0 0 8px;font-size:18px;color:#1A1A1A;">Your project needs some changes</h2>
