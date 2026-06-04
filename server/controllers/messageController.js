@@ -18,8 +18,7 @@ exports.replyMessage = async (req, res) => {
       project: original.project,
       text,
     });
-    await msg.populate('sender', 'name avatar');
-    await msg.populate('project', 'title');
+    await msg.populate([{ path: 'sender', select: 'name avatar' }, { path: 'project', select: 'title' }]);
     res.status(201).json(msg);
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -44,8 +43,7 @@ exports.sendMessage = async (req, res) => {
       project: project._id,
       text,
     });
-    await msg.populate('sender', 'name avatar');
-    await msg.populate('project', 'title');
+    await msg.populate([{ path: 'sender', select: 'name avatar' }, { path: 'project', select: 'title' }]);
     res.status(201).json(msg);
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -55,9 +53,9 @@ exports.sendMessage = async (req, res) => {
 exports.getInbox = async (req, res) => {
   try {
     const messages = await Message.find({ recipient: req.user._id })
-      .populate('sender', 'name avatar')
-      .populate('project', 'title liveUrl bannerImage')
-      .sort({ createdAt: -1 });
+      .populate([{ path: 'sender', select: 'name avatar' }, { path: 'project', select: 'title liveUrl bannerImage' }])
+      .sort({ createdAt: -1 })
+      .lean();
     const unreadCount = messages.filter(m => !m.read).length;
     res.json({ messages, unreadCount });
   } catch (err) {
@@ -68,9 +66,9 @@ exports.getInbox = async (req, res) => {
 exports.getSent = async (req, res) => {
   try {
     const messages = await Message.find({ sender: req.user._id })
-      .populate('recipient', 'name avatar')
-      .populate('project', 'title')
-      .sort({ createdAt: -1 });
+      .populate([{ path: 'recipient', select: 'name avatar' }, { path: 'project', select: 'title' }])
+      .sort({ createdAt: -1 })
+      .lean();
     res.json(messages);
   } catch (err) {
     res.status(500).json({ message: err.message });

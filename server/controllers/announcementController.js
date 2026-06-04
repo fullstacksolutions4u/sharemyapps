@@ -5,16 +5,18 @@ const Project = require('../models/Project');
 exports.getFeed = async (req, res) => {
   try {
     const [announcements, activity, recentProjects] = await Promise.all([
-      Announcement.find({ active: true }).sort({ createdAt: -1 }),
+      Announcement.find({ active: true }).sort({ createdAt: -1 }).lean(),
       Notification.find({ type: { $in: ['like', 'rated', 'commented'] } })
         .sort({ createdAt: -1 })
         .limit(20)
-        .populate({ path: 'project', select: 'title owner', populate: { path: 'owner', select: 'name' } }),
+        .populate({ path: 'project', select: 'title owner', populate: { path: 'owner', select: 'name' } })
+        .lean(),
       Project.find({ status: 'approved' })
         .sort({ updatedAt: -1 })
         .limit(5)
         .populate('owner', 'name')
-        .select('title owner'),
+        .select('title owner')
+        .lean(),
     ]);
 
     // Group by project, collect unique action types per project
@@ -69,14 +71,14 @@ exports.getFeed = async (req, res) => {
 
 exports.getActive = async (req, res) => {
   try {
-    const items = await Announcement.find({ active: true }).sort({ createdAt: -1 });
+    const items = await Announcement.find({ active: true }).sort({ createdAt: -1 }).lean();
     res.json(items);
   } catch (err) { res.status(500).json({ message: err.message }); }
 };
 
 exports.getAll = async (req, res) => {
   try {
-    const items = await Announcement.find().sort({ createdAt: -1 });
+    const items = await Announcement.find().sort({ createdAt: -1 }).lean();
     res.json(items);
   } catch (err) { res.status(500).json({ message: err.message }); }
 };

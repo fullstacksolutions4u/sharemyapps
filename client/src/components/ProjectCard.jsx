@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { Link } from 'react-router-dom';
 import { ExternalLink, Heart, Star, Eye, Zap, Award, Trophy, Sparkles, Sprout, Monitor, Smartphone } from 'lucide-react';
 
@@ -27,7 +28,7 @@ const APP_TYPE_CFG = {
   web:    { label: 'Web App',    Icon: Monitor,    cls: 'bg-sky-500/90 text-white' },
 };
 
-export default function ProjectCard({ project }) {
+const ProjectCard = memo(function ProjectCard({ project }) {
   const { _id, title, description, liveUrl, bannerImage, owner, likes = [], ratings = [], viewCount = 0, featured, appType, category } = project;
   const appTypeCfg = APP_TYPE_CFG[appType] || APP_TYPE_CFG.web;
   const avg = avgRating(ratings);
@@ -54,6 +55,7 @@ export default function ProjectCard({ project }) {
         <img
           src={getbanner(bannerImage, liveUrl)}
           alt={title}
+          loading="lazy"
           className="w-full h-44 object-cover group-hover:scale-[1.02] transition-transform duration-300"
           onError={e => { e.target.src = PLACEHOLDER; }}
         />
@@ -129,4 +131,6 @@ export default function ProjectCard({ project }) {
       </div>
     </div>
   );
-}
+});
+
+export default ProjectCard;

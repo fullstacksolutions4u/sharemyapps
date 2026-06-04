@@ -47,6 +47,11 @@ const userSchema = new mongoose.Schema({
   clientProjects: [{ type: mongoose.Schema.Types.Mixed }],
 }, { timestamps: true });
 
+userSchema.index({ userType: 1, hidden: 1, isDeleted: 1 });
+userSchema.index({ role: 1 });
+userSchema.index({ mentorshipAvailable: 1, hidden: 1, isDeleted: 1 });
+userSchema.index({ freelanceAvailable: 1, hidden: 1, isDeleted: 1 });
+
 userSchema.pre('save', async function (next) {
   if (!this.isModified('password') || !this.password) return next();
   this.password = await bcrypt.hash(this.password, 12);

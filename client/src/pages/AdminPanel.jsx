@@ -1322,15 +1322,22 @@ function UsersSection({ initialTab = 'developers' }) {
                     }
                   </td>
                   <td className="px-4 py-3 hidden lg:table-cell">
-                    {u.cvUrl
-                      ? <a href={u.cvUrl.startsWith('http') ? u.cvUrl : `https://${u.cvUrl}`} target="_blank" rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1 text-xs text-[#00A693] hover:underline font-medium">
-                          <FileText size={11} /> View CV
-                        </a>
-                      : <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-orange-50 text-orange-500 border border-orange-200 font-medium">
-                          <AlertCircle size={10} /> Missing
+                    <div className="flex flex-col gap-1">
+                      {u.cvUrl
+                        ? <a href={u.cvUrl.startsWith('http') ? u.cvUrl : `https://${u.cvUrl}`} target="_blank" rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1 text-xs text-[#00A693] hover:underline font-medium">
+                            <FileText size={11} /> View CV
+                          </a>
+                        : <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-orange-50 text-orange-500 border border-orange-200 font-medium w-fit">
+                            <AlertCircle size={10} /> No CV link
+                          </span>
+                      }
+                      {!u.resumeData &&
+                        <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-yellow-50 text-yellow-600 border border-yellow-200 font-medium w-fit">
+                          <AlertCircle size={10} /> No summary
                         </span>
-                    }
+                      }
+                    </div>
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center justify-end gap-1.5 whitespace-nowrap">

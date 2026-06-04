@@ -29,5 +29,9 @@ const projectSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 projectSchema.index({ title: 'text', description: 'text' });
+projectSchema.index({ owner: 1, status: 1 });
+projectSchema.index({ status: 1, createdAt: -1 });
+projectSchema.index({ featured: 1, status: 1 });
+projectSchema.index({ hidden: 1, status: 1 });
 
 module.exports = mongoose.model('Project', projectSchema);

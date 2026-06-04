@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import { ExternalLink, Mail, ArrowLeft, ChevronLeft, ChevronRight, Pencil, Trash2, EyeOff, Heart, Star, Send, Trash, MessageSquare, X, Eye, UserCircle2, Zap, Award, Trophy } from 'lucide-react';
 
 const BADGE_CFG = {
@@ -109,8 +110,6 @@ export default function ProjectDetail() {
   const navigate = useNavigate();
   const { user } = useAuth();
 
-  const [project, setProject] = useState(null);
-  const [loading, setLoading] = useState(true);
   const [imgIdx, setImgIdx] = useState(0);
   const [deleting, setDeleting] = useState(false);
   const [msgOpen, setMsgOpen] = useState(false);
@@ -131,48 +130,49 @@ export default function ProjectDetail() {
   const [submitting, setSubmitting] = useState(false);
 
   const [otherProjects, setOtherProjects] = useState([]);
-
   const [viewCount, setViewCount] = useState(0);
-
   const [following, setFollowing] = useState(false);
   const [followersCount, setFollowersCount] = useState(0);
   const [followLoading, setFollowLoading] = useState(false);
 
+  const { data: project, isLoading: loading } = useQuery({
+    queryKey: ['project', id],
+    queryFn: async () => {
+      const res = await api.get(`/projects/${id}`);
+      return res.data;
+    },
+    staleTime: 1000 * 60 * 5,
+    onError: () => navigate('/explore'),
+  });
+
+  const { data: commentsData } = useQuery({
+    queryKey: ['projectComments', id],
+    queryFn: async () => { const res = await api.get(`/projects/${id}/comments`); return res.data; },
+    staleTime: 1000 * 60,
+  });
+
   useEffect(() => {
-    api.get(`/projects/${id}`)
-      .then(res => {
-        const p = res.data;
-        setProject(p);
-        setLikeCount(p.likes?.length || 0);
-        setViewCount(p.viewCount || 0);
-        if (user) setLiked(p.likes?.some(l => (l._id || l) === user._id) || false);
-        if (p.ratings?.length) {
-          const avg = p.ratings.reduce((s, r) => s + r.value, 0) / p.ratings.length;
-          setAvgRating(Math.round(avg * 10) / 10);
-          setRatingCount(p.ratings.length);
-          if (user) {
-            const mine = p.ratings.find(r => (r.user?._id || r.user) === user._id);
-            if (mine) setUserRating(mine.value);
-          }
-        }
-        // follow state
-        const ownerFollowers = p.owner?.followers || [];
-        setFollowersCount(ownerFollowers.length);
-        if (user) setFollowing(ownerFollowers.some(f => (f._id || f).toString() === user._id));
-        if (p.owner?._id) {
-          api.get(`/projects/user/${p.owner._id}`)
-            .then(r => setOtherProjects((r.data.projects || []).filter(op => op._id !== id)))
-            .catch(() => {});
-        }
-      })
-      .catch(() => navigate('/explore'))
-      .finally(() => setLoading(false));
-
-    api.get(`/projects/${id}/comments`)
-      .then(res => setComments(res.data))
-      .catch(() => {});
-
-    // record view once per session per project
+    if (!project) return;
+    setLikeCount(project.likes?.length || 0);
+    setViewCount(project.viewCount || 0);
+    if (user) setLiked(project.likes?.some(l => (l._id || l) === user._id) || false);
+    if (project.ratings?.length) {
+      const avg = project.ratings.reduce((s, r) => s + r.value, 0) / project.ratings.length;
+      setAvgRating(Math.round(avg * 10) / 10);
+      setRatingCount(project.ratings.length);
+      if (user) {
+        const mine = project.ratings.find(r => (r.user?._id || r.user) === user._id);
+        if (mine) setUserRating(mine.value);
+      }
+    }
+    const ownerFollowers = project.owner?.followers || [];
+    setFollowersCount(ownerFollowers.length);
+    if (user) setFollowing(ownerFollowers.some(f => (f._id || f).toString() === user._id));
+    if (project.owner?._id) {
+      api.get(`/projects/user/${project.owner._id}`)
+        .then(r => setOtherProjects((r.data.projects || []).filter(op => op._id !== id)))
+        .catch(() => {});
+    }
     const key = `viewed_${id}`;
     if (!sessionStorage.getItem(key)) {
       sessionStorage.setItem(key, '1');
@@ -180,7 +180,11 @@ export default function ProjectDetail() {
         .then(res => setViewCount(res.data.viewCount))
         .catch(() => {});
     }
-  }, [id, navigate, user]);
+  }, [project, id, user]);
+
+  useEffect(() => {
+    if (commentsData) setComments(commentsData);
+  }, [commentsData]);
 
   const handleLike = async () => {
     if (!user) { toast.error('Sign in to like projects'); return; }

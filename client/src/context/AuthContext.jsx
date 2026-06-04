@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import api from '../api/axios';
 
 const AuthContext = createContext(null);
@@ -38,34 +38,39 @@ export function AuthProvider({ children }) {
     return () => window.removeEventListener('storage', handleStorage);
   }, []);
 
-  const login = async (email, password) => {
+  const login = useCallback(async (email, password) => {
     const res = await api.post('/auth/login', { email, password });
     if (res.data.token) localStorage.setItem('token', res.data.token);
     setUser(res.data.user);
     return res.data.user;
-  };
+  }, []);
 
-  const register = async (name, email, password) => {
+  const register = useCallback(async (name, email, password) => {
     const res = await api.post('/auth/register', { name, email, password });
     if (res.data.token) localStorage.setItem('token', res.data.token);
     setUser(res.data.user);
     return res.data.user;
-  };
+  }, []);
 
-  const selectRole = async (userType, extraData = {}) => {
+  const selectRole = useCallback(async (userType, extraData = {}) => {
     const res = await api.post('/auth/select-role', { userType, ...extraData });
     setUser(res.data.user);
     return res.data.user;
-  };
+  }, []);
 
-  const logout = async () => {
+  const logout = useCallback(async () => {
     try { await api.get('/auth/logout'); } catch { /* ignore */ }
     localStorage.removeItem('token');
     setUser(null);
-  };
+  }, []);
+
+  const value = useMemo(
+    () => ({ user, setUser, loading, login, register, selectRole, logout }),
+    [user, loading, login, register, selectRole, logout]
+  );
 
   return (
-    <AuthContext.Provider value={{ user, setUser, loading, login, register, selectRole, logout }}>
+    <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   );

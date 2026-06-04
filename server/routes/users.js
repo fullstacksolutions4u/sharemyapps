@@ -12,8 +12,9 @@ router.get('/developers', async (req, res) => {
     const skip  = (page - 1) * LIMIT;
     const search = req.query.search?.trim();
 
+    const safeSearch = search?.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     const matchStage = { userType: 'developer', role: { $ne: 'admin' }, hidden: { $ne: true }, isDeleted: { $ne: true } };
-    if (search) matchStage.name = { $regex: search, $options: 'i' };
+    if (safeSearch) matchStage.name = { $regex: safeSearch, $options: 'i' };
     if (req.query.freelance === 'true') matchStage.freelanceAvailable = true;
 
     // Projects owned by this developer (for the card display)
@@ -144,11 +145,13 @@ router.get('/mentors', protect, async (req, res) => {
       hidden: { $ne: true },
       isDeleted: { $ne: true },
     };
-    if (search) query.name = { $regex: search, $options: 'i' };
+    const safeMentorSearch = search?.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    if (safeMentorSearch) query.name = { $regex: safeMentorSearch, $options: 'i' };
 
     const mentors = await User.find(query)
       .select('name avatar designations bio mentorshipTech mentorshipRate mentorshipSchedule languagePreference linkedinUrl githubUrl phone email createdAt')
       .sort({ createdAt: -1 })
+      .limit(100)
       .lean();
 
     const mentorIds = mentors.map(m => m._id);

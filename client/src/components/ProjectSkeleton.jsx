@@ -1,4 +1,6 @@
-export default function ProjectSkeleton() {
+import { memo } from 'react';
+
+const ProjectSkeleton = memo(function ProjectSkeleton() {
   return (
     <div className="bg-white border border-[#E5E1DA] rounded-xl overflow-hidden animate-pulse">
       <div className="h-44 bg-[#F3F0EB]" />
@@ -13,4 +15,6 @@ export default function ProjectSkeleton() {
       </div>
     </div>
   );
-}
+});
+
+export default ProjectSkeleton;

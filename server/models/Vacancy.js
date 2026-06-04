@@ -15,4 +15,7 @@ const vacancySchema = new mongoose.Schema({
   interests:   [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
 }, { timestamps: true });
 
+vacancySchema.index({ status: 1, createdAt: -1 });
+vacancySchema.index({ createdBy: 1 });
+
 module.exports = mongoose.model('Vacancy', vacancySchema);

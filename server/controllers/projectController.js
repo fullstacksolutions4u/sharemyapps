@@ -71,10 +71,11 @@ exports.getProjects = async (req, res) => {
     const category = req.query.category || '';
     const type = req.query.type || '';
 
+    const safeSearch = search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     const filter = { status: 'approved', hidden: { $ne: true } };
-    if (search) filter.$or = [
-      { title: { $regex: search, $options: 'i' } },
-      { description: { $regex: search, $options: 'i' } },
+    if (safeSearch) filter.$or = [
+      { title: { $regex: safeSearch, $options: 'i' } },
+      { description: { $regex: safeSearch, $options: 'i' } },
     ];
     if (tag) filter.techTags = { $in: [tag] };
     if (category) filter.category = category;

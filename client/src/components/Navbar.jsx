@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link, useNavigate } from 'react-router-dom';
 import { Menu, X, ChevronDown, LogOut, Plus, ShieldCheck, Bell, CheckCircle, XCircle, Clock, MessageSquare, UserCircle, AlertCircle, Heart, Star, MessageCircle, Headphones, Briefcase } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
@@ -17,19 +18,14 @@ const typeIcon = {
 };
 
 function MessagesBadge() {
-  const [unread, setUnread] = useState(0);
-
-  useEffect(() => {
-    const fetch = async () => {
-      try {
-        const res = await api.get('/messages');
-        setUnread(res.data.unreadCount);
-      } catch { /* ignore */ }
-    };
-    fetch();
-    const interval = setInterval(fetch, 30000);
-    return () => clearInterval(interval);
-  }, []);
+  const { data } = useQuery({
+    queryKey: ['messages'],
+    queryFn: async () => { const res = await api.get('/messages'); return res.data; },
+    staleTime: 1000 * 60,
+    refetchInterval: 1000 * 30,
+    refetchIntervalInBackground: false,
+  });
+  const unread = data?.unreadCount || 0;
 
   return (
     <Link to="/messages" className="relative p-1.5 text-muted hover:text-text transition-colors">
@@ -45,55 +41,53 @@ function MessagesBadge() {
 
 function NotificationBell() {
   const { user } = useAuth();
+  const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
-  const [notifications, setNotifications] = useState([]);
-  const [unread, setUnread] = useState(0);
   const ref = useRef();
 
   const devLinks = [user?.linkedinUrl, user?.githubUrl, user?.leetcodeUrl, user?.portfolioUrl];
   const showProfileWarning = user?.userType === 'developer' && devLinks.filter(Boolean).length < 2;
 
-  const fetchNotifications = async () => {
-    try {
-      const res = await api.get('/notifications');
-      setNotifications(res.data.notifications);
-      setUnread(res.data.unreadCount);
-    } catch { /* silently ignore */ }
-  };
+  const { data } = useQuery({
+    queryKey: ['notifications'],
+    queryFn: async () => { const res = await api.get('/notifications'); return res.data; },
+    staleTime: 1000 * 60,
+    refetchInterval: 1000 * 30,
+    refetchIntervalInBackground: false,
+  });
 
-  useEffect(() => {
-    const load = () => fetchNotifications();
-    load();
-    const interval = setInterval(load, 30000);
-    return () => clearInterval(interval);
-  }, []);
+  const notifications = data?.notifications || [];
+  const unread = data?.unreadCount || 0;
 
-  useEffect(() => {
-    const handler = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
-    document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
-  }, []);
+  const handleClickOutside = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
+  if (open) document.addEventListener('mousedown', handleClickOutside, { once: true });
 
   const markAllRead = async () => {
     try {
       await api.patch('/notifications/read-all');
-      setNotifications(n => n.map(x => ({ ...x, read: true })));
-      setUnread(0);
+      queryClient.setQueryData(['notifications'], prev => ({
+        ...prev,
+        notifications: prev.notifications.map(x => ({ ...x, read: true })),
+        unreadCount: 0,
+      }));
     } catch { /* silently ignore */ }
   };
 
   const markRead = async (id) => {
     try {
       await api.patch(`/notifications/${id}/read`);
-      setNotifications(n => n.map(x => x._id === id ? { ...x, read: true } : x));
-      setUnread(u => Math.max(0, u - 1));
+      queryClient.setQueryData(['notifications'], prev => ({
+        ...prev,
+        notifications: prev.notifications.map(x => x._id === id ? { ...x, read: true } : x),
+        unreadCount: Math.max(0, prev.unreadCount - 1),
+      }));
     } catch { /* silently ignore */ }
   };
 
   return (
     <div className="relative" ref={ref}>
       <button
-        onClick={() => { setOpen(v => !v); if (!open) fetchNotifications(); }}
+        onClick={() => setOpen(v => !v)}
         className="relative p-1.5 text-muted hover:text-text transition-colors"
       >
         <Bell size={18} />

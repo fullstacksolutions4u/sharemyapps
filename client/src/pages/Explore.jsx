@@ -1,5 +1,6 @@
-import { useEffect, useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { useSearchParams, useLocation } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import { Search, X, Megaphone, Heart, Star, MessageCircle, Sparkles } from 'lucide-react';
 import api from '../api/axios';
 import ProjectCard from '../components/ProjectCard';
@@ -14,6 +15,7 @@ const CATEGORIES = [
   'Communication & Chat Apps', 'Inventory Management', 'Event Management', 'Open Source Project', 'Others',
 ];
 
+const SKELETONS = Array.from({ length: 12 });
 const GROUP = 10;
 const getPageGroup = (current, total) => {
   const groupStart = Math.floor((current - 1) / GROUP) * GROUP + 1;
@@ -21,98 +23,89 @@ const getPageGroup = (current, total) => {
   return { groupStart, groupEnd, hasPrev: groupStart > 1, hasNext: groupEnd < total };
 };
 
+const fetchProjects = async ({ page, search, tag, category, type }) => {
+  const params = new URLSearchParams({ page });
+  if (search) params.set('search', search);
+  if (tag) params.set('tag', tag);
+  if (category) params.set('category', category);
+  if (type) params.set('type', type);
+  const res = await api.get(`/projects?${params}`);
+  return res.data;
+};
+
+const fetchFeed = async () => {
+  const res = await api.get('/announcements/feed');
+  return res.data;
+};
+
 export default function Explore() {
   const [searchParams, setSearchParams] = useSearchParams();
   const location = useLocation();
-  const [projects, setProjects] = useState([]);
-  const [newlyAdded, setNewlyAdded] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [activeTag, setActiveTag] = useState('');
   const [activeCategory, setActiveCategory] = useState('');
-  const [announcements, setAnnouncements] = useState([]);
   const [tickerIndex, setTickerIndex] = useState(0);
   const activeType = searchParams.get('type') || '';
   const [page, setPage] = useState(1);
-  const [pages, setPages] = useState(1);
-  const [total, setTotal] = useState(0);
-
-  const fetchProjects = useCallback(async (p = 1, s = search, t = activeTag, c = activeCategory, tp = activeType) => {
-    setLoading(true);
-    try {
-      const params = new URLSearchParams({ page: p });
-      if (s) params.set('search', s);
-      if (t) params.set('tag', t);
-      if (c) params.set('category', c);
-      if (tp) params.set('type', tp);
-      const res = await api.get(`/projects?${params}`);
-      setProjects(res.data.projects);
-      setNewlyAdded(res.data.newlyAdded || []);
-      setPages(res.data.pages);
-      setTotal(res.data.total);
-      setPage(p);
-    } catch { /* silently ignore */ }
-    finally { setLoading(false); }
-  }, [search, activeTag, activeCategory, activeType]);
-
-  useEffect(() => {
-    const reset = async () => {
-      const type = searchParams.get('type') || '';
-      setSearch('');
-      setActiveTag('');
-      setActiveCategory('');
-      await fetchProjects(1, '', '', '', type);
-    };
-    reset();
-  }, [location.key]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  useEffect(() => {
-    const load = () => api.get('/announcements/feed')
-      .then(res => { setAnnouncements(res.data); setTickerIndex(0); })
-      .catch(() => {});
-    load();
-    const interval = setInterval(load, 60000);
-    return () => clearInterval(interval);
-  }, []);
-
-  useEffect(() => {
-    if (announcements.length === 0) return;
-    const len = announcements.length;
-    const timer = setInterval(() => {
-      setTickerIndex(i => (i + 1) % len);
-    }, 6000);
-    return () => clearInterval(timer);
-  }, [announcements]);
-
   const debounceRef = useRef(null);
 
-  const handleSearch = (e) => { e.preventDefault(); fetchProjects(1, search, activeTag, activeCategory); };
+  const projectsQuery = useQuery({
+    queryKey: ['projects', page, search, activeTag, activeCategory, activeType, location.key],
+    queryFn: () => fetchProjects({ page, search, tag: activeTag, category: activeCategory, type: activeType }),
+    keepPreviousData: true,
+    staleTime: 1000 * 60,
+  });
+
+  const feedQuery = useQuery({
+    queryKey: ['feed'],
+    queryFn: fetchFeed,
+    staleTime: 1000 * 60,
+    refetchInterval: 1000 * 60,
+    refetchIntervalInBackground: false,
+  });
+
+  const announcements = feedQuery.data || [];
+  const projects = projectsQuery.data?.projects || [];
+  const newlyAdded = projectsQuery.data?.newlyAdded || [];
+  const pages = projectsQuery.data?.pages || 1;
+  const total = projectsQuery.data?.total || 0;
+  const loading = projectsQuery.isLoading || projectsQuery.isFetching;
+
+  // Ticker — advance index on a timer when feed loads
+  const prevFeedRef = useRef(null);
+  if (feedQuery.data && feedQuery.data !== prevFeedRef.current) {
+    prevFeedRef.current = feedQuery.data;
+    setTickerIndex(0);
+  }
+
+  const goPage = useCallback((p) => {
+    setPage(p);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
+
+  const handleSearch = (e) => { e.preventDefault(); goPage(1); };
 
   const handleSearchInput = (e) => {
     const val = e.target.value;
     setSearch(val);
     clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => {
-      fetchProjects(1, val, activeTag, activeCategory);
-    }, 350);
+    debounceRef.current = setTimeout(() => { setPage(1); }, 350);
   };
 
   const handleTag = (tag) => {
-    const next = activeTag === tag ? '' : tag;
-    setActiveTag(next);
-    fetchProjects(1, search, next, activeCategory);
+    setActiveTag(prev => prev === tag ? '' : tag);
+    setPage(1);
   };
 
   const handleCategory = (cat) => {
-    const next = activeCategory === cat ? '' : cat;
-    setActiveCategory(next);
-    fetchProjects(1, search, activeTag, next);
+    setActiveCategory(prev => (prev === cat ? '' : cat));
+    setPage(1);
   };
 
   const clearAll = () => {
     setSearch(''); setActiveTag(''); setActiveCategory('');
     setSearchParams({});
-    fetchProjects(1, '', '', '', '');
+    setPage(1);
   };
 
   const hasFilters = search || activeTag || activeCategory || activeType;
@@ -134,7 +127,7 @@ export default function Explore() {
             className="w-full pl-6 pr-8 py-3 bg-transparent border-0 border-b border-border text-sm text-text placeholder-muted focus:outline-none focus:border-text transition"
           />
           {search && (
-            <button type="button" onClick={() => { setSearch(''); fetchProjects(1, '', activeTag, activeCategory); }} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted hover:text-text">
+            <button type="button" onClick={() => { setSearch(''); setPage(1); }} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted hover:text-text">
               <X size={14} />
             </button>
           )}
@@ -211,7 +204,7 @@ export default function Explore() {
           {search && (
             <span className="inline-flex items-center gap-1.5 text-xs bg-[#F3F0EB] text-muted px-3 py-1 rounded-full font-medium">
               "{search}"
-              <button onClick={() => { setSearch(''); fetchProjects(1, '', activeTag, activeCategory); }}><X size={11} /></button>
+              <button onClick={() => { setSearch(''); setPage(1); }}><X size={11} /></button>
             </span>
           )}
           <span className="text-xs text-[#9CA3AF]">{total} result{total !== 1 ? 's' : ''}</span>
@@ -221,7 +214,7 @@ export default function Explore() {
       {/* Grid */}
       {loading ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-          {Array.from({ length: 12 }).map((_, i) => <ProjectSkeleton key={i} />)}
+          {SKELETONS.map((_, i) => <ProjectSkeleton key={i} />)}
         </div>
       ) : projects.length === 0 && newlyAdded.length === 0 ? (
         <div className="text-center py-20">
@@ -230,12 +223,10 @@ export default function Explore() {
         </div>
       ) : (
         <>
-          {/* Score-sorted rows */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {projects.map(p => <ProjectCard key={p._id} project={p} />)}
           </div>
 
-          {/* Newly added row — page 1 only */}
           {newlyAdded.length > 0 && (
             <div className="mt-6">
               <div className="flex items-center gap-3 mb-3">
@@ -255,19 +246,19 @@ export default function Explore() {
         const { groupStart, groupEnd, hasPrev, hasNext } = getPageGroup(page, pages);
         return (
           <div className="w-3/4 mx-auto flex items-center justify-center gap-1 mt-12 flex-wrap">
-            <button onClick={() => fetchProjects(page - 1)} disabled={page === 1}
+            <button onClick={() => goPage(page - 1)} disabled={page === 1}
               className="px-3 h-9 text-sm border border-border rounded-lg text-muted hover:border-accent hover:text-accent disabled:opacity-40 disabled:cursor-not-allowed transition">
               ‹
             </button>
             {hasPrev && (
-              <button onClick={() => fetchProjects(groupStart - GROUP)}
+              <button onClick={() => goPage(groupStart - GROUP)}
                 className="px-2.5 h-9 text-sm border border-border rounded-lg text-muted hover:border-accent hover:text-accent transition"
                 title={`Pages ${groupStart - GROUP}–${groupStart - 1}`}>
                 «
               </button>
             )}
             {Array.from({ length: groupEnd - groupStart + 1 }, (_, i) => groupStart + i).map(p => (
-              <button key={p} onClick={() => fetchProjects(p)}
+              <button key={p} onClick={() => goPage(p)}
                 className={`w-9 h-9 text-sm rounded-lg border transition ${
                   p === page
                     ? 'bg-accent text-white border-accent font-medium'
@@ -277,13 +268,13 @@ export default function Explore() {
               </button>
             ))}
             {hasNext && (
-              <button onClick={() => fetchProjects(groupEnd + 1)}
+              <button onClick={() => goPage(groupEnd + 1)}
                 className="px-2.5 h-9 text-sm border border-border rounded-lg text-muted hover:border-accent hover:text-accent transition"
                 title={`Pages ${groupEnd + 1}–${Math.min(groupEnd + GROUP, pages)}`}>
                 »
               </button>
             )}
-            <button onClick={() => fetchProjects(page + 1)} disabled={page === pages}
+            <button onClick={() => goPage(page + 1)} disabled={page === pages}
               className="px-3 h-9 text-sm border border-border rounded-lg text-muted hover:border-accent hover:text-accent disabled:opacity-40 disabled:cursor-not-allowed transition">
               ›
             </button>

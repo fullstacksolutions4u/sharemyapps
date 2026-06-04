@@ -17,80 +17,39 @@ exports.getPendingProjects = async (req, res) => {
 exports.getAllProjects = async (req, res) => {
   try {
     const { status, page = 1, limit = 12, search = '' } = req.query;
-    const filter = status ? { status } : {};
-    if (search.trim()) {
-      filter.$or = [
-        { title: { $regex: search.trim(), $options: 'i' } },
-        { description: { $regex: search.trim(), $options: 'i' } },
-      ];
-    }
     const p = Math.max(1, parseInt(page));
     const l = parseInt(limit);
-    const total = await Project.countDocuments(filter);
+    const safeSearch = search.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
-    let projects;
-    if (search.trim()) {
-      // When searching, also match by owner name/email via aggregation
-      projects = await Project.aggregate([
-        {
-          $lookup: {
-            from: 'users',
-            localField: 'owner',
-            foreignField: '_id',
-            as: 'owner',
-            pipeline: [{ $project: { name: 1, email: 1, avatar: 1 } }],
-          },
-        },
+    if (safeSearch) {
+      const searchMatch = {
+        ...(status ? { status } : {}),
+        $or: [
+          { title: { $regex: safeSearch, $options: 'i' } },
+          { description: { $regex: safeSearch, $options: 'i' } },
+          { 'owner.name': { $regex: safeSearch, $options: 'i' } },
+          { 'owner.email': { $regex: safeSearch, $options: 'i' } },
+        ],
+      };
+      const [result] = await Project.aggregate([
+        { $lookup: { from: 'users', localField: 'owner', foreignField: '_id', as: 'owner', pipeline: [{ $project: { name: 1, email: 1, avatar: 1 } }] } },
         { $unwind: { path: '$owner', preserveNullAndEmptyArrays: true } },
-        {
-          $match: {
-            ...(status ? { status } : {}),
-            $or: [
-              { title: { $regex: search.trim(), $options: 'i' } },
-              { description: { $regex: search.trim(), $options: 'i' } },
-              { 'owner.name': { $regex: search.trim(), $options: 'i' } },
-              { 'owner.email': { $regex: search.trim(), $options: 'i' } },
-            ],
-          },
-        },
+        { $match: searchMatch },
         { $sort: { createdAt: -1 } },
-        { $skip: (p - 1) * l },
-        { $limit: l },
+        { $facet: {
+          projects: [{ $skip: (p - 1) * l }, { $limit: l }],
+          total: [{ $count: 'n' }],
+        }},
       ]);
-      // recount with owner join for accuracy
-      const countResult = await Project.aggregate([
-        {
-          $lookup: {
-            from: 'users',
-            localField: 'owner',
-            foreignField: '_id',
-            as: 'owner',
-            pipeline: [{ $project: { name: 1, email: 1 } }],
-          },
-        },
-        { $unwind: { path: '$owner', preserveNullAndEmptyArrays: true } },
-        {
-          $match: {
-            ...(status ? { status } : {}),
-            $or: [
-              { title: { $regex: search.trim(), $options: 'i' } },
-              { description: { $regex: search.trim(), $options: 'i' } },
-              { 'owner.name': { $regex: search.trim(), $options: 'i' } },
-              { 'owner.email': { $regex: search.trim(), $options: 'i' } },
-            ],
-          },
-        },
-        { $count: 'n' },
-      ]);
-      const searchTotal = countResult[0]?.n || 0;
-      return res.json({ projects, total: searchTotal, page: p, pages: Math.ceil(searchTotal / l) || 1 });
+      const searchTotal = result?.total[0]?.n || 0;
+      return res.json({ projects: result?.projects || [], total: searchTotal, page: p, pages: Math.ceil(searchTotal / l) || 1 });
     }
 
-    projects = await Project.find(filter)
-      .populate('owner', 'name email avatar')
-      .sort({ createdAt: -1 })
-      .skip((p - 1) * l)
-      .limit(l);
+    const filter = status ? { status } : {};
+    const [total, projects] = await Promise.all([
+      Project.countDocuments(filter),
+      Project.find(filter).populate('owner', 'name email avatar').sort({ createdAt: -1 }).skip((p - 1) * l).limit(l).lean(),
+    ]);
     res.json({ projects, total, page: p, pages: Math.ceil(total / l) || 1 });
   } catch (err) {
     res.status(500).json({ message: err.message });

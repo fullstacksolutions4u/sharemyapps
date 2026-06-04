@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Plus, Pencil, Trash2, ExternalLink, Clock, CheckCircle, XCircle, AlertCircle, Share2, Copy, Check, X, Eye, EyeOff, Heart, Star, UserCircle, ChevronRight } from 'lucide-react';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
@@ -78,8 +79,7 @@ function getMissingItems(user) {
 
 export default function Dashboard() {
   const { user } = useAuth();
-  const [projects, setProjects] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
   const [showShare, setShowShare] = useState(false);
   const [bannerDismissed, setBannerDismissed] = useState(
     () => sessionStorage.getItem('profile_banner_dismissed') === '1'
@@ -92,17 +92,21 @@ export default function Dashboard() {
     setBannerDismissed(true);
   };
 
-  useEffect(() => {
-    api.get('/projects/my')
-      .then(res => setProjects(res.data))
-      .catch(() => {})
-      .finally(() => setLoading(false));
-  }, []);
+  const { data: projects = [], isLoading: loading } = useQuery({
+    queryKey: ['myProjects'],
+    queryFn: async () => {
+      const res = await api.get('/projects/my');
+      return res.data;
+    },
+    staleTime: 1000 * 60 * 2,
+  });
 
   const handleToggleHidden = async (id) => {
     try {
       const res = await api.patch(`/projects/${id}/hide`);
-      setProjects(p => p.map(x => x._id === id ? { ...x, hidden: res.data.hidden } : x));
+      queryClient.setQueryData(['myProjects'], prev =>
+        prev.map(x => x._id === id ? { ...x, hidden: res.data.hidden } : x)
+      );
       toast.success(res.data.hidden ? 'Project hidden from listing' : 'Project visible again');
     } catch {
       toast.error('Failed to update visibility');
@@ -113,7 +117,7 @@ export default function Dashboard() {
     if (!confirm(`Delete "${title}"? This cannot be undone.`)) return;
     try {
       await api.delete(`/projects/${id}`);
-      setProjects(p => p.filter(x => x._id !== id));
+      queryClient.setQueryData(['myProjects'], prev => prev.filter(x => x._id !== id));
       toast.success('Project deleted');
     } catch {
       toast.error('Failed to delete project');
@@ -203,6 +207,7 @@ export default function Dashboard() {
                 <img
                   src={getbanner(project.bannerImage, project.liveUrl)}
                   alt={project.title}
+                  loading="lazy"
                   className="w-full h-full object-cover"
                   onError={e => { e.target.src = PLACEHOLDER; }}
                 />

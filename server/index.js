@@ -4,6 +4,9 @@ const mongoose = require('mongoose');
 const cookieParser = require('cookie-parser');
 const cors = require('cors');
 const passport = require('passport');
+const compression = require('compression');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
 
 require('./middleware/passport');
 
@@ -19,6 +22,10 @@ const jdAnalysisRoutes = require('./routes/jdAnalysis');
 
 const app = express();
 
+app.use(compression());
+app.use(helmet({ contentSecurityPolicy: false }));
+app.set('json spaces', 0);
+
 const allowedOrigins = (process.env.ALLOWED_ORIGINS || process.env.CLIENT_URL || 'http://localhost:5173')
   .split(',').map(o => o.trim());
 
@@ -33,19 +40,23 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(passport.initialize());
 
-app.use('/api/auth', authRoutes);
-app.use('/api/projects', projectRoutes);
-app.use('/api/admin', adminRoutes);
-app.use('/api/notifications', notificationRoutes);
-app.use('/api/messages', messageRoutes);
-app.use('/api/users', userRoutes);
-app.use('/api/announcements', announcementRoutes);
-app.use('/api/vacancies', vacancyRoutes);
-app.use('/api/jd', jdAnalysisRoutes);
+const authLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 20, standardHeaders: true, legacyHeaders: false });
+const aiLimiter = rateLimit({ windowMs: 60 * 1000, max: 10, standardHeaders: true, legacyHeaders: false });
+const generalLimiter = rateLimit({ windowMs: 60 * 1000, max: 120, standardHeaders: true, legacyHeaders: false });
+
+app.use('/api/auth', authLimiter, authRoutes);
+app.use('/api/jd', aiLimiter, jdAnalysisRoutes);
+app.use('/api/projects', generalLimiter, projectRoutes);
+app.use('/api/admin', generalLimiter, adminRoutes);
+app.use('/api/notifications', generalLimiter, notificationRoutes);
+app.use('/api/messages', generalLimiter, messageRoutes);
+app.use('/api/users', generalLimiter, userRoutes);
+app.use('/api/announcements', generalLimiter, announcementRoutes);
+app.use('/api/vacancies', generalLimiter, vacancyRoutes);
 
 app.get('/api/health', (_req, res) => res.json({ status: 'ok' }));
 
-mongoose.connect(process.env.MONGO_URI)
+mongoose.connect(process.env.MONGO_URI, { maxPoolSize: 10 })
   .then(() => {
     console.log('MongoDB connected');
     const PORT = process.env.PORT || 5000;

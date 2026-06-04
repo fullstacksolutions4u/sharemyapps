@@ -10,7 +10,7 @@ const parseSkills = (skills) =>
 
 exports.getVacancies = async (req, res) => {
   try {
-    const vacancies = await Vacancy.find().sort({ status: 1, createdAt: -1 }); // active first (a < c)
+    const vacancies = await Vacancy.find().sort({ status: 1, createdAt: -1 }).limit(200).lean(); // active first (a < c)
     const userId = req.user?._id?.toString();
     const result = vacancies.map(v => ({
       ...v.toObject(),
