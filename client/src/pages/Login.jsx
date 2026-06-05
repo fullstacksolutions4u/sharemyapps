@@ -69,7 +69,7 @@ export default function Login() {
         </div>
 
         {/* Right: form */}
-        <div className="w-full max-w-2xl">
+        <div className="w-full max-w-3xl">
           {/* Mobile logo */}
           <div className="flex justify-center mb-4 lg:hidden">
             <Link to="/">
@@ -107,6 +107,9 @@ export default function Login() {
                     className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#9CA3AF] hover:text-muted transition-colors">
                     {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                   </button>
+                </div>
+                <div className="flex justify-end mt-1.5">
+                  <Link to="/forgot-password" className="text-xs text-accent hover:text-accent-hover font-medium">Forgot password?</Link>
                 </div>
               </div>
               <button

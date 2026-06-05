@@ -1,8 +1,10 @@
 const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
 const User = require('../models/User');
 const Project = require('../models/Project');
 const Comment = require('../models/Comment');
 const { cloudinary } = require('../middleware/upload');
+const { sendOtpEmail } = require('../utils/email');
 
 const signToken = (id) =>
   jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: '7d' });
@@ -237,6 +239,68 @@ exports.selectRole = async (req, res) => {
     res.json({ user: user.toPublicJSON() });
   } catch (err) {
     res.status(500).json({ message: err.message });
+  }
+};
+
+exports.forgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) return res.status(400).json({ message: 'Email is required' });
+    const user = await User.findOne({ email: email.toLowerCase().trim() });
+    // Always respond success to avoid user enumeration
+    if (!user || user.isDeleted) {
+      return res.json({ message: 'If that email exists, an OTP has been sent' });
+    }
+    const otp = crypto.randomInt(100000, 999999).toString();
+    user.resetOtp = otp;
+    user.resetOtpExpiry = new Date(Date.now() + 10 * 60 * 1000); // 10 min
+    await user.save();
+    await sendOtpEmail({ to: email, otp });
+    res.json({ message: 'OTP sent to your email' });
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to send OTP. Try again.' });
+  }
+};
+
+exports.verifyOtp = async (req, res) => {
+  try {
+    const { email, otp } = req.body;
+    if (!email || !otp) return res.status(400).json({ message: 'Email and OTP are required' });
+    const user = await User.findOne({ email: email.toLowerCase().trim() });
+    if (!user || !user.resetOtp || !user.resetOtpExpiry)
+      return res.status(400).json({ message: 'Invalid or expired OTP' });
+    if (user.resetOtpExpiry < new Date())
+      return res.status(400).json({ message: 'OTP has expired. Request a new one.' });
+    if (user.resetOtp !== otp.trim())
+      return res.status(400).json({ message: 'Incorrect OTP' });
+    res.json({ message: 'OTP verified' });
+  } catch (err) {
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+exports.resetPassword = async (req, res) => {
+  try {
+    const { email, otp, password } = req.body;
+    if (!email || !otp || !password)
+      return res.status(400).json({ message: 'All fields are required' });
+    if (password.length < 6)
+      return res.status(400).json({ message: 'Password must be at least 6 characters' });
+    const user = await User.findOne({ email: email.toLowerCase().trim() });
+    if (!user || !user.resetOtp || !user.resetOtpExpiry)
+      return res.status(400).json({ message: 'Invalid or expired OTP' });
+    if (user.resetOtpExpiry < new Date())
+      return res.status(400).json({ message: 'OTP has expired. Request a new one.' });
+    if (user.resetOtp !== otp.trim())
+      return res.status(400).json({ message: 'Incorrect OTP' });
+    user.password = password;
+    user.markModified('password');
+    user.resetOtp = null;
+    user.resetOtpExpiry = null;
+    await user.save();
+    res.json({ message: 'Password reset successfully' });
+  } catch (err) {
+    res.status(500).json({ message: 'Server error' });
   }
 };
 

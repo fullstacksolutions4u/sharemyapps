@@ -28,6 +28,7 @@ const FindDevelopers     = lazy(() => import('./pages/FindDevelopers'));
 const FindDevelopersHistory = lazy(() => import('./pages/FindDevelopersHistory'));
 const Mentors            = lazy(() => import('./pages/Mentors'));
 const FreelanceDevelopers = lazy(() => import('./pages/FreelanceDevelopers'));
+const ForgotPassword     = lazy(() => import('./pages/ForgotPassword'));
 
 class ErrorBoundary extends Component {
   state = { error: null };
@@ -97,6 +98,7 @@ function AppRoutes() {
             <Route path="/project/:id" element={<ProjectDetail />} />
             <Route path="/login" element={<GuestRoute><Login /></GuestRoute>} />
             <Route path="/register" element={<GuestRoute><Register /></GuestRoute>} />
+            <Route path="/forgot-password" element={<GuestRoute><ForgotPassword /></GuestRoute>} />
             <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
             <Route path="/dashboard/add" element={<ProtectedRoute><ProjectForm /></ProtectedRoute>} />
             <Route path="/dashboard/edit/:id" element={<ProtectedRoute><ProjectForm /></ProtectedRoute>} />

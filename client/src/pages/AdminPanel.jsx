@@ -1,9 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import {
   LayoutDashboard, FolderOpen, ShieldCheck, Menu, LogOut,
-  Users, Briefcase, FileText, Megaphone, MessageSquare,
+  Users, Briefcase, FileText, Megaphone, MessageSquare, Camera,
 } from 'lucide-react';
 import api from '../api/axios';
 import AdminOverview from './admin/AdminOverview';
@@ -29,8 +29,24 @@ export default function AdminPanel() {
   const [stats, setStats] = useState(null);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [unreadMessages, setUnreadMessages] = useState(0);
-const { logout } = useAuth();
+const { user, setUser, logout } = useAuth();
   const nav = useNavigate();
+  const avatarInputRef = useRef(null);
+  const [avatarUploading, setAvatarUploading] = useState(false);
+
+  const handleAvatarChange = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setAvatarUploading(true);
+    try {
+      const fd = new FormData();
+      fd.append('avatar', file);
+      const res = await api.put('/auth/profile', fd, { headers: { 'Content-Type': 'multipart/form-data' } });
+      setUser(res.data.user);
+    } catch {}
+    setAvatarUploading(false);
+    e.target.value = '';
+  };
 
   useEffect(() => {
     api.get('/admin/stats').then(res => setStats(res.data)).catch(() => {});
@@ -80,7 +96,26 @@ const { logout } = useAuth();
           ))}
         </nav>
 
-        <div className="px-3 py-3 border-t border-[#E5E1DA] shrink-0">
+        <div className="px-3 py-3 border-t border-[#E5E1DA] shrink-0 space-y-1">
+          {/* Admin avatar */}
+          <input ref={avatarInputRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarChange} />
+          <button
+            onClick={() => avatarInputRef.current?.click()}
+            disabled={avatarUploading}
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-muted hover:bg-[#F3F0EB] hover:text-text transition-colors text-left"
+          >
+            <div className="relative shrink-0">
+              {user?.avatar
+                ? <img src={user.avatar} alt="Admin" className="w-7 h-7 rounded-full object-cover" />
+                : <span className="w-7 h-7 rounded-full bg-accent text-white text-xs flex items-center justify-center font-bold">{user?.name?.[0]?.toUpperCase() || 'A'}</span>
+              }
+              {avatarUploading
+                ? <span className="absolute inset-0 rounded-full bg-black/40 flex items-center justify-center"><span className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" /></span>
+                : <span className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-white rounded-full flex items-center justify-center border border-border"><Camera size={8} className="text-muted" /></span>
+              }
+            </div>
+            <span className="truncate">{avatarUploading ? 'Uploading…' : (user?.name || 'Admin')}</span>
+          </button>
           <button
             onClick={handleLogout}
             className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-red-500 hover:bg-red-50 transition-colors text-left"

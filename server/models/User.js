@@ -47,6 +47,8 @@ const userSchema = new mongoose.Schema({
   clientProjects: [{ type: mongoose.Schema.Types.Mixed }],
   aiUsageCount: { type: Number, default: 0 },
   aiUsageDate:  { type: String, default: '' },
+  resetOtp:       { type: String, default: null },
+  resetOtpExpiry: { type: Date,   default: null },
 }, { timestamps: true });
 
 userSchema.index({ userType: 1, hidden: 1, isDeleted: 1 });

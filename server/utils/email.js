@@ -3,6 +3,7 @@ const Brevo = require('@getbrevo/brevo');
 const api = new Brevo.TransactionalEmailsApi();
 api.setApiKey(Brevo.TransactionalEmailsApiApiKeys.apiKey, process.env.BREVO_API_KEY);
 const BASE_URL = process.env.CLIENT_URL || 'http://localhost:5173';
+const LOGO_URL = 'https://res.cloudinary.com/di0vbvioi/image/upload/v1780659567/sharemyapp/logo.png';
 const FROM = { name: 'ShareMyApps', email: process.env.EMAIL_FROM || 'sharemyappsportal@gmail.com' };
 
 exports.sendProjectApprovedEmail = async ({ to, name, projectTitle, projectId, adminNote }) => {
@@ -15,7 +16,7 @@ exports.sendProjectApprovedEmail = async ({ to, name, projectTitle, projectId, a
     htmlContent: `
       <div style="font-family:Inter,Arial,sans-serif;max-width:560px;margin:0 auto;background:#fff;border-radius:12px;overflow:hidden;border:1px solid #E5E1DA;">
         <div style="background:#00A693;padding:24px 32px;text-align:center;">
-          <img src="${BASE_URL}/logo.png" alt="ShareMyApps" style="height:40px;object-fit:contain;" />
+          <img src="${LOGO_URL}" alt="ShareMyApps" style="height:40px;object-fit:contain;" />
         </div>
         <div style="padding:32px;">
           <h2 style="margin:0 0 8px;font-size:18px;color:#1A1A1A;">🎉 Your project is live!</h2>
@@ -42,6 +43,29 @@ exports.sendProjectApprovedEmail = async ({ to, name, projectTitle, projectId, a
   });
 };
 
+exports.sendOtpEmail = async ({ to, otp }) => {
+  await api.sendTransacEmail({
+    sender: FROM,
+    to: [{ email: to }],
+    subject: 'Your ShareMyApps password reset OTP',
+    htmlContent: `
+      <div style="font-family:Inter,Arial,sans-serif;max-width:480px;margin:0 auto;background:#FAF9F6;border-radius:16px;overflow:hidden;border:1px solid #E5E1DA;">
+        <div style="background:#00A693;padding:20px 32px;text-align:center;">
+          <img src="${LOGO_URL}" alt="ShareMyApps" style="height:36px;object-fit:contain;" />
+        </div>
+        <div style="padding:32px;">
+          <h2 style="margin:0 0 8px;font-size:18px;color:#1A1A1A;">Reset your password</h2>
+          <p style="color:#6B7280;margin:0 0 24px;font-size:14px;">Use the one-time code below to reset your password. It expires in <strong>10 minutes</strong>.</p>
+          <div style="text-align:center;background:#fff;border:1px solid #E5E1DA;border-radius:12px;padding:28px;">
+            <span style="font-size:40px;font-weight:700;letter-spacing:12px;color:#00A693;">${otp}</span>
+          </div>
+          <p style="margin:20px 0 0;font-size:12px;color:#9CA3AF;text-align:center;">If you didn't request this, you can safely ignore this email.</p>
+        </div>
+      </div>
+    `,
+  });
+};
+
 exports.sendProjectRejectedEmail = async ({ to, name, projectTitle, projectId, adminNote }) => {
   const editUrl = `${BASE_URL}/dashboard`;
 
@@ -52,7 +76,7 @@ exports.sendProjectRejectedEmail = async ({ to, name, projectTitle, projectId, a
     htmlContent: `
       <div style="font-family:Inter,Arial,sans-serif;max-width:560px;margin:0 auto;background:#fff;border-radius:12px;overflow:hidden;border:1px solid #E5E1DA;">
         <div style="background:#00A693;padding:24px 32px;text-align:center;">
-          <img src="${BASE_URL}/logo.png" alt="ShareMyApps" style="height:40px;object-fit:contain;" />
+          <img src="${LOGO_URL}" alt="ShareMyApps" style="height:40px;object-fit:contain;" />
         </div>
         <div style="padding:32px;">
           <h2 style="margin:0 0 8px;font-size:18px;color:#1A1A1A;">Your project needs some changes</h2>

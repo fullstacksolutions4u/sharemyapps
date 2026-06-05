@@ -55,7 +55,7 @@ export default function Register() {
         </div>
 
         {/* Form */}
-        <div className="w-full max-w-2xl">
+        <div className="w-full max-w-3xl">
           {/* Mobile logo */}
           <div className="flex justify-center mb-4 lg:hidden">
             <Link to="/">

@@ -2,6 +2,7 @@ const router = require('express').Router();
 const passport = require('passport');
 const {
   register, login, logout, getMe, updateProfile, deleteAccount, googleCallback, selectRole,
+  forgotPassword, verifyOtp, resetPassword,
 } = require('../controllers/authController');
 const { protect } = require('../middleware/auth');
 const { upload } = require('../middleware/upload');
@@ -13,6 +14,9 @@ router.get('/me', protect, getMe);
 router.post('/select-role', protect, selectRole);
 router.put('/profile', protect, upload.single('avatar'), updateProfile);
 router.delete('/account', protect, deleteAccount);
+router.post('/forgot-password', forgotPassword);
+router.post('/verify-otp', verifyOtp);
+router.post('/reset-password', resetPassword);
 
 const googleEnabled = !!(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET);
 
