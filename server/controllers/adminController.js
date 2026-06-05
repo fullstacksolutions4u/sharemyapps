@@ -70,9 +70,10 @@ exports.updateProjectStatus = async (req, res) => {
     await project.save();
 
     // Create in-app notification + send email to project owner
-    if (status === 'approved') {
+    const owner = project.owner;
+    if (owner && status === 'approved') {
       await Notification.create({
-        user: project.owner._id,
+        user: owner._id,
         type: 'approved',
         title: 'Project Approved!',
         message: adminNote
@@ -81,15 +82,15 @@ exports.updateProjectStatus = async (req, res) => {
         project: project._id,
       });
       sendProjectApprovedEmail({
-        to: project.owner.email,
-        name: project.owner.name,
+        to: owner.email,
+        name: owner.name,
         projectTitle: project.title,
         projectId: project._id,
         adminNote,
       }).catch(err => console.error('Approval email failed:', err.message));
-    } else if (status === 'rejected') {
+    } else if (owner && status === 'rejected') {
       await Notification.create({
-        user: project.owner._id,
+        user: owner._id,
         type: 'rejected',
         title: 'Project Needs Changes',
         message: adminNote
@@ -98,8 +99,8 @@ exports.updateProjectStatus = async (req, res) => {
         project: project._id,
       });
       sendProjectRejectedEmail({
-        to: project.owner.email,
-        name: project.owner.name,
+        to: owner.email,
+        name: owner.name,
         projectTitle: project.title,
         projectId: project._id,
         adminNote,

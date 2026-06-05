@@ -281,11 +281,11 @@ router.post('/find-developers', protect, aiLimit, async (req, res) => {
       .filter(dev => projectMap[dev._id.toString()]?.count > 0)
       .map(dev => {
         const pid = dev._id.toString();
-        const techTags    = projectMap[pid]?.techTags || [];
-        const mentorTech  = (dev.mentorshipTech   || []).map(t => t.toLowerCase());
-        const designations= (dev.designations      || []).map(d => d.toLowerCase());
-        const langPref    = (dev.languagePreference|| []).map(l => l.toLowerCase());
         const toArr = v => Array.isArray(v) ? v : (v && typeof v === 'object' ? Object.values(v).flat() : []);
+        const techTags    = projectMap[pid]?.techTags || [];
+        const mentorTech  = toArr(dev.mentorshipTech).map(t => t.toLowerCase());
+        const designations= toArr(dev.designations).map(d => d.toLowerCase());
+        const langPref    = toArr(dev.languagePreference).map(l => l.toLowerCase());
         const resumeSkills= toArr(dev.resumeData?.skills).map(s => s.toLowerCase());
         const resumeStack = toArr(dev.resumeData?.techStack).map(s => s.toLowerCase());
 
