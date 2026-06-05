@@ -7,7 +7,7 @@ import {
 import { useAuth } from '../context/AuthContext';
 import api from '../api/axios';
 import toast from 'react-hot-toast';
-import { timeAgo, vacancyTitle } from '../components/recruiter/DevelopersTable';
+import { timeAgo, vacancyTitle } from '../components/recruiter/developerUtils';
 import DeveloperCard from '../components/recruiter/DeveloperCard';
 
 /* ── Loading step labels ─────────────────────────────────── */
@@ -86,7 +86,7 @@ function LoadingAnimation({ step }) {
 const PAGE_SIZE = 20;
 
 /* ── Results section ─────────────────────────────────────── */
-function ResultsSection({ developers, extracted, ready, jd, onSearchAgain }) {
+function ResultsSection({ developers, ready, jd, onSearchAgain }) {
   const [showAll, setShowAll] = useState(false);
 
   const maxScore = Math.max(...developers.map(d => d.matchScore || 1), 1);

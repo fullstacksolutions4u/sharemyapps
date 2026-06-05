@@ -6,7 +6,8 @@ import {
 import { useAuth } from '../context/AuthContext';
 import api from '../api/axios';
 import toast from 'react-hot-toast';
-import DevelopersTable, { timeAgo, vacancyTitle } from '../components/recruiter/DevelopersTable';
+import DevelopersTable from '../components/recruiter/DevelopersTable';
+import { timeAgo, vacancyTitle } from '../components/recruiter/developerUtils';
 
 function HistoryRow({ h, idx, onDelete, deletingId }) {
   const [expanded, setExpanded] = useState(false);
