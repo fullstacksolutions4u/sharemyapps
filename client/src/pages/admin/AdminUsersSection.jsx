@@ -287,16 +287,24 @@ function UserEditPage({ user: initial, onBack, onSaved, allDesignations = [] }) 
               {resumeJsonError && (
                 <p className="text-xs text-red-500 flex items-center gap-1.5"><X size={12} /> {resumeJsonError}</p>
               )}
-              {initial.resumeData && !resumeJsonError && (
-                <div className="flex flex-wrap gap-1.5">
-                  {initial.resumeData.skills?.slice(0, 6).map(s => (
-                    <span key={s} className="text-xs px-2 py-0.5 rounded-full bg-[#E6F7F5] text-[#00A693] border border-[#00A693]/20 font-medium">{s}</span>
-                  ))}
-                  {(initial.resumeData.skills?.length || 0) > 6 && (
-                    <span className="text-xs text-[#9CA3AF]">+{initial.resumeData.skills.length - 6} more</span>
-                  )}
-                </div>
-              )}
+              {initial.resumeData && !resumeJsonError && (() => {
+                const raw = initial.resumeData.skills;
+                const skills = Array.isArray(raw)
+                  ? raw
+                  : raw && typeof raw === 'object'
+                    ? Object.values(raw).flat()
+                    : [];
+                return skills.length > 0 ? (
+                  <div className="flex flex-wrap gap-1.5">
+                    {skills.slice(0, 6).map(s => (
+                      <span key={s} className="text-xs px-2 py-0.5 rounded-full bg-accent-light text-accent border border-accent/20 font-medium">{s}</span>
+                    ))}
+                    {skills.length > 6 && (
+                      <span className="text-xs text-[#9CA3AF]">+{skills.length - 6} more</span>
+                    )}
+                  </div>
+                ) : null;
+              })()}
               <button onClick={handleSaveResume} disabled={savingResume}
                 className="flex items-center gap-1.5 bg-[#00A693] hover:bg-[#007D6F] disabled:opacity-50 text-white px-5 py-2 rounded-xl font-medium text-sm transition-colors">
                 <Save size={13} /> {savingResume ? 'Saving…' : 'Save Resume Data'}
@@ -438,6 +446,7 @@ export default function AdminUsersSection({ initialTab = 'developers' }) {
 
   const activeUsers = users.filter(u => !u.isDeleted);
   const developers = activeUsers.filter(u => u.userType === 'developer');
+  const pendingCvCount = developers.filter(u => (u.projectCount || 0) >= 1 && (!u.cvUrl || !u.resumeData)).length;
   const recruiters = activeUsers.filter(u => u.userType === 'recruiter');
   const clients    = activeUsers.filter(u => u.userType === 'client');
   const mentees    = activeUsers.filter(u => u.userType === 'mentee');
@@ -492,6 +501,12 @@ export default function AdminUsersSection({ initialTab = 'developers' }) {
           )}
         </div>
         {search && <p className="text-xs text-[#6B7280]">{list.length} result{list.length !== 1 ? 's' : ''} for <span className="font-medium text-[#1A1A1A]">"{search}"</span></p>}
+        {!loading && pendingCvCount > 0 && (
+          <div className="ml-auto flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-xl border border-orange-200 bg-orange-50 text-orange-600 font-medium whitespace-nowrap">
+            <AlertCircle size={12} className="shrink-0" />
+            <span><span className="font-bold">{pendingCvCount}</span> developer{pendingCvCount !== 1 ? 's' : ''} missing CV / summary</span>
+          </div>
+        )}
       </div>
 
       {loading ? (

@@ -196,14 +196,14 @@ export default function PublicPortfolio() {
             <div className="absolute inset-0 opacity-20"
               style={{ backgroundImage: 'radial-gradient(circle, #00A693 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
             {techStack.length > 0 && (
-              <div className="absolute top-3 left-5 right-5 grid grid-cols-6 gap-x-6 gap-y-2 justify-items-center">
+              <div className="absolute top-3 left-5 right-5 grid grid-cols-6 gap-x-4 gap-y-2 justify-items-center">
                 {techStack.map((tag, i) => {
                   const palette = PILL_PALETTE[i % PILL_PALETTE.length];
                   const iconUrl = getIconUrl(tag, palette.hex);
                   return (
-                    <span key={tag} className={`inline-flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-1 rounded-full border ${palette.bg} ${palette.text} ${palette.border}`}>
+                    <span key={tag} className={`inline-flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-1 rounded-full border whitespace-nowrap overflow-hidden ${palette.bg} ${palette.text} ${palette.border}`}>
                       {iconUrl && <img src={iconUrl} alt={tag} className="w-3.5 h-3.5 object-contain shrink-0" onError={e => { e.target.style.display = 'none'; }} />}
-                      {tag}
+                      <span className="truncate">{tag}</span>
                     </span>
                   );
                 })}
@@ -239,11 +239,17 @@ export default function PublicPortfolio() {
                   </>
                 )}
               </div>
-              <div className="pb-1">
-                <h1 className="text-2xl font-extrabold leading-tight bg-linear-to-r from-slate-700 via-slate-500 to-slate-400 bg-clip-text text-transparent drop-shadow-sm tracking-tight">
-                  {user.name}
+              <div className="pb-1 flex flex-row items-center gap-3">
+                <h1 style={{ fontFamily: "'Fredoka One', cursive", letterSpacing: '0.05em', lineHeight: 1 }}
+                  className="text-4xl">
+                  {user.name.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ').split('').map((ch, i) => {
+                    const colors = ['#E53935','#FB8C00','#FDD835','#43A047','#1E88E5','#5C6BC0','#EC407A'];
+                    return ch === ' '
+                      ? <span key={i}>&nbsp;</span>
+                      : <span key={i} style={{ color: colors[i % colors.length] }}>{ch}</span>;
+                  })}
                 </h1>
-                <span className="inline-flex items-center gap-1 text-xs font-semibold bg-accent-light text-accent px-2.5 py-0.5 rounded-full mt-1 border border-accent/20">
+                <span className="inline-flex items-center gap-1 text-xs font-semibold bg-accent-light text-accent px-2.5 py-0.5 rounded-full border border-accent/20">
                   <span className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse" />
                   {approvedCount} deployed project{approvedCount !== 1 ? 's' : ''}
                 </span>
@@ -261,11 +267,25 @@ export default function PublicPortfolio() {
                 </a>
               )}
               {user.phone && (
-                <a href={`tel:${user.phone}`}
-                  className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full border bg-teal-50 text-teal-700 border-teal-200 hover:border-teal-400 hover:scale-105 transition-all">
-                  <Phone size={11} className="shrink-0" />
-                  {user.phone}
-                </a>
+                <div className="inline-flex items-center rounded-full border border-teal-200 overflow-hidden hover:scale-105 transition-all">
+                  <a href={`tel:${user.phone}`}
+                    className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 bg-teal-50 text-teal-700 hover:bg-teal-100 transition-colors">
+                    <Phone size={11} className="shrink-0" />
+                    {user.phone}
+                  </a>
+                  <a
+                    href={`https://wa.me/${user.phone.replace(/\D/g, '')}?text=${encodeURIComponent("Hi, I seen your profile on ShareMyApps portal, I would like to connect with you.")}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    title="Chat on WhatsApp"
+                    className="flex items-center justify-center px-2.5 py-1.5 border-l border-teal-200 bg-green-50 hover:bg-green-100 transition-colors"
+                  >
+                    <svg viewBox="0 0 24 24" width="13" height="13" fill="#25D366">
+                      <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/>
+                      <path d="M12 0C5.373 0 0 5.373 0 12c0 2.123.554 4.118 1.528 5.848L.057 23.885a.75.75 0 0 0 .921.921l6.086-1.461A11.945 11.945 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.907 0-3.686-.524-5.205-1.433l-.374-.223-3.865.928.944-3.77-.245-.388A9.96 9.96 0 0 1 2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/>
+                    </svg>
+                  </a>
+                </div>
               )}
 
               {/* Divider */}

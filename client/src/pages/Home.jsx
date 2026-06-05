@@ -8,12 +8,16 @@ import ProjectSkeleton from '../components/ProjectSkeleton';
 export default function Home() {
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [devAvatars, setDevAvatars] = useState([]);
 
   useEffect(() => {
     api.get('/projects?page=1')
       .then(res => setProjects(res.data.projects.slice(0, 6)))
       .catch(() => {})
       .finally(() => setLoading(false));
+    api.get('/users/developers?limit=5')
+      .then(res => setDevAvatars((res.data.developers || res.data).slice(0, 5)))
+      .catch(() => {});
   }, []);
 
   return (
@@ -40,14 +44,31 @@ export default function Home() {
             to="/explore"
             className="flex items-center gap-2 bg-[#00A693] hover:bg-[#007D6F] text-white px-6 py-3 rounded-xl font-medium transition-colors text-sm"
           >
-            Explore projects <ArrowRight size={16} />
+            Explore registered projects <ArrowRight size={16} />
           </Link>
           <Link
             to="/register"
-            className="flex items-center gap-2 bg-white hover:bg-[#FAF9F6] text-[#1A1A1A] border border-[#E5E1DA] px-6 py-3 rounded-xl font-medium transition-colors text-sm"
+            className="flex items-center gap-2 bg-yellow-400 hover:bg-yellow-500 text-white px-6 py-3 rounded-xl font-medium transition-colors text-sm"
           >
-            List your project
+            List your projects for opportunities
           </Link>
+        </div>
+
+        {/* Social proof */}
+        <div className="flex items-center justify-center gap-3 mt-6">
+          <div className="flex -space-x-2">
+            {(['#E85D4A','#F4861F','#4A90D9','#43A047','#7B68EE']).map((color, i) => {
+              const dev = devAvatars[i];
+              return dev?.avatar
+                ? <img key={i} src={dev.avatar} alt={dev.name} title={dev.name} className="w-8 h-8 rounded-full border-2 border-white object-cover shadow-sm" />
+                : <span key={i} style={{ backgroundColor: dev ? color : color }} title={dev?.name} className="w-8 h-8 rounded-full border-2 border-white flex items-center justify-center text-white text-xs font-bold shadow-sm">
+                    {dev ? dev.name[0].toUpperCase() : String.fromCharCode(65 + i)}
+                  </span>;
+            })}
+          </div>
+          <p className="text-sm text-muted">
+            <span className="font-semibold text-text">1,000+</span> developers already registered
+          </p>
         </div>
       </section>
 
