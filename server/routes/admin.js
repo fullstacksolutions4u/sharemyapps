@@ -25,6 +25,7 @@ const {
   replyToInterest,
   toggleVacancyStatus,
 } = require('../controllers/vacancyController');
+const { adminGetUserJDHistory } = require('../controllers/jdAnalysisController');
 const freelance = require('../controllers/freelanceOpportunityController');
 const mentorship = require('../controllers/mentorshipOpportunityController');
 
@@ -43,6 +44,7 @@ router.put('/users/:id', adminUpdateUser);
 router.patch('/users/:id/hide', toggleUserHidden);
 router.put('/users/:id/resume', setResumeData);
 router.delete('/users/:id', deleteUser);
+router.get('/users/:id/jd-history', adminGetUserJDHistory);
 router.patch('/projects/:id/featured', toggleFeatured);
 router.patch('/projects/:id/hide', adminToggleHidden);
 

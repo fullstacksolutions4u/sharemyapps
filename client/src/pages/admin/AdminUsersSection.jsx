@@ -3,7 +3,7 @@ import {
   ArrowLeft, Plus, X, Save, Check, Mail, Tag, Clock, Link as LinkIcon, Phone,
   AlertCircle, FileText, Briefcase, Pencil, Trash2, Eye, EyeOff,
   UserCircle2, Search, Zap, Award, Trophy, FolderOpen as FolderOpenIcon,
-  Heart, Star,
+  Heart, Star, Users, History, ChevronDown, ChevronUp, ExternalLink,
 } from 'lucide-react';
 import api from '../../api/axios';
 import toast from 'react-hot-toast';
@@ -389,6 +389,10 @@ export default function AdminUsersSection({ initialTab = 'developers' }) {
   const [confirmDelete, setConfirmDelete] = useState(null);
   const [deleteLoading, setDeleteLoading] = useState(null);
   const [viewingUser, setViewingUser] = useState(null);
+  const [jdHistoryUser, setJdHistoryUser] = useState(null);
+  const [jdHistory, setJdHistory] = useState([]);
+  const [jdHistoryLoading, setJdHistoryLoading] = useState(false);
+  const [expandedJD, setExpandedJD] = useState(null);
   const PER_PAGE = 10;
 
   useEffect(() => {
@@ -444,6 +448,18 @@ export default function AdminUsersSection({ initialTab = 'developers' }) {
     } finally { setDeleteLoading(null); }
   };
 
+  const openJDHistory = async (u) => {
+    setJdHistoryUser(u);
+    setJdHistory([]);
+    setExpandedJD(null);
+    setJdHistoryLoading(true);
+    try {
+      const res = await api.get(`/admin/users/${u._id}/jd-history`);
+      setJdHistory(res.data);
+    } catch { toast.error('Failed to load JD history'); }
+    finally { setJdHistoryLoading(false); }
+  };
+
   const activeUsers = users.filter(u => !u.isDeleted);
   const developers = activeUsers.filter(u => u.userType === 'developer');
   const pendingCvCount = developers.filter(u => (u.projectCount || 0) >= 1 && (!u.cvUrl || !u.resumeData)).length;
@@ -454,7 +470,9 @@ export default function AdminUsersSection({ initialTab = 'developers' }) {
   const allDesignations = [...new Set(users.flatMap(u => u.designations || []).filter(Boolean))];
   const q = search.trim().toLowerCase();
   const listMap = { developers, recruiters, clients, mentees, deleted: deletedUsers };
-  const list = (listMap[tab] || []).filter(u => !q || u.name?.toLowerCase().includes(q) || u.email?.toLowerCase().includes(q));
+  const list = (listMap[tab] || [])
+    .filter(u => !q || u.name?.toLowerCase().includes(q) || u.email?.toLowerCase().includes(q))
+    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
   const totalPages = Math.ceil(list.length / PER_PAGE);
   const paged = list.slice((page - 1) * PER_PAGE, page * PER_PAGE);
 
@@ -523,7 +541,7 @@ export default function AdminUsersSection({ initialTab = 'developers' }) {
             <thead>
               <tr className="border-b border-[#E5E1DA] bg-[#FAF9F6]">
                 <th className="text-left px-4 py-3 text-xs font-semibold text-[#6B7280] uppercase tracking-wider">Developer</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-[#6B7280] uppercase tracking-wider hidden sm:table-cell">Email</th>
+                <th className="text-left px-4 py-3 text-xs font-semibold text-[#6B7280] uppercase tracking-wider hidden sm:table-cell">Followers</th>
                 <th className="text-left px-4 py-3 text-xs font-semibold text-[#6B7280] uppercase tracking-wider hidden lg:table-cell">Engagement</th>
                 <th className="text-left px-4 py-3 text-xs font-semibold text-[#6B7280] uppercase tracking-wider hidden md:table-cell">Designation</th>
                 <th className="text-left px-4 py-3 text-xs font-semibold text-[#6B7280] uppercase tracking-wider hidden lg:table-cell">Resume</th>
@@ -533,8 +551,10 @@ export default function AdminUsersSection({ initialTab = 'developers' }) {
             <tbody className="divide-y divide-[#F3F0EB]">
               {paged.map(u => (
                 <tr key={u._id} className="hover:bg-[#FAF9F6] transition-colors">
-                  <td className="px-4 py-3"><div className="flex items-center gap-3"><Avatar u={u} /><div className="min-w-0"><p className="font-medium text-[#1A1A1A] truncate">{u.name}</p><p className="text-xs text-[#6B7280] sm:hidden truncate">{u.email}</p></div></div></td>
-                  <td className="px-4 py-3 text-[#6B7280] hidden sm:table-cell text-xs">{u.email}</td>
+                  <td className="px-4 py-3"><div className="flex items-center gap-3"><Avatar u={u} /><div className="min-w-0"><p className="font-medium text-[#1A1A1A] truncate">{u.name}</p><p className="text-xs text-[#6B7280] sm:hidden flex items-center gap-1"><Users size={10} /> {u.followers?.length || 0}</p></div></div></td>
+                  <td className="px-4 py-3 hidden sm:table-cell">
+                    <span className="flex items-center gap-1.5 text-xs text-[#6B7280]"><Users size={12} className="text-[#9CA3AF]" />{u.followers?.length || 0}</span>
+                  </td>
                   <td className="px-4 py-3 hidden lg:table-cell">
                     <div className="flex items-center gap-3">
                       <span className="flex items-center gap-1 text-xs text-[#6B7280]" title="Projects"><FolderOpenIcon size={12} className="text-[#9CA3AF]" /> {u.projectCount || 0}</span>
@@ -574,21 +594,21 @@ export default function AdminUsersSection({ initialTab = 'developers' }) {
             <thead>
               <tr className="border-b border-[#E5E1DA] bg-[#FAF9F6]">
                 <th className="text-left px-4 py-3 text-xs font-semibold text-[#6B7280] uppercase tracking-wider">Recruiter</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-[#6B7280] uppercase tracking-wider hidden sm:table-cell">Email</th>
                 <th className="text-left px-4 py-3 text-xs font-semibold text-[#6B7280] uppercase tracking-wider hidden md:table-cell">Company</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-[#6B7280] uppercase tracking-wider hidden lg:table-cell">Joined</th>
+                <th className="text-left px-4 py-3 text-xs font-semibold text-[#6B7280] uppercase tracking-wider">JD History</th>
                 <th className="text-right px-4 py-3 text-xs font-semibold text-[#6B7280] uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[#F3F0EB]">
               {paged.map(u => (
                 <tr key={u._id} className="hover:bg-[#FAF9F6] transition-colors">
-                  <td className="px-4 py-3"><div className="flex items-center gap-3"><Avatar u={u} /><div className="min-w-0"><p className="font-medium text-[#1A1A1A] truncate">{u.name}</p><p className="text-xs text-[#6B7280] sm:hidden truncate">{u.email}</p></div></div></td>
-                  <td className="px-4 py-3 text-[#6B7280] hidden sm:table-cell text-xs">{u.email}</td>
+                  <td className="px-4 py-3"><div className="flex items-center gap-3"><Avatar u={u} /><div className="min-w-0"><p className="font-medium text-[#1A1A1A] truncate">{u.name}</p></div></div></td>
                   <td className="px-4 py-3 hidden md:table-cell">
                     {u.companyName ? <div><p className="text-xs font-medium text-[#1A1A1A]">{u.companyName}</p>{u.industry && <p className="text-xs text-[#9CA3AF]">{u.industry}</p>}</div> : <span className="text-xs text-[#9CA3AF]">—</span>}
                   </td>
-                  <td className="px-4 py-3 hidden lg:table-cell text-xs text-[#9CA3AF]">{new Date(u.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}</td>
+                  <td className="px-4 py-3">
+                    <button onClick={() => openJDHistory(u)} className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-lg border border-purple-200 text-purple-600 hover:bg-purple-50 font-medium transition-colors"><History size={10} /> View History</button>
+                  </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center justify-end gap-1.5 whitespace-nowrap">
                       <button onClick={() => setViewingUser(u)} className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-lg border border-[#E5E1DA] text-[#6B7280] hover:border-[#00A693] hover:text-[#00A693] font-medium transition-colors"><Eye size={10} /> View</button>
@@ -607,7 +627,7 @@ export default function AdminUsersSection({ initialTab = 'developers' }) {
             <thead>
               <tr className="border-b border-[#E5E1DA] bg-[#FAF9F6]">
                 <th className="text-left px-4 py-3 text-xs font-semibold text-[#6B7280] uppercase tracking-wider">Client</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-[#6B7280] uppercase tracking-wider hidden sm:table-cell">Email</th>
+                <th className="text-left px-4 py-3 text-xs font-semibold text-[#6B7280] uppercase tracking-wider hidden sm:table-cell">Followers</th>
                 <th className="text-left px-4 py-3 text-xs font-semibold text-[#6B7280] uppercase tracking-wider hidden md:table-cell">Project / Budget</th>
                 <th className="text-left px-4 py-3 text-xs font-semibold text-[#6B7280] uppercase tracking-wider hidden lg:table-cell">Skills needed</th>
                 <th className="text-right px-4 py-3 text-xs font-semibold text-[#6B7280] uppercase tracking-wider">Actions</th>
@@ -616,8 +636,10 @@ export default function AdminUsersSection({ initialTab = 'developers' }) {
             <tbody className="divide-y divide-[#F3F0EB]">
               {paged.map(u => (
                 <tr key={u._id} className="hover:bg-[#FAF9F6] transition-colors">
-                  <td className="px-4 py-3"><div className="flex items-center gap-3"><Avatar u={u} /><div className="min-w-0"><p className="font-medium text-[#1A1A1A] truncate">{u.name}</p><p className="text-xs text-[#6B7280] sm:hidden truncate">{u.email}</p></div></div></td>
-                  <td className="px-4 py-3 text-[#6B7280] hidden sm:table-cell text-xs">{u.email}</td>
+                  <td className="px-4 py-3"><div className="flex items-center gap-3"><Avatar u={u} /><div className="min-w-0"><p className="font-medium text-[#1A1A1A] truncate">{u.name}</p><p className="text-xs text-[#6B7280] sm:hidden flex items-center gap-1"><Users size={10} /> {u.followers?.length || 0}</p></div></div></td>
+                  <td className="px-4 py-3 hidden sm:table-cell">
+                    <span className="flex items-center gap-1.5 text-xs text-[#6B7280]"><Users size={12} className="text-[#9CA3AF]" />{u.followers?.length || 0}</span>
+                  </td>
                   <td className="px-4 py-3 hidden md:table-cell">
                     {u.clientProfile?.projectName ? <div><p className="text-xs font-medium text-[#1A1A1A] truncate max-w-[160px]">{u.clientProfile.projectName}</p>{u.clientProfile.budget && <p className="text-xs text-[#9CA3AF]">₹{Number(u.clientProfile.budget).toLocaleString('en-IN')}</p>}</div> : <span className="text-xs text-[#9CA3AF]">—</span>}
                   </td>
@@ -644,7 +666,7 @@ export default function AdminUsersSection({ initialTab = 'developers' }) {
             <thead>
               <tr className="border-b border-[#E5E1DA] bg-[#FAF9F6]">
                 <th className="text-left px-4 py-3 text-xs font-semibold text-[#6B7280] uppercase tracking-wider">Mentee</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-[#6B7280] uppercase tracking-wider hidden sm:table-cell">Email</th>
+                <th className="text-left px-4 py-3 text-xs font-semibold text-[#6B7280] uppercase tracking-wider hidden sm:table-cell">Followers</th>
                 <th className="text-left px-4 py-3 text-xs font-semibold text-[#6B7280] uppercase tracking-wider hidden md:table-cell">Education</th>
                 <th className="text-left px-4 py-3 text-xs font-semibold text-[#6B7280] uppercase tracking-wider hidden lg:table-cell">Looking to learn</th>
                 <th className="text-right px-4 py-3 text-xs font-semibold text-[#6B7280] uppercase tracking-wider">Actions</th>
@@ -653,8 +675,10 @@ export default function AdminUsersSection({ initialTab = 'developers' }) {
             <tbody className="divide-y divide-[#F3F0EB]">
               {paged.map(u => (
                 <tr key={u._id} className="hover:bg-[#FAF9F6] transition-colors">
-                  <td className="px-4 py-3"><div className="flex items-center gap-3"><Avatar u={u} /><div className="min-w-0"><p className="font-medium text-[#1A1A1A] truncate">{u.name}</p><p className="text-xs text-[#6B7280] sm:hidden truncate">{u.email}</p></div></div></td>
-                  <td className="px-4 py-3 text-[#6B7280] hidden sm:table-cell text-xs">{u.email}</td>
+                  <td className="px-4 py-3"><div className="flex items-center gap-3"><Avatar u={u} /><div className="min-w-0"><p className="font-medium text-[#1A1A1A] truncate">{u.name}</p><p className="text-xs text-[#6B7280] sm:hidden flex items-center gap-1"><Users size={10} /> {u.followers?.length || 0}</p></div></div></td>
+                  <td className="px-4 py-3 hidden sm:table-cell">
+                    <span className="flex items-center gap-1.5 text-xs text-[#6B7280]"><Users size={12} className="text-[#9CA3AF]" />{u.followers?.length || 0}</span>
+                  </td>
                   <td className="px-4 py-3 hidden md:table-cell">
                     {u.menteeProfile?.education ? <p className="text-xs text-[#1A1A1A] truncate max-w-[160px]">{u.menteeProfile.education}</p> : <span className="text-xs text-[#9CA3AF]">—</span>}
                   </td>
@@ -681,7 +705,7 @@ export default function AdminUsersSection({ initialTab = 'developers' }) {
             <thead>
               <tr className="border-b border-red-100 bg-red-50/50">
                 <th className="text-left px-4 py-3 text-xs font-semibold text-[#6B7280] uppercase tracking-wider">User</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-[#6B7280] uppercase tracking-wider hidden sm:table-cell">Email</th>
+                <th className="text-left px-4 py-3 text-xs font-semibold text-[#6B7280] uppercase tracking-wider hidden sm:table-cell">Followers</th>
                 <th className="text-left px-4 py-3 text-xs font-semibold text-[#6B7280] uppercase tracking-wider hidden md:table-cell">Type</th>
                 <th className="text-left px-4 py-3 text-xs font-semibold text-[#6B7280] uppercase tracking-wider">Status</th>
                 <th className="text-left px-4 py-3 text-xs font-semibold text-[#6B7280] uppercase tracking-wider hidden md:table-cell">Deleted On</th>
@@ -690,8 +714,10 @@ export default function AdminUsersSection({ initialTab = 'developers' }) {
             <tbody className="divide-y divide-red-50">
               {paged.map(u => (
                 <tr key={u._id} className="opacity-70">
-                  <td className="px-4 py-3"><div className="flex items-center gap-3"><div className="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center shrink-0"><span className="text-xs font-medium text-red-400">{u.name?.[0]?.toUpperCase() || '?'}</span></div><div className="min-w-0"><p className="font-medium text-[#6B7280] truncate line-through decoration-red-300">{u.name}</p><p className="text-xs text-[#9CA3AF] sm:hidden truncate">{u.email}</p></div></div></td>
-                  <td className="px-4 py-3 text-[#9CA3AF] hidden sm:table-cell text-xs">{u.email}</td>
+                  <td className="px-4 py-3"><div className="flex items-center gap-3"><div className="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center shrink-0"><span className="text-xs font-medium text-red-400">{u.name?.[0]?.toUpperCase() || '?'}</span></div><div className="min-w-0"><p className="font-medium text-[#6B7280] truncate line-through decoration-red-300">{u.name}</p><p className="text-xs text-[#9CA3AF] sm:hidden flex items-center gap-1"><Users size={10} /> {u.followers?.length || 0}</p></div></div></td>
+                  <td className="px-4 py-3 hidden sm:table-cell">
+                    <span className="flex items-center gap-1.5 text-xs text-[#9CA3AF]"><Users size={12} />{u.followers?.length || 0}</span>
+                  </td>
                   <td className="px-4 py-3 hidden md:table-cell">
                     <span className={`text-xs px-2.5 py-0.5 rounded-full border font-medium capitalize ${u.userType === 'client' ? 'bg-teal-50 text-teal-400 border-teal-200' : u.userType === 'recruiter' ? 'bg-blue-50 text-blue-400 border-blue-200' : u.userType === 'mentee' ? 'bg-violet-50 text-violet-400 border-violet-200' : 'bg-[#E6F7F5] text-[#00A693]/60 border-[#00A693]/20'}`}>{u.userType || 'developer'}</span>
                   </td>
@@ -777,6 +803,140 @@ export default function AdminUsersSection({ initialTab = 'developers' }) {
           </div>
         );
       })()}
+
+      {jdHistoryUser && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4" onClick={() => setJdHistoryUser(null)}>
+          <div className="bg-white rounded-2xl shadow-xl border border-[#E5E1DA] w-full max-w-3xl max-h-[85vh] flex flex-col" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between px-5 py-4 border-b border-[#E5E1DA] shrink-0">
+              <div className="flex items-center gap-3">
+                {jdHistoryUser.avatar
+                  ? <img src={jdHistoryUser.avatar} alt={jdHistoryUser.name} className="w-9 h-9 rounded-full object-cover" />
+                  : <span className="w-9 h-9 rounded-full bg-[#00A693] text-white text-sm flex items-center justify-center font-bold">{jdHistoryUser.name?.[0]?.toUpperCase()}</span>
+                }
+                <div>
+                  <p className="text-sm font-semibold text-[#1A1A1A]">{jdHistoryUser.name}</p>
+                  <p className="text-xs text-[#9CA3AF]">JD Analysis History</p>
+                </div>
+              </div>
+              <button onClick={() => setJdHistoryUser(null)} className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-[#F3F0EB] text-[#9CA3AF] hover:text-[#1A1A1A] transition-colors"><X size={15} /></button>
+            </div>
+
+            <div className="overflow-y-auto flex-1 px-5 py-4 space-y-3">
+              {jdHistoryLoading ? (
+                <div className="space-y-3">
+                  {Array.from({ length: 3 }).map((_, i) => <div key={i} className="h-16 bg-[#F3F0EB] rounded-xl animate-pulse" />)}
+                </div>
+              ) : jdHistory.length === 0 ? (
+                <div className="text-center py-12">
+                  <History size={32} className="mx-auto text-[#E5E1DA] mb-3" />
+                  <p className="text-sm text-[#9CA3AF]">No JD searches yet</p>
+                  <p className="text-xs text-[#9CA3AF] mt-1">This recruiter hasn't used Find Developers yet.</p>
+                </div>
+              ) : (
+                jdHistory.map((entry, idx) => {
+                  const skills = entry.extracted?.skills || [];
+                  const roles = entry.extracted?.roles || [];
+                  const level = entry.extracted?.level;
+                  const isExpanded = expandedJD === entry._id;
+                  const title = [level && level !== 'any' ? level.charAt(0).toUpperCase() + level.slice(1) : null, roles[0]].filter(Boolean).join(' ') || `Search #${jdHistory.length - idx}`;
+                  return (
+                    <div key={entry._id} className="border border-[#E5E1DA] rounded-xl overflow-hidden">
+                      <button
+                        className="w-full flex items-center justify-between px-4 py-3 bg-[#FAF9F6] hover:bg-[#F3F0EB] transition-colors text-left gap-3"
+                        onClick={() => setExpandedJD(isExpanded ? null : entry._id)}
+                      >
+                        <div className="flex items-center gap-3 min-w-0">
+                          <span className="text-xs font-medium text-[#1A1A1A] truncate">{title}</span>
+                          <span className="shrink-0 text-xs px-2 py-0.5 rounded-full bg-purple-50 text-purple-600 border border-purple-200 font-medium">{entry.resultCount} match{entry.resultCount !== 1 ? 'es' : ''}</span>
+                          {skills.slice(0, 3).map(s => (
+                            <span key={s} className="shrink-0 hidden sm:inline text-xs px-1.5 py-0.5 rounded-full bg-[#E6F7F5] text-[#00A693] border border-[#00A693]/20">{s}</span>
+                          ))}
+                        </div>
+                        <div className="flex items-center gap-2 shrink-0">
+                          <span className="text-xs text-[#9CA3AF]">{new Date(entry.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                          {isExpanded ? <ChevronUp size={13} className="text-[#9CA3AF]" /> : <ChevronDown size={13} className="text-[#9CA3AF]" />}
+                        </div>
+                      </button>
+
+                      {isExpanded && (
+                        <div className="px-4 py-3 space-y-3 border-t border-[#F3F0EB]">
+                          <div>
+                            <p className="text-[10px] font-semibold text-[#9CA3AF] uppercase tracking-wider mb-1.5">Job Description</p>
+                            <p className="text-xs text-[#6B7280] whitespace-pre-line line-clamp-5 bg-[#FAF9F6] rounded-lg px-3 py-2 border border-[#F3F0EB]">{entry.jd}</p>
+                          </div>
+
+                          {skills.length > 0 && (
+                            <div>
+                              <p className="text-[10px] font-semibold text-[#9CA3AF] uppercase tracking-wider mb-1.5">Extracted Skills</p>
+                              <div className="flex flex-wrap gap-1.5">
+                                {skills.map(s => <span key={s} className="text-xs px-2 py-0.5 rounded-full bg-[#E6F7F5] text-[#00A693] border border-[#00A693]/20 font-medium">{s}</span>)}
+                              </div>
+                            </div>
+                          )}
+
+                          {entry.developers?.length > 0 && (
+                            <div>
+                              <p className="text-[10px] font-semibold text-[#9CA3AF] uppercase tracking-wider mb-1.5">Matched Developers ({entry.developers.length})</p>
+                              <div className="rounded-xl border border-[#E5E1DA] overflow-hidden">
+                                <table className="w-full text-xs">
+                                  <thead>
+                                    <tr className="bg-[#FAF9F6] border-b border-[#E5E1DA]">
+                                      <th className="text-left px-3 py-2 font-semibold text-[#6B7280]">#</th>
+                                      <th className="text-left px-3 py-2 font-semibold text-[#6B7280]">Developer</th>
+                                      <th className="text-left px-3 py-2 font-semibold text-[#6B7280] hidden sm:table-cell">Score</th>
+                                      <th className="text-left px-3 py-2 font-semibold text-[#6B7280] hidden md:table-cell">Links</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody className="divide-y divide-[#F3F0EB]">
+                                    {entry.developers.slice(0, 10).map((dev, i) => (
+                                      <tr key={dev._id || i} className="hover:bg-[#FAF9F6]">
+                                        <td className="px-3 py-2 text-[#9CA3AF]">{i + 1}</td>
+                                        <td className="px-3 py-2">
+                                          <div className="flex items-center gap-2">
+                                            {dev.avatar
+                                              ? <img src={dev.avatar} alt={dev.name} className="w-6 h-6 rounded-full object-cover shrink-0" />
+                                              : <span className="w-6 h-6 rounded-full bg-[#00A693] text-white text-[10px] flex items-center justify-center font-bold shrink-0">{dev.name?.[0]?.toUpperCase()}</span>
+                                            }
+                                            <div className="min-w-0">
+                                              <p className="font-medium text-[#1A1A1A] truncate">{dev.name}</p>
+                                              {dev.designations?.[0] && <p className="text-[10px] text-[#9CA3AF] truncate">{dev.designations[0]}</p>}
+                                            </div>
+                                          </div>
+                                        </td>
+                                        <td className="px-3 py-2 hidden sm:table-cell">
+                                          <span className="inline-flex items-center gap-1 text-xs font-semibold text-amber-600 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full">{dev.matchScore ?? '—'}</span>
+                                        </td>
+                                        <td className="px-3 py-2 hidden md:table-cell">
+                                          <div className="flex items-center gap-1.5">
+                                            {dev.portfolioUrl && <a href={dev.portfolioUrl.startsWith('http') ? dev.portfolioUrl : `https://${dev.portfolioUrl}`} target="_blank" rel="noopener noreferrer" className="text-[#00A693] hover:underline"><ExternalLink size={11} /></a>}
+                                            {dev.linkedinUrl && <a href={dev.linkedinUrl.startsWith('http') ? dev.linkedinUrl : `https://${dev.linkedinUrl}`} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline"><ExternalLink size={11} /></a>}
+                                          </div>
+                                        </td>
+                                      </tr>
+                                    ))}
+                                  </tbody>
+                                </table>
+                                {entry.developers.length > 10 && (
+                                  <p className="text-[10px] text-[#9CA3AF] text-center py-2 border-t border-[#F3F0EB]">+{entry.developers.length - 10} more developers</p>
+                                )}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })
+              )}
+            </div>
+
+            <div className="px-5 py-3 border-t border-[#E5E1DA] shrink-0 flex items-center justify-between">
+              <p className="text-xs text-[#9CA3AF]">{jdHistory.length} search{jdHistory.length !== 1 ? 'es' : ''} total</p>
+              <button onClick={() => setJdHistoryUser(null)} className="px-4 py-2 rounded-xl border border-[#E5E1DA] text-sm text-[#6B7280] hover:text-[#1A1A1A] font-medium transition-colors">Close</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {confirmDelete && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4" onClick={() => setConfirmDelete(null)}>

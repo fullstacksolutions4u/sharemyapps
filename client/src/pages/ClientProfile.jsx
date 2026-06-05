@@ -476,6 +476,7 @@ function ClientFreelanceProfile({ user, setUser, navigate }) {
       const res = await api.put('/auth/profile', { phone: contactForm.phone });
       setUser(res.data.user);
       toast.success('Contact updated!');
+      navigate('/find-developers');
     } catch {
       toast.error('Failed to update contact');
     } finally {

@@ -41,4 +41,16 @@ const deleteSearchHistory = async (req, res) => {
   }
 };
 
-module.exports = { saveSearchHistory, getSearchHistory, deleteSearchHistory };
+const adminGetUserJDHistory = async (req, res) => {
+  try {
+    const history = await JDSearchHistory.find({ user: req.params.id })
+      .sort({ createdAt: -1 })
+      .limit(50)
+      .lean();
+    res.json(history);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+module.exports = { saveSearchHistory, getSearchHistory, deleteSearchHistory, adminGetUserJDHistory };
