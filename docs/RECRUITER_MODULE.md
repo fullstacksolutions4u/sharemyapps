@@ -109,9 +109,14 @@ Steps tick every 700ms using a `useRef` interval (avoids stale-closure). Steps 1
 - [ ] `POST /api/users/saved-developers`, `DELETE`, `GET` endpoints
 - [ ] `/saved-developers` page — grid of bookmarked developer cards with notes
 
-### 5. Shortlisted Candidates page (repurposed)
-- [ ] Decide new purpose for `/find-developers/history` route — candidates for: full search history with filters, saved developers list, or vacancy-linked candidate pipeline
-- [ ] Update nav link label once new purpose is decided
+### 5. Candidates page
+- [x] Replaced `/find-developers/history` with a full Candidates browse page (2026-06-05)
+  - Lists all developers who have ≥1 approved project AND a resume (`cvUrl`)
+  - Advanced filters: name/role search, skill filter, location filter, job mode chips (Remote/Hybrid/Onsite)
+  - Client-side filtering with live results count
+  - Table columns: Developer, Designation, Skills, Mode & Location, Links, Resume
+  - Backend: `GET /api/users/candidates` (recruiter-only, aggregates project count inline)
+  - Nav label updated from "Shortlisted Candidates" → "Candidates"
 
 ### 6. Messaging
 - [ ] Add "Message" CTA button on developer result cards (recruiter only)

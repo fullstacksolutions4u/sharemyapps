@@ -1,7 +1,19 @@
 import { useRef, useState, useEffect } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link, useNavigate } from 'react-router-dom';
-import { Menu, X, ChevronDown, LogOut, Plus, ShieldCheck, Bell, CheckCircle, XCircle, Clock, MessageSquare, UserCircle, AlertCircle, Heart, Star, MessageCircle, Headphones, Briefcase, Sparkles } from 'lucide-react';
+import { Menu, X, ChevronDown, LogOut, Plus, ShieldCheck, Bell, CheckCircle, XCircle, Clock, MessageSquare, UserCircle, AlertCircle, Heart, Star, MessageCircle, Headphones, Briefcase } from 'lucide-react';
+
+const GeminiIcon = ({ size = 14 }) => (
+  <svg width={size} height={size} viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M14 28C14 26.0633 13.6267 24.2433 12.88 22.54C12.1567 20.8367 11.165 19.355 9.905 18.095C8.645 16.835 7.1633 15.8433 5.46 15.12C3.7567 14.3733 1.9367 14 0 14C1.9367 14 3.7567 13.6383 5.46 12.915C7.1633 12.1683 8.645 11.165 9.905 9.905C11.165 8.645 12.1567 7.1633 12.88 5.46C13.6267 3.7567 14 1.9367 14 0C14 1.9367 14.3617 3.7567 15.085 5.46C15.8317 7.1633 16.835 8.645 18.095 9.905C19.355 11.165 20.8367 12.1683 22.54 12.915C24.2433 13.6383 26.0633 14 28 14C26.0633 14 24.2433 14.3733 22.54 15.12C20.8367 15.8433 19.355 16.835 18.095 18.095C16.835 19.355 15.8317 20.8367 15.085 22.54C14.3617 24.2433 14 26.0633 14 28Z" fill="url(#gemini-gradient)"/>
+    <defs>
+      <linearGradient id="gemini-gradient" x1="0" y1="0" x2="28" y2="28" gradientUnits="userSpaceOnUse">
+        <stop offset="0%" stopColor="#4F8EF7"/>
+        <stop offset="100%" stopColor="#8B5CF6"/>
+      </linearGradient>
+    </defs>
+  </svg>
+);
 import { useAuth } from '../context/AuthContext';
 import api from '../api/axios';
 import toast from 'react-hot-toast';
@@ -205,21 +217,19 @@ export default function Navbar() {
         <nav className="hidden md:flex items-center gap-6 mr-24">
           <Link to="/explore" className="text-base text-muted hover:text-text transition-colors">Web & Mobile Applications</Link>
           <Link to="/developers" className="text-base text-muted hover:text-text transition-colors">
-            {isRecruiter ? 'Our Developers' : 'Developers'}
+            {isRecruiter ? 'Portfolios' : 'Developers'}
           </Link>
           {isClient && (
             <Link to="/freelance-developers" className="text-base text-muted hover:text-text transition-colors">Freelance Developers</Link>
           )}
           {isRecruiter && (
             <Link to="/find-developers" className="inline-flex items-center gap-1.5 text-base text-muted hover:text-text transition-colors">
-              Find Developers
-              <span className="inline-flex items-center gap-0.5 text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-linear-to-r from-violet-100 to-accent/15 text-violet-500 border border-violet-200/60">
-                <Sparkles size={8} />AI
-              </span>
+              AI Talent Search
+              <GeminiIcon size={14} />
             </Link>
           )}
           {isRecruiter && (
-            <Link to="/find-developers/history" className="text-base text-muted hover:text-text transition-colors">Shortlisted Candidates</Link>
+            <Link to="/find-developers/history" className="text-base text-muted hover:text-text transition-colors">Developers Directory</Link>
           )}
           {isMentee && (
             <Link to="/mentors" className="text-base text-muted hover:text-text transition-colors">Mentors</Link>
@@ -312,21 +322,19 @@ export default function Navbar() {
         <div className="md:hidden bg-white border-t border-border px-4 py-4 space-y-3">
           <Link to="/explore" onClick={() => setMenuOpen(false)} className="block text-sm text-muted hover:text-text">Web & Mobile Applications</Link>
           <Link to="/developers" onClick={() => setMenuOpen(false)} className="block text-sm text-muted hover:text-text">
-            {isRecruiter ? 'Our Developers' : 'Developers'}
+            {isRecruiter ? 'Portfolios' : 'Developers'}
           </Link>
           {isClient && (
             <Link to="/freelance-developers" onClick={() => setMenuOpen(false)} className="block text-sm text-muted hover:text-text">Freelance Developers</Link>
           )}
           {isRecruiter && (
             <Link to="/find-developers" onClick={() => setMenuOpen(false)} className="inline-flex items-center gap-1.5 text-sm text-muted hover:text-text">
-              Find Developers
-              <span className="inline-flex items-center gap-0.5 text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-linear-to-r from-violet-100 to-accent/15 text-violet-500 border border-violet-200/60">
-                <Sparkles size={8} />AI
-              </span>
+              AI Talent Search
+              <GeminiIcon size={14} />
             </Link>
           )}
           {isRecruiter && (
-            <Link to="/find-developers/history" onClick={() => setMenuOpen(false)} className="block text-sm text-muted hover:text-text">Shortlisted Candidates</Link>
+            <Link to="/find-developers/history" onClick={() => setMenuOpen(false)} className="block text-sm text-muted hover:text-text">Developers Directory</Link>
           )}
           {isMentee && (
             <Link to="/mentors" onClick={() => setMenuOpen(false)} className="block text-sm text-muted hover:text-text">Mentors</Link>

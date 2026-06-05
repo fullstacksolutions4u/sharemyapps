@@ -4,6 +4,7 @@ import {
   AlertCircle, FileText, Briefcase, Pencil, Trash2, Eye, EyeOff,
   UserCircle2, Search, Zap, Award, Trophy, FolderOpen as FolderOpenIcon,
   Heart, Star, Users, History, ChevronDown, ChevronUp, ExternalLink,
+  MapPin, Calendar, IndianRupee, BookOpen, Monitor, Languages,
 } from 'lucide-react';
 import api from '../../api/axios';
 import toast from 'react-hot-toast';
@@ -30,22 +31,44 @@ const RESUME_TEMPLATE = JSON.stringify({
 
 function UserEditPage({ user: initial, onBack, onSaved, allDesignations = [] }) {
   const [form, setForm] = useState({
-    name:           initial.name           || '',
-    designations:   initial.designations?.filter(Boolean) || [],
-    mentorshipTech: initial.mentorshipTech?.filter(Boolean) || [],
-    phone:          initial.phone          || '',
-    linkedinUrl:    initial.linkedinUrl    || '',
-    githubUrl:      initial.githubUrl      || '',
-    leetcodeUrl:    initial.leetcodeUrl    || '',
-    portfolioUrl:   initial.portfolioUrl   || '',
-    cvUrl:          initial.cvUrl          || '',
-    companyName:    initial.companyName    || '',
-    companyWebsite: initial.companyWebsite || '',
-    industry:       initial.industry       || '',
-    requirements:   initial.requirements   || '',
-    badge:          initial.badge          || 'new_member',
-    hidden:         initial.hidden         || false,
-    userType:       initial.userType       || 'developer',
+    name:                initial.name                || '',
+    designations:        initial.designations?.filter(Boolean) || [],
+    mentorshipTech:      (() => {
+      const mt = initial.mentorshipTech?.filter(Boolean) || [];
+      if (mt.length > 0) return mt;
+      // Fall back to resumeData.skills if mentorshipTech is empty
+      const rs = initial.resumeData?.skills;
+      if (Array.isArray(rs)) return rs.filter(Boolean);
+      if (rs && typeof rs === 'object') return Object.values(rs).flat().filter(Boolean);
+      return [];
+    })(),
+    languagePreference:  initial.languagePreference?.filter(Boolean).length ? initial.languagePreference.filter(Boolean) : [''],
+    phone:               initial.phone               || '',
+    bio:                 initial.bio                 || '',
+    gender:              initial.gender              || '',
+    place:               initial.place               || '',
+    dateOfBirth:         initial.dateOfBirth ? new Date(initial.dateOfBirth).toISOString().split('T')[0] : '',
+    linkedinUrl:         initial.linkedinUrl         || '',
+    githubUrl:           initial.githubUrl           || '',
+    leetcodeUrl:         initial.leetcodeUrl         || '',
+    portfolioUrl:        initial.portfolioUrl        || '',
+    cvUrl:               initial.cvUrl               || '',
+    companyName:         initial.companyName         || '',
+    companyWebsite:      initial.companyWebsite      || '',
+    industry:            initial.industry            || '',
+    requirements:        initial.requirements        || '',
+    badge:               initial.badge               || 'new_member',
+    hidden:              initial.hidden              || false,
+    userType:            initial.userType            || 'developer',
+    joiningAvailability: initial.joiningAvailability || '',
+    currentSalary:       initial.currentSalary       ?? '',
+    expectedSalary:      initial.expectedSalary      ?? '',
+    preferredLocations:  initial.preferredLocations?.filter(Boolean).length ? initial.preferredLocations.filter(Boolean) : [''],
+    jobMode:             initial.jobMode             || [],
+    freelanceAvailable:  initial.freelanceAvailable  || false,
+    freelanceRate:       initial.freelanceRate        ?? '',
+    mentorshipAvailable: initial.mentorshipAvailable || false,
+    mentorshipRate:      initial.mentorshipRate       ?? '',
   });
   const [saving, setSaving] = useState(false);
   const [designationInput, setDesignationInput] = useState('');
@@ -316,6 +339,181 @@ function UserEditPage({ user: initial, onBack, onSaved, allDesignations = [] }) 
               ) : (
                 <p className="text-xs text-[#9CA3AF] italic">No skills added yet.</p>
               )}
+            </div>
+          )}
+
+          {/* Personal Details */}
+          {form.userType !== 'client' && (
+            <div className="bg-white border border-[#E5E1DA] rounded-2xl p-5 space-y-4">
+              <h3 className="text-sm font-semibold text-[#1A1A1A] flex items-center gap-2">
+                <UserCircle2 size={15} className="text-[#00A693]" /> Personal Details
+              </h3>
+
+              {/* Bio */}
+              <div>
+                <label className="block text-xs font-medium text-[#6B7280] mb-1.5">Bio</label>
+                <textarea rows={3} value={form.bio} onChange={set('bio')} className={`${inp} resize-none`} placeholder="Brief developer bio…" />
+              </div>
+
+              {/* Gender */}
+              <div>
+                <label className="block text-xs font-medium text-[#6B7280] mb-1.5">Gender</label>
+                <div className="flex gap-2">
+                  {[{ label: 'Male', value: 'male' }, { label: 'Female', value: 'female' }, { label: 'Other', value: 'other' }].map(opt => (
+                    <button key={opt.value} type="button"
+                      onClick={() => setForm(f => ({ ...f, gender: f.gender === opt.value ? '' : opt.value }))}
+                      className={`px-4 py-2 rounded-xl text-xs font-medium border transition-colors ${form.gender === opt.value ? 'bg-[#00A693] text-white border-[#00A693]' : 'bg-white text-[#6B7280] border-[#E5E1DA] hover:border-[#00A693]/40'}`}>
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {/* Place */}
+                <div>
+                  <label className="block text-xs font-medium text-[#6B7280] mb-1.5"><MapPin size={11} className="inline mr-1" />Place</label>
+                  <input type="text" value={form.place} onChange={set('place')} className={inp} placeholder="e.g. Bangalore, Kerala" />
+                </div>
+                {/* Date of Birth */}
+                <div>
+                  <label className="block text-xs font-medium text-[#6B7280] mb-1.5"><Calendar size={11} className="inline mr-1" />Date of Birth</label>
+                  <input type="date" value={form.dateOfBirth} onChange={set('dateOfBirth')} className={inp} />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Career Preferences */}
+          {form.userType !== 'client' && (
+            <div className="bg-white border border-[#E5E1DA] rounded-2xl p-5 space-y-4">
+              <h3 className="text-sm font-semibold text-[#1A1A1A] flex items-center gap-2">
+                <Briefcase size={15} className="text-[#00A693]" /> Career Preferences
+              </h3>
+
+              {/* Joining Availability */}
+              <div>
+                <label className="block text-xs font-medium text-[#6B7280] mb-1.5"><Clock size={11} className="inline mr-1" />Joining Availability</label>
+                <select value={form.joiningAvailability} onChange={set('joiningAvailability')} className={inp}>
+                  <option value="">Select…</option>
+                  {['Immediately', '15 days', '1 month', '2 months', '3 months', '3+ months'].map(o => (
+                    <option key={o} value={o}>{o}</option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Salary */}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-medium text-[#6B7280] mb-1.5"><IndianRupee size={11} className="inline mr-1" />Current Salary (per year)</label>
+                  <input type="number" min="0" value={form.currentSalary} onChange={set('currentSalary')} className={inp} placeholder="e.g. 350000" />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-[#6B7280] mb-1.5"><IndianRupee size={11} className="inline mr-1" />Expected Salary (per year)</label>
+                  <input type="number" min="0" value={form.expectedSalary} onChange={set('expectedSalary')} className={inp} placeholder="e.g. 500000" />
+                </div>
+              </div>
+
+              {/* Preferred Locations */}
+              <div>
+                <label className="block text-xs font-medium text-[#6B7280] mb-1.5"><MapPin size={11} className="inline mr-1" />Preferred Locations</label>
+                <div className="space-y-2">
+                  {form.preferredLocations.map((loc, i) => (
+                    <div key={i} className="flex gap-2 items-center">
+                      <input type="text" value={loc}
+                        onChange={e => setForm(f => ({ ...f, preferredLocations: f.preferredLocations.map((v, j) => j === i ? e.target.value : v) }))}
+                        className={inp} placeholder="e.g. Bangalore, Remote" />
+                      {form.preferredLocations.length > 1 && (
+                        <button type="button" onClick={() => setForm(f => ({ ...f, preferredLocations: f.preferredLocations.filter((_, j) => j !== i) }))}
+                          className="w-8 h-8 flex items-center justify-center text-[#9CA3AF] hover:text-red-400 hover:bg-red-50 rounded-lg transition-colors">
+                          <X size={13} />
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                  <button type="button"
+                    onClick={() => setForm(f => ({ ...f, preferredLocations: [...f.preferredLocations, ''] }))}
+                    className="inline-flex items-center gap-1 text-xs text-[#00A693] font-medium">
+                    <Plus size={11} /> Add location
+                  </button>
+                </div>
+              </div>
+
+              {/* Job Mode */}
+              <div>
+                <label className="block text-xs font-medium text-[#6B7280] mb-1.5"><Monitor size={11} className="inline mr-1" />Job Mode</label>
+                <div className="flex flex-wrap gap-2">
+                  {['Remote', 'Hybrid', 'On-site'].map(mode => {
+                    const active = form.jobMode.includes(mode);
+                    return (
+                      <button key={mode} type="button"
+                        onClick={() => setForm(f => ({ ...f, jobMode: active ? f.jobMode.filter(m => m !== mode) : [...f.jobMode, mode] }))}
+                        className={`px-3 py-1.5 rounded-xl text-xs font-medium border transition-colors ${active ? 'bg-[#00A693] text-white border-[#00A693]' : 'bg-white text-[#6B7280] border-[#E5E1DA] hover:border-[#00A693]/40'}`}>
+                        {mode}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Freelance */}
+              <div className="space-y-2">
+                <label className="flex items-center justify-between p-3 bg-[#F9F8F6] rounded-xl cursor-pointer select-none">
+                  <p className="text-xs font-medium text-[#1A1A1A]">Available for freelance?</p>
+                  <div onClick={() => setForm(f => ({ ...f, freelanceAvailable: !f.freelanceAvailable }))}
+                    className={`w-9 h-5 rounded-full transition-colors relative cursor-pointer ${form.freelanceAvailable ? 'bg-[#00A693]' : 'bg-[#E5E1DA]'}`}>
+                    <span className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${form.freelanceAvailable ? 'translate-x-4' : 'translate-x-0.5'}`} />
+                  </div>
+                </label>
+                {form.freelanceAvailable && (
+                  <div>
+                    <label className="block text-xs font-medium text-[#6B7280] mb-1.5">Freelance Rate / hour (₹)</label>
+                    <input type="number" min="0" value={form.freelanceRate} onChange={set('freelanceRate')} className={inp} placeholder="e.g. 500" />
+                  </div>
+                )}
+              </div>
+
+              {/* Mentorship */}
+              <div className="space-y-2">
+                <label className="flex items-center justify-between p-3 bg-[#F9F8F6] rounded-xl cursor-pointer select-none">
+                  <p className="text-xs font-medium text-[#1A1A1A]">Available for mentorship?</p>
+                  <div onClick={() => setForm(f => ({ ...f, mentorshipAvailable: !f.mentorshipAvailable }))}
+                    className={`w-9 h-5 rounded-full transition-colors relative cursor-pointer ${form.mentorshipAvailable ? 'bg-[#00A693]' : 'bg-[#E5E1DA]'}`}>
+                    <span className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${form.mentorshipAvailable ? 'translate-x-4' : 'translate-x-0.5'}`} />
+                  </div>
+                </label>
+                {form.mentorshipAvailable && (
+                  <div>
+                    <label className="block text-xs font-medium text-[#6B7280] mb-1.5">Mentorship Rate / session (₹)</label>
+                    <input type="number" min="0" value={form.mentorshipRate} onChange={set('mentorshipRate')} className={inp} placeholder="e.g. 1000" />
+                  </div>
+                )}
+              </div>
+
+              {/* Language Preference */}
+              <div>
+                <label className="block text-xs font-medium text-[#6B7280] mb-1.5"><Languages size={11} className="inline mr-1" />Language Preference</label>
+                <div className="space-y-2">
+                  {form.languagePreference.map((lang, i) => (
+                    <div key={i} className="flex gap-2 items-center">
+                      <input type="text" value={lang}
+                        onChange={e => setForm(f => ({ ...f, languagePreference: f.languagePreference.map((v, j) => j === i ? e.target.value : v) }))}
+                        className={inp} placeholder="e.g. English, Hindi" />
+                      {form.languagePreference.length > 1 && (
+                        <button type="button" onClick={() => setForm(f => ({ ...f, languagePreference: f.languagePreference.filter((_, j) => j !== i) }))}
+                          className="w-8 h-8 flex items-center justify-center text-[#9CA3AF] hover:text-red-400 hover:bg-red-50 rounded-lg transition-colors">
+                          <X size={13} />
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                  <button type="button"
+                    onClick={() => setForm(f => ({ ...f, languagePreference: [...f.languagePreference, ''] }))}
+                    className="inline-flex items-center gap-1 text-xs text-[#00A693] font-medium">
+                    <Plus size={11} /> Add language
+                  </button>
+                </div>
+              </div>
             </div>
           )}
 

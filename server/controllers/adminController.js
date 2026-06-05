@@ -256,27 +256,41 @@ exports.toggleUserHidden = async (req, res) => {
 
 exports.adminUpdateUser = async (req, res) => {
   try {
-    const allowed = [
-      'name', 'phone',
+    const strFields = [
+      'name', 'phone', 'bio',
       'linkedinUrl', 'githubUrl', 'leetcodeUrl', 'portfolioUrl', 'cvUrl',
       'companyName', 'companyWebsite', 'industry', 'requirements',
-      'badge', 'hidden', 'userType',
+      'badge', 'userType', 'joiningAvailability', 'place',
     ];
     const update = {};
-    for (const key of allowed) {
+    for (const key of strFields) {
       if (req.body[key] !== undefined) update[key] = req.body[key];
     }
-    if (req.body.designations !== undefined) {
-      update.designations = (Array.isArray(req.body.designations) ? req.body.designations : [req.body.designations])
-        .map(d => d.trim()).filter(Boolean);
-    }
-    if (req.body.mentorshipTech !== undefined) {
-      update.mentorshipTech = (Array.isArray(req.body.mentorshipTech) ? req.body.mentorshipTech : [req.body.mentorshipTech])
-        .map(t => t.trim()).filter(Boolean);
-    }
+    if (req.body.hidden !== undefined) update.hidden = Boolean(req.body.hidden);
+    if (req.body.freelanceAvailable !== undefined) update.freelanceAvailable = Boolean(req.body.freelanceAvailable);
+    if (req.body.mentorshipAvailable !== undefined) update.mentorshipAvailable = Boolean(req.body.mentorshipAvailable);
+
+    const toNum = v => (v === '' || v === null || v === undefined) ? null : Number(v);
+    if (req.body.freelanceRate !== undefined) update.freelanceRate = toNum(req.body.freelanceRate);
+    if (req.body.mentorshipRate !== undefined) update.mentorshipRate = toNum(req.body.mentorshipRate);
+    if (req.body.currentSalary !== undefined) update.currentSalary = toNum(req.body.currentSalary);
+    if (req.body.expectedSalary !== undefined) update.expectedSalary = toNum(req.body.expectedSalary);
+
+    if (req.body.gender !== undefined)
+      update.gender = ['male', 'female', 'other', ''].includes(req.body.gender) ? req.body.gender : '';
+    if (req.body.dateOfBirth !== undefined)
+      update.dateOfBirth = req.body.dateOfBirth ? new Date(req.body.dateOfBirth) : null;
+
+    const toArr = (v) => (Array.isArray(v) ? v : [v]).map(s => String(s).trim()).filter(Boolean);
+    if (req.body.designations !== undefined) update.designations = toArr(req.body.designations);
+    if (req.body.mentorshipTech !== undefined) update.mentorshipTech = toArr(req.body.mentorshipTech);
+    if (req.body.preferredLocations !== undefined) update.preferredLocations = toArr(req.body.preferredLocations);
+    if (req.body.jobMode !== undefined) update.jobMode = toArr(req.body.jobMode);
+    if (req.body.languagePreference !== undefined) update.languagePreference = toArr(req.body.languagePreference);
+
     if (update.badge && !['new_member', 'active', 'top', 'champion'].includes(update.badge))
       return res.status(400).json({ message: 'Invalid badge value' });
-    if (update.userType && !['developer', 'client'].includes(update.userType))
+    if (update.userType && !['developer', 'client', 'recruiter', 'mentee', 'mentor'].includes(update.userType))
       return res.status(400).json({ message: 'Invalid userType value' });
 
     const user = await User.findByIdAndUpdate(req.params.id, update, { new: true });

@@ -133,6 +133,52 @@ router.get('/developers', async (req, res) => {
   }
 });
 
+// GET /api/users/candidates — developers with ≥1 approved project + resume, for recruiter browse
+router.get('/candidates', protect, async (req, res) => {
+  try {
+    if (req.user.userType !== 'recruiter') {
+      return res.status(403).json({ message: 'Recruiter access only' });
+    }
+
+    const candidates = await User.aggregate([
+      {
+        $match: {
+          userType: { $in: ['developer', 'mentee'] },
+          role: { $ne: 'admin' },
+          hidden: { $ne: true },
+          isDeleted: { $ne: true },
+          cvUrl: { $exists: true, $nin: ['', null] },
+        },
+      },
+      {
+        $lookup: {
+          from: 'projects',
+          let: { uid: '$_id' },
+          pipeline: [
+            { $match: { $expr: { $and: [{ $eq: ['$owner', '$$uid'] }, { $eq: ['$status', 'approved'] }] } } },
+            { $project: { _id: 1 } },
+          ],
+          as: '_projects',
+        },
+      },
+      { $match: { $expr: { $gt: [{ $size: '$_projects' }, 0] } } },
+      { $addFields: { projectCount: { $size: '$_projects' } } },
+      {
+        $project: {
+          password: 0, googleId: 0, companyName: 0, companyWebsite: 0,
+          industry: 0, requirements: 0, resetOtp: 0, resetOtpExpiry: 0,
+          _projects: 0,
+        },
+      },
+      { $sort: { createdAt: -1 } },
+    ]);
+
+    res.json(candidates);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
 // GET /api/users/mentors — developers who opted in for mentorship with tech filled
 router.get('/mentors', protect, async (req, res) => {
   try {

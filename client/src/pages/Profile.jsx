@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import {
   ArrowLeft, ArrowRight, User, Mail, Phone, Link2, GitBranch,
   Globe, Save, Trash2, AlertTriangle, Camera, Loader2, FileText, Check, Plus, X as XIcon,
-  Briefcase, BookOpen, IndianRupee, Code2, Languages, Clock, MapPin, Monitor,
+  Briefcase, BookOpen, IndianRupee, Code2, Languages, Clock, MapPin, Monitor, Calendar,
 } from 'lucide-react';
 
 const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
@@ -111,6 +111,9 @@ export default function Profile() {
     expectedSalary: user?.expectedSalary ?? '',
     preferredLocations: user?.preferredLocations?.length ? user.preferredLocations : [''],
     jobMode: user?.jobMode || [],
+    gender: user?.gender || '',
+    place: user?.place || '',
+    dateOfBirth: user?.dateOfBirth ? new Date(user.dateOfBirth).toISOString().split('T')[0] : '',
   });
   const [saving, setSaving] = useState(false);
   const [showDelete, setShowDelete] = useState(false);
@@ -332,6 +335,54 @@ export default function Profile() {
                   onChange={handle}
                   placeholder="+1 234 567 8900"
                   type="tel"
+                />
+
+                {/* Gender */}
+                <div>
+                  <label className="block text-sm font-medium text-text mb-2">
+                    Gender <span className="text-xs text-muted font-normal">(optional)</span>
+                  </label>
+                  <div className="flex gap-2">
+                    {[
+                      { label: 'Male', value: 'male' },
+                      { label: 'Female', value: 'female' },
+                      { label: 'Other', value: 'other' },
+                    ].map(opt => (
+                      <button
+                        key={opt.value}
+                        type="button"
+                        onClick={() => setForm(f => ({ ...f, gender: f.gender === opt.value ? '' : opt.value }))}
+                        className={`px-5 py-2.5 rounded-xl text-sm font-medium border transition-colors ${
+                          form.gender === opt.value
+                            ? 'bg-accent text-white border-accent'
+                            : 'bg-white text-muted border-border hover:border-accent/40 hover:text-accent'
+                        }`}
+                      >
+                        {opt.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Place */}
+                <Field
+                  icon={<MapPin size={15} />}
+                  label={<>Place <span className="text-xs text-muted font-normal">(city / state)</span></>}
+                  name="place"
+                  value={form.place}
+                  onChange={handle}
+                  placeholder="e.g. Bangalore, Kerala"
+                />
+
+                {/* Date of Birth */}
+                <Field
+                  icon={<Calendar size={15} />}
+                  label={<>Date of Birth <span className="text-xs text-muted font-normal">(optional)</span></>}
+                  name="dateOfBirth"
+                  value={form.dateOfBirth}
+                  onChange={handle}
+                  type="date"
+                  placeholder=""
                 />
               </div>
             )}
