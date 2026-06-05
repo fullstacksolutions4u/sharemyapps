@@ -61,7 +61,7 @@ exports.replyToInterest = async (req, res) => {
   try {
     const { userId, message } = req.body;
     if (!userId || !message?.trim()) return res.status(400).json({ message: 'userId and message required' });
-    await Message.create({ sender: req.user._id, recipient: userId, body: message });
+    await Message.create({ sender: req.user._id, recipient: userId, text: message });
     res.json({ message: 'Sent' });
   } catch (err) {
     res.status(500).json({ message: 'Server error' });
