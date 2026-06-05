@@ -4,7 +4,7 @@ import {
   AlertCircle, FileText, Briefcase, Pencil, Trash2, Eye, EyeOff,
   UserCircle2, Search, Zap, Award, Trophy, FolderOpen as FolderOpenIcon,
   Heart, Star, Users, History, ChevronDown, ChevronUp, ExternalLink,
-  MapPin, Calendar, IndianRupee, BookOpen, Monitor, Languages,
+  MapPin, Calendar, IndianRupee, Monitor, Languages,
 } from 'lucide-react';
 import api from '../../api/axios';
 import toast from 'react-hot-toast';

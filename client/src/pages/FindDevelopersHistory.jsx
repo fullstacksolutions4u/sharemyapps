@@ -37,7 +37,7 @@ function getYears(dev) {
       const start = e.startDate ? new Date(e.startDate) : null;
       const end = e.endDate ? new Date(e.endDate) : new Date();
       if (start && !isNaN(start)) months += Math.max(0, (end - start) / (1000 * 60 * 60 * 24 * 30));
-    } catch {}
+    } catch { /* ignore */ }
   }
   return months > 0 ? months / 12 : exp.length * 1.5;
 }
@@ -77,9 +77,6 @@ export default function Candidates() {
       .catch(() => toast.error('Failed to load candidates'))
       .finally(() => setLoading(false));
   }, [user, navigate]);
-
-  // Reset to page 1 whenever filters change
-  useEffect(() => { setPage(1); }, [designation, stateFilter, skill, expRange, gender]);
 
   const filtered = useMemo(() => {
     let list = candidates;
@@ -135,6 +132,7 @@ export default function Candidates() {
     setSkill('');
     setExpRange('');
     setGender('');
+    setPage(1);
   };
 
   return (
@@ -156,7 +154,7 @@ export default function Candidates() {
               type="text"
               placeholder="Designation…"
               value={designation}
-              onChange={e => setDesignation(e.target.value)}
+              onChange={e => { setDesignation(e.target.value); setPage(1); }}
               className="w-full pl-8 pr-3 py-2 text-sm border border-border rounded-lg bg-bg focus:outline-none focus:border-accent"
             />
           </div>
@@ -164,7 +162,7 @@ export default function Candidates() {
             <MapPin size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted pointer-events-none" />
             <select
               value={stateFilter}
-              onChange={e => setStateFilter(e.target.value)}
+              onChange={e => { setStateFilter(e.target.value); setPage(1); }}
               className="w-full appearance-none pl-8 pr-8 py-2 text-sm border border-border rounded-lg bg-bg focus:outline-none focus:border-accent text-text"
             >
               <option value="">All States</option>
@@ -180,14 +178,14 @@ export default function Candidates() {
               type="text"
               placeholder="Skill…"
               value={skill}
-              onChange={e => setSkill(e.target.value)}
+              onChange={e => { setSkill(e.target.value); setPage(1); }}
               className="w-full pl-8 pr-3 py-2 text-sm border border-border rounded-lg bg-bg focus:outline-none focus:border-accent"
             />
           </div>
           <div className="relative min-w-36">
             <select
               value={expRange}
-              onChange={e => setExpRange(e.target.value)}
+              onChange={e => { setExpRange(e.target.value); setPage(1); }}
               className="w-full appearance-none pl-3 pr-8 py-2 text-sm border border-border rounded-lg bg-bg focus:outline-none focus:border-accent text-text"
             >
               {EXP_RANGES.map(r => (
@@ -217,7 +215,7 @@ export default function Candidates() {
           ].map(opt => (
             <button
               key={opt.value}
-              onClick={() => setGender(opt.value)}
+              onClick={() => { setGender(opt.value); setPage(1); }}
               className={`text-xs px-3 py-1 rounded-full border font-medium transition-colors
                 ${gender === opt.value
                   ? 'bg-accent text-white border-accent'

@@ -43,7 +43,7 @@ const { user, setUser, logout } = useAuth();
       fd.append('avatar', file);
       const res = await api.put('/auth/profile', fd, { headers: { 'Content-Type': 'multipart/form-data' } });
       setUser(res.data.user);
-    } catch {}
+    } catch { /* ignore */ }
     setAvatarUploading(false);
     e.target.value = '';
   };
