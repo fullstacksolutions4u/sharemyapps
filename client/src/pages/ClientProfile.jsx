@@ -10,9 +10,44 @@ import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
 
 const INDUSTRIES = [
-  'Technology', 'Healthcare', 'Finance & Banking', 'E-Commerce', 'Education',
-  'Real Estate', 'Marketing & Advertising', 'Legal', 'Manufacturing', 'Logistics',
-  'Media & Entertainment', 'Non-Profit', 'Other',
+  'Technology',
+  'SaaS / Software Products',
+  'IT Services & Consulting',
+  'Cybersecurity',
+  'Gaming & Esports',
+  'Healthcare',
+  'Pharmaceutical & Biotech',
+  'Finance & Banking',
+  'Insurance',
+  'FinTech',
+  'E-Commerce',
+  'Retail & Consumer Goods',
+  'Education',
+  'EdTech',
+  'Real Estate',
+  'PropTech',
+  'Marketing & Advertising',
+  'Media & Entertainment',
+  'Legal',
+  'LegalTech',
+  'Manufacturing',
+  'Automotive',
+  'Aerospace & Defense',
+  'Agriculture & FoodTech',
+  'Energy & Utilities',
+  'CleanTech',
+  'Logistics & Supply Chain',
+  'Transportation',
+  'Hospitality & Tourism',
+  'Construction & Engineering',
+  'Telecommunications',
+  'HR & Recruitment',
+  'Staffing & Outsourcing',
+  'Consulting & Professional Services',
+  'Research & Development',
+  'Government & Public Sector',
+  'Non-Profit',
+  'Other',
 ];
 
 const DURATIONS = ['< 1 month', '1–3 months', '3–6 months', '6+ months'];
@@ -306,7 +341,7 @@ function RecruiterProfile({ user, setUser, navigate }) {
       const res = await api.put('/auth/profile', form);
       setUser(res.data.user);
       toast.success(isSetup ? 'Profile set up! Welcome aboard.' : 'Profile updated!');
-      if (isSetup) navigate('/developers');
+      if (isSetup) navigate('/find-developers');
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to save profile');
     } finally {

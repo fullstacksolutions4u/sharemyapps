@@ -1,7 +1,7 @@
 import { useRef, useState, useEffect } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link, useNavigate } from 'react-router-dom';
-import { Menu, X, ChevronDown, LogOut, Plus, ShieldCheck, Bell, CheckCircle, XCircle, Clock, MessageSquare, UserCircle, AlertCircle, Heart, Star, MessageCircle, Headphones, Briefcase } from 'lucide-react';
+import { Menu, X, ChevronDown, LogOut, Plus, ShieldCheck, Bell, CheckCircle, XCircle, Clock, MessageSquare, UserCircle, AlertCircle, Heart, Star, MessageCircle, Headphones, Briefcase, Sparkles } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import api from '../api/axios';
 import toast from 'react-hot-toast';
@@ -172,7 +172,11 @@ export default function Navbar() {
   const isRecruiter = user?.userType === 'recruiter';
   const isClient = user?.userType === 'client';
   const isMentee = user?.userType === 'mentee';
-  const profileLink = (isRecruiter || isClient) ? '/client-profile' : '/profile';
+  const profileLink = isRecruiter
+    ? (user?.companyName ? '/find-developers' : '/client-profile')
+    : isClient
+      ? '/client-profile'
+      : '/profile';
 
   const handleLogout = async () => {
     await logout();
@@ -207,7 +211,12 @@ export default function Navbar() {
             <Link to="/freelance-developers" className="text-base text-muted hover:text-text transition-colors">Freelance Developers</Link>
           )}
           {isRecruiter && (
-            <Link to="/find-developers" className="text-base text-muted hover:text-text transition-colors">Find Developers</Link>
+            <Link to="/find-developers" className="inline-flex items-center gap-1.5 text-base text-muted hover:text-text transition-colors">
+              Find Developers
+              <span className="inline-flex items-center gap-0.5 text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-linear-to-r from-violet-100 to-accent/15 text-violet-500 border border-violet-200/60">
+                <Sparkles size={8} />AI
+              </span>
+            </Link>
           )}
           {isRecruiter && (
             <Link to="/find-developers/history" className="text-base text-muted hover:text-text transition-colors">Shortlisted Candidates</Link>
@@ -309,7 +318,12 @@ export default function Navbar() {
             <Link to="/freelance-developers" onClick={() => setMenuOpen(false)} className="block text-sm text-muted hover:text-text">Freelance Developers</Link>
           )}
           {isRecruiter && (
-            <Link to="/find-developers" onClick={() => setMenuOpen(false)} className="block text-sm text-muted hover:text-text">Find Developers</Link>
+            <Link to="/find-developers" onClick={() => setMenuOpen(false)} className="inline-flex items-center gap-1.5 text-sm text-muted hover:text-text">
+              Find Developers
+              <span className="inline-flex items-center gap-0.5 text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-linear-to-r from-violet-100 to-accent/15 text-violet-500 border border-violet-200/60">
+                <Sparkles size={8} />AI
+              </span>
+            </Link>
           )}
           {isRecruiter && (
             <Link to="/find-developers/history" onClick={() => setMenuOpen(false)} className="block text-sm text-muted hover:text-text">Shortlisted Candidates</Link>

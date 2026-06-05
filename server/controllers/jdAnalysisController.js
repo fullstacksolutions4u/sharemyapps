@@ -53,4 +53,13 @@ const adminGetUserJDHistory = async (req, res) => {
   }
 };
 
-module.exports = { saveSearchHistory, getSearchHistory, deleteSearchHistory, adminGetUserJDHistory };
+const clearAllSearchHistory = async (req, res) => {
+  try {
+    await JDSearchHistory.deleteMany({ user: req.user._id });
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+module.exports = { saveSearchHistory, getSearchHistory, deleteSearchHistory, clearAllSearchHistory, adminGetUserJDHistory };

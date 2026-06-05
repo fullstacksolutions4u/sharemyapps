@@ -270,6 +270,10 @@ exports.adminUpdateUser = async (req, res) => {
       update.designations = (Array.isArray(req.body.designations) ? req.body.designations : [req.body.designations])
         .map(d => d.trim()).filter(Boolean);
     }
+    if (req.body.mentorshipTech !== undefined) {
+      update.mentorshipTech = (Array.isArray(req.body.mentorshipTech) ? req.body.mentorshipTech : [req.body.mentorshipTech])
+        .map(t => t.trim()).filter(Boolean);
+    }
     if (update.badge && !['new_member', 'active', 'top', 'champion'].includes(update.badge))
       return res.status(400).json({ message: 'Invalid badge value' });
     if (update.userType && !['developer', 'client'].includes(update.userType))

@@ -246,7 +246,8 @@ exports.googleCallback = (req, res) => {
   let dest = '/select-role';
   if (req.user.role === 'admin') dest = '/admin';
   else if (req.user.onboardingComplete) {
-    if (req.user.userType === 'client' || req.user.userType === 'recruiter') dest = '/client-profile';
+    if (req.user.userType === 'recruiter') dest = req.user.companyName ? '/find-developers' : '/client-profile';
+    else if (req.user.userType === 'client') dest = '/client-profile';
     else if (req.user.userType === 'mentee') dest = '/developers';
     else dest = '/dashboard';
   }

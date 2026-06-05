@@ -32,6 +32,7 @@ function UserEditPage({ user: initial, onBack, onSaved, allDesignations = [] }) 
   const [form, setForm] = useState({
     name:           initial.name           || '',
     designations:   initial.designations?.filter(Boolean) || [],
+    mentorshipTech: initial.mentorshipTech?.filter(Boolean) || [],
     phone:          initial.phone          || '',
     linkedinUrl:    initial.linkedinUrl    || '',
     githubUrl:      initial.githubUrl      || '',
@@ -48,6 +49,7 @@ function UserEditPage({ user: initial, onBack, onSaved, allDesignations = [] }) 
   });
   const [saving, setSaving] = useState(false);
   const [designationInput, setDesignationInput] = useState('');
+  const [skillInput, setSkillInput] = useState('');
   const [designationDropdownOpen, setDesignationDropdownOpen] = useState(false);
   const [resumeJson, setResumeJson] = useState(initial.resumeData ? JSON.stringify(initial.resumeData, null, 2) : '');
   const [resumeJsonError, setResumeJsonError] = useState('');
@@ -255,6 +257,65 @@ function UserEditPage({ user: initial, onBack, onSaved, allDesignations = [] }) 
                 <label className="block text-xs font-medium text-[#6B7280] mb-1.5">Requirements</label>
                 <textarea rows={3} value={form.requirements} onChange={set('requirements')} className={`${inp} resize-none`} placeholder="Hiring needs or project requirements" />
               </div>
+            </div>
+          )}
+
+          {form.userType !== 'client' && (
+            <div className="bg-white border border-[#E5E1DA] rounded-2xl p-5 space-y-4">
+              <h3 className="text-sm font-semibold text-[#1A1A1A] flex items-center gap-2">
+                <Tag size={15} className="text-accent" /> Skills
+              </h3>
+              <p className="text-xs text-[#9CA3AF] -mt-1">Tech skills used for recruiter JD matching. Add each skill separately.</p>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={skillInput}
+                  onChange={e => setSkillInput(e.target.value)}
+                  onKeyDown={e => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      const val = skillInput.trim();
+                      if (val && !form.mentorshipTech.includes(val)) {
+                        setForm(f => ({ ...f, mentorshipTech: [...f.mentorshipTech, val] }));
+                        setSkillInput('');
+                      }
+                    }
+                  }}
+                  className={inp}
+                  placeholder="e.g. React, Node.js, Python…"
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    const val = skillInput.trim();
+                    if (val && !form.mentorshipTech.includes(val)) {
+                      setForm(f => ({ ...f, mentorshipTech: [...f.mentorshipTech, val] }));
+                      setSkillInput('');
+                    }
+                  }}
+                  className="w-10 h-10 flex items-center justify-center bg-accent hover:bg-accent-hover text-white rounded-xl transition-colors shrink-0"
+                >
+                  <Plus size={16} />
+                </button>
+              </div>
+              {form.mentorshipTech.length > 0 ? (
+                <div className="flex flex-wrap gap-2">
+                  {form.mentorshipTech.map((skill, i) => (
+                    <span key={i} className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full bg-accent-light text-accent border border-accent/20 font-medium">
+                      {skill}
+                      <button
+                        type="button"
+                        onClick={() => setForm(f => ({ ...f, mentorshipTech: f.mentorshipTech.filter((_, j) => j !== i) }))}
+                        className="hover:text-red-500 transition-colors ml-0.5"
+                      >
+                        <X size={11} />
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-xs text-[#9CA3AF] italic">No skills added yet.</p>
+              )}
             </div>
           )}
 

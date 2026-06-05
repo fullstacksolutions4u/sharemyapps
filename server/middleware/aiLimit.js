@@ -1,6 +1,6 @@
 const User = require('../models/User');
 
-const DAILY_LIMIT = 10;
+const DAILY_LIMIT = 50;
 
 module.exports = async function aiLimit(req, res, next) {
   try {

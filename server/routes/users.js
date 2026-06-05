@@ -304,7 +304,7 @@ router.post('/find-developers', protect, aiLimit, async (req, res) => {
       })
       .filter(d => d.matchScore > 0)
       .sort((a, b) => b.matchScore - a.matchScore || b.createdAt - a.createdAt)
-      .slice(0, 20);
+      .slice(0, 40);
 
     res.json({ developers: scored, extracted });
   } catch (err) {
