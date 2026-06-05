@@ -244,6 +244,98 @@ router.delete('/client-projects/:projectId', protect, async (req, res) => {
   }
 });
 
+// ── AI match helpers ─────────────────────────────────────────────────────────
+
+const ALIAS_MAP = {
+  'reactjs': 'react', 'react.js': 'react',
+  'nodejs': 'node.js', 'node': 'node.js',
+  'nextjs': 'next.js', 'next': 'next.js',
+  'nuxtjs': 'nuxt.js', 'nuxt': 'nuxt.js',
+  'vuejs': 'vue.js', 'vue': 'vue.js',
+  'expressjs': 'express.js', 'express': 'express.js',
+  'ts': 'typescript', 'js': 'javascript',
+  'postgres': 'postgresql',
+  'mongo': 'mongodb',
+  'mssql': 'sql server', 'ms sql': 'sql server',
+  'gcp': 'google cloud', 'amazon web services': 'aws',
+  'tailwindcss': 'tailwind', 'tailwind css': 'tailwind',
+  'react-native': 'react native',
+};
+
+function normalize(str) {
+  const lower = str.toLowerCase().trim();
+  return ALIAS_MAP[lower] ?? lower;
+}
+
+function isWordMatch(hay, needle) {
+  const escaped = needle.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const re = new RegExp(`(?:^|[\\s,./\\-+#])${escaped}(?:[\\s,./\\-+#]|$)`, 'i');
+  return re.test(` ${hay} `);
+}
+
+function scoreMatches(haystack, needles) {
+  return needles.reduce((acc, needle) => {
+    const n = normalize(needle);
+    for (const raw of haystack) {
+      const h = normalize(raw);
+      if (h === n) return acc + 1.0;
+      if (isWordMatch(h, n) || isWordMatch(n, h)) return acc + 0.6;
+    }
+    return acc;
+  }, 0);
+}
+
+function inferDevLevel(dev) {
+  const titles = (dev.designations || []).join(' ').toLowerCase();
+  if (/\b(senior|sr\.?|lead|principal|staff|architect)\b/.test(titles)) return 'senior';
+  if (/\b(junior|jr\.?|entry|intern|graduate|fresher)\b/.test(titles)) return 'junior';
+  const exp = Array.isArray(dev.resumeData?.experience) ? dev.resumeData.experience : [];
+  let totalMonths = 0;
+  for (const e of exp) {
+    try {
+      const start = e.startDate ? new Date(e.startDate) : null;
+      const end   = e.endDate   ? new Date(e.endDate)   : new Date();
+      if (start && !isNaN(start)) totalMonths += Math.max(0, (end - start) / (1000 * 60 * 60 * 24 * 30));
+    } catch {}
+  }
+  const years = totalMonths / 12 || exp.length * 1.5;
+  if (years >= 5) return 'senior';
+  if (years >= 2) return 'mid';
+  return 'junior';
+}
+
+function getDevYears(dev) {
+  const exp = Array.isArray(dev.resumeData?.experience) ? dev.resumeData.experience : [];
+  let totalMonths = 0;
+  for (const e of exp) {
+    try {
+      const start = e.startDate ? new Date(e.startDate) : null;
+      const end   = e.endDate   ? new Date(e.endDate)   : new Date();
+      if (start && !isNaN(start)) totalMonths += Math.max(0, (end - start) / (1000 * 60 * 60 * 24 * 30));
+    } catch {}
+  }
+  return (totalMonths / 12) || (exp.length * 1.5);
+}
+
+function completenessBonus(dev) {
+  let bonus = 0;
+  if ((dev.resumeData?.skills?.length  || 0) > 3)    bonus += 0.4;
+  if ((dev.resumeData?.experience?.length || 0) > 0)  bonus += 0.4;
+  if ((dev.designations?.length || 0) > 0)            bonus += 0.3;
+  if (dev.githubUrl?.trim())                          bonus += 0.2;
+  if (dev.bio?.trim()?.length > 50)                   bonus += 0.2;
+  return bonus;
+}
+
+const LEVEL_MULTIPLIER = {
+  senior: { senior: 1.0, mid: 0.6,  junior: 0.25 },
+  mid:    { senior: 0.85, mid: 1.0, junior: 0.6  },
+  junior: { senior: 0.7,  mid: 0.9, junior: 1.0  },
+  any:    { senior: 1.0,  mid: 1.0, junior: 1.0  },
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+
 // POST /api/users/find-developers — AI-powered JD matching
 router.post('/find-developers', protect, aiLimit, async (req, res) => {
   try {
@@ -254,8 +346,15 @@ router.post('/find-developers', protect, aiLimit, async (req, res) => {
 
     // 1. Extract requirements from JD using OpenAI
     const extracted = await extractJDRequirements(jd.trim());
-    const skills = (extracted.skills || []).map(s => s.toLowerCase());
-    const roles  = (extracted.roles  || []).map(r => r.toLowerCase());
+    const skills     = (extracted.skills     || []).map(s => s.toLowerCase());
+    const roles      = (extracted.roles      || []).map(r => r.toLowerCase());
+    const niceToHave = (extracted.niceToHave || []).map(s => s.toLowerCase());
+    const jdLevel    = (extracted.level      || 'any').toLowerCase();
+    const minYears   = typeof extracted.minYears === 'number' ? extracted.minYears : null;
+    const locationType  = (extracted.locationType  || 'any').toLowerCase();
+    const locationCity  = extracted.locationCity?.toLowerCase().trim() || null;
+    const locationState = extracted.locationState?.toLowerCase().trim() || null;
+    const isOnsiteJob   = locationType === 'onsite' && (locationCity || locationState);
 
     // 2. Fetch all eligible developers with their approved projects
     const developers = await User.find({
@@ -277,32 +376,63 @@ router.post('/find-developers', protect, aiLimit, async (req, res) => {
     );
 
     // 3. Score each developer
+    // Location pre-filter: onsite jobs with a specified city/state only show matching developers
+    const locationFilter = isOnsiteJob
+      ? (dev) => {
+          const locs = (dev.preferredLocations || []).map(l => l.toLowerCase().trim());
+          if (locs.length === 0) return false;
+          return locs.some(l =>
+            (locationCity  && (l.includes(locationCity)  || locationCity.includes(l)))  ||
+            (locationState && (l.includes(locationState) || locationState.includes(l)))
+          );
+        }
+      : () => true;
+
     const scored = developers
-      .filter(dev => projectMap[dev._id.toString()]?.count > 0)
+      .filter(dev => projectMap[dev._id.toString()]?.count > 0 && locationFilter(dev))
       .map(dev => {
         const pid = dev._id.toString();
         const toArr = v => Array.isArray(v) ? v : (v && typeof v === 'object' ? Object.values(v).flat() : []);
-        const techTags    = projectMap[pid]?.techTags || [];
-        const mentorTech  = toArr(dev.mentorshipTech).map(t => t.toLowerCase());
-        const designations= toArr(dev.designations).map(d => d.toLowerCase());
-        const langPref    = toArr(dev.languagePreference).map(l => l.toLowerCase());
-        const resumeSkills= toArr(dev.resumeData?.skills).map(s => s.toLowerCase());
-        const resumeStack = toArr(dev.resumeData?.techStack).map(s => s.toLowerCase());
+        const techTags     = projectMap[pid]?.techTags || [];
+        const mentorTech   = toArr(dev.mentorshipTech).map(t => t.toLowerCase());
+        const designations = toArr(dev.designations).map(d => d.toLowerCase());
+        const langPref     = toArr(dev.languagePreference).map(l => l.toLowerCase());
+        const resumeSkills = toArr(dev.resumeData?.skills).map(s => s.toLowerCase());
+        const resumeStack  = toArr(dev.resumeData?.techStack).map(s => s.toLowerCase());
 
-        const countMatches = (haystack, needles) =>
-          needles.reduce((acc, n) => acc + (haystack.some(h => h.includes(n) || n.includes(h)) ? 1 : 0), 0);
+        const rawScore =
+          scoreMatches(techTags,     skills) * 3 +
+          scoreMatches(resumeSkills, skills) * 3 +
+          scoreMatches(resumeStack,  skills) * 2 +
+          scoreMatches(mentorTech,   skills) * 2 +
+          scoreMatches(designations, roles)  * 2 +
+          scoreMatches(langPref,     skills) * 1;
 
-        const score =
-          countMatches(techTags,     skills) * 3 +
-          countMatches(resumeSkills, skills) * 3 +
-          countMatches(resumeStack,  skills) * 2 +
-          countMatches(mentorTech,   skills) * 2 +
-          countMatches(designations, roles)  * 2 +
-          countMatches(langPref,     skills) * 1;
+        // Apply level multiplier
+        const devLevel = inferDevLevel(dev);
+        const levelMul = LEVEL_MULTIPLIER[jdLevel]?.[devLevel] ?? 1.0;
+        let finalScore = rawScore * levelMul;
 
-        return { ...dev, matchScore: score, projectCount: projectMap[pid]?.count || 0 };
+        // Experience years bonus (additive, max +3)
+        if (minYears !== null && minYears > 0) {
+          const yearsScore = Math.min(getDevYears(dev) / minYears, 1.5);
+          finalScore += yearsScore * 2;
+        }
+
+        // Nice-to-have skills (low weight bonus)
+        if (niceToHave.length > 0) {
+          finalScore +=
+            scoreMatches(techTags,     niceToHave) * 0.5 +
+            scoreMatches(resumeSkills, niceToHave) * 0.5 +
+            scoreMatches(resumeStack,  niceToHave) * 0.3;
+        }
+
+        // Profile completeness tie-breaker (max +1.5)
+        finalScore += completenessBonus(dev);
+
+        return { ...dev, matchScore: finalScore, rawScore, projectCount: projectMap[pid]?.count || 0 };
       })
-      .filter(d => d.matchScore > 0)
+      .filter(d => d.rawScore > 0)
       .sort((a, b) => b.matchScore - a.matchScore || b.createdAt - a.createdAt)
       .slice(0, 40);
 
