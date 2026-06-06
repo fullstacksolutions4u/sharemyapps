@@ -22,6 +22,7 @@ const Profile            = lazy(() => import('./pages/Profile'));
 const PublicPortfolio    = lazy(() => import('./pages/PublicPortfolio'));
 const ClientProfile      = lazy(() => import('./pages/ClientProfile'));
 const ChatAdmin          = lazy(() => import('./pages/ChatAdmin'));
+const Feedback           = lazy(() => import('./pages/Feedback'));
 const Vacancies          = lazy(() => import('./pages/Vacancies'));
 const Portfolios         = lazy(() => import('./pages/Portfolios'));
 const SelectRole         = lazy(() => import('./pages/SelectRole'));
@@ -108,6 +109,7 @@ function AppRoutes() {
             <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
             <Route path="/client-profile" element={<ProtectedRoute><ClientProfile /></ProtectedRoute>} />
             <Route path="/chat-admin" element={<ProtectedRoute><ChatAdmin /></ProtectedRoute>} />
+            <Route path="/feedback" element={<ProtectedRoute><Feedback /></ProtectedRoute>} />
             <Route path="/opportunities" element={<Vacancies />} />
             <Route path="/vacancies" element={<Vacancies />} />
             <Route path="/portfolios" element={<Portfolios />} />

@@ -1,7 +1,7 @@
 import { useRef, useState, useEffect } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link, useNavigate } from 'react-router-dom';
-import { Menu, X, ChevronDown, LogOut, Plus, ShieldCheck, Bell, CheckCircle, XCircle, Clock, MessageSquare, UserCircle, AlertCircle, Heart, Star, MessageCircle, Headphones, Briefcase } from 'lucide-react';
+import { Menu, X, ChevronDown, LogOut, Plus, ShieldCheck, Bell, CheckCircle, XCircle, Clock, MessageSquare, UserCircle, AlertCircle, Heart, Star, MessageCircle, Headphones, Briefcase, Lightbulb } from 'lucide-react';
 
 const GeminiIcon = ({ size = 14 }) => (
   <svg width={size} height={size} viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -285,6 +285,15 @@ export default function Navbar() {
                         <Headphones size={14} /> Message Admin
                       </Link>
                     )}
+                    {user.role !== 'admin' && (
+                      <Link
+                        to="/feedback"
+                        onClick={() => setDropOpen(false)}
+                        className="flex items-center gap-2 px-4 py-2 text-sm text-text hover:bg-bg"
+                      >
+                        <Lightbulb size={14} /> Feedback
+                      </Link>
+                    )}
                     {user.role === 'admin' && (
                       <Link to="/admin" onClick={() => setDropOpen(false)} className="flex items-center gap-2 px-4 py-2 text-sm text-accent hover:bg-bg">
                         <ShieldCheck size={14} /> Admin Panel
@@ -353,6 +362,9 @@ export default function Navbar() {
               )}
               {user.role !== 'admin' && (
                 <Link to="/chat-admin" onClick={() => setMenuOpen(false)} className="block text-sm text-muted hover:text-text">Message Admin</Link>
+              )}
+              {user.role !== 'admin' && (
+                <Link to="/feedback" onClick={() => setMenuOpen(false)} className="block text-sm text-muted hover:text-text">Feedback</Link>
               )}
               <button onClick={handleLogout} className="block text-sm text-red-500">Logout</button>
             </>

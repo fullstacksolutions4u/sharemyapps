@@ -406,9 +406,6 @@ export default function PublicPortfolio() {
           </div>
         )}
 
-        <p className="text-center text-xs text-[#B0A99F] mt-10">
-          Powered by <a href="/" className="text-accent hover:underline font-medium">Full Stack Solutions</a>
-        </p>
       </div>
     </div>
   );

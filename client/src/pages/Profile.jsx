@@ -683,22 +683,19 @@ export default function Profile() {
                             return (
                               <div
                                 key={day}
-                                className={`rounded-xl border transition-colors ${active ? 'bg-purple-50 border-purple-300' : 'bg-[#F9F8F6] border-border hover:border-purple-200'}`}
+                                onClick={() => setForm(f => {
+                                  const sched = { ...f.mentorshipSchedule };
+                                  if (sched[day]) delete sched[day];
+                                  else sched[day] = { from: '09:00', to: '17:00' };
+                                  return { ...f, mentorshipSchedule: sched };
+                                })}
+                                className={`rounded-xl border transition-colors cursor-pointer ${active ? 'bg-purple-50 border-purple-300' : 'bg-[#F9F8F6] border-border hover:border-purple-200'}`}
                               >
-                                <button
-                                  type="button"
-                                  onClick={() => setForm(f => {
-                                    const sched = { ...f.mentorshipSchedule };
-                                    if (sched[day]) delete sched[day];
-                                    else sched[day] = { from: '09:00', to: '17:00' };
-                                    return { ...f, mentorshipSchedule: sched };
-                                  })}
-                                  className={`w-full px-4 py-1.5 text-xs font-semibold transition-colors text-center ${active ? 'text-purple-700' : 'text-muted hover:text-purple-600'}`}
-                                >
+                                <div className={`w-full px-4 py-1.5 text-xs font-semibold text-center ${active ? 'text-purple-700' : 'text-muted'}`}>
                                   {DAY_SHORT[day]}
-                                </button>
+                                </div>
                                 {active && (
-                                  <div className="px-2 pb-2 flex flex-col gap-1">
+                                  <div className="px-2 pb-2 flex flex-col gap-1" onClick={e => e.stopPropagation()}>
                                     <input
                                       type="time"
                                       value={form.mentorshipSchedule[day].from}

@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import fssLogo from '../assets/logo_fss.png';
 import { Link } from 'react-router-dom';
 import {
   Search, Phone, GitBranch, Link2, Code2,
@@ -349,10 +348,6 @@ export default function Portfolios() {
             </div>
           );
         })()}
-      </div>
-      <div className="flex items-center justify-center gap-2 mt-10 pb-6">
-        <img src={fssLogo} alt="Full Stack Solutions" className="h-5 w-5 rounded-full object-cover" />
-        <p className="text-xs text-muted">Powered by <span className="font-semibold">Full Stack Solutions</span></p>
       </div>
     </div>
   );

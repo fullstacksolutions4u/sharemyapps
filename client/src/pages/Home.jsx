@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import fssLogo from '../assets/logo_fss.png';
 import { Link } from 'react-router-dom';
 import { ArrowRight, LayoutGrid, Users, MessageCircle, Star } from 'lucide-react';
 import api from '../api/axios';
@@ -165,13 +164,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="border-t border-border py-5">
-        <div className="flex items-center justify-center gap-2">
-          <img src={fssLogo} alt="Full Stack Solutions" className="h-5 w-5 rounded-full object-cover" />
-          <p className="text-xs text-[#9CA3AF]">Powered by <span className="font-semibold text-muted">Full Stack Solutions</span></p>
-        </div>
-      </footer>
     </div>
   );
 }
