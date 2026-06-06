@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import fssLogo from '../assets/logo_fss.png';
 import { Link } from 'react-router-dom';
 import {
   Search, Phone, GitBranch, Link2, Code2,
@@ -108,9 +109,9 @@ function DeveloperCard({ dev, idx }) {
         {/* Name + location */}
         <div>
           <h3 className="font-bold text-base text-text leading-tight">{dev.name}</h3>
-          {(dev.district || dev.state) && (
+          {(dev.place || dev.district || dev.state) && (
             <p className="text-xs text-muted mt-0.5">
-              {[dev.district, dev.state].filter(Boolean).join(', ')}
+              {[dev.place || dev.district, dev.state].filter(Boolean).join(', ')}
             </p>
           )}
         </div>
@@ -216,7 +217,7 @@ function SkeletonCard() {
   );
 }
 
-export default function Developers() {
+export default function Portfolios() {
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [page, setPage] = useState(1);
@@ -261,7 +262,7 @@ export default function Developers() {
             <div className="w-9 h-9 rounded-xl bg-accent flex items-center justify-center shadow-md shrink-0">
               <Users size={18} className="text-white" />
             </div>
-            <h1 className="text-3xl font-extrabold text-text tracking-tight">Developers</h1>
+            <h1 className="text-3xl font-extrabold text-text tracking-tight">Portfolios</h1>
           </div>
 
           <p className="text-sm text-muted items-center gap-1.5 hidden sm:flex">
@@ -348,6 +349,10 @@ export default function Developers() {
             </div>
           );
         })()}
+      </div>
+      <div className="flex items-center justify-center gap-2 mt-10 pb-6">
+        <img src={fssLogo} alt="Full Stack Solutions" className="h-5 w-5 rounded-full object-cover" />
+        <p className="text-xs text-muted">Powered by <span className="font-semibold">Full Stack Solutions</span></p>
       </div>
     </div>
   );

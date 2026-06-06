@@ -1,4 +1,5 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
+import fssLogo from '../assets/logo_fss.png';
 import { useSearchParams, useLocation } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { Search, X, Megaphone, Sparkles } from 'lucide-react';
@@ -273,6 +274,10 @@ export default function Explore() {
           </div>
         );
       })()}
+      <div className="flex items-center justify-center gap-2 mt-10 pb-6">
+        <img src={fssLogo} alt="Full Stack Solutions" className="h-5 w-5 rounded-full object-cover" />
+        <p className="text-xs text-muted">Powered by <span className="font-semibold">Full Stack Solutions</span></p>
+      </div>
     </div>
   );
 }

@@ -5,6 +5,16 @@ const { protect } = require('../middleware/auth');
 const { extractJDRequirements } = require('../utils/aiExtract');
 const aiLimit = require('../middleware/aiLimit');
 
+// GET /api/users/count — public, returns total registered user count
+router.get('/count', async (req, res) => {
+  try {
+    const count = await User.countDocuments({ isDeleted: { $ne: true }, role: { $ne: 'admin' } });
+    res.json({ count });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
 // GET /api/users/developers — sorted by community engagement (likes/ratings/comments given to others)
 router.get('/developers', async (req, res) => {
   try {

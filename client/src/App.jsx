@@ -22,7 +22,7 @@ const PublicPortfolio    = lazy(() => import('./pages/PublicPortfolio'));
 const ClientProfile      = lazy(() => import('./pages/ClientProfile'));
 const ChatAdmin          = lazy(() => import('./pages/ChatAdmin'));
 const Vacancies          = lazy(() => import('./pages/Vacancies'));
-const Developers         = lazy(() => import('./pages/Developers'));
+const Portfolios         = lazy(() => import('./pages/Portfolios'));
 const SelectRole         = lazy(() => import('./pages/SelectRole'));
 const FindDevelopers     = lazy(() => import('./pages/FindDevelopers'));
 const FindDevelopersHistory = lazy(() => import('./pages/FindDevelopersHistory'));
@@ -63,8 +63,8 @@ function homeFor(user) {
   if (user.role === 'admin') return '/admin';
   if (!user.onboardingComplete) return '/select-role';
   if (user.userType === 'recruiter') return user.companyName ? '/find-developers' : '/client-profile';
-  if (user.userType === 'client') return user.clientProfile?.projectName ? '/developers' : '/client-profile';
-  if (user.userType === 'mentee') return '/developers';
+  if (user.userType === 'client') return user.clientProfile?.projectName ? '/portfolios' : '/client-profile';
+  if (user.userType === 'mentee') return '/portfolios';
   return '/dashboard';
 }
 
@@ -109,7 +109,8 @@ function AppRoutes() {
             <Route path="/chat-admin" element={<ProtectedRoute><ChatAdmin /></ProtectedRoute>} />
             <Route path="/opportunities" element={<Vacancies />} />
             <Route path="/vacancies" element={<Vacancies />} />
-            <Route path="/developers" element={<Developers />} />
+            <Route path="/portfolios" element={<Portfolios />} />
+            <Route path="/developers" element={<Navigate to="/portfolios" replace />} />
             <Route path="/select-role" element={<SelectRole />} />
             <Route path="/find-developers" element={<ProtectedRoute><FindDevelopers /></ProtectedRoute>} />
             <Route path="/find-developers/history" element={<ProtectedRoute><FindDevelopersHistory /></ProtectedRoute>} />

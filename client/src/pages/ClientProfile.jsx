@@ -495,7 +495,7 @@ function ClientFreelanceProfile({ user, setUser, navigate }) {
       const res = await api.put('/auth/profile', payload);
       setUser(res.data.user);
       toast.success('Profile set up! Welcome aboard.');
-      navigate('/developers');
+      navigate('/portfolios');
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to save profile');
     } finally {

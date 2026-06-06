@@ -238,7 +238,7 @@ export default function FindDevelopers() {
   useEffect(() => {
     if (!user) return;
     if (user.userType !== 'recruiter' && user.userType !== 'client') {
-      navigate('/developers', { replace: true });
+      navigate('/portfolios', { replace: true });
       return;
     }
     api.get('/jd/history')

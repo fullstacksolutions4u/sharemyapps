@@ -138,7 +138,7 @@ export default function SelectRole() {
   const homeFor = (u) => {
     if (u.role === 'admin') return '/admin';
     if (u.userType === 'recruiter' || u.userType === 'client') return '/client-profile';
-    if (u.userType === 'mentee') return '/developers';
+    if (u.userType === 'mentee') return '/portfolios';
     return '/profile';
   };
 

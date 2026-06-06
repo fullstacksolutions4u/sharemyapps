@@ -28,6 +28,7 @@ const {
 const { adminGetUserJDHistory } = require('../controllers/jdAnalysisController');
 const freelance = require('../controllers/freelanceOpportunityController');
 const mentorship = require('../controllers/mentorshipOpportunityController');
+const { aiChat } = require('../controllers/aiChatController');
 
 router.use(protect, requireAdmin);
 
@@ -70,5 +71,7 @@ router.put('/mentorship/:id', mentorship.update);
 router.delete('/mentorship/:id', mentorship.remove);
 router.patch('/mentorship/:id/toggle-status', mentorship.toggleStatus);
 router.post('/mentorship/:id/reply', mentorship.replyToInterest);
+
+router.post('/ai-chat', aiChat);
 
 module.exports = router;

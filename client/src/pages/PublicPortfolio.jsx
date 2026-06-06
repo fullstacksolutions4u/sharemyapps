@@ -407,7 +407,7 @@ export default function PublicPortfolio() {
         )}
 
         <p className="text-center text-xs text-[#B0A99F] mt-10">
-          Powered by <a href="/" className="text-accent hover:underline font-medium">ShareMyApps</a>
+          Powered by <a href="/" className="text-accent hover:underline font-medium">Full Stack Solutions</a>
         </p>
       </div>
     </div>

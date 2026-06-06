@@ -248,6 +248,22 @@ export default function Profile() {
 
   const isLast = activeTab === TABS.length - 1;
 
+  const COMPLETION_ITEMS = [
+    { label: 'Profile photo',    done: !!user?.avatar },
+    { label: 'Mobile number',    done: !!form.phone },
+    { label: 'Gender',           done: !!form.gender },
+    { label: 'Location',         done: !!(form.country && form.state) },
+    { label: 'Date of birth',    done: !!form.dateOfBirth },
+    { label: 'LinkedIn',         done: !!form.linkedinUrl },
+    { label: 'GitHub',           done: !!form.githubUrl },
+    { label: 'Portfolio URL',    done: !!form.portfolioUrl },
+    { label: 'CV / Resume',      done: !!form.cvUrl },
+    { label: 'Opportunities',    done: form.freelanceAvailable || form.mentorshipAvailable || !!form.joiningAvailability },
+  ];
+  const completedCount = COMPLETION_ITEMS.filter(i => i.done).length;
+  const completionPct = Math.round((completedCount / COMPLETION_ITEMS.length) * 100);
+  const completionColor = completionPct >= 80 ? '#00A693' : completionPct >= 50 ? '#F59E0B' : '#EF4444';
+
   return (
     <div className="max-w-6xl mx-auto px-2 sm:px-3 pt-2 pb-6">
       <button
@@ -262,47 +278,57 @@ export default function Profile() {
         {/* ── Left: sticky profile card ── */}
         <div className="w-full lg:w-72 shrink-0 lg:sticky lg:top-6 space-y-4 lg:mt-20">
 
-          {/* Avatar card */}
-          <div className="bg-white border border-border rounded-2xl p-5">
-            <div className="flex flex-col items-center text-center gap-3">
-              <div className="relative">
-                {user?.avatar
-                  ? <img src={user.avatar} alt={user.name} className="w-20 h-20 rounded-full object-cover" />
-                  : <span className="w-20 h-20 rounded-full bg-accent text-white text-2xl font-bold flex items-center justify-center">
-                      {user?.name?.[0]?.toUpperCase()}
-                    </span>
-                }
-                <button
-                  type="button"
-                  onClick={() => avatarInputRef.current?.click()}
-                  disabled={avatarUploading}
-                  className="absolute -bottom-0.5 -right-0.5 w-7 h-7 bg-accent hover:bg-accent-hover rounded-full flex items-center justify-center border-2 border-white transition-colors disabled:opacity-60"
-                >
-                  {avatarUploading
-                    ? <Loader2 size={12} className="text-white animate-spin" />
-                    : <Camera size={12} className="text-white" />
+          {/* Avatar card with full progress border */}
+          <div
+            className="rounded-2xl p-0.5 transition-all duration-500"
+            style={{
+              background: `conic-gradient(from -90deg, ${completionColor} ${completionPct}%, #E5E1DA ${completionPct}%)`,
+            }}
+          >
+            <div className="bg-white rounded-[14px] p-5 relative">
+              <span className="absolute top-2 right-3 text-[10px] font-semibold" style={{ color: completionColor }}>
+                {completionPct}%
+              </span>
+              <div className="flex flex-col items-center text-center gap-3">
+                <div className="relative">
+                  {user?.avatar
+                    ? <img src={user.avatar} alt={user.name} className="w-20 h-20 rounded-full object-cover" />
+                    : <span className="w-20 h-20 rounded-full bg-accent text-white text-2xl font-bold flex items-center justify-center">
+                        {user?.name?.[0]?.toUpperCase()}
+                      </span>
                   }
-                </button>
-                {!user?.avatar && (
-                  <span className="absolute -top-1 -left-1 w-6 h-6 bg-amber-400 rounded-full flex items-center justify-center border-2 border-white" title="No profile photo">
-                    <AlertTriangle size={11} className="text-white" />
-                  </span>
-                )}
-                <input ref={avatarInputRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarChange} />
-              </div>
-              <div>
-                <div className="flex items-center justify-center gap-2 flex-wrap">
-                  <p className="font-semibold text-text">{user?.name}</p>
-                  {user?.regNumber && (
-                    <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-accent-light text-accent border border-accent/20">
-                      {user.userType === 'client' ? 'C' : 'D'}{user.regNumber}
+                  <button
+                    type="button"
+                    onClick={() => avatarInputRef.current?.click()}
+                    disabled={avatarUploading}
+                    className="absolute -bottom-0.5 -right-0.5 w-7 h-7 bg-accent hover:bg-accent-hover rounded-full flex items-center justify-center border-2 border-white transition-colors disabled:opacity-60"
+                  >
+                    {avatarUploading
+                      ? <Loader2 size={12} className="text-white animate-spin" />
+                      : <Camera size={12} className="text-white" />
+                    }
+                  </button>
+                  {!user?.avatar && (
+                    <span className="absolute -top-1 -left-1 w-6 h-6 bg-amber-400 rounded-full flex items-center justify-center border-2 border-white" title="No profile photo">
+                      <AlertTriangle size={11} className="text-white" />
                     </span>
                   )}
+                  <input ref={avatarInputRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarChange} />
                 </div>
-                <p className="text-sm text-muted mt-0.5">{user?.email}</p>
-                <span className="text-xs text-muted mt-1 block">
-                  {user?.isGoogleUser ? 'Signed in with Google' : 'Click camera to change photo'}
-                </span>
+                <div>
+                  <div className="flex items-center justify-center gap-2 flex-wrap">
+                    <p className="font-semibold text-text">{user?.name}</p>
+                    {user?.regNumber && (
+                      <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-accent-light text-accent border border-accent/20">
+                        {user.userType === 'client' ? 'C' : 'D'}{user.regNumber}
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-sm text-muted mt-0.5">{user?.email}</p>
+                  <span className="text-xs text-muted mt-1 block">
+                    {user?.isGoogleUser ? 'Signed in with Google' : 'Click camera to change photo'}
+                  </span>
+                </div>
               </div>
             </div>
           </div>

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import fssLogo from '../assets/logo_fss.png';
 import { Link } from 'react-router-dom';
 import { ArrowRight, LayoutGrid, Users, MessageCircle, Star } from 'lucide-react';
 import api from '../api/axios';
@@ -9,6 +10,7 @@ export default function Home() {
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const [devAvatars, setDevAvatars] = useState([]);
+  const [userCount, setUserCount] = useState(null);
 
   useEffect(() => {
     api.get('/projects?page=1')
@@ -18,6 +20,9 @@ export default function Home() {
     api.get('/users/developers?limit=5')
       .then(res => setDevAvatars((res.data.developers || res.data).slice(0, 5)))
       .catch(() => {});
+    api.get('/users/count')
+      .then(res => setUserCount(res.data.count))
+      .catch(() => {});
   }, []);
 
   return (
@@ -26,7 +31,7 @@ export default function Home() {
       <section className="max-w-6xl mx-auto px-4 sm:px-6 pt-20 pb-16 text-center">
         <div className="inline-flex items-center gap-2 bg-[#E6F7F5] text-[#00A693] text-xs font-medium px-3 py-1.5 rounded-full mb-6">
           <span className="w-1.5 h-1.5 bg-[#00A693] rounded-full animate-pulse" />
-          Find inspiring apps crafted by real developers
+          Explore the applications. Discover the talent behind every line of code.
         </div>
         <h1 className="text-5xl sm:text-6xl font-bold text-[#1A1A1A] tracking-tight leading-tight mb-6">
           Turning side projects into<br />
@@ -66,9 +71,11 @@ export default function Home() {
                   </span>;
             })}
           </div>
-          <p className="text-sm text-muted">
-            <span className="font-semibold text-text">1,000+</span> developers already registered
-          </p>
+          {userCount !== null && (
+            <p className="text-sm text-muted">
+              <span className="font-semibold text-text">{userCount.toLocaleString()}+</span> developers registered with us
+            </p>
+          )}
         </div>
       </section>
 
@@ -144,9 +151,9 @@ export default function Home() {
 
       {/* CTA */}
       <section className="max-w-6xl mx-auto px-4 sm:px-6 pb-20">
-        <div className="bg-[#1A1A1A] rounded-2xl p-10 text-center">
-          <h2 className="text-2xl font-bold text-white mb-3">Built something cool?</h2>
-          <p className="text-[#9CA3AF] text-sm mb-6 max-w-md mx-auto">
+        <div className="bg-white border border-gray-200 rounded-2xl p-10 text-center shadow-sm">
+          <h2 className="text-2xl font-bold text-gray-900 mb-3">Built something cool?</h2>
+          <p className="text-gray-500 text-sm mb-6 max-w-md mx-auto">
             List your side project for free and let the world discover it.
           </p>
           <Link
@@ -159,10 +166,11 @@ export default function Home() {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-border py-5 text-center">
-        <p className="text-xs text-[#9CA3AF]">
-          Powered by <span className="font-semibold text-muted">Full Stack Solutions</span>
-        </p>
+      <footer className="border-t border-border py-5">
+        <div className="flex items-center justify-center gap-2">
+          <img src={fssLogo} alt="Full Stack Solutions" className="h-5 w-5 rounded-full object-cover" />
+          <p className="text-xs text-[#9CA3AF]">Powered by <span className="font-semibold text-muted">Full Stack Solutions</span></p>
+        </div>
       </footer>
     </div>
   );

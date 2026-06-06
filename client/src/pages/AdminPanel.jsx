@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import {
   LayoutDashboard, FolderOpen, ShieldCheck, Menu, LogOut,
-  Users, Briefcase, FileText, Megaphone, MessageSquare, Camera,
+  Users, Briefcase, FileText, Megaphone, MessageSquare, Camera, Sparkles,
 } from 'lucide-react';
 import api from '../api/axios';
 import AdminOverview from './admin/AdminOverview';
@@ -13,6 +13,7 @@ import AdminAnnouncementsSection from './admin/AdminAnnouncementsSection';
 import AdminMessagesSection from './admin/AdminMessagesSection';
 import AdminOpportunitiesSection from './admin/AdminOpportunitiesSection';
 import AdminResumesSection from './admin/AdminResumesSection';
+import AdminAISection from './admin/AdminAISection';
 
 const NAV = [
   { key: 'overview',       label: 'Overview',      icon: LayoutDashboard },
@@ -22,6 +23,7 @@ const NAV = [
   { key: 'resumes',        label: 'Resumes',        icon: FileText },
   { key: 'announcements',  label: 'Announcements',  icon: Megaphone },
   { key: 'messages',       label: 'Messages',       icon: MessageSquare },
+  { key: 'ai',             label: 'AI Assistant',   icon: Sparkles },
 ];
 
 export default function AdminPanel() {
@@ -136,7 +138,7 @@ const { user, setUser, logout } = useAuth();
           <span className="text-sm font-semibold text-[#1A1A1A]">{NAV.find(n => n.key === section)?.label || section}</span>
         </div>
 
-        <div className="flex-1 overflow-y-auto px-6 py-8">
+        <div className={`flex-1 overflow-y-auto px-6 py-8 ${section === 'ai' ? 'flex flex-col' : ''}`}>
           {section === 'overview'         && <AdminOverview stats={stats} onNavigate={navigate} />}
           {section === 'projects'         && <AdminProjectsSection stats={stats} />}
           {section === 'users'            && <AdminUsersSection initialTab="developers" />}
@@ -144,6 +146,7 @@ const { user, setUser, logout } = useAuth();
           {section === 'resumes'          && <AdminResumesSection />}
           {section === 'announcements'    && <AdminAnnouncementsSection />}
           {section === 'messages'         && <AdminMessagesSection onUnreadChange={setUnreadMessages} />}
+          {section === 'ai'               && <AdminAISection />}
         </div>
       </div>
     </div>
