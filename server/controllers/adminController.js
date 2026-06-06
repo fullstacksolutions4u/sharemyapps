@@ -254,6 +254,18 @@ exports.toggleUserHidden = async (req, res) => {
   } catch (err) { res.status(500).json({ message: err.message }); }
 };
 
+exports.setAdminNote = async (req, res) => {
+  try {
+    const user = await User.findByIdAndUpdate(
+      req.params.id,
+      { adminNote: String(req.body.note ?? '').trim() },
+      { new: true }
+    );
+    if (!user) return res.status(404).json({ message: 'User not found' });
+    res.json({ adminNote: user.adminNote });
+  } catch (err) { res.status(500).json({ message: err.message }); }
+};
+
 exports.adminUpdateUser = async (req, res) => {
   try {
     const strFields = [
@@ -261,6 +273,7 @@ exports.adminUpdateUser = async (req, res) => {
       'linkedinUrl', 'githubUrl', 'leetcodeUrl', 'portfolioUrl', 'cvUrl',
       'companyName', 'companyWebsite', 'industry', 'requirements',
       'badge', 'userType', 'joiningAvailability', 'place', 'district', 'state', 'country',
+      'adminNote',
     ];
     const update = {};
     for (const key of strFields) {

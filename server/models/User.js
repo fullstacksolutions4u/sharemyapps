@@ -56,6 +56,7 @@ const userSchema = new mongoose.Schema({
   aiUsageDate:  { type: String, default: '' },
   resetOtp:       { type: String, default: null },
   resetOtpExpiry: { type: Date,   default: null },
+  adminNote:      { type: String, trim: true, default: '' },
 }, { timestamps: true });
 
 userSchema.index({ userType: 1, hidden: 1, isDeleted: 1 });

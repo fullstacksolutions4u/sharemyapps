@@ -16,6 +16,7 @@ const {
   getResumes,
   deleteUser,
   setResumeData,
+  setAdminNote,
 } = require('../controllers/adminController');
 const {
   getAllVacanciesAdmin,
@@ -43,6 +44,7 @@ router.patch('/users/:id/badge', setBadge);
 router.patch('/users/:id/designation', setDesignation);
 router.put('/users/:id', adminUpdateUser);
 router.patch('/users/:id/hide', toggleUserHidden);
+router.patch('/users/:id/note', setAdminNote);
 router.put('/users/:id/resume', setResumeData);
 router.delete('/users/:id', deleteUser);
 router.get('/users/:id/jd-history', adminGetUserJDHistory);

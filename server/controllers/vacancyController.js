@@ -59,11 +59,11 @@ exports.getAllVacanciesAdmin = async (req, res) => {
 
 exports.createVacancy = async (req, res) => {
   try {
-    const { title, company, description, skills, location, type, industry, jobType, salaryRange } = req.body;
+    const { title, company, description, skills, location, type, industry, jobType, experience, salaryRange } = req.body;
     const vacancy = await Vacancy.create({
       title, company, description,
       skills: parseSkills(skills),
-      location, type, industry, jobType, salaryRange,
+      location, type, industry, jobType, experience, salaryRange,
       createdBy: req.user._id,
     });
     res.status(201).json(vacancy);
@@ -72,10 +72,10 @@ exports.createVacancy = async (req, res) => {
 
 exports.updateVacancy = async (req, res) => {
   try {
-    const { title, company, description, skills, location, type, industry, jobType, salaryRange, status } = req.body;
+    const { title, company, description, skills, location, type, industry, jobType, experience, salaryRange, status } = req.body;
     const vacancy = await Vacancy.findByIdAndUpdate(
       req.params.id,
-      { title, company, description, skills: parseSkills(skills), location, type, industry, jobType, salaryRange, status },
+      { title, company, description, skills: parseSkills(skills), location, type, industry, jobType, experience, salaryRange, status },
       { new: true, runValidators: true }
     ).populate('interests', 'name email regNumber userType avatar');
     if (!vacancy) return res.status(404).json({ message: 'Vacancy not found' });

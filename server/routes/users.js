@@ -434,7 +434,7 @@ router.post('/find-developers', protect, aiLimit, async (req, res) => {
       role: { $ne: 'admin' },
       hidden: { $ne: true },
       isDeleted: { $ne: true },
-    }).select('-password -googleId').lean();
+    }).select('-password -googleId -adminNote').lean();
 
     const projectsByOwner = await Project.aggregate([
       { $match: { status: 'approved' } },

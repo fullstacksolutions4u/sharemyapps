@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { MapPin, Briefcase, CreditCard, Users, CheckCircle, ArrowRight, Laptop, GraduationCap } from 'lucide-react';
+import { MapPin, Briefcase, CreditCard, Users, CheckCircle, ArrowRight, Laptop, GraduationCap, Clock } from 'lucide-react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
@@ -223,7 +223,7 @@ export default function Vacancies() {
                 </div>
 
                 {/* Pills: metadata */}
-                {(v.location || v.jobType || v.salaryRange || v.budget || v.duration || v.availability) && (
+                {(v.location || v.jobType || v.experience || v.salaryRange || v.budget || v.duration || v.availability) && (
                   <div className="flex items-center gap-2 flex-wrap">
                     {v.location && (
                       <span className="flex items-center gap-1.5 text-sm text-muted bg-[#F3F0EB] border border-border px-3 py-1.5 rounded-full">
@@ -233,6 +233,11 @@ export default function Vacancies() {
                     {v.jobType && (
                       <span className="flex items-center gap-1.5 text-sm text-muted bg-[#F3F0EB] border border-border px-3 py-1.5 rounded-full">
                         <Briefcase size={13} className="shrink-0" /> {v.jobType}
+                      </span>
+                    )}
+                    {v.experience && (
+                      <span className="flex items-center gap-1.5 text-sm text-orange-700 bg-orange-50 border border-orange-200 px-3 py-1.5 rounded-full">
+                        <Clock size={13} className="shrink-0" /> {v.experience}
                       </span>
                     )}
                     {v.salaryRange && (

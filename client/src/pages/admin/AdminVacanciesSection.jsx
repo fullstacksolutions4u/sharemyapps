@@ -12,7 +12,8 @@ const TYPE_STYLE = {
   onsite: 'bg-blue-50 text-blue-700 border-blue-200',
   hybrid: 'bg-purple-50 text-purple-700 border-purple-200',
 };
-const EMPTY_FORM = { title: '', company: '', description: '', skills: '', location: '', type: 'remote', industry: '', jobType: '', salaryRange: '', status: 'active' };
+const EMPTY_FORM = { title: '', company: '', description: '', skills: '', location: '', type: 'remote', industry: '', jobType: '', experience: '', salaryRange: '', status: 'active' };
+const EXPERIENCE_OPTIONS = ['Fresher', '0-1 years', '1-3 years', '3-5 years', '5-8 years', '8+ years'];
 const inp = 'w-full px-3.5 py-2.5 border border-[#E5E1DA] rounded-xl text-sm text-[#1A1A1A] bg-white placeholder-[#9CA3AF] focus:outline-none focus:border-[#00A693] focus:ring-2 focus:ring-[#00A693]/10 transition';
 
 function VacancyFormFields({ form, onChange }) {
@@ -56,6 +57,13 @@ function VacancyFormFields({ form, onChange }) {
           {['Full-time', 'Part-time', 'Freelance', 'Contract', 'Internship'].map(t => (
             <option key={t} value={t}>{t}</option>
           ))}
+        </select>
+      </div>
+      <div>
+        <label className="block text-xs font-medium text-[#6B7280] mb-1.5">Experience</label>
+        <select name="experience" value={form.experience} onChange={onChange} className={inp}>
+          <option value="">Select experience level</option>
+          {EXPERIENCE_OPTIONS.map(e => <option key={e} value={e}>{e}</option>)}
         </select>
       </div>
       <div>
@@ -140,7 +148,7 @@ export default function AdminVacanciesSection({ hideTitle = false }) {
 
   const startEdit = (v) => {
     setEditId(v._id);
-    setForm({ title: v.title, company: v.company || '', description: v.description, skills: v.skills?.join(', ') || '', location: v.location || '', type: v.type || 'remote', industry: v.industry || '', jobType: v.jobType || '', salaryRange: v.salaryRange || '', status: v.status || 'active' });
+    setForm({ title: v.title, company: v.company || '', description: v.description, skills: v.skills?.join(', ') || '', location: v.location || '', type: v.type || 'remote', industry: v.industry || '', jobType: v.jobType || '', experience: v.experience || '', salaryRange: v.salaryRange || '', status: v.status || 'active' });
     setShowAdd(false);
   };
 
@@ -227,10 +235,11 @@ export default function AdminVacanciesSection({ hideTitle = false }) {
                         <span className={`text-xs px-2.5 py-0.5 rounded-full border font-medium ${TYPE_STYLE[v.type]}`}>{TYPE_LABEL[v.type]}</span>
                         <span className={`text-xs px-2.5 py-0.5 rounded-full border font-medium ${v.status === 'active' ? 'bg-green-50 text-green-700 border-green-200' : 'bg-gray-100 text-gray-500 border-gray-200'}`}>{v.status}</span>
                       </div>
-                      {(v.company || v.location || v.industry || v.jobType || v.salaryRange) && (
+                      {(v.company || v.location || v.industry || v.jobType || v.experience || v.salaryRange) && (
                         <div className="flex items-center gap-2 text-xs text-[#6B7280] mb-1 flex-wrap">
                           {v.company && <span className="font-medium text-[#1A1A1A]">{v.company}</span>}
                           {v.jobType && <span className="px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200">{v.jobType}</span>}
+                          {v.experience && <span className="px-2 py-0.5 rounded-full bg-orange-50 text-orange-700 border border-orange-200">{v.experience}</span>}
                           {v.industry && <span className="px-2 py-0.5 rounded-full bg-[#F3F0EB] border border-[#E5E1DA]">{v.industry}</span>}
                           {v.salaryRange && <span className="font-medium text-green-700">{v.salaryRange}</span>}
                           {v.location && <span className="flex items-center gap-1"><MapPin size={10} />{v.location}</span>}
@@ -251,7 +260,7 @@ export default function AdminVacanciesSection({ hideTitle = false }) {
                         <ChevronDown size={11} className={`transition-transform ${expandedInterests === v._id ? 'rotate-180' : ''}`} />
                       </button>
                       <button onClick={() => handleToggleStatus(v._id)}
-                        className={`p-1.5 rounded-lg transition-colors ${v.status === 'active' ? 'hover:bg-orange-50 text-[#9CA3AF] hover:text-orange-500' : 'hover:bg-green-50 text-[#9CA3AF] hover:text-green-600'}`}
+                        className={`p-1.5 rounded-lg transition-colors ${v.status === 'active' ? 'text-green-500 hover:bg-green-50' : 'text-red-400 hover:bg-red-50'}`}
                         title={v.status === 'active' ? 'Close vacancy' : 'Reopen vacancy'}>
                         {v.status === 'active' ? <ToggleRight size={16} /> : <ToggleLeft size={16} />}
                       </button>

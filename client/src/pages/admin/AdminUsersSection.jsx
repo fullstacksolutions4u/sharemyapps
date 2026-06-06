@@ -4,7 +4,7 @@ import {
   AlertCircle, FileText, Briefcase, Pencil, Trash2, Eye, EyeOff,
   UserCircle2, Search, Zap, Award, Trophy, FolderOpen as FolderOpenIcon,
   Heart, Star, Users, History, ChevronDown, ChevronUp, ExternalLink,
-  MapPin, Calendar, IndianRupee, Monitor, Languages,
+  MapPin, Calendar, IndianRupee, Monitor, Languages, MessageSquare,
 } from 'lucide-react';
 import api from '../../api/axios';
 import toast from 'react-hot-toast';
@@ -635,6 +635,37 @@ function UserEditPage({ user: initial, onBack, onSaved, allDesignations = [] }) 
   );
 }
 
+function NoteCell({ u, editingNote, setEditingNote, noteSaving, handleSaveNote }) {
+  const isEditing = editingNote?.id === u._id;
+  if (isEditing) {
+    return (
+      <div className="flex flex-col gap-1.5">
+        <textarea
+          autoFocus
+          className="w-full text-xs px-2 py-1.5 border border-[#00A693] rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-[#00A693]/20 bg-white text-[#1A1A1A]"
+          rows={3}
+          value={editingNote.text}
+          onChange={e => setEditingNote(n => ({ ...n, text: e.target.value }))}
+          onKeyDown={e => { if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) handleSaveNote(); if (e.key === 'Escape') setEditingNote(null); }}
+          placeholder="Add a note..."
+        />
+        <div className="flex gap-1">
+          <button onClick={handleSaveNote} disabled={noteSaving === u._id} className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-md bg-[#00A693] text-white font-medium disabled:opacity-60"><Check size={10} /> Save</button>
+          <button onClick={() => setEditingNote(null)} className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-md border border-[#E5E1DA] text-[#6B7280] font-medium"><X size={10} /> Cancel</button>
+        </div>
+      </div>
+    );
+  }
+  return (
+    <button onClick={() => setEditingNote({ id: u._id, text: u.adminNote || '' })} className="group flex items-start gap-1.5 w-full text-left">
+      <MessageSquare size={11} className="mt-0.5 shrink-0 text-[#9CA3AF] group-hover:text-[#00A693] transition-colors" />
+      {u.adminNote
+        ? <span className="text-xs text-[#1A1A1A] line-clamp-2 leading-tight">{u.adminNote}</span>
+        : <span className="text-xs text-[#9CA3AF] italic">Add note…</span>}
+    </button>
+  );
+}
+
 export default function AdminUsersSection({ initialTab = 'developers' }) {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -652,6 +683,8 @@ export default function AdminUsersSection({ initialTab = 'developers' }) {
   const [jdHistory, setJdHistory] = useState([]);
   const [jdHistoryLoading, setJdHistoryLoading] = useState(false);
   const [expandedJD, setExpandedJD] = useState(null);
+  const [editingNote, setEditingNote] = useState(null); // { id, text }
+  const [noteSaving, setNoteSaving] = useState(null);
   const PER_PAGE = 10;
 
   useEffect(() => {
@@ -705,6 +738,18 @@ export default function AdminUsersSection({ initialTab = 'developers' }) {
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to delete user');
     } finally { setDeleteLoading(null); }
+  };
+
+  const handleSaveNote = async () => {
+    if (!editingNote) return;
+    setNoteSaving(editingNote.id);
+    try {
+      const res = await api.patch(`/admin/users/${editingNote.id}/note`, { note: editingNote.text });
+      setUsers(prev => prev.map(u => u._id === editingNote.id ? { ...u, adminNote: res.data.adminNote } : u));
+      setEditingNote(null);
+      toast.success('Note saved');
+    } catch { toast.error('Failed to save note'); }
+    finally { setNoteSaving(null); }
   };
 
   const openJDHistory = async (u) => {
@@ -800,27 +845,16 @@ export default function AdminUsersSection({ initialTab = 'developers' }) {
             <thead>
               <tr className="border-b border-[#E5E1DA] bg-[#FAF9F6]">
                 <th className="text-left px-4 py-3 text-xs font-semibold text-[#6B7280] uppercase tracking-wider">Developer</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-[#6B7280] uppercase tracking-wider hidden sm:table-cell">Followers</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-[#6B7280] uppercase tracking-wider hidden lg:table-cell">Engagement</th>
                 <th className="text-left px-4 py-3 text-xs font-semibold text-[#6B7280] uppercase tracking-wider hidden md:table-cell">Designation</th>
                 <th className="text-left px-4 py-3 text-xs font-semibold text-[#6B7280] uppercase tracking-wider hidden lg:table-cell">Resume</th>
+                <th className="text-left px-4 py-3 text-xs font-semibold text-[#6B7280] uppercase tracking-wider hidden xl:table-cell">Notes</th>
                 <th className="text-right px-4 py-3 text-xs font-semibold text-[#6B7280] uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[#F3F0EB]">
               {paged.map(u => (
                 <tr key={u._id} className="hover:bg-[#FAF9F6] transition-colors">
-                  <td className="px-4 py-3"><div className="flex items-center gap-3"><Avatar u={u} /><div className="min-w-0"><p className="font-medium text-[#1A1A1A] truncate">{u.name}</p><p className="text-xs text-[#6B7280] sm:hidden flex items-center gap-1"><Users size={10} /> {u.followers?.length || 0}</p></div></div></td>
-                  <td className="px-4 py-3 hidden sm:table-cell">
-                    <span className="flex items-center gap-1.5 text-xs text-[#6B7280]"><Users size={12} className="text-[#9CA3AF]" />{u.followers?.length || 0}</span>
-                  </td>
-                  <td className="px-4 py-3 hidden lg:table-cell">
-                    <div className="flex items-center gap-3">
-                      <span className="flex items-center gap-1 text-xs text-[#6B7280]" title="Projects"><FolderOpenIcon size={12} className="text-[#9CA3AF]" /> {u.projectCount || 0}</span>
-                      <span className="flex items-center gap-1 text-xs text-red-400" title="Total likes"><Heart size={12} className="fill-red-400" /> {u.totalLikes || 0}</span>
-                      <span className="flex items-center gap-1 text-xs text-amber-500" title="Avg rating"><Star size={12} className="fill-amber-400" /> {u.avgRating > 0 ? u.avgRating : '—'}</span>
-                    </div>
-                  </td>
+                  <td className="px-4 py-3"><div className="flex items-center gap-3"><Avatar u={u} /><div className="min-w-0"><p className="font-medium text-[#1A1A1A] truncate">{u.name}</p></div></div></td>
                   <td className="px-4 py-3 hidden md:table-cell">
                     {u.designations?.filter(Boolean).length
                       ? <div className="flex flex-wrap gap-1">{u.designations.filter(Boolean).map((d, i) => <span key={i} className="text-xs px-2 py-0.5 rounded-full bg-[#E6F7F5] text-[#00A693] border border-[#00A693]/20 font-medium">{d}</span>)}</div>
@@ -834,6 +868,9 @@ export default function AdminUsersSection({ initialTab = 'developers' }) {
                       }
                       {!u.resumeData && <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-yellow-50 text-yellow-600 border border-yellow-200 font-medium w-fit"><AlertCircle size={10} /> No summary</span>}
                     </div>
+                  </td>
+                  <td className="px-4 py-3 hidden xl:table-cell max-w-[180px]">
+                    <NoteCell u={u} editingNote={editingNote} setEditingNote={setEditingNote} noteSaving={noteSaving} handleSaveNote={handleSaveNote} />
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center justify-end gap-1.5 whitespace-nowrap">
@@ -855,6 +892,7 @@ export default function AdminUsersSection({ initialTab = 'developers' }) {
                 <th className="text-left px-4 py-3 text-xs font-semibold text-[#6B7280] uppercase tracking-wider">Recruiter</th>
                 <th className="text-left px-4 py-3 text-xs font-semibold text-[#6B7280] uppercase tracking-wider hidden md:table-cell">Company</th>
                 <th className="text-left px-4 py-3 text-xs font-semibold text-[#6B7280] uppercase tracking-wider">JD History</th>
+                <th className="text-left px-4 py-3 text-xs font-semibold text-[#6B7280] uppercase tracking-wider hidden xl:table-cell">Notes</th>
                 <th className="text-right px-4 py-3 text-xs font-semibold text-[#6B7280] uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
@@ -867,6 +905,9 @@ export default function AdminUsersSection({ initialTab = 'developers' }) {
                   </td>
                   <td className="px-4 py-3">
                     <button onClick={() => openJDHistory(u)} className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-lg border border-purple-200 text-purple-600 hover:bg-purple-50 font-medium transition-colors"><History size={10} /> View History</button>
+                  </td>
+                  <td className="px-4 py-3 hidden xl:table-cell max-w-[180px]">
+                    <NoteCell u={u} editingNote={editingNote} setEditingNote={setEditingNote} noteSaving={noteSaving} handleSaveNote={handleSaveNote} />
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center justify-end gap-1.5 whitespace-nowrap">
@@ -886,19 +927,16 @@ export default function AdminUsersSection({ initialTab = 'developers' }) {
             <thead>
               <tr className="border-b border-[#E5E1DA] bg-[#FAF9F6]">
                 <th className="text-left px-4 py-3 text-xs font-semibold text-[#6B7280] uppercase tracking-wider">Client</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-[#6B7280] uppercase tracking-wider hidden sm:table-cell">Followers</th>
                 <th className="text-left px-4 py-3 text-xs font-semibold text-[#6B7280] uppercase tracking-wider hidden md:table-cell">Project / Budget</th>
                 <th className="text-left px-4 py-3 text-xs font-semibold text-[#6B7280] uppercase tracking-wider hidden lg:table-cell">Skills needed</th>
+                <th className="text-left px-4 py-3 text-xs font-semibold text-[#6B7280] uppercase tracking-wider hidden xl:table-cell">Notes</th>
                 <th className="text-right px-4 py-3 text-xs font-semibold text-[#6B7280] uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[#F3F0EB]">
               {paged.map(u => (
                 <tr key={u._id} className="hover:bg-[#FAF9F6] transition-colors">
-                  <td className="px-4 py-3"><div className="flex items-center gap-3"><Avatar u={u} /><div className="min-w-0"><p className="font-medium text-[#1A1A1A] truncate">{u.name}</p><p className="text-xs text-[#6B7280] sm:hidden flex items-center gap-1"><Users size={10} /> {u.followers?.length || 0}</p></div></div></td>
-                  <td className="px-4 py-3 hidden sm:table-cell">
-                    <span className="flex items-center gap-1.5 text-xs text-[#6B7280]"><Users size={12} className="text-[#9CA3AF]" />{u.followers?.length || 0}</span>
-                  </td>
+                  <td className="px-4 py-3"><div className="flex items-center gap-3"><Avatar u={u} /><div className="min-w-0"><p className="font-medium text-[#1A1A1A] truncate">{u.name}</p></div></div></td>
                   <td className="px-4 py-3 hidden md:table-cell">
                     {u.clientProfile?.projectName ? <div><p className="text-xs font-medium text-[#1A1A1A] truncate max-w-[160px]">{u.clientProfile.projectName}</p>{u.clientProfile.budget && <p className="text-xs text-[#9CA3AF]">₹{Number(u.clientProfile.budget).toLocaleString('en-IN')}</p>}</div> : <span className="text-xs text-[#9CA3AF]">—</span>}
                   </td>
@@ -906,6 +944,9 @@ export default function AdminUsersSection({ initialTab = 'developers' }) {
                     {u.clientProfile?.skillsNeeded?.length > 0
                       ? <div className="flex flex-wrap gap-1">{u.clientProfile.skillsNeeded.slice(0, 3).map(s => <span key={s} className="text-xs px-1.5 py-0.5 rounded-full bg-teal-50 text-teal-700 border border-teal-200">{s}</span>)}{u.clientProfile.skillsNeeded.length > 3 && <span className="text-xs text-[#9CA3AF]">+{u.clientProfile.skillsNeeded.length - 3}</span>}</div>
                       : <span className="text-xs text-[#9CA3AF]">—</span>}
+                  </td>
+                  <td className="px-4 py-3 hidden xl:table-cell max-w-[180px]">
+                    <NoteCell u={u} editingNote={editingNote} setEditingNote={setEditingNote} noteSaving={noteSaving} handleSaveNote={handleSaveNote} />
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center justify-end gap-1.5 whitespace-nowrap">
@@ -925,19 +966,16 @@ export default function AdminUsersSection({ initialTab = 'developers' }) {
             <thead>
               <tr className="border-b border-[#E5E1DA] bg-[#FAF9F6]">
                 <th className="text-left px-4 py-3 text-xs font-semibold text-[#6B7280] uppercase tracking-wider">Mentee</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-[#6B7280] uppercase tracking-wider hidden sm:table-cell">Followers</th>
                 <th className="text-left px-4 py-3 text-xs font-semibold text-[#6B7280] uppercase tracking-wider hidden md:table-cell">Education</th>
                 <th className="text-left px-4 py-3 text-xs font-semibold text-[#6B7280] uppercase tracking-wider hidden lg:table-cell">Looking to learn</th>
+                <th className="text-left px-4 py-3 text-xs font-semibold text-[#6B7280] uppercase tracking-wider hidden xl:table-cell">Notes</th>
                 <th className="text-right px-4 py-3 text-xs font-semibold text-[#6B7280] uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[#F3F0EB]">
               {paged.map(u => (
                 <tr key={u._id} className="hover:bg-[#FAF9F6] transition-colors">
-                  <td className="px-4 py-3"><div className="flex items-center gap-3"><Avatar u={u} /><div className="min-w-0"><p className="font-medium text-[#1A1A1A] truncate">{u.name}</p><p className="text-xs text-[#6B7280] sm:hidden flex items-center gap-1"><Users size={10} /> {u.followers?.length || 0}</p></div></div></td>
-                  <td className="px-4 py-3 hidden sm:table-cell">
-                    <span className="flex items-center gap-1.5 text-xs text-[#6B7280]"><Users size={12} className="text-[#9CA3AF]" />{u.followers?.length || 0}</span>
-                  </td>
+                  <td className="px-4 py-3"><div className="flex items-center gap-3"><Avatar u={u} /><div className="min-w-0"><p className="font-medium text-[#1A1A1A] truncate">{u.name}</p></div></div></td>
                   <td className="px-4 py-3 hidden md:table-cell">
                     {u.menteeProfile?.education ? <p className="text-xs text-[#1A1A1A] truncate max-w-[160px]">{u.menteeProfile.education}</p> : <span className="text-xs text-[#9CA3AF]">—</span>}
                   </td>
@@ -945,6 +983,9 @@ export default function AdminUsersSection({ initialTab = 'developers' }) {
                     {u.menteeProfile?.lookingToLearn?.length > 0
                       ? <div className="flex flex-wrap gap-1">{u.menteeProfile.lookingToLearn.slice(0, 3).map(s => <span key={s} className="text-xs px-1.5 py-0.5 rounded-full bg-violet-50 text-violet-700 border border-violet-200">{s}</span>)}{u.menteeProfile.lookingToLearn.length > 3 && <span className="text-xs text-[#9CA3AF]">+{u.menteeProfile.lookingToLearn.length - 3}</span>}</div>
                       : <span className="text-xs text-[#9CA3AF]">—</span>}
+                  </td>
+                  <td className="px-4 py-3 hidden xl:table-cell max-w-[180px]">
+                    <NoteCell u={u} editingNote={editingNote} setEditingNote={setEditingNote} noteSaving={noteSaving} handleSaveNote={handleSaveNote} />
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center justify-end gap-1.5 whitespace-nowrap">
@@ -964,7 +1005,6 @@ export default function AdminUsersSection({ initialTab = 'developers' }) {
             <thead>
               <tr className="border-b border-red-100 bg-red-50/50">
                 <th className="text-left px-4 py-3 text-xs font-semibold text-[#6B7280] uppercase tracking-wider">User</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-[#6B7280] uppercase tracking-wider hidden sm:table-cell">Followers</th>
                 <th className="text-left px-4 py-3 text-xs font-semibold text-[#6B7280] uppercase tracking-wider hidden md:table-cell">Type</th>
                 <th className="text-left px-4 py-3 text-xs font-semibold text-[#6B7280] uppercase tracking-wider">Status</th>
                 <th className="text-left px-4 py-3 text-xs font-semibold text-[#6B7280] uppercase tracking-wider hidden md:table-cell">Deleted On</th>
@@ -973,10 +1013,7 @@ export default function AdminUsersSection({ initialTab = 'developers' }) {
             <tbody className="divide-y divide-red-50">
               {paged.map(u => (
                 <tr key={u._id} className="opacity-70">
-                  <td className="px-4 py-3"><div className="flex items-center gap-3"><div className="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center shrink-0"><span className="text-xs font-medium text-red-400">{u.name?.[0]?.toUpperCase() || '?'}</span></div><div className="min-w-0"><p className="font-medium text-[#6B7280] truncate line-through decoration-red-300">{u.name}</p><p className="text-xs text-[#9CA3AF] sm:hidden flex items-center gap-1"><Users size={10} /> {u.followers?.length || 0}</p></div></div></td>
-                  <td className="px-4 py-3 hidden sm:table-cell">
-                    <span className="flex items-center gap-1.5 text-xs text-[#9CA3AF]"><Users size={12} />{u.followers?.length || 0}</span>
-                  </td>
+                  <td className="px-4 py-3"><div className="flex items-center gap-3"><div className="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center shrink-0"><span className="text-xs font-medium text-red-400">{u.name?.[0]?.toUpperCase() || '?'}</span></div><div className="min-w-0"><p className="font-medium text-[#6B7280] truncate line-through decoration-red-300">{u.name}</p></div></div></td>
                   <td className="px-4 py-3 hidden md:table-cell">
                     <span className={`text-xs px-2.5 py-0.5 rounded-full border font-medium capitalize ${u.userType === 'client' ? 'bg-teal-50 text-teal-400 border-teal-200' : u.userType === 'recruiter' ? 'bg-blue-50 text-blue-400 border-blue-200' : u.userType === 'mentee' ? 'bg-violet-50 text-violet-400 border-violet-200' : 'bg-[#E6F7F5] text-[#00A693]/60 border-[#00A693]/20'}`}>{u.userType || 'developer'}</span>
                   </td>
@@ -1015,6 +1052,30 @@ export default function AdminUsersSection({ initialTab = 'developers' }) {
                 <button onClick={() => setViewingUser(null)} className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-[#F3F0EB] text-[#9CA3AF] hover:text-[#1A1A1A] transition-colors"><X size={15} /></button>
               </div>
               <div className="px-5 py-4 space-y-4">
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="flex items-center gap-2 bg-[#FAF9F6] rounded-xl px-3 py-2.5">
+                    <Users size={13} className="text-[#9CA3AF] shrink-0" />
+                    <div><p className="text-[10px] text-[#9CA3AF] font-medium uppercase tracking-wider">Followers</p><p className="text-sm font-semibold text-[#1A1A1A]">{u.followers?.length || 0}</p></div>
+                  </div>
+                  {u.userType === 'developer' && (
+                    <div className="flex items-center gap-2 bg-[#FAF9F6] rounded-xl px-3 py-2.5">
+                      <FolderOpenIcon size={13} className="text-[#9CA3AF] shrink-0" />
+                      <div><p className="text-[10px] text-[#9CA3AF] font-medium uppercase tracking-wider">Projects</p><p className="text-sm font-semibold text-[#1A1A1A]">{u.projectCount || 0}</p></div>
+                    </div>
+                  )}
+                  {u.userType === 'developer' && (
+                    <div className="flex items-center gap-2 bg-[#FAF9F6] rounded-xl px-3 py-2.5">
+                      <Heart size={13} className="text-red-400 shrink-0" />
+                      <div><p className="text-[10px] text-[#9CA3AF] font-medium uppercase tracking-wider">Total Likes</p><p className="text-sm font-semibold text-[#1A1A1A]">{u.totalLikes || 0}</p></div>
+                    </div>
+                  )}
+                  {u.userType === 'developer' && (
+                    <div className="flex items-center gap-2 bg-[#FAF9F6] rounded-xl px-3 py-2.5">
+                      <Star size={13} className="text-amber-400 shrink-0" />
+                      <div><p className="text-[10px] text-[#9CA3AF] font-medium uppercase tracking-wider">Avg Rating</p><p className="text-sm font-semibold text-[#1A1A1A]">{u.avgRating > 0 ? u.avgRating : '—'}</p></div>
+                    </div>
+                  )}
+                </div>
                 <div>
                   <p className="text-[10px] font-semibold text-[#9CA3AF] uppercase tracking-wider mb-1.5">Designations</p>
                   {u.designations?.filter(Boolean).length
@@ -1037,6 +1098,12 @@ export default function AdminUsersSection({ initialTab = 'developers' }) {
                     })}
                   </div>
                 </div>
+                {u.adminNote && (
+                  <div>
+                    <p className="text-[10px] font-semibold text-[#9CA3AF] uppercase tracking-wider mb-1.5">Admin Note</p>
+                    <p className="text-xs text-[#1A1A1A] bg-amber-50 border border-amber-200 rounded-xl px-3 py-2.5 whitespace-pre-wrap leading-relaxed">{u.adminNote}</p>
+                  </div>
+                )}
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-[10px] font-semibold text-[#9CA3AF] uppercase tracking-wider mb-1">Joined</p>
