@@ -12,11 +12,11 @@ exports.sendProjectApprovedEmail = async ({ to, name, projectTitle, projectId, a
   await api.sendTransacEmail({
     sender: FROM,
     to: [{ email: to, name }],
-    subject: `Your project "${projectTitle}" is now live!`,
+    subject: `"${projectTitle}" is now live @ ShareMyApps`,
     htmlContent: `
       <div style="font-family:Inter,Arial,sans-serif;max-width:560px;margin:0 auto;background:#fff;border-radius:12px;overflow:hidden;border:1px solid #E5E1DA;">
         <div style="background:#00A693;padding:24px 32px;text-align:center;">
-          <img src="${LOGO_URL}" alt="ShareMyApps" style="height:40px;object-fit:contain;" />
+          <img src="${LOGO_URL}" alt="ShareMyApps" style="height:80px;object-fit:contain;" />
         </div>
         <div style="padding:32px;">
           <h2 style="margin:0 0 8px;font-size:18px;color:#1A1A1A;">🎉 Your project is live!</h2>
@@ -32,7 +32,7 @@ exports.sendProjectApprovedEmail = async ({ to, name, projectTitle, projectId, a
             View your project →
           </a>
           <p style="color:#6B7280;font-size:13px;margin:0;">
-            Share your portfolio link with recruiters and clients to showcase all your work in one place.
+            Now recruiters, clients, and mentoring students can explore your projects on ShareMyApps.
           </p>
         </div>
         <div style="background:#F3F0EB;padding:16px 32px;text-align:center;">
@@ -76,7 +76,7 @@ exports.sendCollaboratorAddedEmail = async ({ to, name, addedByName, projectTitl
     htmlContent: `
       <div style="font-family:Inter,Arial,sans-serif;max-width:560px;margin:0 auto;background:#fff;border-radius:12px;overflow:hidden;border:1px solid #E5E1DA;">
         <div style="background:#00A693;padding:24px 32px;text-align:center;">
-          <img src="${LOGO_URL}" alt="ShareMyApps" style="height:40px;object-fit:contain;" />
+          <img src="${LOGO_URL}" alt="ShareMyApps" style="height:80px;object-fit:contain;" />
         </div>
         <div style="padding:32px;">
           <h2 style="margin:0 0 8px;font-size:18px;color:#1A1A1A;">👥 You've been added as a collaborator!</h2>
@@ -110,7 +110,7 @@ exports.sendProjectRejectedEmail = async ({ to, name, projectTitle, projectId, a
     htmlContent: `
       <div style="font-family:Inter,Arial,sans-serif;max-width:560px;margin:0 auto;background:#fff;border-radius:12px;overflow:hidden;border:1px solid #E5E1DA;">
         <div style="background:#00A693;padding:24px 32px;text-align:center;">
-          <img src="${LOGO_URL}" alt="ShareMyApps" style="height:40px;object-fit:contain;" />
+          <img src="${LOGO_URL}" alt="ShareMyApps" style="height:80px;object-fit:contain;" />
         </div>
         <div style="padding:32px;">
           <h2 style="margin:0 0 8px;font-size:18px;color:#1A1A1A;">Your project needs some changes</h2>
