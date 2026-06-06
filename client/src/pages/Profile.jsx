@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { COUNTRIES, STATES_BY_COUNTRY, DISTRICTS_BY_STATE } from '../data/locationData';
 import { useNavigate } from 'react-router-dom';
 import {
   ArrowLeft, ArrowRight, User, Mail, Phone, Link2, GitBranch,
@@ -113,6 +114,9 @@ export default function Profile() {
     jobMode: user?.jobMode || [],
     gender: user?.gender || '',
     place: user?.place || '',
+    district: user?.district || 'Ernakulam',
+    state: user?.state || 'Kerala',
+    country: user?.country || 'India',
     dateOfBirth: user?.dateOfBirth ? new Date(user.dateOfBirth).toISOString().split('T')[0] : '',
   });
   const [saving, setSaving] = useState(false);
@@ -120,6 +124,62 @@ export default function Profile() {
   const [deleting, setDeleting] = useState(false);
   const [avatarUploading, setAvatarUploading] = useState(false);
   const avatarInputRef = useRef(null);
+  const techRefs = useRef([]);
+  const langRefs = useRef([]);
+
+  const handleTechChange = (e, i) => {
+    const val = e.target.value;
+    if (val.includes(',')) {
+      const parts = val.split(',').map(p => p.trim()).filter((p, idx) => idx === 0 || p);
+      setForm(f => {
+        const updated = [...f.mentorshipTech];
+        updated.splice(i, 1, ...parts);
+        return { ...f, mentorshipTech: updated };
+      });
+      setTimeout(() => techRefs.current[i + parts.length - 1]?.focus(), 0);
+    } else {
+      setForm(f => ({ ...f, mentorshipTech: f.mentorshipTech.map((v, j) => j === i ? val : v) }));
+    }
+  };
+
+  const handleTechKeyDown = (e, i) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      setForm(f => {
+        const updated = [...f.mentorshipTech];
+        updated.splice(i + 1, 0, '');
+        return { ...f, mentorshipTech: updated };
+      });
+      setTimeout(() => techRefs.current[i + 1]?.focus(), 0);
+    }
+  };
+
+  const handleLangChange = (e, i) => {
+    const val = e.target.value;
+    if (val.includes(',')) {
+      const parts = val.split(',').map(p => p.trim()).filter((p, idx) => idx === 0 || p);
+      setForm(f => {
+        const updated = [...f.languagePreference];
+        updated.splice(i, 1, ...parts);
+        return { ...f, languagePreference: updated };
+      });
+      setTimeout(() => langRefs.current[i + parts.length - 1]?.focus(), 0);
+    } else {
+      setForm(f => ({ ...f, languagePreference: f.languagePreference.map((v, j) => j === i ? val : v) }));
+    }
+  };
+
+  const handleLangKeyDown = (e, i) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      setForm(f => {
+        const updated = [...f.languagePreference];
+        updated.splice(i + 1, 0, '');
+        return { ...f, languagePreference: updated };
+      });
+      setTimeout(() => langRefs.current[i + 1]?.focus(), 0);
+    }
+  };
 
   useEffect(() => {
     if (user?.userType === 'client') navigate('/client-profile', { replace: true });
@@ -178,6 +238,7 @@ export default function Profile() {
       const res = await api.put('/auth/profile', form);
       setUser(res.data.user);
       toast.success('Profile updated!');
+      navigate('/dashboard');
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to update profile');
     } finally {
@@ -188,7 +249,7 @@ export default function Profile() {
   const isLast = activeTab === TABS.length - 1;
 
   return (
-    <div className="max-w-6xl mx-auto px-2 sm:px-3 py-6">
+    <div className="max-w-6xl mx-auto px-2 sm:px-3 pt-2 pb-6">
       <button
         onClick={() => navigate(-1)}
         className="inline-flex items-center gap-1.5 text-sm text-muted hover:text-text mb-4 transition-colors"
@@ -199,7 +260,7 @@ export default function Profile() {
       <div className="flex flex-col lg:flex-row gap-6 items-start">
 
         {/* ── Left: sticky profile card ── */}
-        <div className="w-full lg:w-72 shrink-0 lg:sticky lg:top-6 space-y-4">
+        <div className="w-full lg:w-72 shrink-0 lg:sticky lg:top-6 space-y-4 lg:mt-20">
 
           {/* Avatar card */}
           <div className="bg-white border border-border rounded-2xl p-5">
@@ -247,7 +308,7 @@ export default function Profile() {
           </div>
 
           {/* Danger zone */}
-          <div className="border border-red-100 bg-red-50/50 rounded-2xl p-4">
+          <div className="border border-red-100 bg-red-50/50 rounded-2xl p-6 lg:mt-8">
             <h2 className="text-sm font-semibold text-red-600 mb-1">Danger Zone</h2>
             <p className="text-xs text-muted mb-3">Permanently delete your account and all your projects.</p>
             <button
@@ -310,80 +371,121 @@ export default function Profile() {
                   <User size={15} className="text-accent" />
                   <h2 className="text-sm font-semibold text-text">Basic Info</h2>
                 </div>
-                <Field
-                  icon={<User size={15} />}
-                  label={<>Full name <span className="text-red-400">*</span></>}
-                  name="name"
-                  value={form.name}
-                  onChange={handle}
-                  placeholder="Your full name"
-                />
-                <Field
-                  icon={<Mail size={15} />}
-                  label="Email"
-                  name="email"
-                  value={user?.email || ''}
-                  placeholder=""
-                  readOnly
-                  hint="Email cannot be changed"
-                />
-                <Field
-                  icon={<Phone size={15} />}
-                  label={<>Mobile <span className="text-xs text-muted font-normal">(optional)</span></>}
-                  name="phone"
-                  value={form.phone}
-                  onChange={handle}
-                  placeholder="+1 234 567 8900"
-                  type="tel"
-                />
 
-                {/* Gender */}
-                <div>
-                  <label className="block text-sm font-medium text-text mb-2">
-                    Gender <span className="text-xs text-muted font-normal">(optional)</span>
-                  </label>
-                  <div className="flex gap-2">
-                    {[
-                      { label: 'Male', value: 'male' },
-                      { label: 'Female', value: 'female' },
-                      { label: 'Other', value: 'other' },
-                    ].map(opt => (
-                      <button
-                        key={opt.value}
-                        type="button"
-                        onClick={() => setForm(f => ({ ...f, gender: f.gender === opt.value ? '' : opt.value }))}
-                        className={`px-5 py-2.5 rounded-xl text-sm font-medium border transition-colors ${
-                          form.gender === opt.value
-                            ? 'bg-accent text-white border-accent'
-                            : 'bg-white text-muted border-border hover:border-accent/40 hover:text-accent'
-                        }`}
-                      >
-                        {opt.label}
-                      </button>
-                    ))}
+                {/* Row 1: Full name + Email */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <Field
+                    icon={<User size={15} />}
+                    label={<>Full name <span className="text-red-400">*</span></>}
+                    name="name"
+                    value={form.name}
+                    onChange={handle}
+                    placeholder="Your full name"
+                  />
+                  <Field
+                    icon={<Mail size={15} />}
+                    label="Email"
+                    name="email"
+                    value={user?.email || ''}
+                    placeholder=""
+                    readOnly
+                    />
+                </div>
+
+                {/* Row 2: Mobile + Gender */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <Field
+                    icon={<Phone size={15} />}
+                    label="Mobile"
+                    name="phone"
+                    value={form.phone}
+                    onChange={handle}
+                    placeholder="+1 234 567 8900"
+                    type="tel"
+                  />
+                  <div>
+                    <label className="block text-sm font-medium text-text mb-2">Gender</label>
+                    <div className="flex gap-2">
+                      {[
+                        { label: 'Male', value: 'male' },
+                        { label: 'Female', value: 'female' },
+                        { label: 'Other', value: 'other' },
+                      ].map(opt => (
+                        <button
+                          key={opt.value}
+                          type="button"
+                          onClick={() => setForm(f => ({ ...f, gender: f.gender === opt.value ? '' : opt.value }))}
+                          className={`px-5 py-2.5 rounded-xl text-sm font-medium border transition-colors ${
+                            form.gender === opt.value
+                              ? 'bg-accent text-white border-accent'
+                              : 'bg-white text-muted border-border hover:border-accent/40 hover:text-accent'
+                          }`}
+                        >
+                          {opt.label}
+                        </button>
+                      ))}
+                    </div>
                   </div>
                 </div>
 
-                {/* Place */}
-                <Field
-                  icon={<MapPin size={15} />}
-                  label={<>Place <span className="text-xs text-muted font-normal">(city / state)</span></>}
-                  name="place"
-                  value={form.place}
-                  onChange={handle}
-                  placeholder="e.g. Bangalore, Kerala"
-                />
+                {/* Row 3: Country + State + District */}
+                {(() => {
+                  const stateOptions = STATES_BY_COUNTRY[form.country] || [];
+                  const districtOptions = DISTRICTS_BY_STATE[form.state] || [];
+                  const selectCls = 'w-full pl-10 pr-4 py-2.5 border border-border rounded-xl text-sm text-text focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/10 transition bg-white appearance-none';
+                  return (
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-text mb-2">Country</label>
+                        <div className="relative">
+                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted"><MapPin size={15} /></span>
+                          <select name="country" value={form.country} className={selectCls}
+                            onChange={e => setForm(f => ({ ...f, country: e.target.value, state: '', district: '' }))}>
+                            <option value="">Select country</option>
+                            {COUNTRIES.map(c => <option key={c} value={c}>{c}</option>)}
+                          </select>
+                        </div>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-text mb-2">State</label>
+                        <div className="relative">
+                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted"><MapPin size={15} /></span>
+                          <select name="state" value={form.state} className={selectCls}
+                            disabled={!stateOptions.length}
+                            onChange={e => setForm(f => ({ ...f, state: e.target.value, district: '' }))}>
+                            <option value="">Select state</option>
+                            {stateOptions.map(s => <option key={s} value={s}>{s}</option>)}
+                          </select>
+                        </div>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-text mb-2">District</label>
+                        <div className="relative">
+                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted"><MapPin size={15} /></span>
+                          <select name="district" value={form.district} className={selectCls}
+                            disabled={!districtOptions.length}
+                            onChange={e => setForm(f => ({ ...f, district: e.target.value }))}>
+                            <option value="">Select district</option>
+                            {districtOptions.map(d => <option key={d} value={d}>{d}</option>)}
+                          </select>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })()}
 
-                {/* Date of Birth */}
-                <Field
-                  icon={<Calendar size={15} />}
-                  label={<>Date of Birth <span className="text-xs text-muted font-normal">(optional)</span></>}
-                  name="dateOfBirth"
-                  value={form.dateOfBirth}
-                  onChange={handle}
-                  type="date"
-                  placeholder=""
-                />
+                {/* Row 4: Date of Birth */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <Field
+                    icon={<Calendar size={15} />}
+                    label={<>Date of Birth <span className="text-xs text-muted font-normal">(optional)</span></>}
+                    name="dateOfBirth"
+                    value={form.dateOfBirth}
+                    onChange={handle}
+                    type="date"
+                    placeholder=""
+                  />
+                </div>
               </div>
             )}
 
@@ -397,7 +499,7 @@ export default function Profile() {
                 <Field icon={<Link2 size={15} />} label="LinkedIn" name="linkedinUrl" value={form.linkedinUrl} onChange={handle} placeholder="linkedin.com/in/yourprofile" />
                 <Field icon={<GitBranch size={15} />} label="GitHub" name="githubUrl" value={form.githubUrl} onChange={handle} placeholder="github.com/yourusername" />
                 <Field icon={<LeetCodeIcon />} label="LeetCode" name="leetcodeUrl" value={form.leetcodeUrl} onChange={handle} placeholder="leetcode.com/yourusername" />
-                <Field icon={<Globe size={15} />} label={<>Portfolio <span className="text-xs text-muted font-normal">(optional)</span></>} name="portfolioUrl" value={form.portfolioUrl} onChange={handle} placeholder="yourportfolio.com" />
+                <Field icon={<Globe size={15} />} label="Portfolio" name="portfolioUrl" value={form.portfolioUrl} onChange={handle} placeholder="yourportfolio.com" />
               </div>
             )}
 
@@ -413,38 +515,31 @@ export default function Profile() {
                     </div>
                     <h2 className="text-sm font-semibold text-text">Freelance</h2>
                   </div>
-                  <label className="flex items-center justify-between p-3 bg-[#F9F8F6] rounded-xl cursor-pointer select-none">
-                    <div>
+                  <div className="flex items-center gap-4 p-3 bg-[#F9F8F6] rounded-xl">
+                    <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium text-text">Available for freelance?</p>
-                      <p className="text-xs text-muted mt-0.5">Let clients know you're open to projects</p>
+                      {form.freelanceAvailable && <p className="text-xs text-muted mt-0.5">Hourly rate (in ₹)</p>}
                     </div>
+                    {form.freelanceAvailable && (
+                      <div className="relative w-36 shrink-0">
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted"><IndianRupee size={13} /></span>
+                        <input
+                          type="number" min="0" name="freelanceRate"
+                          value={form.freelanceRate}
+                          onChange={handle}
+                          placeholder="Rate/hr"
+                          className="w-full pl-8 pr-3 py-1.5 border border-border rounded-lg text-sm text-text placeholder-muted focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/10 transition bg-white"
+                        />
+                      </div>
+                    )}
                     <div
                       onClick={() => setForm(f => ({ ...f, freelanceAvailable: !f.freelanceAvailable }))}
                       className={`w-10 h-6 rounded-full transition-colors relative shrink-0 cursor-pointer ${form.freelanceAvailable ? 'bg-accent' : 'bg-border'}`}
                     >
                       <span className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-transform ${form.freelanceAvailable ? 'translate-x-5' : 'translate-x-1'}`} />
                     </div>
-                  </label>
-                  {form.freelanceAvailable && (
-                    <div>
-                      <label className="block text-sm font-medium text-text mb-2">
-                        Rate / hour <span className="text-xs text-muted font-normal">(approximate, in ₹)</span>
-                      </label>
-                      <div className="relative">
-                        <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted"><IndianRupee size={14} /></span>
-                        <input
-                          type="number" min="0" name="freelanceRate"
-                          value={form.freelanceRate}
-                          onChange={handle}
-                          placeholder="e.g. 500"
-                          className="w-full pl-10 pr-4 py-2.5 border border-border rounded-xl text-sm text-text placeholder-muted focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/10 transition bg-white"
-                        />
-                      </div>
-                    </div>
-                  )}
+                  </div>
                 </div>
-
-                <hr className="border-border" />
 
                 {/* Mentorship */}
                 <div className="space-y-3">
@@ -454,93 +549,97 @@ export default function Profile() {
                     </div>
                     <h2 className="text-sm font-semibold text-text">Mentorship</h2>
                   </div>
-                  <label className="flex items-center justify-between p-3 bg-[#F9F8F6] rounded-xl cursor-pointer select-none">
-                    <div>
+                  <div className="flex items-center gap-4 p-3 bg-[#F9F8F6] rounded-xl">
+                    <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium text-text">Available for mentorship?</p>
-                      <p className="text-xs text-muted mt-0.5">Guide others and share your expertise</p>
+                      {form.mentorshipAvailable && <p className="text-xs text-muted mt-0.5">Session rate (in ₹)</p>}
                     </div>
+                    {form.mentorshipAvailable && (
+                      <div className="relative w-36 shrink-0">
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted"><IndianRupee size={13} /></span>
+                        <input
+                          type="number" min="0" name="mentorshipRate"
+                          value={form.mentorshipRate}
+                          onChange={handle}
+                          placeholder="Rate/session"
+                          className="w-full pl-8 pr-3 py-1.5 border border-border rounded-lg text-sm text-text placeholder-muted focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/10 transition bg-white"
+                        />
+                      </div>
+                    )}
                     <div
                       onClick={() => setForm(f => ({ ...f, mentorshipAvailable: !f.mentorshipAvailable }))}
                       className={`w-10 h-6 rounded-full transition-colors relative shrink-0 cursor-pointer ${form.mentorshipAvailable ? 'bg-accent' : 'bg-border'}`}
                     >
                       <span className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-transform ${form.mentorshipAvailable ? 'translate-x-5' : 'translate-x-1'}`} />
                     </div>
-                  </label>
+                  </div>
                   {form.mentorshipAvailable && (
                     <div className="space-y-4">
-                      <div>
-                        <label className="block text-sm font-medium text-text mb-2">
-                          Session rate <span className="text-xs text-muted font-normal">(₹ per session)</span>
-                        </label>
-                        <div className="relative">
-                          <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted"><IndianRupee size={14} /></span>
-                          <input
-                            type="number" min="0" name="mentorshipRate"
-                            value={form.mentorshipRate}
-                            onChange={handle}
-                            placeholder="e.g. 1000"
-                            className="w-full pl-10 pr-4 py-2.5 border border-border rounded-xl text-sm text-text placeholder-muted focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/10 transition bg-white"
-                          />
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                          <label className="flex items-center gap-1.5 text-sm font-medium text-text mb-2">
+                            <Code2 size={13} className="text-muted" /> Stack you can mentor in
+                          </label>
+                          <div className="grid grid-cols-2 gap-2">
+                            {form.mentorshipTech.map((t, i) => (
+                              <div key={i} className="flex gap-1.5 items-center">
+                                <input
+                                  ref={el => techRefs.current[i] = el}
+                                  type="text" value={t}
+                                  onChange={e => handleTechChange(e, i)}
+                                  onKeyDown={e => handleTechKeyDown(e, i)}
+                                  placeholder="e.g. MERN Stack"
+                                  className="flex-1 min-w-0 px-3 py-2 border border-border rounded-xl text-sm text-text placeholder-muted focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/10 transition bg-white"
+                                />
+                                {i === form.mentorshipTech.length - 1 ? (
+                                  <button type="button"
+                                    onClick={() => setForm(f => ({ ...f, mentorshipTech: [...f.mentorshipTech, ''] }))}
+                                    className="w-7 h-7 flex items-center justify-center text-accent hover:bg-accent/10 rounded-lg transition-colors border border-accent/30 shrink-0">
+                                    <Plus size={12} />
+                                  </button>
+                                ) : (
+                                  <button type="button"
+                                    onClick={() => setForm(f => ({ ...f, mentorshipTech: f.mentorshipTech.filter((_, j) => j !== i) }))}
+                                    className="w-7 h-7 flex items-center justify-center text-muted hover:text-red-400 hover:bg-red-50 rounded-lg transition-colors shrink-0">
+                                    <XIcon size={12} />
+                                  </button>
+                                )}
+                              </div>
+                            ))}
+                          </div>
                         </div>
-                      </div>
 
-                      <div>
-                        <label className="flex items-center gap-1.5 text-sm font-medium text-text mb-2">
-                          <Code2 size={13} className="text-muted" /> Technologies you can mentor in
-                        </label>
-                        <div className="space-y-2">
-                          {form.mentorshipTech.map((t, i) => (
-                            <div key={i} className="flex gap-2 items-center">
-                              <input
-                                type="text" value={t}
-                                onChange={e => setForm(f => ({ ...f, mentorshipTech: f.mentorshipTech.map((v, j) => j === i ? e.target.value : v) }))}
-                                placeholder="e.g. React, Node.js, Python"
-                                className="flex-1 px-3.5 py-2.5 border border-border rounded-xl text-sm text-text placeholder-muted focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/10 transition bg-white"
-                              />
-                              {form.mentorshipTech.length > 1 && (
-                                <button type="button"
-                                  onClick={() => setForm(f => ({ ...f, mentorshipTech: f.mentorshipTech.filter((_, j) => j !== i) }))}
-                                  className="w-8 h-8 flex items-center justify-center text-muted hover:text-red-400 hover:bg-red-50 rounded-lg transition-colors">
-                                  <XIcon size={13} />
-                                </button>
-                              )}
-                            </div>
-                          ))}
-                          <button type="button"
-                            onClick={() => setForm(f => ({ ...f, mentorshipTech: [...f.mentorshipTech, ''] }))}
-                            className="inline-flex items-center gap-1 text-xs text-accent hover:text-accent-hover font-medium transition-colors">
-                            <Plus size={12} /> Add technology
-                          </button>
-                        </div>
-                      </div>
-
-                      <div>
-                        <label className="flex items-center gap-1.5 text-sm font-medium text-text mb-2">
-                          <Languages size={13} className="text-muted" /> Language preference
-                        </label>
-                        <div className="space-y-2">
-                          {form.languagePreference.map((l, i) => (
-                            <div key={i} className="flex gap-2 items-center">
-                              <input
-                                type="text" value={l}
-                                onChange={e => setForm(f => ({ ...f, languagePreference: f.languagePreference.map((v, j) => j === i ? e.target.value : v) }))}
-                                placeholder="e.g. English, Hindi, Tamil"
-                                className="flex-1 px-3.5 py-2.5 border border-border rounded-xl text-sm text-text placeholder-muted focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/10 transition bg-white"
-                              />
-                              {form.languagePreference.length > 1 && (
-                                <button type="button"
-                                  onClick={() => setForm(f => ({ ...f, languagePreference: f.languagePreference.filter((_, j) => j !== i) }))}
-                                  className="w-8 h-8 flex items-center justify-center text-muted hover:text-red-400 hover:bg-red-50 rounded-lg transition-colors">
-                                  <XIcon size={13} />
-                                </button>
-                              )}
-                            </div>
-                          ))}
-                          <button type="button"
-                            onClick={() => setForm(f => ({ ...f, languagePreference: [...f.languagePreference, ''] }))}
-                            className="inline-flex items-center gap-1 text-xs text-accent hover:text-accent-hover font-medium transition-colors">
-                            <Plus size={12} /> Add language
-                          </button>
+                        <div>
+                          <label className="flex items-center gap-1.5 text-sm font-medium text-text mb-2">
+                            <Languages size={13} className="text-muted" /> Language preference
+                          </label>
+                          <div className="grid grid-cols-2 gap-2">
+                            {form.languagePreference.map((l, i) => (
+                              <div key={i} className="flex gap-1.5 items-center">
+                                <input
+                                  ref={el => langRefs.current[i] = el}
+                                  type="text" value={l}
+                                  onChange={e => handleLangChange(e, i)}
+                                  onKeyDown={e => handleLangKeyDown(e, i)}
+                                  placeholder="e.g. English"
+                                  className="flex-1 min-w-0 px-3 py-2 border border-border rounded-xl text-sm text-text placeholder-muted focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/10 transition bg-white"
+                                />
+                                {i === form.languagePreference.length - 1 ? (
+                                  <button type="button"
+                                    onClick={() => setForm(f => ({ ...f, languagePreference: [...f.languagePreference, ''] }))}
+                                    className="w-7 h-7 flex items-center justify-center text-accent hover:bg-accent/10 rounded-lg transition-colors border border-accent/30 shrink-0">
+                                    <Plus size={12} />
+                                  </button>
+                                ) : (
+                                  <button type="button"
+                                    onClick={() => setForm(f => ({ ...f, languagePreference: f.languagePreference.filter((_, j) => j !== i) }))}
+                                    className="w-7 h-7 flex items-center justify-center text-muted hover:text-red-400 hover:bg-red-50 rounded-lg transition-colors shrink-0">
+                                    <XIcon size={12} />
+                                  </button>
+                                )}
+                              </div>
+                            ))}
+                          </div>
                         </div>
                       </div>
 
@@ -549,48 +648,46 @@ export default function Profile() {
                           <Clock size={13} className="text-muted" /> Weekly availability
                           <span className="text-xs text-muted font-normal ml-1">(select days &amp; time)</span>
                         </label>
-                        <div className="flex flex-wrap gap-1.5 mb-3">
+                        <div className="flex flex-wrap gap-2">
                           {DAYS.map(day => {
                             const active = !!form.mentorshipSchedule[day];
                             return (
-                              <button
+                              <div
                                 key={day}
-                                type="button"
-                                onClick={() => setForm(f => {
-                                  const sched = { ...f.mentorshipSchedule };
-                                  if (sched[day]) delete sched[day];
-                                  else sched[day] = { from: '09:00', to: '17:00' };
-                                  return { ...f, mentorshipSchedule: sched };
-                                })}
-                                className={`px-2.5 py-1 rounded-lg text-xs font-medium border transition-colors ${active ? 'bg-purple-100 text-purple-700 border-purple-300' : 'bg-[#F9F8F6] text-muted border-border hover:border-purple-200 hover:text-purple-600'}`}
+                                className={`rounded-xl border transition-colors ${active ? 'bg-purple-50 border-purple-300' : 'bg-[#F9F8F6] border-border hover:border-purple-200'}`}
                               >
-                                {DAY_SHORT[day]}
-                              </button>
+                                <button
+                                  type="button"
+                                  onClick={() => setForm(f => {
+                                    const sched = { ...f.mentorshipSchedule };
+                                    if (sched[day]) delete sched[day];
+                                    else sched[day] = { from: '09:00', to: '17:00' };
+                                    return { ...f, mentorshipSchedule: sched };
+                                  })}
+                                  className={`w-full px-4 py-1.5 text-xs font-semibold transition-colors text-center ${active ? 'text-purple-700' : 'text-muted hover:text-purple-600'}`}
+                                >
+                                  {DAY_SHORT[day]}
+                                </button>
+                                {active && (
+                                  <div className="px-2 pb-2 flex flex-col gap-1">
+                                    <input
+                                      type="time"
+                                      value={form.mentorshipSchedule[day].from}
+                                      onChange={e => setForm(f => ({ ...f, mentorshipSchedule: { ...f.mentorshipSchedule, [day]: { ...f.mentorshipSchedule[day], from: e.target.value } } }))}
+                                      className="border border-purple-200 rounded-lg px-1.5 py-1 text-[11px] text-text bg-white focus:outline-none focus:border-accent transition w-full"
+                                    />
+                                    <input
+                                      type="time"
+                                      value={form.mentorshipSchedule[day].to}
+                                      onChange={e => setForm(f => ({ ...f, mentorshipSchedule: { ...f.mentorshipSchedule, [day]: { ...f.mentorshipSchedule[day], to: e.target.value } } }))}
+                                      className="border border-purple-200 rounded-lg px-1.5 py-1 text-[11px] text-text bg-white focus:outline-none focus:border-accent transition w-full"
+                                    />
+                                  </div>
+                                )}
+                              </div>
                             );
                           })}
                         </div>
-                        {DAYS.filter(d => form.mentorshipSchedule[d]).length > 0 && (
-                          <div className="space-y-2 bg-[#F9F8F6] rounded-xl p-3">
-                            {DAYS.filter(d => form.mentorshipSchedule[d]).map(day => (
-                              <div key={day} className="flex items-center gap-2">
-                                <span className="w-8 text-xs font-semibold text-purple-700 shrink-0">{DAY_SHORT[day]}</span>
-                                <input
-                                  type="time"
-                                  value={form.mentorshipSchedule[day].from}
-                                  onChange={e => setForm(f => ({ ...f, mentorshipSchedule: { ...f.mentorshipSchedule, [day]: { ...f.mentorshipSchedule[day], from: e.target.value } } }))}
-                                  className="border border-border rounded-lg px-2 py-1 text-xs text-text bg-white focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/10 transition"
-                                />
-                                <span className="text-muted text-xs">–</span>
-                                <input
-                                  type="time"
-                                  value={form.mentorshipSchedule[day].to}
-                                  onChange={e => setForm(f => ({ ...f, mentorshipSchedule: { ...f.mentorshipSchedule, [day]: { ...f.mentorshipSchedule[day], to: e.target.value } } }))}
-                                  className="border border-border rounded-lg px-2 py-1 text-xs text-text bg-white focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/10 transition"
-                                />
-                              </div>
-                            ))}
-                          </div>
-                        )}
                       </div>
                     </div>
                   )}
@@ -610,40 +707,30 @@ export default function Profile() {
                 </div>
 
                 {/* CV link */}
-                <Field
-                  icon={<FileText size={15} />}
-                  label={<>Google Drive CV link <span className="text-red-400">*</span></>}
-                  name="cvUrl"
-                  value={form.cvUrl}
-                  onChange={handle}
-                  placeholder="drive.google.com/file/d/…"
-                />
-                {form.cvUrl && (
-                  <a href={form.cvUrl.startsWith('http') ? form.cvUrl : `https://${form.cvUrl}`} target="_blank" rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 text-xs text-accent hover:underline font-medium">
-                    <FileText size={12} /> Preview your CV
-                  </a>
-                )}
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="text-sm font-medium text-text">Google Drive CV link <span className="text-red-400">*</span></label>
+                    {form.cvUrl && (
+                      <a href={form.cvUrl.startsWith('http') ? form.cvUrl : `https://${form.cvUrl}`} target="_blank" rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1.5 text-xs text-accent hover:underline font-medium">
+                        <FileText size={12} /> Preview your CV
+                      </a>
+                    )}
+                  </div>
+                  <div className="relative">
+                    <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#9CA3AF]"><FileText size={15} /></span>
+                    <input
+                      type="text"
+                      name="cvUrl"
+                      value={form.cvUrl}
+                      onChange={handle}
+                      placeholder="drive.google.com/file/d/…"
+                      className="w-full pl-10 pr-4 py-2.5 border border-border rounded-xl text-sm text-text placeholder-[#9CA3AF] focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/10 transition bg-white"
+                    />
+                  </div>
+                </div>
 
                 <hr className="border-border" />
-
-                {/* Joining availability */}
-                <div>
-                  <label className="block text-sm font-medium text-text mb-2">
-                    <span className="flex items-center gap-1.5"><Clock size={13} className="text-muted" /> Joining Availability</span>
-                  </label>
-                  <select
-                    name="joiningAvailability"
-                    value={form.joiningAvailability}
-                    onChange={handle}
-                    className="w-full px-3.5 py-2.5 border border-border rounded-xl text-sm text-text bg-white focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/10 transition"
-                  >
-                    <option value="">Select availability</option>
-                    {['Immediately', '15 days', '1 month', '2 months', '3 months', '3+ months'].map(o => (
-                      <option key={o} value={o}>{o}</option>
-                    ))}
-                  </select>
-                </div>
 
                 {/* Current & Expected salary */}
                 <div className="grid grid-cols-2 gap-4">
@@ -679,34 +766,53 @@ export default function Profile() {
                   </div>
                 </div>
 
-                {/* Preferred locations */}
-                <div>
-                  <label className="flex items-center gap-1.5 text-sm font-medium text-text mb-2">
-                    <MapPin size={13} className="text-muted" /> Preferred Locations
-                  </label>
-                  <div className="space-y-2">
-                    {form.preferredLocations.map((loc, i) => (
-                      <div key={i} className="flex gap-2 items-center">
-                        <input
-                          type="text" value={loc}
-                          onChange={e => setForm(f => ({ ...f, preferredLocations: f.preferredLocations.map((v, j) => j === i ? e.target.value : v) }))}
-                          placeholder="e.g. Bangalore, Remote, Mumbai"
-                          className="flex-1 px-3.5 py-2.5 border border-border rounded-xl text-sm text-text placeholder-muted focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/10 transition bg-white"
-                        />
-                        {form.preferredLocations.length > 1 && (
-                          <button type="button"
-                            onClick={() => setForm(f => ({ ...f, preferredLocations: f.preferredLocations.filter((_, j) => j !== i) }))}
-                            className="w-8 h-8 flex items-center justify-center text-muted hover:text-red-400 hover:bg-red-50 rounded-lg transition-colors">
-                            <XIcon size={13} />
-                          </button>
-                        )}
-                      </div>
-                    ))}
-                    <button type="button"
-                      onClick={() => setForm(f => ({ ...f, preferredLocations: [...f.preferredLocations, ''] }))}
-                      className="inline-flex items-center gap-1 text-xs text-accent hover:text-accent-hover font-medium transition-colors">
-                      <Plus size={12} /> Add location
-                    </button>
+                {/* Joining availability + Preferred locations */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-text mb-2">
+                      <span className="flex items-center gap-1.5"><Clock size={13} className="text-muted" /> Joining Availability</span>
+                    </label>
+                    <select
+                      name="joiningAvailability"
+                      value={form.joiningAvailability}
+                      onChange={handle}
+                      className="w-full px-3.5 py-2.5 border border-border rounded-xl text-sm text-text bg-white focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/10 transition"
+                    >
+                      <option value="">Select availability</option>
+                      {['Immediately', '15 days', '1 month', '2 months', '3 months', '3+ months'].map(o => (
+                        <option key={o} value={o}>{o}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="flex items-center gap-1.5 text-sm font-medium text-text mb-2">
+                      <MapPin size={13} className="text-muted" /> Preferred Locations
+                    </label>
+                    <div className="space-y-2">
+                      {form.preferredLocations.map((loc, i) => (
+                        <div key={i} className="flex gap-2 items-center">
+                          <input
+                            type="text" value={loc}
+                            onChange={e => setForm(f => ({ ...f, preferredLocations: f.preferredLocations.map((v, j) => j === i ? e.target.value : v) }))}
+                            placeholder="e.g. Bangalore, Remote"
+                            className="flex-1 px-3.5 py-2.5 border border-border rounded-xl text-sm text-text placeholder-muted focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/10 transition bg-white"
+                          />
+                          {form.preferredLocations.length > 1 && (
+                            <button type="button"
+                              onClick={() => setForm(f => ({ ...f, preferredLocations: f.preferredLocations.filter((_, j) => j !== i) }))}
+                              className="w-8 h-8 flex items-center justify-center text-muted hover:text-red-400 hover:bg-red-50 rounded-lg transition-colors">
+                              <XIcon size={13} />
+                            </button>
+                          )}
+                        </div>
+                      ))}
+                      <button type="button"
+                        onClick={() => setForm(f => ({ ...f, preferredLocations: [...f.preferredLocations, ''] }))}
+                        className="inline-flex items-center gap-1 text-xs text-accent hover:text-accent-hover font-medium transition-colors">
+                        <Plus size={12} /> Add location
+                      </button>
+                    </div>
                   </div>
                 </div>
 

@@ -94,20 +94,25 @@ function DeveloperCard({ dev, idx }) {
             <span className="text-xl font-bold text-accent">{initials}</span>
           </div>
         )}
-        <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full border ${badge.cls}`}>
-          {badge.label}
-        </span>
+        <div className="flex flex-col items-end gap-1">
+          <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full border ${badge.cls}`}>
+            {badge.label}
+          </span>
+          <span className="text-[10px] text-muted">{dev.projects.length} project{dev.projects.length !== 1 ? 's' : ''}</span>
+        </div>
       </div>
 
       {/* Body */}
       <div className="px-5 pb-5 flex flex-col gap-3 flex-1">
 
-        {/* Name + project count */}
+        {/* Name + location */}
         <div>
           <h3 className="font-bold text-base text-text leading-tight">{dev.name}</h3>
-          <p className="text-xs text-muted mt-0.5">
-            {dev.projects.length} project{dev.projects.length !== 1 ? 's' : ''}
-          </p>
+          {(dev.district || dev.state) && (
+            <p className="text-xs text-muted mt-0.5">
+              {[dev.district, dev.state].filter(Boolean).join(', ')}
+            </p>
+          )}
         </div>
 
         {/* Contact */}

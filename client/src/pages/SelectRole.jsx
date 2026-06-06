@@ -139,7 +139,7 @@ export default function SelectRole() {
     if (u.role === 'admin') return '/admin';
     if (u.userType === 'recruiter' || u.userType === 'client') return '/client-profile';
     if (u.userType === 'mentee') return '/developers';
-    return '/dashboard';
+    return '/profile';
   };
 
   if (user.onboardingComplete) { navigate(homeFor(user), { replace: true }); return null; }

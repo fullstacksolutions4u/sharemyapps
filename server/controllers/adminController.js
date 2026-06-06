@@ -260,7 +260,7 @@ exports.adminUpdateUser = async (req, res) => {
       'name', 'phone', 'bio',
       'linkedinUrl', 'githubUrl', 'leetcodeUrl', 'portfolioUrl', 'cvUrl',
       'companyName', 'companyWebsite', 'industry', 'requirements',
-      'badge', 'userType', 'joiningAvailability', 'place',
+      'badge', 'userType', 'joiningAvailability', 'place', 'district', 'state', 'country',
     ];
     const update = {};
     for (const key of strFields) {

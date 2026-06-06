@@ -215,30 +215,30 @@ export default function Navbar() {
 
         {/* Desktop Nav */}
         <nav className="hidden md:flex items-center gap-6 mr-24">
-          <Link to="/explore" className="text-base text-muted hover:text-text transition-colors">Web & Mobile Applications</Link>
-          <Link to="/developers" className="text-base text-muted hover:text-text transition-colors">
-            {isRecruiter ? 'Portfolios' : 'Developers'}
+          <Link to="/explore" className="relative text-base text-muted hover:text-text transition-colors after:absolute after:left-0 after:-bottom-0.5 after:h-[1.5px] after:w-0 after:bg-accent after:transition-[width] after:duration-300 hover:after:w-full">Web & Mobile Applications</Link>
+          <Link to="/developers" className="relative text-base text-muted hover:text-text transition-colors after:absolute after:left-0 after:-bottom-0.5 after:h-[1.5px] after:w-0 after:bg-accent after:transition-[width] after:duration-300 hover:after:w-full">
+            Portfolios
           </Link>
           {isClient && (
-            <Link to="/freelance-developers" className="text-base text-muted hover:text-text transition-colors">Freelance Developers</Link>
+            <Link to="/freelance-developers" className="relative text-base text-muted hover:text-text transition-colors after:absolute after:left-0 after:-bottom-0.5 after:h-[1.5px] after:w-0 after:bg-accent after:transition-[width] after:duration-300 hover:after:w-full">Freelance Developers</Link>
           )}
           {isRecruiter && (
-            <Link to="/find-developers" className="inline-flex items-center gap-1.5 text-base text-muted hover:text-text transition-colors">
+            <Link to="/find-developers" className="relative inline-flex items-center gap-1.5 text-base text-muted hover:text-text transition-colors after:absolute after:left-0 after:-bottom-0.5 after:h-[1.5px] after:w-0 after:bg-accent after:transition-[width] after:duration-300 hover:after:w-full">
               AI Talent Search
               <GeminiIcon size={14} />
             </Link>
           )}
           {isRecruiter && (
-            <Link to="/find-developers/history" className="text-base text-muted hover:text-text transition-colors">Developers Directory</Link>
+            <Link to="/find-developers/history" className="relative text-base text-muted hover:text-text transition-colors after:absolute after:left-0 after:-bottom-0.5 after:h-[1.5px] after:w-0 after:bg-accent after:transition-[width] after:duration-300 hover:after:w-full">Developers Directory</Link>
           )}
           {isMentee && (
-            <Link to="/mentors" className="text-base text-muted hover:text-text transition-colors">Mentors</Link>
+            <Link to="/mentors" className="relative text-base text-muted hover:text-text transition-colors after:absolute after:left-0 after:-bottom-0.5 after:h-[1.5px] after:w-0 after:bg-accent after:transition-[width] after:duration-300 hover:after:w-full">Mentors</Link>
           )}
           {!isRecruiter && !isClient && !isMentee && (
-            <Link to="/opportunities" className="text-base text-muted hover:text-text transition-colors">Opportunities</Link>
+            <Link to="/opportunities" className="relative text-base text-muted hover:text-text transition-colors after:absolute after:left-0 after:-bottom-0.5 after:h-[1.5px] after:w-0 after:bg-accent after:transition-[width] after:duration-300 hover:after:w-full">Opportunities</Link>
           )}
           {isDeveloper && (
-            <Link to="/dashboard" className="text-base text-muted hover:text-text transition-colors">My Projects</Link>
+            <Link to="/dashboard" className="relative text-base text-muted hover:text-text transition-colors after:absolute after:left-0 after:-bottom-0.5 after:h-[1.5px] after:w-0 after:bg-accent after:transition-[width] after:duration-300 hover:after:w-full">My Projects</Link>
           )}
 
           {user ? (
@@ -322,7 +322,7 @@ export default function Navbar() {
         <div className="md:hidden bg-white border-t border-border px-4 py-4 space-y-3">
           <Link to="/explore" onClick={() => setMenuOpen(false)} className="block text-sm text-muted hover:text-text">Web & Mobile Applications</Link>
           <Link to="/developers" onClick={() => setMenuOpen(false)} className="block text-sm text-muted hover:text-text">
-            {isRecruiter ? 'Portfolios' : 'Developers'}
+            Portfolios
           </Link>
           {isClient && (
             <Link to="/freelance-developers" onClick={() => setMenuOpen(false)} className="block text-sm text-muted hover:text-text">Freelance Developers</Link>
