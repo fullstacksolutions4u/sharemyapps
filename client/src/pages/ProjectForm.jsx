@@ -34,6 +34,9 @@ export default function ProjectForm() {
   const [fetching, setFetching] = useState(isEdit);
   const [projectStatus, setProjectStatus] = useState('');
 
+  const [forSale, setForSale] = useState(false);
+  const [salePrice, setSalePrice] = useState('');
+
   const [collaborators, setCollaborators] = useState([]);
   const [collabInput, setCollabInput] = useState('');
   const [collabResults, setCollabResults] = useState([]);
@@ -50,6 +53,8 @@ export default function ProjectForm() {
         const urls = p.githubUrls?.length ? p.githubUrls : (p.githubUrl ? [p.githubUrl] : ['']);
         setGithubUrls(urls);
         setGithubVisible(p.githubVisible !== false);
+        setForSale(p.forSale || false);
+        setSalePrice(p.salePrice != null ? String(p.salePrice) : '');
         if (p.collaborators?.length) setCollaborators(p.collaborators);
       })
       .catch(() => { toast.error('Failed to load project'); navigate('/dashboard'); })
@@ -114,6 +119,8 @@ export default function ProjectForm() {
       data.append('techTags', form.techTags);
       githubUrls.forEach(url => { if (url.trim()) data.append('githubUrls', url.trim()); });
       data.append('githubVisible', githubVisible);
+      data.append('forSale', forSale);
+      if (forSale && salePrice.trim()) data.append('salePrice', salePrice.trim());
       collaborators.forEach(c => data.append('collaborators', c._id));
 
       if (isEdit) {
@@ -329,6 +336,35 @@ export default function ProjectForm() {
                   {githubVisible ? 'Visible to everyone' : 'Hidden from other users'}
                 </span>
               </label>
+            </div>
+
+            {/* Code for Sale */}
+            <div className={`border rounded-2xl p-5 space-y-4 transition-colors ${forSale ? 'border-amber-300 bg-amber-50/40' : 'border-border'}`}>
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <h3 className="text-sm font-semibold text-text mb-0.5">Available for sale</h3>
+                  <p className="text-xs text-muted">Offer the source code of this project for purchase. GitHub repo will be hidden from others.</p>
+                </div>
+                <div
+                  onClick={() => setForSale(v => !v)}
+                  className={`w-9 h-5 rounded-full transition-colors relative shrink-0 cursor-pointer mt-0.5 ${forSale ? 'bg-amber-500' : 'bg-[#D1D5DB]'}`}
+                >
+                  <span className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${forSale ? 'translate-x-4' : 'translate-x-0.5'}`} />
+                </div>
+              </div>
+              {forSale && (
+                <div>
+                  <label className="block text-xs font-medium text-muted mb-1.5">Sale price (₹) — optional</label>
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    value={salePrice}
+                    onChange={e => setSalePrice(e.target.value.replace(/\D/g, ''))}
+                    placeholder="e.g. 4999"
+                    className="w-full px-3.5 py-2.5 border border-amber-200 rounded-xl text-sm text-text placeholder-[#9CA3AF] focus:outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20 transition bg-white"
+                  />
+                </div>
+              )}
             </div>
 
             {/* Collaborators */}

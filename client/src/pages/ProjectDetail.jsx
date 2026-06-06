@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { ExternalLink, Mail, ArrowLeft, ChevronLeft, ChevronRight, Pencil, Trash2, EyeOff, Heart, Star, Send, Trash, MessageSquare, X, Eye, UserCircle2, Zap, Award, Trophy } from 'lucide-react';
+import { ExternalLink, Mail, ArrowLeft, ChevronLeft, ChevronRight, Pencil, Trash2, EyeOff, Heart, Star, Send, Trash, MessageSquare, X, Eye, UserCircle2, Zap, Award, Trophy, Phone } from 'lucide-react';
 
 const BADGE_CFG = {
   new_member: { label: 'New Member',         Icon: UserCircle2, cls: 'bg-[#F3F0EB] text-muted border-border' },
@@ -114,6 +114,7 @@ export default function ProjectDetail() {
 
   const [imgIdx, setImgIdx] = useState(0);
   const [deleting, setDeleting] = useState(false);
+  const [contactOpen, setContactOpen] = useState(false);
   const [msgOpen, setMsgOpen] = useState(false);
   const [msgText, setMsgText] = useState('');
   const [msgSending, setMsgSending] = useState(false);
@@ -237,7 +238,7 @@ export default function ProjectDetail() {
 
   if (!project) return null;
 
-  const { title, description, liveUrl, bannerImage, screenshots = [], techTags = [], owner, githubUrl, githubUrls = [], githubVisible, collaborators = [] } = project;
+  const { title, description, liveUrl, bannerImage, screenshots = [], techTags = [], owner, githubUrl, githubUrls = [], githubVisible, collaborators = [], forSale, salePrice } = project;
   const images = [getbanner(bannerImage, liveUrl), ...screenshots].filter(Boolean);
   const isOwner = user && owner && user._id === owner._id;
   const allGithubUrls = githubUrls.length ? githubUrls : (githubUrl ? [githubUrl] : []);
@@ -340,7 +341,15 @@ export default function ProjectDetail() {
           {/* Title + owner actions */}
           <div className="shrink-0 mb-3">
             <div className="flex items-start justify-between gap-3">
-              <h1 className="text-2xl font-bold text-[#1A1A1A] tracking-tight leading-tight">{title}</h1>
+              <div className="flex items-start gap-2 flex-wrap">
+                <h1 className="text-2xl font-bold text-text tracking-tight leading-tight">{title}</h1>
+                {forSale && (
+                  <span className="inline-flex items-center gap-1 bg-amber-500 text-white text-[11px] font-bold px-2.5 py-1 rounded-full shadow shrink-0 mt-0.5">
+                    <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+                    {salePrice ? `₹${Number(salePrice).toLocaleString('en-IN')} · For Sale` : 'Code for Sale'}
+                  </span>
+                )}
+              </div>
               {isOwner && (
                 <div className="flex items-center gap-2 shrink-0 mt-0.5">
                   <Link
@@ -426,25 +435,38 @@ export default function ProjectDetail() {
           </a>
         </div>
 
-        {/* Right — GitHub */}
+        {/* Right — GitHub or For Sale */}
         <div className="flex items-center gap-2 justify-end">
-          {allGithubUrls.length > 0 && (isOwner || githubVisible) ? (
+          {forSale ? (
+            isOwner ? (
+              <span className="flex items-center gap-1.5 text-xs font-medium text-amber-500 border border-amber-200 bg-amber-50 px-3 py-2 rounded-xl">
+                <EyeOff size={12} /> Repo hidden · listed for sale
+              </span>
+            ) : (
+              <button
+                onClick={() => setContactOpen(true)}
+                className="flex items-center gap-2 bg-amber-50 hover:bg-amber-100 border border-amber-300 text-amber-700 px-4 py-2.5 rounded-xl font-medium text-sm transition-colors"
+              >
+                <Mail size={14} /> Contact for source code
+              </button>
+            )
+          ) : allGithubUrls.length > 0 && (isOwner || githubVisible) ? (
             <>
               <a
                 href={toAbsUrl(allGithubUrls[0])}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-2 border border-[#E5E1DA] hover:border-[#1A1A1A] text-[#1A1A1A] px-4 py-2.5 rounded-xl font-medium text-sm transition-colors"
+                className="flex items-center gap-2 border border-border hover:border-text text-text px-4 py-2.5 rounded-xl font-medium text-sm transition-colors"
               >
                 <GithubIcon /> GitHub
                 {isOwner && !githubVisible && (
-                  <span className="flex items-center gap-1 text-xs text-[#9CA3AF]">
+                  <span className="flex items-center gap-1 text-xs text-muted">
                     <EyeOff size={11} /> hidden
                   </span>
                 )}
               </a>
               {allGithubUrls.length > 1 && (
-                <span className="flex items-center px-3 py-2.5 text-xs font-medium text-[#6B7280] border border-[#E5E1DA] rounded-xl whitespace-nowrap">
+                <span className="flex items-center px-3 py-2.5 text-xs font-medium text-muted border border-border rounded-xl whitespace-nowrap">
                   {allGithubUrls.length - 1} more git {allGithubUrls.length - 1 === 1 ? 'repo' : 'repos'}
                 </span>
               )}
@@ -672,6 +694,80 @@ export default function ProjectDetail() {
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {otherProjects.slice(0, 4).map(p => <ProjectCard key={p._id} project={p} />)}
+          </div>
+        </div>
+      )}
+
+      {/* Contact for Source Code Modal */}
+      {contactOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm" onClick={() => setContactOpen(false)}>
+          <div className="bg-white rounded-2xl shadow-2xl border-2 border-accent w-full max-w-sm" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between px-5 py-4 border-b border-border">
+              <div>
+                <h3 className="font-semibold text-text">Contact for Source Code</h3>
+                <p className="text-xs text-muted mt-0.5">Reach out to {owner?.name} to purchase</p>
+              </div>
+              <button onClick={() => setContactOpen(false)} className="text-muted hover:text-text transition-colors">
+                <X size={18} />
+              </button>
+            </div>
+            <div className="p-5 space-y-3">
+              <p className="text-xs text-muted leading-relaxed">
+                This project's source code is available for purchase. Contact the developer through any of the options below:
+              </p>
+              <div className="space-y-2">
+                {owner?.email && (
+                  <a href={`mailto:${owner.email}`} className="flex items-center gap-3 p-3 rounded-xl border border-border hover:border-accent/40 hover:bg-accent/5 transition-colors group">
+                    <Mail size={15} className="text-muted group-hover:text-accent shrink-0" />
+                    <div className="min-w-0">
+                      <p className="text-[10px] text-muted uppercase tracking-wide font-medium">Email</p>
+                      <p className="text-sm text-text truncate">{owner.email}</p>
+                    </div>
+                  </a>
+                )}
+                {owner?.phone && (
+                  <>
+                    <a href={`tel:${owner.phone}`} className="flex items-center gap-3 p-3 rounded-xl border border-border hover:border-teal-400/40 hover:bg-teal-50/40 transition-colors group">
+                      <Phone size={15} className="text-muted group-hover:text-teal-600 shrink-0" />
+                      <div className="min-w-0">
+                        <p className="text-[10px] text-muted uppercase tracking-wide font-medium">Phone</p>
+                        <p className="text-sm text-text">{owner.phone}</p>
+                      </div>
+                    </a>
+                    <a
+                      href={`https://wa.me/${owner.phone.replace(/\D/g, '')}?text=${encodeURIComponent(`Hi ${owner.name}, I'm interested in purchasing the source code of your project "${title}" listed on ShareMyApps.`)}`}
+                      target="_blank" rel="noopener noreferrer"
+                      className="flex items-center gap-3 p-3 rounded-xl border border-border hover:border-green-400/40 hover:bg-green-50/40 transition-colors group"
+                    >
+                      <svg viewBox="0 0 24 24" width="15" height="15" fill="#25D366" className="shrink-0"><path d="M12 0C5.373 0 0 5.373 0 12c0 2.123.554 4.118 1.528 5.848L.057 23.885a.75.75 0 0 0 .921.921l6.086-1.461A11.945 11.945 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.907 0-3.686-.524-5.205-1.433l-.374-.223-3.865.928.944-3.77-.245-.388A9.96 9.96 0 0 1 2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>
+                      <div className="min-w-0">
+                        <p className="text-[10px] text-muted uppercase tracking-wide font-medium">WhatsApp</p>
+                        <p className="text-sm text-text">{owner.phone}</p>
+                      </div>
+                    </a>
+                  </>
+                )}
+                {owner?.linkedinUrl && (
+                  <a href={toAbsUrl(owner.linkedinUrl)} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 p-3 rounded-xl border border-border hover:border-[#0A66C2]/30 hover:bg-[#EEF4FF] transition-colors group">
+                    <LinkedInIcon />
+                    <div className="min-w-0">
+                      <p className="text-[10px] text-muted uppercase tracking-wide font-medium">LinkedIn</p>
+                      <p className="text-sm text-text truncate">{owner.linkedinUrl}</p>
+                    </div>
+                  </a>
+                )}
+                <button
+                  onClick={() => { setContactOpen(false); setMsgOpen(true); }}
+                  className="flex items-center gap-3 p-3 rounded-xl border border-border hover:border-accent/40 hover:bg-accent/5 transition-colors group w-full text-left"
+                >
+                  <MessageSquare size={15} className="text-muted group-hover:text-accent shrink-0" />
+                  <div>
+                    <p className="text-[10px] text-muted uppercase tracking-wide font-medium">Platform Message</p>
+                    <p className="text-sm text-text">Send a message via ShareMyApps</p>
+                  </div>
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}

@@ -184,7 +184,7 @@ exports.getMyProjects = async (req, res) => {
 
 exports.createProject = async (req, res) => {
   try {
-    const { title, description, liveUrl, appType, category, techTags, contactEmail, contactPhone, linkedinUrl, githubUrls, githubVisible, collaborators } = req.body;
+    const { title, description, liveUrl, appType, category, techTags, contactEmail, contactPhone, linkedinUrl, githubUrls, githubVisible, collaborators, forSale, salePrice } = req.body;
     if (!title || !description || !liveUrl)
       return res.status(400).json({ message: 'Title, description, and live URL are required' });
 
@@ -216,6 +216,8 @@ exports.createProject = async (req, res) => {
       githubVisible: githubVisible !== 'false',
       collaborators: collaboratorIds,
       owner: req.user._id,
+      forSale: forSale === 'true' || forSale === true,
+      salePrice: (forSale === 'true' || forSale === true) && salePrice ? Number(salePrice) : null,
     });
 
     if (collaboratorIds.length) {
@@ -235,7 +237,7 @@ exports.updateProject = async (req, res) => {
     if (project.owner.toString() !== req.user._id.toString())
       return res.status(403).json({ message: 'Forbidden' });
 
-    const { title, description, liveUrl, appType, category, techTags, removeScreenshots, contactEmail, contactPhone, linkedinUrl, githubUrls, githubVisible, resubmit, collaborators } = req.body;
+    const { title, description, liveUrl, appType, category, techTags, removeScreenshots, contactEmail, contactPhone, linkedinUrl, githubUrls, githubVisible, resubmit, collaborators, forSale, salePrice } = req.body;
     const files = req.files || {};
 
     if (title) project.title = title;
@@ -255,6 +257,10 @@ exports.updateProject = async (req, res) => {
       project.githubUrls = (Array.isArray(githubUrls) ? githubUrls : [githubUrls]).map(u => u.trim()).filter(Boolean);
     }
     if (githubVisible !== undefined) project.githubVisible = githubVisible !== 'false';
+    if (forSale !== undefined) {
+      project.forSale = forSale === 'true' || forSale === true;
+      project.salePrice = project.forSale && salePrice ? Number(salePrice) : null;
+    }
     if (collaborators !== undefined) {
       const newIds = (Array.isArray(collaborators) ? collaborators : [collaborators]).filter(Boolean);
       const existingIds = project.collaborators.map(id => id.toString());

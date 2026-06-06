@@ -29,7 +29,7 @@ const APP_TYPE_CFG = {
 };
 
 const ProjectCard = memo(function ProjectCard({ project }) {
-  const { _id, title, description, liveUrl, bannerImage, owner, likes = [], ratings = [], viewCount = 0, featured, appType, category, collaborators = [] } = project;
+  const { _id, title, description, liveUrl, bannerImage, owner, likes = [], ratings = [], viewCount = 0, featured, appType, category, collaborators = [], forSale, salePrice } = project;
   const appTypeCfg = APP_TYPE_CFG[appType] || APP_TYPE_CFG.web;
   const avg = avgRating(ratings);
 
@@ -139,14 +139,19 @@ const ProjectCard = memo(function ProjectCard({ project }) {
                 <Eye size={11} /> {viewCount >= 1000 ? `${(viewCount / 1000).toFixed(1)}k` : viewCount}
               </span>
             )}
-            <a
-              href={liveUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-1 text-xs text-accent hover:text-accent-hover font-medium transition-colors"
-            >
-              Visit <ExternalLink size={12} />
-            </a>
+            <div className="flex flex-col items-end gap-0.5">
+              <a
+                href={liveUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1 text-xs text-accent hover:text-accent-hover font-medium transition-colors"
+              >
+                Visit <ExternalLink size={12} />
+              </a>
+              {forSale && salePrice && (
+                <span className="text-[10px] font-semibold text-amber-500 leading-none">₹{Number(salePrice).toLocaleString('en-IN')}</span>
+              )}
+            </div>
           </div>
         </div>
       </div>
