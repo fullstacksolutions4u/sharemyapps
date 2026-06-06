@@ -58,9 +58,9 @@ export default function ProjectForm() {
 
   useEffect(() => {
     const atIdx = collabInput.lastIndexOf('@');
-    if (atIdx < 0) { setCollabResults([]); setShowCollabDrop(false); return; }
-    const query = collabInput.slice(atIdx + 1).trim();
+    const query = atIdx < 0 ? null : collabInput.slice(atIdx + 1).trim();
     const timer = setTimeout(() => {
+      if (query === null) { setCollabResults([]); setShowCollabDrop(false); return; }
       api.get(`/users/search?q=${encodeURIComponent(query)}`)
         .then(res => {
           const filtered = res.data.filter(u =>

@@ -829,7 +829,6 @@ function ClientFreelanceProfile({ user, setUser, navigate }) {
 export default function ClientProfile() {
   const { user, setUser } = useAuth();
   const navigate = useNavigate();
-  const confirm = useConfirm();
   if (user?.userType === 'client') {
     return <ClientFreelanceProfile user={user} setUser={setUser} navigate={navigate} />;
   }
