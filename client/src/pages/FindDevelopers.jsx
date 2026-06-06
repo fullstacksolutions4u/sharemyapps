@@ -89,7 +89,6 @@ const PAGE_SIZE = 20;
 function ResultsSection({ developers, ready, jd, onSearchAgain }) {
   const [showAll, setShowAll] = useState(false);
 
-  const maxScore = Math.max(...developers.map(d => d.matchScore || 1), 1);
   const cardBaseDelay = 80;
   const visible = showAll ? developers : developers.slice(0, PAGE_SIZE);
 
