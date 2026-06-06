@@ -326,6 +326,7 @@ function RecruiterProfile({ user, setUser, navigate }) {
   const isSetup = !user?.companyName;
   const [form, setForm] = useState({
     name: user?.name || '',
+    hrName: user?.hrName || '',
     phone: user?.phone || '',
     companyName: user?.companyName || '',
     companyWebsite: user?.companyWebsite || '',
@@ -336,10 +337,14 @@ function RecruiterProfile({ user, setUser, navigate }) {
 
   const handle = e => setForm(f => ({ ...f, [e.target.name]: e.target.value }));
 
-  const handleSubmit = async (e) => {
+  const handleNextTab = (e) => {
     e.preventDefault();
     if (!form.companyName.trim()) { toast.error('Company name is required'); return; }
-    if (activeTab === 'company') { setActiveTab('contact'); return; }
+    setActiveTab('contact');
+  };
+
+  const handleSave = async (e) => {
+    e.preventDefault();
     setSaving(true);
     try {
       const res = await api.put('/auth/profile', form);
@@ -373,8 +378,9 @@ function RecruiterProfile({ user, setUser, navigate }) {
           </button>
         ))}
       </div>
-      <form onSubmit={handleSubmit} className="space-y-5">
-        {activeTab === 'company' && (
+
+      {activeTab === 'company' && (
+        <form onSubmit={handleNextTab} className="space-y-5">
           <div className="bg-white border border-border rounded-2xl p-5 space-y-4">
             <h2 className="text-sm font-semibold text-text">Company Information</h2>
             <Field icon={<Building2 size={15} />} label="Company name" name="companyName" value={form.companyName} onChange={handle} placeholder="Acme Inc." />
@@ -391,28 +397,27 @@ function RecruiterProfile({ user, setUser, navigate }) {
               </div>
             </div>
           </div>
-        )}
-        {activeTab === 'contact' && (
+          <button type="submit"
+            className="w-full flex items-center justify-center gap-2 border border-border bg-white hover:border-accent hover:text-accent text-muted py-3 rounded-xl font-medium text-sm transition-colors">
+            Next <ChevronRight size={14} />
+          </button>
+        </form>
+      )}
+
+      {activeTab === 'contact' && (
+        <form onSubmit={handleSave} className="space-y-5">
           <div className="bg-white border border-border rounded-2xl p-5 space-y-4">
             <h2 className="text-sm font-semibold text-text">Contact Details</h2>
             <Field icon={<Mail size={15} />} label="Email" name="email" value={user?.email || ''} readOnly hint="Email cannot be changed" />
             <Field icon={<Phone size={15} />} label={<>Phone <span className="text-xs text-[#9CA3AF] font-normal">(optional)</span></>} name="phone" value={form.phone} onChange={handle} placeholder="+1 234 567 8900" type="tel" />
+            <Field icon={<Handshake size={15} />} label={<>HR Name <span className="text-xs text-[#9CA3AF] font-normal">(optional)</span></>} name="hrName" value={form.hrName} onChange={handle} placeholder="e.g. Priya Sharma" />
           </div>
-        )}
-        <div className="flex gap-3">
-          {activeTab !== 'contact' ? (
-            <button type="button" onClick={() => setActiveTab('contact')}
-              className="flex-1 flex items-center justify-center gap-2 border border-border bg-white hover:border-accent hover:text-accent text-muted py-3 rounded-xl font-medium text-sm transition-colors">
-              Next <ChevronRight size={14} />
-            </button>
-          ) : (
-            <button type="submit" disabled={saving}
-              className="flex-1 flex items-center justify-center gap-2 bg-accent hover:bg-accent-hover text-white py-3 rounded-xl font-medium text-sm transition-colors disabled:opacity-60">
-              <Save size={14} />{saving ? 'Saving…' : 'Save profile'}
-            </button>
-          )}
-        </div>
-      </form>
+          <button type="submit" disabled={saving}
+            className="w-full flex items-center justify-center gap-2 bg-accent hover:bg-accent-hover text-white py-3 rounded-xl font-medium text-sm transition-colors disabled:opacity-60">
+            <Save size={14} />{saving ? 'Saving…' : 'Save profile'}
+          </button>
+        </form>
+      )}
     </div>
   );
 }

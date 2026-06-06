@@ -111,7 +111,7 @@ exports.getMe = async (req, res) => {
 
 exports.updateProfile = async (req, res) => {
   try {
-    const { name, phone, linkedinUrl, githubUrl, leetcodeUrl, portfolioUrl, cvUrl, companyName, companyWebsite, industry, requirements,
+    const { name, phone, linkedinUrl, githubUrl, leetcodeUrl, portfolioUrl, cvUrl, companyName, companyWebsite, industry, hrName, requirements,
       freelanceAvailable, freelanceRate, mentorshipAvailable, mentorshipRate, mentorshipTech, mentorshipSchedule, languagePreference,
       joiningAvailability, currentSalary, expectedSalary, preferredLocations, jobMode, yearsOfExperience,
       gender, place, district, state, country, dateOfBirth } = req.body;
@@ -128,6 +128,7 @@ exports.updateProfile = async (req, res) => {
     if (companyName !== undefined) user.companyName = companyName.trim();
     if (companyWebsite !== undefined) user.companyWebsite = companyWebsite.trim();
     if (industry !== undefined) user.industry = industry.trim();
+    if (hrName !== undefined) user.hrName = hrName.trim();
     if (requirements !== undefined) user.requirements = requirements.trim();
     if (freelanceAvailable !== undefined) user.freelanceAvailable = Boolean(freelanceAvailable);
     if (freelanceRate !== undefined) user.freelanceRate = freelanceRate === '' || freelanceRate === null ? null : Number(freelanceRate);

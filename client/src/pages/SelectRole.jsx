@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Navigate } from 'react-router-dom';
 import { Code2, Briefcase, GraduationCap, Handshake, X, Plus, IndianRupee } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
@@ -133,8 +133,6 @@ export default function SelectRole() {
     description: '',
   });
 
-  if (!user) { navigate('/login', { replace: true }); return null; }
-
   const homeFor = (u) => {
     if (u.role === 'admin') return '/admin';
     if (u.userType === 'recruiter' || u.userType === 'client') return '/client-profile';
@@ -142,7 +140,8 @@ export default function SelectRole() {
     return '/profile';
   };
 
-  if (user.onboardingComplete) { navigate(homeFor(user), { replace: true }); return null; }
+  if (!user) return <Navigate to="/login" replace />;
+  if (user.onboardingComplete) return <Navigate to={homeFor(user)} replace />;
 
   const addTag = (field, inputField) => (val) => {
     if (!menteeForm[field].includes(val))

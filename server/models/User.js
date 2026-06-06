@@ -21,6 +21,7 @@ const userSchema = new mongoose.Schema({
   companyName: { type: String, trim: true, default: '' },
   companyWebsite: { type: String, trim: true, default: '' },
   industry: { type: String, trim: true, default: '' },
+  hrName: { type: String, trim: true, default: '' },
   requirements: { type: String, trim: true, default: '' },
   followers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
   designations: [{ type: String, trim: true }],
