@@ -8,6 +8,7 @@ import {
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
+import { useConfirm } from '../context/ConfirmContext';
 
 const INDUSTRIES = [
   'Technology',
@@ -252,9 +253,11 @@ function ProjectForm({ initial = {}, onSave, onCancel, saving }) {
 /* ── Project card ─────────────────────────────────────────────────────────── */
 function ProjectCard({ project, onEdit, onDelete }) {
   const [deleting, setDeleting] = useState(false);
+  const confirm = useConfirm();
 
   const handleDelete = async () => {
-    if (!confirm('Delete this project?')) return;
+    const ok = await confirm({ title: 'Delete this project?', message: 'This action cannot be undone.' });
+    if (!ok) return;
     setDeleting(true);
     await onDelete(project._id);
     setDeleting(false);
@@ -826,6 +829,7 @@ function ClientFreelanceProfile({ user, setUser, navigate }) {
 export default function ClientProfile() {
   const { user, setUser } = useAuth();
   const navigate = useNavigate();
+  const confirm = useConfirm();
   if (user?.userType === 'client') {
     return <ClientFreelanceProfile user={user} setUser={setUser} navigate={navigate} />;
   }

@@ -117,7 +117,7 @@ export default function Profile() {
     district: user?.district || 'Ernakulam',
     state: user?.state || 'Kerala',
     country: user?.country || 'India',
-    dateOfBirth: user?.dateOfBirth ? new Date(user.dateOfBirth).toISOString().split('T')[0] : '',
+    dateOfBirth: user?.dateOfBirth ? new Date(user.dateOfBirth).toISOString().split('T')[0] : '2005-01-01',
   });
   const [saving, setSaving] = useState(false);
   const [showDelete, setShowDelete] = useState(false);
@@ -293,8 +293,11 @@ export default function Profile() {
                 <div className="relative">
                   {user?.avatar
                     ? <img src={user.avatar} alt={user.name} className="w-20 h-20 rounded-full object-cover" />
-                    : <span className="w-20 h-20 rounded-full bg-accent text-white text-2xl font-bold flex items-center justify-center">
-                        {user?.name?.[0]?.toUpperCase()}
+                    : <span className="w-20 h-20 rounded-full bg-linear-to-br from-accent/20 to-accent/40 border-2 border-accent/30 flex flex-col items-center justify-center overflow-hidden">
+                        <span className="w-8 h-8 rounded-full bg-accent/40 flex items-center justify-center mb-0.5">
+                          <User size={16} className="text-accent" />
+                        </span>
+                        <span className="w-12 h-6 rounded-t-full bg-accent/30" />
                       </span>
                   }
                   <button
@@ -426,7 +429,7 @@ export default function Profile() {
                     name="phone"
                     value={form.phone}
                     onChange={handle}
-                    placeholder="+1 234 567 8900"
+                    placeholder="9847012345"
                     type="tel"
                   />
                   <div>

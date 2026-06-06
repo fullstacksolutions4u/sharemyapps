@@ -3,6 +3,29 @@ const Comment = require('../models/Comment');
 const User = require('../models/User');
 const Notification = require('../models/Notification');
 const { cloudinary } = require('../middleware/upload');
+const { sendCollaboratorAddedEmail } = require('../utils/email');
+
+async function notifyCollaborators(collaboratorIds, addedBy, project) {
+  if (!collaboratorIds.length) return;
+  const collaborators = await User.find({ _id: { $in: collaboratorIds } }).select('name email').lean();
+  await Promise.allSettled(collaborators.map(async (collab) => {
+    await Notification.create({
+      user: collab._id,
+      fromUser: addedBy._id,
+      type: 'collaborator_added',
+      title: 'You were added as a collaborator',
+      message: `${addedBy.name} added you as a collaborator on "${project.title}".`,
+      project: project._id,
+    });
+    await sendCollaboratorAddedEmail({
+      to: collab.email,
+      name: collab.name,
+      addedByName: addedBy.name,
+      projectTitle: project.title,
+      projectId: project._id,
+    }).catch(() => {});
+  }));
+}
 
 const PAGE_SIZE = 12;
 
@@ -33,6 +56,17 @@ const ownerLookupStages = [
   },
   { $addFields: { 'owner.projectCount': { $ifNull: [{ $arrayElemAt: ['$_ownerProjects.n', 0] }, 0] } } },
   { $project: { _ownerProjects: 0 } },
+  {
+    $lookup: {
+      from: 'users',
+      let: { collabIds: { $ifNull: ['$collaborators', []] } },
+      pipeline: [
+        { $match: { $expr: { $in: ['$_id', '$$collabIds'] } } },
+        { $project: { name: 1, avatar: 1 } },
+      ],
+      as: 'collaborators',
+    },
+  },
 ];
 
 exports.getFeaturedProjects = async (req, res) => {
@@ -116,7 +150,8 @@ exports.getProjects = async (req, res) => {
 exports.getProject = async (req, res) => {
   try {
     const project = await Project.findById(req.params.id)
-      .populate('owner', 'name email avatar phone linkedinUrl githubUrl leetcodeUrl followers badge');
+      .populate('owner', 'name email avatar phone linkedinUrl githubUrl leetcodeUrl followers badge')
+      .populate('collaborators', 'name avatar');
     if (!project) return res.status(404).json({ message: 'Project not found' });
     res.json(project);
   } catch (err) {
@@ -139,6 +174,7 @@ exports.getUserProjects = async (req, res) => {
 exports.getMyProjects = async (req, res) => {
   try {
     const projects = await Project.find({ owner: req.user._id })
+      .populate('collaborators', 'name avatar')
       .sort({ createdAt: -1 });
     res.json(projects);
   } catch (err) {
@@ -148,7 +184,7 @@ exports.getMyProjects = async (req, res) => {
 
 exports.createProject = async (req, res) => {
   try {
-    const { title, description, liveUrl, appType, category, techTags, contactEmail, contactPhone, linkedinUrl, githubUrls, githubVisible } = req.body;
+    const { title, description, liveUrl, appType, category, techTags, contactEmail, contactPhone, linkedinUrl, githubUrls, githubVisible, collaborators } = req.body;
     if (!title || !description || !liveUrl)
       return res.status(400).json({ message: 'Title, description, and live URL are required' });
 
@@ -164,6 +200,10 @@ exports.createProject = async (req, res) => {
       ? (Array.isArray(githubUrls) ? githubUrls : [githubUrls]).map(u => u.trim()).filter(Boolean)
       : [];
 
+    const collaboratorIds = collaborators
+      ? (Array.isArray(collaborators) ? collaborators : [collaborators]).filter(Boolean)
+      : [];
+
     const project = await Project.create({
       title, description, liveUrl, bannerImage, screenshots,
       appType: appType || 'web',
@@ -174,8 +214,13 @@ exports.createProject = async (req, res) => {
       linkedinUrl: linkedinUrl || '',
       githubUrls: parsedGithubUrls,
       githubVisible: githubVisible !== 'false',
+      collaborators: collaboratorIds,
       owner: req.user._id,
     });
+
+    if (collaboratorIds.length) {
+      notifyCollaborators(collaboratorIds, req.user, project).catch(() => {});
+    }
 
     res.status(201).json(project);
   } catch (err) {
@@ -190,7 +235,7 @@ exports.updateProject = async (req, res) => {
     if (project.owner.toString() !== req.user._id.toString())
       return res.status(403).json({ message: 'Forbidden' });
 
-    const { title, description, liveUrl, appType, category, techTags, removeScreenshots, contactEmail, contactPhone, linkedinUrl, githubUrls, githubVisible, resubmit } = req.body;
+    const { title, description, liveUrl, appType, category, techTags, removeScreenshots, contactEmail, contactPhone, linkedinUrl, githubUrls, githubVisible, resubmit, collaborators } = req.body;
     const files = req.files || {};
 
     if (title) project.title = title;
@@ -210,6 +255,15 @@ exports.updateProject = async (req, res) => {
       project.githubUrls = (Array.isArray(githubUrls) ? githubUrls : [githubUrls]).map(u => u.trim()).filter(Boolean);
     }
     if (githubVisible !== undefined) project.githubVisible = githubVisible !== 'false';
+    if (collaborators !== undefined) {
+      const newIds = (Array.isArray(collaborators) ? collaborators : [collaborators]).filter(Boolean);
+      const existingIds = project.collaborators.map(id => id.toString());
+      const addedIds = newIds.filter(id => !existingIds.includes(id.toString()));
+      project.collaborators = newIds;
+      if (addedIds.length) {
+        notifyCollaborators(addedIds, req.user, project).catch(() => {});
+      }
+    }
     if (resubmit === 'true') {
       project.status = 'pending';
       project.adminNote = '';

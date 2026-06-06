@@ -15,6 +15,22 @@ router.get('/count', async (req, res) => {
   }
 });
 
+// GET /api/users/search?q=query — public, for @ mention collaborator search
+router.get('/search', async (req, res) => {
+  try {
+    const q = req.query.q?.trim() || '';
+    const filter = { role: { $ne: 'admin' }, isDeleted: { $ne: true } };
+    if (q) {
+      const safe = q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      filter.name = { $regex: safe, $options: 'i' };
+    }
+    const users = await User.find(filter).select('name avatar').limit(10).lean();
+    res.json(users);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
 // GET /api/users/developers — sorted by community engagement (likes/ratings/comments given to others)
 router.get('/developers', async (req, res) => {
   try {

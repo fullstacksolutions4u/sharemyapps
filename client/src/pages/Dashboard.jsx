@@ -5,6 +5,7 @@ import { Plus, Pencil, Trash2, ExternalLink, Clock, CheckCircle, XCircle, AlertC
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
+import { useConfirm } from '../context/ConfirmContext';
 
 const PLACEHOLDER = 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=400&q=80';
 const getbanner = (bannerImage, liveUrl) => bannerImage || `https://s0.wp.com/mshots/v1/${encodeURIComponent(liveUrl)}?w=400`;
@@ -79,6 +80,7 @@ function getMissingItems(user) {
 
 export default function Dashboard() {
   const { user } = useAuth();
+  const confirm = useConfirm();
   const queryClient = useQueryClient();
   const [showShare, setShowShare] = useState(false);
   const [bannerDismissed, setBannerDismissed] = useState(
@@ -114,7 +116,8 @@ export default function Dashboard() {
   };
 
   const handleDelete = async (id, title) => {
-    if (!confirm(`Delete "${title}"? This cannot be undone.`)) return;
+    const ok = await confirm({ title: `Delete "${title}"?`, message: 'This action cannot be undone. The project will be permanently removed.' });
+    if (!ok) return;
     try {
       await api.delete(`/projects/${id}`);
       queryClient.setQueryData(['myProjects'], prev => prev.filter(x => x._id !== id));
@@ -137,7 +140,9 @@ export default function Dashboard() {
         <div className="flex items-center gap-2">
           <button
             onClick={() => setShowShare(true)}
-            className="flex items-center gap-2 border border-[#E5E1DA] hover:border-[#00A693]/50 text-[#6B7280] hover:text-[#00A693] px-4 py-2.5 rounded-xl font-medium text-sm transition-colors bg-white"
+            disabled={projects.length === 0}
+            title={projects.length === 0 ? 'Add a project first' : ''}
+            className="flex items-center gap-2 border border-[#E5E1DA] px-4 py-2.5 rounded-xl font-medium text-sm transition-colors bg-white disabled:opacity-40 disabled:cursor-not-allowed hover:enabled:border-accent/50 text-muted hover:enabled:text-accent"
           >
             <Share2 size={15} /> Share all your projects in 1 click
           </button>
@@ -233,6 +238,19 @@ export default function Dashboard() {
                   )}
                 </div>
                 <p className="text-xs text-[#6B7280] truncate mt-0.5">{project.description}</p>
+                {project.collaborators?.length > 0 && (
+                  <div className="flex items-center gap-1.5 mt-1">
+                    <span className="text-[10px] text-[#9CA3AF]">with</span>
+                    <div className="flex -space-x-1">
+                      {project.collaborators.slice(0, 4).map(c => (
+                        c.avatar
+                          ? <img key={c._id} src={c.avatar} alt={c.name} className="w-4 h-4 rounded-full object-cover ring-1 ring-white" title={c.name} />
+                          : <span key={c._id} className="w-4 h-4 rounded-full bg-accent text-white text-[7px] flex items-center justify-center font-semibold ring-1 ring-white" title={c.name}>{c.name?.[0]?.toUpperCase()}</span>
+                      ))}
+                    </div>
+                    <span className="text-[10px] text-muted">{project.collaborators.map(c => c.name).join(', ')}</span>
+                  </div>
+                )}
                 {project.techTags?.length > 0 && (
                   <div className="flex gap-1 mt-1.5">
                     {project.techTags.slice(0, 3).map(t => (
@@ -270,7 +288,7 @@ export default function Dashboard() {
                 {project.status === 'rejected' && (
                   <Link
                     to={`/dashboard/edit/${project._id}`}
-                    className="inline-flex items-center gap-1 text-xs text-[#00A693] hover:text-[#007D6F] font-medium mt-1.5 transition-colors"
+                    className="inline-flex items-center gap-1 text-xs text-accent hover:text-accent-hover font-medium mt-1.5 transition-colors"
                   >
                     <Pencil size={10} /> Edit and resubmit
                   </Link>

@@ -29,7 +29,7 @@ const APP_TYPE_CFG = {
 };
 
 const ProjectCard = memo(function ProjectCard({ project }) {
-  const { _id, title, description, liveUrl, bannerImage, owner, likes = [], ratings = [], viewCount = 0, featured, appType, category } = project;
+  const { _id, title, description, liveUrl, bannerImage, owner, likes = [], ratings = [], viewCount = 0, featured, appType, category, collaborators = [] } = project;
   const appTypeCfg = APP_TYPE_CFG[appType] || APP_TYPE_CFG.web;
   const avg = avgRating(ratings);
 
@@ -71,6 +71,7 @@ const ProjectCard = memo(function ProjectCard({ project }) {
         </div>
 
         <div className="mt-auto pt-3 border-t border-border flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2 min-w-0 flex-1">
           {owner && (
             <div className="flex items-center gap-2 min-w-0">
               {owner.avatar
@@ -102,6 +103,26 @@ const ProjectCard = memo(function ProjectCard({ project }) {
               </div>
             </div>
           )}
+          {collaborators.length > 0 && (
+            <div className="flex items-center gap-1.5 shrink-0">
+              <span className="text-[10px] text-[#9CA3AF]">with</span>
+              <div className="flex items-center gap-1">
+                {collaborators.slice(0, 2).map(c => (
+                  <div key={c._id} className="flex items-center gap-1">
+                    {c.avatar
+                      ? <img src={c.avatar} alt={c.name} className="w-4 h-4 rounded-full object-cover ring-1 ring-white shrink-0" />
+                      : <span className={`w-4 h-4 rounded-full ${avatarColor(c.name)} text-white text-[7px] flex items-center justify-center font-semibold ring-1 ring-white shrink-0`}>{c.name?.[0]?.toUpperCase()}</span>
+                    }
+                    <span className="text-[10px] text-muted truncate max-w-13">{c.name.split(' ')[0]}</span>
+                  </div>
+                ))}
+                {collaborators.length > 2 && (
+                  <span className="text-[10px] text-muted">+{collaborators.length - 2}</span>
+                )}
+              </div>
+            </div>
+          )}
+          </div>
           <div className="flex items-center gap-3 shrink-0">
             {avg && (
               <span className="flex items-center gap-0.5 text-xs text-[#F59E0B] font-medium">

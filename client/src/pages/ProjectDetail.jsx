@@ -32,6 +32,7 @@ import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 import ProjectCard from '../components/ProjectCard';
 import toast from 'react-hot-toast';
+import { useConfirm } from '../context/ConfirmContext';
 
 const PLACEHOLDER = 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=1200&q=80';
 const toAbsUrl = (url) => url && !/^https?:\/\//i.test(url) ? `https://${url}` : url;
@@ -109,6 +110,7 @@ export default function ProjectDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const confirm = useConfirm();
 
   const [imgIdx, setImgIdx] = useState(0);
   const [deleting, setDeleting] = useState(false);
@@ -219,7 +221,8 @@ export default function ProjectDetail() {
   };
 
   const handleDeleteComment = async (commentId) => {
-    if (!confirm('Delete this comment?')) return;
+    const ok = await confirm({ title: 'Delete this comment?', message: 'This action cannot be undone.' });
+    if (!ok) return;
     try {
       await api.delete(`/projects/${id}/comments/${commentId}`);
       setCommentsLocal(comments.filter(c => c._id !== commentId));
@@ -234,7 +237,7 @@ export default function ProjectDetail() {
 
   if (!project) return null;
 
-  const { title, description, liveUrl, bannerImage, screenshots = [], techTags = [], owner, githubUrl, githubUrls = [], githubVisible } = project;
+  const { title, description, liveUrl, bannerImage, screenshots = [], techTags = [], owner, githubUrl, githubUrls = [], githubVisible, collaborators = [] } = project;
   const images = [getbanner(bannerImage, liveUrl), ...screenshots].filter(Boolean);
   const isOwner = user && owner && user._id === owner._id;
   const allGithubUrls = githubUrls.length ? githubUrls : (githubUrl ? [githubUrl] : []);
@@ -257,7 +260,8 @@ export default function ProjectDetail() {
   };
 
   const handleDelete = async () => {
-    if (!confirm('Delete this project? This cannot be undone.')) return;
+    const ok = await confirm({ title: 'Delete this project?', message: 'This action cannot be undone. The project will be permanently removed.' });
+    if (!ok) return;
     setDeleting(true);
     try {
       await api.delete(`/projects/${id}`);
@@ -518,7 +522,10 @@ export default function ProjectDetail() {
           )}
         </div>
 
-        {/* Developer card — right (1/3) */}
+        {/* Right column — developer card + collaborators */}
+        <div className="flex flex-col gap-4">
+
+        {/* Developer card */}
         {owner && (
           <div className="rounded-2xl overflow-hidden border border-[#E5E1DA] bg-white shadow-sm">
             {/* Header band */}
@@ -624,6 +631,31 @@ export default function ProjectDetail() {
             </div>
           </div>
         )}
+
+        {/* Collaborators card */}
+        {collaborators.length > 0 && (
+          <div className="rounded-2xl border border-border bg-white shadow-sm p-5">
+            <h3 className="text-sm font-semibold text-text mb-4 flex items-center gap-2">
+              <span className="w-5 h-5 rounded-full bg-accent/10 flex items-center justify-center">
+                <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" strokeWidth="2" className="text-accent"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+              </span>
+              Collaborators
+            </h3>
+            <div className="space-y-3">
+              {collaborators.map(c => (
+                <div key={c._id} className="flex items-center gap-3">
+                  {c.avatar
+                    ? <img src={c.avatar} alt={c.name} className="w-8 h-8 rounded-full object-cover shrink-0" />
+                    : <span className={`w-8 h-8 rounded-full text-white text-xs font-semibold flex items-center justify-center shrink-0 ${['bg-blue-500','bg-violet-500','bg-rose-500','bg-amber-500','bg-emerald-500','bg-cyan-500'][c.name?.charCodeAt(0) % 6]}`}>{c.name?.[0]?.toUpperCase()}</span>
+                  }
+                  <span className="text-sm font-medium text-text">{c.name}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        </div>{/* end right column */}
       </div>
 
       {/* More projects by this developer */}
