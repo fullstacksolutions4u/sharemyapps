@@ -339,6 +339,7 @@ function RecruiterProfile({ user, setUser, navigate }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!form.companyName.trim()) { toast.error('Company name is required'); return; }
+    if (activeTab === 'company') { setActiveTab('contact'); return; }
     setSaving(true);
     try {
       const res = await api.put('/auth/profile', form);

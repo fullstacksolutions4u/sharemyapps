@@ -108,12 +108,12 @@ router.get('/developers', async (req, res) => {
     const [result] = await User.aggregate([
       { $match: matchStage },
       ownProjectsLookup,
-      { $match: { $expr: { $gt: [{ $size: '$projects' }, 0] } } },
       likedProjectsLookup,
       ratedProjectsLookup,
       commentsLookup,
       {
         $addFields: {
+          hasProjects:   { $gt: [{ $size: '$projects' }, 0] },
           likesGiven:    { $size: '$_likedProjects' },
           ratingsGiven:  { $size: '$_ratedProjects' },
           commentsGiven: { $size: '$_userComments' },
@@ -126,7 +126,7 @@ router.get('/developers', async (req, res) => {
           },
         },
       },
-      { $sort: { communityScore: -1, createdAt: -1 } },
+      { $sort: { hasProjects: -1, communityScore: -1, createdAt: -1 } },
       {
         $facet: {
           total: [{ $count: 'n' }],
@@ -136,8 +136,8 @@ router.get('/developers', async (req, res) => {
             {
               $project: {
                 password: 0, googleId: 0, companyName: 0, companyWebsite: 0,
-                industry: 0, requirements: 0,
-                _likedProjects: 0, _ratedProjects: 0, _userComments: 0,
+                industry: 0, requirements: 0, adminNote: 0,
+                _likedProjects: 0, _ratedProjects: 0, _userComments: 0, hasProjects: 0,
               },
             },
           ],

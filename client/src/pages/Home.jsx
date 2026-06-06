@@ -30,7 +30,7 @@ export default function Home() {
       <section className="max-w-6xl mx-auto px-4 sm:px-6 pt-20 pb-16 text-center">
         <div className="inline-flex items-center gap-2 bg-[#E6F7F5] text-[#00A693] text-xs font-medium px-3 py-1.5 rounded-full mb-6">
           <span className="w-1.5 h-1.5 bg-[#00A693] rounded-full animate-pulse" />
-          Explore the applications. Discover the talent behind every line of code.
+          Every project tells a story. Connect with the developer behind it.
         </div>
         <h1 className="text-5xl sm:text-6xl font-bold text-[#1A1A1A] tracking-tight leading-tight mb-6">
           Turning side projects into<br />
@@ -72,7 +72,7 @@ export default function Home() {
           </div>
           {userCount !== null && (
             <p className="text-sm text-muted">
-              <span className="font-semibold text-text">{userCount.toLocaleString()}+</span> developers registered with us
+              <span className="font-semibold text-text">{userCount.toLocaleString()}</span> developers registered with us
             </p>
           )}
         </div>

@@ -84,7 +84,7 @@ export default function DeveloperCard({ dev, stagger }) {
           <div className="flex flex-col items-end gap-0.5 shrink-0 self-end mb-1 mr-1">
             {dev.expectedSalary && (
               <span className="text-[10px] text-muted/70 leading-tight">
-                <span className="font-medium">Expected</span> ₹{Number(dev.expectedSalary).toLocaleString('en-IN')}
+                <span className="font-medium">Expected</span> {(Number(dev.expectedSalary) / 100000).toFixed(1).replace(/\.0$/, '')} LPA
               </span>
             )}
             {dev.joiningAvailability && (
