@@ -120,8 +120,7 @@ function ResultsSection({ developers, ready, jd, onSearchAgain }) {
           <DeveloperCard
             key={dev._id}
             dev={dev}
-            pct={Math.round(((dev.matchScore || 0) / maxScore) * 100)}
-            stagger={{ ready, delay: cardBaseDelay + idx * 70 }}
+stagger={{ ready, delay: cardBaseDelay + idx * 70 }}
           />
         ))}
       </div>

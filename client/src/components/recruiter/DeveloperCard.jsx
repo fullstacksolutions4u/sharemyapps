@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { FileText, GitBranch, Globe, Link2, Mail, MapPin, Phone } from 'lucide-react';
+import { GitBranch, Globe, Link2, Mail, MapPin, Phone } from 'lucide-react';
 
 const toAbs = (url) =>
   !url ? '' : /^https?:\/\//i.test(url) ? url : `https://${url}`;
@@ -16,40 +16,31 @@ function Avatar({ dev }) {
   );
 }
 
-function CircularScore({ pct }) {
-  const r = 22;
-  const c = 2 * Math.PI * r;
-  const offset = c - (pct / 100) * c;
+function ResumePdfIcon({ url }) {
+  const inner = (
+    <div className="flex flex-col items-center gap-0.5 shrink-0 group cursor-pointer">
+      <svg width="40" height="48" viewBox="0 0 40 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+        {/* page body */}
+        <path d="M4 0H26L40 14V44C40 46.2 38.2 48 36 48H4C1.8 48 0 46.2 0 44V4C0 1.8 1.8 0 4 0Z" className="fill-red-50 group-hover:fill-red-100 transition-colors" />
+        {/* folded corner */}
+        <path d="M26 0L40 14H30C27.8 14 26 12.2 26 10V0Z" className="fill-red-200 group-hover:fill-red-300 transition-colors" />
+        {/* lines */}
+        <rect x="8" y="22" width="24" height="2" rx="1" className="fill-red-300" />
+        <rect x="8" y="28" width="18" height="2" rx="1" className="fill-red-200" />
+        <rect x="8" y="34" width="21" height="2" rx="1" className="fill-red-200" />
+      </svg>
+      <span className="text-[10px] font-bold text-red-500 leading-none tracking-wide">Resume</span>
+    </div>
+  );
+  if (!url) return <div className="opacity-30 pointer-events-none">{inner}</div>;
   return (
-    <svg width="56" height="56" className="shrink-0" style={{ transform: 'rotate(-90deg)' }}>
-      <circle cx="28" cy="28" r={r} fill="none" stroke="#E5E1DA" strokeWidth="4" />
-      <circle
-        cx="28" cy="28" r={r} fill="none"
-        stroke="#00A693" strokeWidth="4"
-        strokeLinecap="round"
-        strokeDasharray={c}
-        strokeDashoffset={offset}
-        style={{ transition: 'stroke-dashoffset 0.7s cubic-bezier(0.22,1,0.36,1)' }}
-      />
-      <text
-        x="28" y="28"
-        textAnchor="middle"
-        dominantBaseline="central"
-        fill="#1A1A1A"
-        style={{
-          transform: 'rotate(90deg)',
-          transformOrigin: '28px 28px',
-          fontSize: '11px',
-          fontWeight: 700,
-        }}
-      >
-        {pct}%
-      </text>
-    </svg>
+    <a href={/^https?:\/\//i.test(url) ? url : `https://${url}`} target="_blank" rel="noopener noreferrer" title="View Resume">
+      {inner}
+    </a>
   );
 }
 
-export default function DeveloperCard({ dev, pct, stagger }) {
+export default function DeveloperCard({ dev, stagger }) {
   const role = dev.designations?.[0] || dev.resumeData?.experience?.[0]?.role || null;
 
   const skills = [
@@ -89,7 +80,26 @@ export default function DeveloperCard({ dev, pct, stagger }) {
             {dev.projectCount} project{dev.projectCount !== 1 ? 's' : ''}
           </Link>
         </div>
-        <CircularScore pct={pct} />
+        {(dev.expectedSalary || dev.joiningAvailability || dev.yearsOfExperience) && (
+          <div className="flex flex-col items-end gap-0.5 shrink-0 self-end mb-1 mr-1">
+            {dev.expectedSalary && (
+              <span className="text-[10px] text-muted/70 leading-tight">
+                <span className="font-medium">Expected</span> ₹{Number(dev.expectedSalary).toLocaleString('en-IN')}
+              </span>
+            )}
+            {dev.joiningAvailability && (
+              <span className="text-[10px] text-muted/70 leading-tight">
+                <span className="font-medium">Joining</span> {dev.joiningAvailability}
+              </span>
+            )}
+            {dev.yearsOfExperience && (
+              <span className="text-[10px] text-muted/70 leading-tight">
+                <span className="font-medium">Exp</span> {dev.yearsOfExperience} yrs
+              </span>
+            )}
+          </div>
+        )}
+        <ResumePdfIcon url={dev.cvUrl} />
       </div>
 
       {/* Skills */}
@@ -169,16 +179,6 @@ export default function DeveloperCard({ dev, pct, stagger }) {
             className="inline-flex items-center gap-1 text-[10px] font-semibold px-2.5 py-1 rounded-lg bg-gray-900 text-white border border-gray-900 hover:bg-gray-700 transition-colors"
           >
             <GitBranch size={9} /> GitHub
-          </a>
-        )}
-        {dev.cvUrl && (
-          <a
-            href={toAbs(dev.cvUrl)}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1 text-[10px] font-semibold px-2.5 py-1 rounded-lg bg-accent text-white border border-accent hover:bg-accent-hover transition-colors"
-          >
-            <FileText size={9} /> Resume
           </a>
         )}
         {(() => {
