@@ -2,9 +2,20 @@ const Brevo = require('@getbrevo/brevo');
 
 const api = new Brevo.TransactionalEmailsApi();
 api.setApiKey(Brevo.TransactionalEmailsApiApiKeys.apiKey, process.env.BREVO_API_KEY);
-const BASE_URL = process.env.CLIENT_URL || 'http://localhost:5173';
-const LOGO_URL = 'https://res.cloudinary.com/di0vbvioi/image/upload/v1780659567/sharemyapp/logo.png';
+const BASE_URL   = process.env.CLIENT_URL || 'http://localhost:5173';
+const LOGO_URL   = 'https://res.cloudinary.com/di0vbvioi/image/upload/v1780659567/sharemyapp/logo.png';
+const LINKEDIN_URL = 'https://linkedin.com/company/sharemyapps';
 const FROM = { name: 'ShareMyApps', email: process.env.EMAIL_FROM || 'sharemyappsportal@gmail.com' };
+
+const FOOTER = (text) => `
+  <div style="background:#F3F0EB;padding:16px 32px;text-align:center;">
+    <p style="color:#9CA3AF;font-size:12px;margin:0 0 8px;">${text}</p>
+    <a href="${LINKEDIN_URL}" target="_blank" style="display:inline-flex;align-items:center;gap:6px;text-decoration:none;color:#0A66C2;font-size:12px;font-weight:600;">
+      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="#0A66C2"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+      Follow us on LinkedIn
+    </a>
+  </div>
+`;
 
 exports.sendProjectApprovedEmail = async ({ to, name, projectTitle, projectId, adminNote }) => {
   const projectUrl = `${BASE_URL}/project/${projectId}`;
@@ -35,9 +46,7 @@ exports.sendProjectApprovedEmail = async ({ to, name, projectTitle, projectId, a
             Now recruiters, clients, and mentoring students can explore your projects on ShareMyApps.
           </p>
         </div>
-        <div style="background:#F3F0EB;padding:16px 32px;text-align:center;">
-          <p style="color:#9CA3AF;font-size:12px;margin:0;">You received this email because you submitted a project on ShareMyApps.</p>
-        </div>
+        ${FOOTER('You received this email because you submitted a project on ShareMyApps.')}
       </div>
     `,
   });
@@ -61,6 +70,7 @@ exports.sendOtpEmail = async ({ to, otp }) => {
           </div>
           <p style="margin:20px 0 0;font-size:12px;color:#9CA3AF;text-align:center;">If you didn't request this, you can safely ignore this email.</p>
         </div>
+        ${FOOTER('You received this because a password reset was requested on ShareMyApps.')}
       </div>
     `,
   });
@@ -92,9 +102,7 @@ exports.sendCollaboratorAddedEmail = async ({ to, name, addedByName, projectTitl
             This project is now linked to your profile. Share it to showcase your work.
           </p>
         </div>
-        <div style="background:#F3F0EB;padding:16px 32px;text-align:center;">
-          <p style="color:#9CA3AF;font-size:12px;margin:0;">You received this because someone added you as a collaborator on ShareMyApps.</p>
-        </div>
+        ${FOOTER('You received this because someone added you as a collaborator on ShareMyApps.')}
       </div>
     `,
   });
@@ -132,9 +140,7 @@ exports.sendProjectRejectedEmail = async ({ to, name, projectTitle, projectId, a
             Once you've made the changes, you can resubmit for review from your dashboard.
           </p>
         </div>
-        <div style="background:#F3F0EB;padding:16px 32px;text-align:center;">
-          <p style="color:#9CA3AF;font-size:12px;margin:0;">You received this email because you submitted a project on ShareMyApps.</p>
-        </div>
+        ${FOOTER('You received this email because you submitted a project on ShareMyApps.')}
       </div>
     `,
   });
