@@ -88,7 +88,7 @@ function LoadingAnimation({ step }) {
 const PAGE_SIZE = 20;
 
 /* ── Quota status bar ────────────────────────────────────── */
-function QuotaBar({ quota, onBuyClick }) {
+function QuotaBar({ quota, onBuyClick, onBuyLabel }) {
   if (!quota) return null;
 
   const { freeUsed, freeLimit, paidRemaining } = quota;
@@ -113,7 +113,7 @@ function QuotaBar({ quota, onBuyClick }) {
             onClick={onBuyClick}
             className="flex items-center gap-1 bg-accent hover:bg-accent-hover text-white px-3 py-1.5 rounded-lg font-semibold transition-colors text-[11px]"
           >
-            <Zap size={10} /> Buy 5 for ₹499
+            <Zap size={10} /> {onBuyLabel || `Buy ${quota.paidPackSize ?? 5} for ₹${((quota.packPricePaise ?? 49900) / 100).toLocaleString('en-IN')}`}
           </button>
         </>
       ) : usingPaid ? (
@@ -466,6 +466,8 @@ export default function FindDevelopers() {
             setShowPayModal(false);
             setQuota(prev => prev ? { ...prev, paidRemaining } : prev);
           }}
+          packSize={quota?.paidPackSize ?? 5}
+          pricePaise={quota?.packPricePaise ?? 49900}
         />
       )}
 

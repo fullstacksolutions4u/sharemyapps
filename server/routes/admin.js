@@ -29,6 +29,7 @@ const {
 } = require('../controllers/vacancyController');
 const { adminGetUserJDHistory } = require('../controllers/jdAnalysisController');
 const { adminGetPayments } = require('../controllers/paymentController');
+const { getAdminConfig, updateAdminConfig } = require('../controllers/configController');
 const freelance = require('../controllers/freelanceOpportunityController');
 const mentorship = require('../controllers/mentorshipOpportunityController');
 const { aiChat } = require('../controllers/aiChatController');
@@ -78,6 +79,8 @@ router.patch('/mentorship/:id/toggle-status', mentorship.toggleStatus);
 router.post('/mentorship/:id/reply', mentorship.replyToInterest);
 
 router.get('/payments', adminGetPayments);
+router.get('/config', getAdminConfig);
+router.put('/config', updateAdminConfig);
 
 router.post('/ai-chat', aiChat);
 

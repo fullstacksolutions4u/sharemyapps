@@ -1,6 +1,7 @@
 const JDSearchHistory = require('../models/JDSearchHistory');
 const User = require('../models/User');
-const { FREE_LIMIT, PAID_PACK_SIZE, currentMonth } = require('../middleware/jdQuota');
+const { currentMonth } = require('../middleware/jdQuota');
+const { getConfig } = require('../utils/configCache');
 
 const saveSearchHistory = async (req, res) => {
   try {
@@ -66,19 +67,24 @@ const clearAllSearchHistory = async (req, res) => {
 
 const getQuota = async (req, res) => {
   try {
-    const user = await User.findById(req.user._id).select('jdQuota').lean();
+    const [user, cfg] = await Promise.all([
+      User.findById(req.user._id).select('jdQuota').lean(),
+      getConfig(),
+    ]);
     const quota = user?.jdQuota || {};
     const month = currentMonth();
 
-    const freeUsed = quota.resetMonth === month ? (quota.freeUsed ?? 0) : 0;
+    const freeUsed      = quota.resetMonth === month ? (quota.freeUsed ?? 0) : 0;
     const paidRemaining = quota.paidRemaining ?? 0;
 
     res.json({
       freeUsed,
-      freeLimit: FREE_LIMIT,
+      freeLimit:       cfg.jdFreeLimit,
       paidRemaining,
-      paidPackSize: PAID_PACK_SIZE,
-      resetMonth: month,
+      paidPackSize:    cfg.jdPaidPackSize,
+      packPricePaise:  cfg.jdPackPricePaise,
+      featureEnabled:  cfg.jdFeatureEnabled,
+      resetMonth:      month,
     });
   } catch (err) {
     res.status(500).json({ message: err.message });

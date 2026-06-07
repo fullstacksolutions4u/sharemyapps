@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import {
   LayoutDashboard, FolderOpen, ShieldCheck, Menu, LogOut,
-  Users, Briefcase, FileText, Megaphone, MessageSquare, Camera, Sparkles, IndianRupee,
+  Users, Briefcase, FileText, Megaphone, MessageSquare, Camera, Sparkles, IndianRupee, Settings,
 } from 'lucide-react';
 import api from '../api/axios';
 import AdminOverview from './admin/AdminOverview';
@@ -15,6 +15,7 @@ import AdminOpportunitiesSection from './admin/AdminOpportunitiesSection';
 import AdminResumesSection from './admin/AdminResumesSection';
 import AdminAISection from './admin/AdminAISection';
 import AdminPaymentsSection from './admin/AdminPaymentsSection';
+import AdminPlansSection from './admin/AdminPlansSection';
 
 const NAV = [
   { key: 'overview',       label: 'Overview',      icon: LayoutDashboard },
@@ -26,6 +27,7 @@ const NAV = [
   { key: 'messages',       label: 'Messages',       icon: MessageSquare },
   { key: 'ai',             label: 'AI Assistant',   icon: Sparkles },
   { key: 'payments',       label: 'Payments',       icon: IndianRupee },
+  { key: 'plans',          label: 'Plans & Pricing', icon: Settings },
 ];
 
 export default function AdminPanel() {
@@ -150,6 +152,7 @@ const { user, setUser, logout } = useAuth();
           {section === 'messages'         && <AdminMessagesSection onUnreadChange={setUnreadMessages} />}
           {section === 'ai'               && <AdminAISection />}
           {section === 'payments'         && <AdminPaymentsSection />}
+          {section === 'plans'            && <AdminPlansSection />}
         </div>
       </div>
     </div>

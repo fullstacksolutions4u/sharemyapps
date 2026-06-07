@@ -2,9 +2,7 @@ const Razorpay = require('razorpay');
 const crypto = require('crypto');
 const User = require('../models/User');
 const Payment = require('../models/Payment');
-const { PAID_PACK_SIZE } = require('../middleware/jdQuota');
-
-const PACK_AMOUNT_PAISE = 49900; // ₹499 in paise
+const { getConfig } = require('../utils/configCache');
 
 const razorpay = new Razorpay({
   key_id: process.env.RAZORPAY_KEY_ID,
@@ -13,11 +11,12 @@ const razorpay = new Razorpay({
 
 const createJDPackOrder = async (req, res) => {
   try {
+    const cfg = await getConfig();
     const order = await razorpay.orders.create({
-      amount: PACK_AMOUNT_PAISE,
+      amount: cfg.jdPackPricePaise,
       currency: 'INR',
       receipt: `jd_${req.user._id.toString().slice(-8)}_${Date.now().toString().slice(-8)}`,
-      notes: { userId: req.user._id.toString(), pack: 'jd_5' },
+      notes: { userId: req.user._id.toString(), pack: `jd_${cfg.jdPaidPackSize}` },
     });
     res.json({ orderId: order.id, amount: order.amount, currency: order.currency });
   } catch (err) {
@@ -43,25 +42,27 @@ const verifyJDPackPayment = async (req, res) => {
       return res.status(400).json({ message: 'Payment verification failed.' });
     }
 
+    const cfg = await getConfig();
+
     await User.updateOne(
       { _id: req.user._id },
-      { $inc: { 'jdQuota.paidRemaining': PAID_PACK_SIZE } }
+      { $inc: { 'jdQuota.paidRemaining': cfg.jdPaidPackSize } }
     );
 
     await Payment.create({
       user:              req.user._id,
       razorpayOrderId:   razorpay_order_id,
       razorpayPaymentId: razorpay_payment_id,
-      amountPaise:       PACK_AMOUNT_PAISE,
-      pack:              'jd_5',
-      analysesGranted:   PAID_PACK_SIZE,
+      amountPaise:       cfg.jdPackPricePaise,
+      pack:              `jd_${cfg.jdPaidPackSize}`,
+      analysesGranted:   cfg.jdPaidPackSize,
       status:            'success',
     });
 
     const updated = await User.findById(req.user._id).select('jdQuota').lean();
     res.json({
       ok: true,
-      paidRemaining: updated.jdQuota?.paidRemaining ?? PAID_PACK_SIZE,
+      paidRemaining: updated.jdQuota?.paidRemaining ?? cfg.jdPaidPackSize,
     });
   } catch (err) {
     console.error('Razorpay verify error:', err);

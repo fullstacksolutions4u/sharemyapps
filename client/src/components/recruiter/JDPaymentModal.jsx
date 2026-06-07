@@ -3,7 +3,7 @@ import { X, Sparkles, ShieldCheck, Zap } from 'lucide-react';
 import api from '../../api/axios';
 import toast from 'react-hot-toast';
 
-export default function JDPaymentModal({ onClose, onSuccess }) {
+export default function JDPaymentModal({ onClose, onSuccess, packSize = 5, pricePaise = 49900 }) {
   const [loading, setLoading] = useState(false);
 
   const handlePay = async () => {
@@ -69,8 +69,8 @@ export default function JDPaymentModal({ onClose, onSuccess }) {
         {/* Body */}
         <div className="px-5 py-5 space-y-4">
           <div className="bg-accent/5 border border-accent/20 rounded-2xl px-4 py-4 text-center">
-            <p className="text-3xl font-bold text-accent">₹499</p>
-            <p className="text-sm text-muted mt-1">for 5 JD Analyses</p>
+            <p className="text-3xl font-bold text-accent">₹{(pricePaise / 100).toLocaleString('en-IN')}</p>
+            <p className="text-sm text-muted mt-1">for {packSize} JD Analyses</p>
           </div>
 
           <ul className="space-y-2.5">
@@ -105,7 +105,7 @@ export default function JDPaymentModal({ onClose, onSuccess }) {
             ) : (
               <Zap size={14} />
             )}
-            {loading ? 'Opening payment…' : 'Pay ₹499'}
+            {loading ? 'Opening payment…' : `Pay ₹${(pricePaise / 100).toLocaleString('en-IN')}`}
           </button>
         </div>
       </div>

@@ -1,7 +1,5 @@
 const User = require('../models/User');
-
-const FREE_LIMIT = 5;
-const PAID_PACK_SIZE = 5;
+const { getConfig } = require('../utils/configCache');
 
 function currentMonth() {
   const now = new Date();
@@ -10,23 +8,30 @@ function currentMonth() {
 
 const jdQuota = async (req, res, next) => {
   try {
+    const cfg = await getConfig();
+
+    if (!cfg.jdFeatureEnabled) {
+      return res.status(403).json({ code: 'FEATURE_DISABLED', message: 'JD analysis is currently disabled.' });
+    }
+
+    const FREE_LIMIT    = cfg.jdFreeLimit;
+    const PAID_PACK_SIZE = cfg.jdPaidPackSize;
+
     const user = await User.findById(req.user._id).select('jdQuota userType');
     if (!user) return res.status(401).json({ message: 'User not found.' });
 
     const month = currentMonth();
     const quota = user.jdQuota || {};
 
-    // Reset free count on new calendar month
     if (quota.resetMonth !== month) {
       quota.freeUsed = 0;
       quota.resetMonth = month;
     }
 
-    const freeUsed = quota.freeUsed ?? 0;
+    const freeUsed      = quota.freeUsed ?? 0;
     const paidRemaining = quota.paidRemaining ?? 0;
 
     if (freeUsed < FREE_LIMIT) {
-      // Consume one free analysis
       await User.updateOne(
         { _id: user._id },
         { $set: { 'jdQuota.freeUsed': freeUsed + 1, 'jdQuota.resetMonth': month } }
@@ -36,7 +41,6 @@ const jdQuota = async (req, res, next) => {
     }
 
     if (paidRemaining > 0) {
-      // Consume one paid analysis
       await User.updateOne(
         { _id: user._id },
         { $set: { 'jdQuota.paidRemaining': paidRemaining - 1 } }
@@ -47,7 +51,7 @@ const jdQuota = async (req, res, next) => {
 
     return res.status(403).json({
       code: 'QUOTA_EXCEEDED',
-      message: 'You have used all 5 free JD analyses for this month.',
+      message: 'You have used all your free JD analyses for this month.',
       freeUsed,
       paidRemaining,
       freeLimit: FREE_LIMIT,
@@ -58,4 +62,4 @@ const jdQuota = async (req, res, next) => {
   }
 };
 
-module.exports = { jdQuota, FREE_LIMIT, PAID_PACK_SIZE, currentMonth };
+module.exports = { jdQuota, currentMonth };
