@@ -19,7 +19,7 @@ export default function AdminPaymentsSection() {
   const [page, setPage]     = useState(1);
   const [loading, setLoading] = useState(true);
 
-  const load = (p = 1) => {
+  const load = (p) => {
     setLoading(true);
     api.get(`/admin/payments?page=${p}`)
       .then(r => { setData(r.data); setPage(p); })
@@ -27,7 +27,12 @@ export default function AdminPaymentsSection() {
       .finally(() => setLoading(false));
   };
 
-  useEffect(() => { load(1); }, []);
+  useEffect(() => {
+    api.get('/admin/payments?page=1')
+      .then(r => { setData(r.data); setPage(1); })
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, []);
 
   return (
     <div className="max-w-5xl mx-auto">

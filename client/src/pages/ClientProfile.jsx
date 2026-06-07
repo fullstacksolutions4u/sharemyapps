@@ -481,6 +481,7 @@ function ClientFreelanceProfile({ user, setUser, navigate }) {
       })
       .catch(() => { if (!cancelled) { toast.error('Failed to load projects'); setProjectsLoading(false); } });
     return () => { cancelled = true; };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab, isSetup]);
 
   // ── Setup flow (first time) ──
