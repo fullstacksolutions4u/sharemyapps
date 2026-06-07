@@ -19,6 +19,7 @@ const {
   setResumeData,
   setAdminNote,
 } = require('../controllers/adminController');
+const { adminSendMessage } = require('../controllers/messageController');
 const {
   getAllVacanciesAdmin,
   createVacancy,
@@ -50,6 +51,7 @@ router.patch('/users/:id/hide', toggleUserHidden);
 router.patch('/users/:id/note', setAdminNote);
 router.put('/users/:id/resume', setResumeData);
 router.delete('/users/:id', deleteUser);
+router.post('/users/:id/message', adminSendMessage);
 router.get('/users/:id/jd-history', adminGetUserJDHistory);
 router.delete('/projects/:id', deleteProject);
 router.patch('/projects/:id/featured', toggleFeatured);

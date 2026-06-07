@@ -685,6 +685,9 @@ export default function AdminUsersSection({ initialTab = 'developers' }) {
   const [expandedJD, setExpandedJD] = useState(null);
   const [editingNote, setEditingNote] = useState(null); // { id, text }
   const [noteSaving, setNoteSaving] = useState(null);
+  const [messagingUser, setMessagingUser] = useState(null);
+  const [messageText, setMessageText] = useState('');
+  const [messageSending, setMessageSending] = useState(false);
   const PER_PAGE = 10;
 
   useEffect(() => {
@@ -738,6 +741,18 @@ export default function AdminUsersSection({ initialTab = 'developers' }) {
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to delete user');
     } finally { setDeleteLoading(null); }
+  };
+
+  const handleSendMessage = async () => {
+    if (!messagingUser || !messageText.trim()) return;
+    setMessageSending(true);
+    try {
+      await api.post(`/admin/users/${messagingUser._id}/message`, { text: messageText.trim() });
+      toast.success(`Message sent to ${messagingUser.name}`);
+      setMessagingUser(null);
+      setMessageText('');
+    } catch { toast.error('Failed to send message'); }
+    finally { setMessageSending(false); }
   };
 
   const handleSaveNote = async () => {
@@ -876,6 +891,7 @@ export default function AdminUsersSection({ initialTab = 'developers' }) {
                     <div className="flex items-center justify-end gap-1.5 whitespace-nowrap">
                       <button onClick={() => setViewingUser(u)} className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-lg border border-[#E5E1DA] text-[#6B7280] hover:border-[#00A693] hover:text-[#00A693] font-medium transition-colors"><Eye size={10} /> View</button>
                       <button onClick={() => setEditingUser(u)} className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-lg border border-[#E5E1DA] text-[#6B7280] hover:border-[#00A693] hover:text-[#00A693] font-medium transition-colors"><Pencil size={10} /> Edit</button>
+                      <button onClick={() => { setMessagingUser(u); setMessageText(''); }} className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-lg border border-blue-200 text-blue-500 hover:bg-blue-50 font-medium transition-colors"><Mail size={10} /> Message</button>
                       <button onClick={() => setConfirmDelete(u)} className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-lg border border-red-200 text-red-500 hover:bg-red-50 font-medium transition-colors"><Trash2 size={10} /> Delete</button>
                     </div>
                   </td>
@@ -913,6 +929,7 @@ export default function AdminUsersSection({ initialTab = 'developers' }) {
                     <div className="flex items-center justify-end gap-1.5 whitespace-nowrap">
                       <button onClick={() => setViewingUser(u)} className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-lg border border-[#E5E1DA] text-[#6B7280] hover:border-[#00A693] hover:text-[#00A693] font-medium transition-colors"><Eye size={10} /> View</button>
                       <button onClick={() => setEditingUser(u)} className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-lg border border-[#E5E1DA] text-[#6B7280] hover:border-[#00A693] hover:text-[#00A693] font-medium transition-colors"><Pencil size={10} /> Edit</button>
+                      <button onClick={() => { setMessagingUser(u); setMessageText(''); }} className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-lg border border-blue-200 text-blue-500 hover:bg-blue-50 font-medium transition-colors"><Mail size={10} /> Message</button>
                       <button onClick={() => setConfirmDelete(u)} className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-lg border border-red-200 text-red-500 hover:bg-red-50 font-medium transition-colors"><Trash2 size={10} /> Delete</button>
                     </div>
                   </td>
@@ -952,6 +969,7 @@ export default function AdminUsersSection({ initialTab = 'developers' }) {
                     <div className="flex items-center justify-end gap-1.5 whitespace-nowrap">
                       <button onClick={() => setViewingUser(u)} className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-lg border border-[#E5E1DA] text-[#6B7280] hover:border-[#00A693] hover:text-[#00A693] font-medium transition-colors"><Eye size={10} /> View</button>
                       <button onClick={() => setEditingUser(u)} className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-lg border border-[#E5E1DA] text-[#6B7280] hover:border-[#00A693] hover:text-[#00A693] font-medium transition-colors"><Pencil size={10} /> Edit</button>
+                      <button onClick={() => { setMessagingUser(u); setMessageText(''); }} className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-lg border border-blue-200 text-blue-500 hover:bg-blue-50 font-medium transition-colors"><Mail size={10} /> Message</button>
                       <button onClick={() => setConfirmDelete(u)} className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-lg border border-red-200 text-red-500 hover:bg-red-50 font-medium transition-colors"><Trash2 size={10} /> Delete</button>
                     </div>
                   </td>
@@ -991,6 +1009,7 @@ export default function AdminUsersSection({ initialTab = 'developers' }) {
                     <div className="flex items-center justify-end gap-1.5 whitespace-nowrap">
                       <button onClick={() => setViewingUser(u)} className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-lg border border-[#E5E1DA] text-[#6B7280] hover:border-[#00A693] hover:text-[#00A693] font-medium transition-colors"><Eye size={10} /> View</button>
                       <button onClick={() => setEditingUser(u)} className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-lg border border-[#E5E1DA] text-[#6B7280] hover:border-[#00A693] hover:text-[#00A693] font-medium transition-colors"><Pencil size={10} /> Edit</button>
+                      <button onClick={() => { setMessagingUser(u); setMessageText(''); }} className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-lg border border-blue-200 text-blue-500 hover:bg-blue-50 font-medium transition-colors"><Mail size={10} /> Message</button>
                       <button onClick={() => setConfirmDelete(u)} className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-lg border border-red-200 text-red-500 hover:bg-red-50 font-medium transition-colors"><Trash2 size={10} /> Delete</button>
                     </div>
                   </td>
@@ -1259,6 +1278,45 @@ export default function AdminUsersSection({ initialTab = 'developers' }) {
             <div className="px-5 py-3 border-t border-[#E5E1DA] shrink-0 flex items-center justify-between">
               <p className="text-xs text-[#9CA3AF]">{jdHistory.length} search{jdHistory.length !== 1 ? 'es' : ''} total</p>
               <button onClick={() => setJdHistoryUser(null)} className="px-4 py-2 rounded-xl border border-[#E5E1DA] text-sm text-[#6B7280] hover:text-[#1A1A1A] font-medium transition-colors">Close</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {messagingUser && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4" onClick={() => setMessagingUser(null)}>
+          <div className="bg-white rounded-2xl shadow-xl border border-[#E5E1DA] w-full max-w-md" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between px-5 py-4 border-b border-[#E5E1DA]">
+              <div className="flex items-center gap-3">
+                {messagingUser.avatar
+                  ? <img src={messagingUser.avatar} alt={messagingUser.name} className="w-9 h-9 rounded-full object-cover" />
+                  : <span className="w-9 h-9 rounded-full bg-[#00A693] text-white text-sm flex items-center justify-center font-bold">{messagingUser.name?.[0]?.toUpperCase()}</span>}
+                <div>
+                  <p className="text-sm font-semibold text-[#1A1A1A]">{messagingUser.name}</p>
+                  <p className="text-xs text-[#9CA3AF]">{messagingUser.email}</p>
+                </div>
+              </div>
+              <button onClick={() => setMessagingUser(null)} className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-[#F3F0EB] text-[#9CA3AF] hover:text-[#1A1A1A] transition-colors"><X size={15} /></button>
+            </div>
+            <div className="px-5 py-4">
+              <label className="text-xs font-semibold text-[#6B7280] uppercase tracking-wider mb-2 block">Message</label>
+              <textarea
+                autoFocus
+                rows={5}
+                value={messageText}
+                onChange={e => setMessageText(e.target.value)}
+                onKeyDown={e => { if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) handleSendMessage(); }}
+                placeholder="Write your message to this user…"
+                className="w-full px-3.5 py-2.5 border border-[#E5E1DA] rounded-xl text-sm text-[#1A1A1A] bg-white placeholder-[#9CA3AF] focus:outline-none focus:border-[#00A693] focus:ring-2 focus:ring-[#00A693]/10 transition resize-none"
+              />
+              <p className="text-xs text-[#9CA3AF] mt-1.5">{messageText.length}/2000 · Ctrl+Enter to send</p>
+            </div>
+            <div className="flex gap-2 px-5 py-4 border-t border-[#E5E1DA]">
+              <button onClick={() => setMessagingUser(null)} className="flex-1 px-4 py-2 rounded-xl border border-[#E5E1DA] text-sm text-[#6B7280] hover:text-[#1A1A1A] font-medium transition-colors">Cancel</button>
+              <button onClick={handleSendMessage} disabled={!messageText.trim() || messageSending}
+                className="flex-1 flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-[#00A693] hover:bg-[#008f7e] text-white text-sm font-medium transition-colors disabled:opacity-50">
+                <Mail size={13} /> {messageSending ? 'Sending…' : 'Send Message'}
+              </button>
             </div>
           </div>
         </div>

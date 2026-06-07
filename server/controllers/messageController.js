@@ -98,6 +98,28 @@ exports.markAllRead = async (req, res) => {
   }
 };
 
+exports.adminSendMessage = async (req, res) => {
+  try {
+    const recipient = await User.findById(req.params.id);
+    if (!recipient) return res.status(404).json({ message: 'User not found' });
+    if (recipient._id.toString() === req.user._id.toString())
+      return res.status(400).json({ message: 'Cannot send message to yourself' });
+
+    const text = req.body.text?.trim();
+    if (!text) return res.status(400).json({ message: 'Message text required' });
+
+    const msg = await Message.create({
+      sender: req.user._id,
+      recipient: recipient._id,
+      text,
+    });
+    await msg.populate('sender', 'name avatar');
+    res.status(201).json(msg);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
 exports.sendToAdmin = async (req, res) => {
   try {
     const admin = await User.findOne({ role: 'admin' });
