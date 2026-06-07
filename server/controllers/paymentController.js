@@ -1,6 +1,7 @@
 const Razorpay = require('razorpay');
 const crypto = require('crypto');
 const User = require('../models/User');
+const Payment = require('../models/Payment');
 const { PAID_PACK_SIZE } = require('../middleware/jdQuota');
 
 const PACK_AMOUNT_PAISE = 49900; // ₹499 in paise
@@ -47,6 +48,16 @@ const verifyJDPackPayment = async (req, res) => {
       { $inc: { 'jdQuota.paidRemaining': PAID_PACK_SIZE } }
     );
 
+    await Payment.create({
+      user:              req.user._id,
+      razorpayOrderId:   razorpay_order_id,
+      razorpayPaymentId: razorpay_payment_id,
+      amountPaise:       PACK_AMOUNT_PAISE,
+      pack:              'jd_5',
+      analysesGranted:   PAID_PACK_SIZE,
+      status:            'success',
+    });
+
     const updated = await User.findById(req.user._id).select('jdQuota').lean();
     res.json({
       ok: true,
@@ -58,4 +69,39 @@ const verifyJDPackPayment = async (req, res) => {
   }
 };
 
-module.exports = { createJDPackOrder, verifyJDPackPayment };
+const adminGetPayments = async (req, res) => {
+  try {
+    const page  = Math.max(parseInt(req.query.page) || 1, 1);
+    const limit = 20;
+    const skip  = (page - 1) * limit;
+
+    const [payments, total] = await Promise.all([
+      Payment.find({ status: 'success' })
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .populate('user', 'name email userType')
+        .lean(),
+      Payment.countDocuments({ status: 'success' }),
+    ]);
+
+    const [revenueResult] = await Payment.aggregate([
+      { $match: { status: 'success' } },
+      { $group: { _id: null, total: { $sum: '$amountPaise' }, count: { $sum: 1 } } },
+    ]);
+
+    res.json({
+      payments,
+      total,
+      page,
+      pages: Math.ceil(total / limit),
+      totalRevenuePaise: revenueResult?.total ?? 0,
+      totalTransactions:  revenueResult?.count ?? 0,
+    });
+  } catch (err) {
+    console.error('adminGetPayments error:', err);
+    res.status(500).json({ message: err.message });
+  }
+};
+
+module.exports = { createJDPackOrder, verifyJDPackPayment, adminGetPayments };
