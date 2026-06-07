@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import {
   ExternalLink, Check, X, Plus, Save, ArrowLeft, Tag, Link as LinkIcon,
-  Mail, Phone, ChevronRight, RefreshCw, Search, Sparkles, EyeOff, Eye, Trash2,
+  Mail, Phone, ChevronRight, RefreshCw, Search, Sparkles, EyeOff, Eye, Trash2, ShoppingBag,
 } from 'lucide-react';
 import api from '../../api/axios';
 import toast from 'react-hot-toast';
@@ -410,7 +410,15 @@ export default function AdminProjectsSection({ stats }) {
   return (
     <div className="space-y-5">
       <div className="flex items-center justify-between">
-        <h2 className="text-xl font-bold text-[#1A1A1A]">Projects</h2>
+        <div className="flex items-center gap-3">
+          <h2 className="text-xl font-bold text-text">Projects</h2>
+          {stats?.forSale > 0 && (
+            <span className="flex items-center gap-1.5 bg-amber-50 border border-amber-200 text-amber-700 text-xs font-semibold px-2.5 py-1 rounded-full">
+              <ShoppingBag size={12} />
+              {stats.forSale} for sale
+            </span>
+          )}
+        </div>
         <button onClick={() => fetchProjects(tab, page)}
           className="flex items-center gap-1.5 text-xs text-[#6B7280] hover:text-[#1A1A1A] border border-[#E5E1DA] px-3 py-1.5 rounded-lg transition-colors">
           <RefreshCw size={12} /> Refresh

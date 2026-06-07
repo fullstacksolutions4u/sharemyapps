@@ -184,6 +184,7 @@ export default function Navbar() {
   const isRecruiter = user?.userType === 'recruiter';
   const isClient = user?.userType === 'client';
   const isMentee = user?.userType === 'mentee';
+  const isMentor = user?.userType === 'mentor';
   const profileLink = isRecruiter
     ? (user?.companyName ? '/find-developers' : '/client-profile')
     : isClient
@@ -234,7 +235,7 @@ export default function Navbar() {
           {isMentee && (
             <Link to="/mentors" className="relative text-base text-muted hover:text-text transition-colors after:absolute after:left-0 after:-bottom-0.5 after:h-[1.5px] after:w-0 after:bg-accent after:transition-[width] after:duration-300 hover:after:w-full">Mentors</Link>
           )}
-          {!isRecruiter && !isClient && !isMentee && (
+          {!isRecruiter && !isClient && !isMentee && !isMentor && (
             <Link to="/opportunities" className="relative text-base text-muted hover:text-text transition-colors after:absolute after:left-0 after:-bottom-0.5 after:h-[1.5px] after:w-0 after:bg-accent after:transition-[width] after:duration-300 hover:after:w-full">Opportunities</Link>
           )}
           {isDeveloper && (
@@ -243,12 +244,12 @@ export default function Navbar() {
 
           {user ? (
             <div className="flex items-center gap-3">
-              {isDeveloper && (
+              {!isRecruiter && !isClient && !isMentee && !isMentor && (
                 <Link
                   to="/dashboard/add"
                   className="flex items-center gap-1.5 text-sm bg-accent hover:bg-accent-hover text-white px-3.5 py-2 rounded-lg font-medium transition-colors"
                 >
-                  <Plus size={14} /> Add Projects
+                  <Plus size={14} /> Add Project
                 </Link>
               )}
 
@@ -308,10 +309,15 @@ export default function Navbar() {
               </div>
             </div>
           ) : (
-            <div className="flex items-center gap-3">
-              <Link to="/login" className="text-sm text-muted hover:text-text transition-colors">Sign in</Link>
+            <div className="flex items-center gap-2">
+              <Link to="/register" className="flex items-center gap-1.5 text-sm border border-accent text-accent hover:bg-accent hover:text-white px-3.5 py-2 rounded-lg transition-colors font-medium">
+                <Plus size={14} /> Add Project
+              </Link>
+              <Link to="/login" className="text-sm border border-border text-text hover:border-accent hover:text-accent px-4 py-2 rounded-lg transition-colors font-medium">
+                Sign in
+              </Link>
               <Link to="/register" className="text-sm bg-accent hover:bg-accent-hover text-white px-4 py-2 rounded-lg transition-colors font-medium">
-                Get started
+                Sign up
               </Link>
             </div>
           )}
@@ -348,7 +354,7 @@ export default function Navbar() {
           {isMentee && (
             <Link to="/mentors" onClick={() => setMenuOpen(false)} className="block text-sm text-muted hover:text-text">Mentors</Link>
           )}
-          {!isRecruiter && !isClient && !isMentee && (
+          {!isRecruiter && !isClient && !isMentee && !isMentor && (
             <Link to="/opportunities" onClick={() => setMenuOpen(false)} className="block text-sm text-muted hover:text-text">Opportunities</Link>
           )}
           {user ? (
@@ -357,8 +363,8 @@ export default function Navbar() {
                 <Link to="/dashboard" onClick={() => setMenuOpen(false)} className="block text-sm text-muted hover:text-text">My Projects</Link>
               )}
               <Link to="/messages" onClick={() => setMenuOpen(false)} className="block text-sm text-muted hover:text-text">Messages</Link>
-              {isDeveloper && (
-                <Link to="/dashboard/add" onClick={() => setMenuOpen(false)} className="block text-sm text-text">Add Projects</Link>
+              {!isRecruiter && !isClient && !isMentee && !isMentor && (
+                <Link to="/dashboard/add" onClick={() => setMenuOpen(false)} className="block text-sm text-text font-medium">Add Project</Link>
               )}
               {user.role !== 'admin' && (
                 <Link to="/chat-admin" onClick={() => setMenuOpen(false)} className="block text-sm text-muted hover:text-text">Message Admin</Link>
@@ -370,8 +376,9 @@ export default function Navbar() {
             </>
           ) : (
             <>
-              <Link to="/login" onClick={() => setMenuOpen(false)} className="block text-sm text-muted">Sign in</Link>
-              <Link to="/register" onClick={() => setMenuOpen(false)} className="block text-sm bg-accent text-white px-4 py-2 rounded-lg text-center">Get started</Link>
+              <Link to="/register" onClick={() => setMenuOpen(false)} className="flex items-center justify-center gap-1.5 text-sm border border-accent text-accent px-4 py-2 rounded-lg text-center font-medium"><Plus size={14} /> Add Project</Link>
+              <Link to="/login" onClick={() => setMenuOpen(false)} className="block text-sm border border-border text-text px-4 py-2 rounded-lg text-center font-medium">Sign in</Link>
+              <Link to="/register" onClick={() => setMenuOpen(false)} className="block text-sm bg-accent text-white px-4 py-2 rounded-lg text-center font-medium">Sign up</Link>
             </>
           )}
         </div>

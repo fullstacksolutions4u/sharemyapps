@@ -106,7 +106,7 @@ export default function Home() {
                 step: '02',
                 icon: Users,
                 title: 'Get discovered',
-                desc: 'Recruiters, clients, and mentors browse projects and reach out directly.',
+                desc: 'Recruiters, clients, and mentors browse your projects and portfolio and reach out directly.',
               },
               {
                 step: '03',

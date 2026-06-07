@@ -91,7 +91,7 @@ function AppRoutes() {
     <div className="min-h-screen flex flex-col bg-bg">
       <ScrollToTop />
       {!isAdmin && <Navbar />}
-      <main className="flex-1">
+      <main>
         <Suspense fallback={<PageLoader />}>
           <ErrorBoundary>
           <Routes>
