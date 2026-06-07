@@ -15,7 +15,7 @@ const createJDPackOrder = async (req, res) => {
     const order = await razorpay.orders.create({
       amount: PACK_AMOUNT_PAISE,
       currency: 'INR',
-      receipt: `jdpack_${req.user._id}_${Date.now()}`,
+      receipt: `jd_${req.user._id.toString().slice(-8)}_${Date.now().toString().slice(-8)}`,
       notes: { userId: req.user._id.toString(), pack: 'jd_5' },
     });
     res.json({ orderId: order.id, amount: order.amount, currency: order.currency });
