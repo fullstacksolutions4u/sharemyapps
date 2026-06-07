@@ -62,6 +62,8 @@ const userSchema = new mongoose.Schema({
     freeUsed:      { type: Number, default: 0 },
     paidRemaining: { type: Number, default: 0 },
     resetMonth:    { type: String, default: '' }, // "YYYY-MM"
+    dailyUsed:     { type: Number, default: 0 },
+    resetDay:      { type: String, default: '' }, // "YYYY-MM-DD"
   },
 }, { timestamps: true });
 

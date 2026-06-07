@@ -184,7 +184,9 @@ function ServiceDetail({ serviceKey, config, onBack, onSaved }) {
                 <div>
                   <p className="text-sm font-semibold text-text">{field.label}</p>
                   <p className="text-xs text-muted mt-0.5">
-                    {form[field.key] ? 'Feature is live for all recruiters' : 'Feature is hidden from all recruiters'}
+                    {form[field.key]
+                      ? 'Paid quota active — free monthly limit + paid packs apply (15/day cap)'
+                      : 'Free mode — unlimited access with no payment, 15 analyses/day cap'}
                   </p>
                 </div>
                 <button
