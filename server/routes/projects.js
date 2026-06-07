@@ -14,6 +14,15 @@ const projectUpload = upload.fields([
   { name: 'screenshots', maxCount: 5 },
 ]);
 
+router.get('/count', async (req, res) => {
+  try {
+    const Project = require('../models/Project');
+    const count = await Project.countDocuments({ status: 'approved' });
+    res.json({ count });
+  } catch {
+    res.status(500).json({ message: 'Server error' });
+  }
+});
 router.get('/', getProjects);
 router.get('/featured', getFeaturedProjects);
 router.get('/my', protect, getMyProjects);

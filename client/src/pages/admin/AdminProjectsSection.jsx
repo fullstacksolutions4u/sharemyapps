@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import {
   ExternalLink, Check, X, Plus, Save, ArrowLeft, Tag, Link as LinkIcon,
-  Mail, Phone, ChevronRight, RefreshCw, Search, Sparkles, EyeOff, Eye,
+  Mail, Phone, ChevronRight, RefreshCw, Search, Sparkles, EyeOff, Eye, Trash2,
 } from 'lucide-react';
 import api from '../../api/axios';
 import toast from 'react-hot-toast';
@@ -385,6 +385,16 @@ export default function AdminProjectsSection({ stats }) {
     } catch { toast.error('Failed to update visibility'); }
   };
 
+  const deleteProject = async (e, id) => {
+    e.stopPropagation();
+    if (!window.confirm('Delete this project permanently? This cannot be undone.')) return;
+    try {
+      await api.delete(`/admin/projects/${id}`);
+      setProjects(p => p.filter(x => x._id !== id));
+      toast.success('Project deleted');
+    } catch { toast.error('Failed to delete project'); }
+  };
+
   if (selected) {
     return (
       <ProjectReviewPage
@@ -407,24 +417,37 @@ export default function AdminProjectsSection({ stats }) {
         </button>
       </div>
 
-      <form onSubmit={handleSearch} className="flex items-center gap-2">
-        <div className="relative flex-1 max-w-sm">
-          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#9CA3AF] pointer-events-none" />
-          <input type="text" value={searchInput} onChange={e => setSearchInput(e.target.value)}
-            placeholder="Search by title, description, or owner…"
-            className="w-full pl-9 pr-8 py-2 text-sm border border-[#E5E1DA] rounded-xl bg-white text-[#1A1A1A] placeholder-[#9CA3AF] focus:outline-none focus:border-[#00A693] focus:ring-2 focus:ring-[#00A693]/10 transition" />
-          {searchInput && (
-            <button type="button" onClick={handleClearSearch}
-              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#9CA3AF] hover:text-[#6B7280] transition-colors">
-              <X size={13} />
+      <div className="flex items-center justify-between gap-4">
+        <div className="flex gap-1 bg-[#F3F0EB] p-1 rounded-xl w-fit">
+          {['pending', 'approved', 'rejected'].map(t => (
+            <button key={t} onClick={() => setTab(t)}
+              className={`px-4 py-1.5 rounded-lg text-sm font-medium capitalize transition-colors ${tab === t ? 'bg-white text-[#1A1A1A] shadow-sm' : 'text-[#6B7280] hover:text-[#1A1A1A]'}`}>
+              {t}
+              {stats && t === 'pending' && stats.pending > 0 && (
+                <span className="ml-1.5 bg-yellow-500 text-white text-xs px-1.5 py-0.5 rounded-full">{stats.pending}</span>
+              )}
             </button>
-          )}
+          ))}
         </div>
-        <button type="submit"
-          className="flex items-center gap-1.5 text-xs font-medium bg-[#00A693] hover:bg-[#007D6F] text-white px-4 py-2 rounded-xl transition-colors">
-          <Search size={12} /> Search
-        </button>
-      </form>
+        <form onSubmit={handleSearch} className="flex items-center gap-2">
+          <div className="relative">
+            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#9CA3AF] pointer-events-none" />
+            <input type="text" value={searchInput} onChange={e => setSearchInput(e.target.value)}
+              placeholder="Search by title, description, or owner…"
+              className="pl-9 pr-8 py-2 text-sm border border-[#E5E1DA] rounded-xl bg-white text-[#1A1A1A] placeholder-[#9CA3AF] focus:outline-none focus:border-[#00A693] focus:ring-2 focus:ring-[#00A693]/10 transition w-72" />
+            {searchInput && (
+              <button type="button" onClick={handleClearSearch}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#9CA3AF] hover:text-[#6B7280] transition-colors">
+                <X size={13} />
+              </button>
+            )}
+          </div>
+          <button type="submit"
+            className="flex items-center gap-1.5 text-xs font-medium bg-[#00A693] hover:bg-[#007D6F] text-white px-4 py-2 rounded-xl transition-colors">
+            <Search size={12} /> Search
+          </button>
+        </form>
+      </div>
 
       {search && (
         <p className="text-xs text-[#6B7280]">
@@ -433,21 +456,9 @@ export default function AdminProjectsSection({ stats }) {
         </p>
       )}
 
-      <div className="flex gap-1 bg-[#F3F0EB] p-1 rounded-xl w-fit">
-        {['pending', 'approved', 'rejected'].map(t => (
-          <button key={t} onClick={() => setTab(t)}
-            className={`px-4 py-1.5 rounded-lg text-sm font-medium capitalize transition-colors ${tab === t ? 'bg-white text-[#1A1A1A] shadow-sm' : 'text-[#6B7280] hover:text-[#1A1A1A]'}`}>
-            {t}
-            {stats && t === 'pending' && stats.pending > 0 && (
-              <span className="ml-1.5 bg-yellow-500 text-white text-xs px-1.5 py-0.5 rounded-full">{stats.pending}</span>
-            )}
-          </button>
-        ))}
-      </div>
-
       {loading ? (
         <div className="space-y-3">
-          {Array.from({ length: 4 }).map((_, i) => <div key={i} className="h-24 bg-white border border-[#E5E1DA] rounded-xl animate-pulse" />)}
+          {Array.from({ length: 4 }).map((_, i) => <div key={i} className="h-12 bg-white border border-[#E5E1DA] rounded-xl animate-pulse" />)}
         </div>
       ) : projects.length === 0 ? (
         <div className="bg-white border border-[#E5E1DA] rounded-2xl p-16 text-center">
@@ -455,52 +466,83 @@ export default function AdminProjectsSection({ stats }) {
         </div>
       ) : (
         <>
-          <div className="space-y-3">
-            {projects.map(project => (
-              <div key={project._id} onClick={() => setSelected(project)}
-                className="bg-white border border-[#E5E1DA] rounded-xl p-4 flex items-center gap-4 hover:border-[#00A693]/40 hover:shadow-sm transition-all cursor-pointer">
-                <img src={getBanner(project.bannerImage, project.liveUrl)} alt={project.title}
-                  className="w-14 h-14 rounded-lg object-cover shrink-0"
-                  onError={e => { e.target.src = PLACEHOLDER; }} />
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-0.5 flex-wrap">
-                    <h3 className="font-semibold text-[#1A1A1A]">{project.title}</h3>
-                    <span className={`text-xs px-2 py-0.5 rounded-full border font-medium capitalize ${statusStyle[project.status]}`}>{project.status}</span>
-                    {project.featured && (
-                      <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-amber-50 text-amber-600 border border-amber-200 font-medium">
-                        <Sparkles size={10} /> Featured for feedback
+          <div className="bg-white border border-[#E5E1DA] rounded-2xl overflow-hidden">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b-2 border-[#E5E1DA] bg-gradient-to-r from-[#00A693]/10 via-indigo-50 to-amber-50">
+                  <th className="text-left px-4 py-3 text-xs font-bold text-[#00A693] uppercase tracking-wider">Project</th>
+                  <th className="text-left px-4 py-3 text-xs font-bold text-indigo-500 uppercase tracking-wider">Developer</th>
+                  <th className="text-left px-4 py-3 text-xs font-bold text-emerald-600 uppercase tracking-wider">Sale Price</th>
+                  <th className="text-left px-4 py-3 text-xs font-bold text-violet-500 uppercase tracking-wider">Status</th>
+                  <th className="text-right px-4 py-3 text-xs font-bold text-amber-500 uppercase tracking-wider">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-[#F3F0EB]">
+                {projects.map((project, idx) => (
+                  <tr key={project._id} className={`transition-colors hover:bg-[#f0fdfb] ${idx % 2 === 0 ? 'bg-white' : 'bg-[#FAFAF8]'}`}>
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-3 cursor-pointer" onClick={() => setSelected(project)}>
+                        <img src={getBanner(project.bannerImage, project.liveUrl)} alt={project.title}
+                          className="w-10 h-10 rounded-lg object-cover shrink-0 ring-2 ring-[#00A693]/20"
+                          onError={e => { e.target.src = PLACEHOLDER; }} />
+                        <p className="font-semibold text-[#1A1A1A] truncate max-w-[200px] hover:text-[#00A693] transition-colors">{project.title}</p>
+                      </div>
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className="inline-flex items-center gap-1.5 bg-indigo-50 text-indigo-700 text-xs font-medium px-2.5 py-1 rounded-full">
+                        {project.owner?.name}
                       </span>
-                    )}
-                    {project.hidden && (
-                      <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-gray-100 text-gray-500 border border-gray-200 font-medium">
-                        <EyeOff size={10} /> Hidden
-                      </span>
-                    )}
-                  </div>
-                  <p className="text-xs text-[#6B7280] truncate mb-1">{project.description}</p>
-                  <div className="flex items-center gap-3 text-xs text-[#9CA3AF]">
-                    <span>By <span className="text-[#1A1A1A] font-medium">{project.owner?.name}</span></span>
-                    <span className="hidden sm:inline">{project.owner?.email}</span>
-                    <span>{new Date(project.createdAt).toLocaleDateString()}</span>
-                  </div>
-                </div>
-                {tab === 'approved' && (
-                  <button onClick={e => toggleFeatured(e, project._id)}
-                    title={project.featured ? 'Remove from featured' : 'Feature this project'}
-                    className={`shrink-0 flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border font-medium transition-colors ${project.featured ? 'bg-amber-50 text-amber-600 border-amber-200 hover:bg-amber-100' : 'text-muted border-border hover:border-amber-300 hover:text-amber-600'}`}>
-                    <Sparkles size={12} />
-                    <span className="hidden sm:inline">{project.featured ? 'Unfeature' : 'Feature'}</span>
-                  </button>
-                )}
-                <button onClick={e => toggleHidden(e, project._id)}
-                  title={project.hidden ? 'Show in listing' : 'Hide from listing'}
-                  className={`shrink-0 flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border font-medium transition-colors ${project.hidden ? 'bg-gray-100 text-gray-600 border-gray-300 hover:bg-gray-200' : 'text-muted border-border hover:border-gray-400 hover:text-gray-600'}`}>
-                  {project.hidden ? <Eye size={12} /> : <EyeOff size={12} />}
-                  <span className="hidden sm:inline">{project.hidden ? 'Show' : 'Hide'}</span>
-                </button>
-                <ChevronRight size={16} className="text-[#9CA3AF] shrink-0" />
-              </div>
-            ))}
+                    </td>
+                    <td className="px-4 py-3">
+                      {project.salePrice
+                        ? <span className="inline-flex items-center gap-1 text-sm font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full">₹{project.salePrice.toLocaleString('en-IN')}</span>
+                        : <span className="text-xs text-[#9CA3AF]">—</span>
+                      }
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="flex flex-col gap-1">
+                        <span className={`w-fit text-xs px-2.5 py-0.5 rounded-full border font-semibold capitalize ${statusStyle[project.status]}`}>{project.status}</span>
+                        {project.featured && (
+                          <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-amber-50 text-amber-600 border border-amber-200 font-medium w-fit">
+                            <Sparkles size={10} /> Featured
+                          </span>
+                        )}
+                        {project.hidden && (
+                          <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-gray-100 text-gray-500 border border-gray-200 font-medium w-fit">
+                            <EyeOff size={10} /> Hidden
+                          </span>
+                        )}
+                      </div>
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="flex items-center justify-end gap-1.5">
+                        {tab === 'approved' && (
+                          <button onClick={e => toggleFeatured(e, project._id)}
+                            title={project.featured ? 'Remove from featured' : 'Feature this project'}
+                            className={`flex items-center gap-1 text-xs px-2.5 py-1.5 rounded-lg border font-medium transition-colors ${project.featured ? 'bg-amber-50 text-amber-600 border-amber-200 hover:bg-amber-100' : 'bg-amber-50/50 text-amber-500 border-amber-200 hover:bg-amber-100'}`}>
+                            <Sparkles size={11} /> {project.featured ? 'Unfeature' : 'Feature'}
+                          </button>
+                        )}
+                        <button onClick={e => toggleHidden(e, project._id)}
+                          title={project.hidden ? 'Show in listing' : 'Hide from listing'}
+                          className={`flex items-center gap-1 text-xs px-2.5 py-1.5 rounded-lg border font-medium transition-colors ${project.hidden ? 'bg-gray-100 text-gray-600 border-gray-300 hover:bg-gray-200' : 'bg-gray-50 text-gray-500 border-gray-200 hover:bg-gray-100'}`}>
+                          {project.hidden ? <Eye size={11} /> : <EyeOff size={11} />}
+                          {project.hidden ? 'Show' : 'Hide'}
+                        </button>
+                        <button onClick={() => setSelected(project)}
+                          className="flex items-center gap-1 text-xs px-2.5 py-1.5 rounded-lg border bg-[#00A693]/10 text-[#00A693] border-[#00A693]/30 hover:bg-[#00A693] hover:text-white font-medium transition-colors">
+                          <ChevronRight size={11} /> Review
+                        </button>
+                        <button onClick={e => deleteProject(e, project._id)}
+                          className="flex items-center gap-1 text-xs px-2.5 py-1.5 rounded-lg border bg-red-50 text-red-500 border-red-200 hover:bg-red-500 hover:text-white font-medium transition-colors">
+                          <Trash2 size={11} /> Delete
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
 
           {pages > 1 && (

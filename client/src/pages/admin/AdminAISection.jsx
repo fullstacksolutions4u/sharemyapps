@@ -1,14 +1,6 @@
 import { useRef, useState } from 'react';
 import { Bot, Send, User, Sparkles, RotateCcw, Copy, Check } from 'lucide-react';
 
-const SUGGESTIONS = [
-  'How many projects are pending approval?',
-  'List all top-rated approved projects',
-  'Which developers are available for freelance?',
-  'Show me developers from India',
-  'What are the most used tech stacks?',
-  'Who joined the platform this month?',
-];
 
 function renderMarkdown(text) {
   let result = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
@@ -201,73 +193,50 @@ export default function AdminAISection() {
         )}
       </div>
 
-      {/* Chat area */}
-      <div className="flex-1 overflow-y-auto min-h-0 bg-white border border-border rounded-2xl">
-        {messages.length === 0 ? (
-          <div className="h-full flex flex-col items-center justify-center px-6 py-10 gap-6">
-            <div className="w-14 h-14 bg-accent-light rounded-2xl flex items-center justify-center">
-              <Bot size={24} className="text-accent" />
-            </div>
-            <div className="text-center">
-              <p className="text-sm font-medium text-text">Ask me about your platform data</p>
-              <p className="text-xs text-muted mt-1">I have access to all projects and developer profiles</p>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 w-full max-w-lg">
-              {SUGGESTIONS.map(s => (
-                <button
-                  key={s}
-                  onClick={() => send(s)}
-                  className="text-left text-xs px-3.5 py-2.5 rounded-xl border border-border hover:border-accent hover:bg-accent-light text-text transition-colors"
-                >
-                  {s}
-                </button>
-              ))}
-            </div>
-          </div>
-        ) : (
-          <div className="px-5 py-5 space-y-5">
-            {messages.map((msg, i) => (
-              <MessageBubble
-                key={i}
-                msg={msg}
-                onCopy={handleCopy}
-                copied={copied}
-              />
-            ))}
-            <div ref={bottomRef} />
-          </div>
-        )}
-      </div>
+      {/* Chat container with input inside */}
+      <div className="flex-1 min-h-0 bg-white border border-border rounded-2xl flex flex-col">
+        {/* Input bar at top */}
+        <div className="border-b border-border px-4 py-3 flex gap-2 items-end">
+          <textarea
+            ref={inputRef}
+            value={input}
+            onChange={e => setInput(e.target.value)}
+            onKeyDown={handleKeyDown}
+            disabled={loading}
+            rows={1}
+            placeholder="Ask me about your platform data — projects, developers, stats and more."
+            className="flex-1 resize-none px-3 py-2 text-sm text-text bg-transparent placeholder-[#9CA3AF] focus:outline-none disabled:opacity-50 leading-relaxed"
+            style={{ minHeight: '36px', maxHeight: '120px' }}
+            onInput={e => {
+              e.target.style.height = 'auto';
+              e.target.style.height = Math.min(e.target.scrollHeight, 120) + 'px';
+            }}
+          />
+          <button
+            onClick={() => send()}
+            disabled={!input.trim() || loading}
+            className="w-9 h-9 shrink-0 bg-accent hover:bg-[#009688] disabled:bg-border disabled:text-muted text-white rounded-xl flex items-center justify-center transition-colors"
+          >
+            {loading
+              ? <span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+              : <Send size={14} />
+            }
+          </button>
+        </div>
 
-      {/* Input bar */}
-      <div className="mt-3 flex gap-2 items-end">
-        <textarea
-          ref={inputRef}
-          value={input}
-          onChange={e => setInput(e.target.value)}
-          onKeyDown={handleKeyDown}
-          disabled={loading}
-          rows={1}
-          placeholder="Ask about projects, developers, stats…"
-          className="flex-1 resize-none px-4 py-3 border border-border rounded-xl text-sm text-text bg-white placeholder-[#9CA3AF] focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/10 transition disabled:opacity-50 leading-relaxed"
-          style={{ minHeight: '44px', maxHeight: '120px' }}
-          onInput={e => {
-            e.target.style.height = 'auto';
-            e.target.style.height = Math.min(e.target.scrollHeight, 120) + 'px';
-          }}
-        />
-        <button
-          onClick={() => send()}
-          disabled={!input.trim() || loading}
-          className="w-11 h-11 shrink-0 bg-accent hover:bg-[#009688] disabled:bg-border disabled:text-muted text-white rounded-xl flex items-center justify-center transition-colors"
-        >
-          {loading
-            ? <span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
-            : <Send size={15} />
-          }
-        </button>
+        {/* Messages below */}
+        <div className="flex-1 overflow-y-auto px-5 py-5 space-y-5">
+          {messages.map((msg, i) => (
+            <MessageBubble
+              key={i}
+              msg={msg}
+              onCopy={handleCopy}
+              copied={copied}
+            />
+          ))}
+          <div ref={bottomRef} />
+        </div>
       </div>
-      <p className="text-center text-xs text-muted mt-2">Press Enter to send · Shift+Enter for new line</p>
     </div>
   );
 }

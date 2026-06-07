@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, LayoutGrid, Users, MessageCircle, Star } from 'lucide-react';
+import { ArrowRight, LayoutGrid, Users, MessageCircle, Star, ShoppingBag } from 'lucide-react';
 import api from '../api/axios';
 import ProjectCard from '../components/ProjectCard';
 import ProjectSkeleton from '../components/ProjectSkeleton';
@@ -9,7 +9,9 @@ export default function Home() {
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const [devAvatars, setDevAvatars] = useState([]);
+  const [devsLoading, setDevsLoading] = useState(true);
   const [userCount, setUserCount] = useState(null);
+  const [projectCount, setProjectCount] = useState(null);
 
   useEffect(() => {
     api.get('/projects?page=1')
@@ -18,9 +20,13 @@ export default function Home() {
       .finally(() => setLoading(false));
     api.get('/users/developers?limit=5')
       .then(res => setDevAvatars((res.data.developers || res.data).slice(0, 5)))
-      .catch(() => {});
+      .catch(() => {})
+      .finally(() => setDevsLoading(false));
     api.get('/users/count')
       .then(res => setUserCount(res.data.count))
+      .catch(() => {});
+    api.get('/projects/count')
+      .then(res => setProjectCount(res.data.count))
       .catch(() => {});
   }, []);
 
@@ -61,20 +67,26 @@ export default function Home() {
         {/* Social proof */}
         <div className="flex items-center justify-center gap-3 mt-6">
           <div className="flex -space-x-2">
-            {(['#E85D4A','#F4861F','#4A90D9','#43A047','#7B68EE']).map((color, i) => {
-              const dev = devAvatars[i];
-              return dev?.avatar
-                ? <img key={i} src={dev.avatar} alt={dev.name} title={dev.name} className="w-8 h-8 rounded-full border-2 border-white object-cover shadow-sm" />
-                : <span key={i} style={{ backgroundColor: dev ? color : color }} title={dev?.name} className="w-8 h-8 rounded-full border-2 border-white flex items-center justify-center text-white text-xs font-bold shadow-sm">
-                    {dev ? dev.name[0].toUpperCase() : String.fromCharCode(65 + i)}
-                  </span>;
-            })}
+            {devsLoading
+              ? Array.from({ length: 5 }).map((_, i) => (
+                  <span key={i} className="w-8 h-8 rounded-full border-2 border-white bg-gray-200 animate-pulse shadow-sm block" />
+                ))
+              : (['#E85D4A','#F4861F','#4A90D9','#43A047','#7B68EE']).map((color, i) => {
+                  const dev = devAvatars[i];
+                  return dev?.avatar
+                    ? <img key={i} src={dev.avatar} alt={dev.name} title={dev.name} className="w-8 h-8 rounded-full border-2 border-white object-cover shadow-sm" />
+                    : <span key={i} style={{ backgroundColor: color }} title={dev?.name} className="w-8 h-8 rounded-full border-2 border-white flex items-center justify-center text-white text-xs font-bold shadow-sm">
+                        {dev ? dev.name[0].toUpperCase() : String.fromCharCode(65 + i)}
+                      </span>;
+                })
+            }
           </div>
-          {userCount !== null && (
-            <p className="text-sm text-muted">
-              <span className="font-semibold text-text">{userCount.toLocaleString()}</span> developers registered with us
-            </p>
-          )}
+          {userCount !== null && projectCount !== null
+            ? <p className="text-sm text-muted">
+                <span className="font-semibold text-text">{userCount.toLocaleString()}</span> developers registered with <span className="font-semibold text-text">{projectCount.toLocaleString()}</span> projects
+              </p>
+            : <span className="h-4 w-56 bg-gray-200 animate-pulse rounded-full block" />
+          }
         </div>
       </section>
 
@@ -82,7 +94,7 @@ export default function Home() {
       <section className="border-y border-[#E5E1DA] bg-white">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-14">
           <p className="text-xs font-semibold uppercase tracking-widest text-accent text-center mb-8">How it works</p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
             {[
               {
                 step: '01',
@@ -98,12 +110,18 @@ export default function Home() {
               },
               {
                 step: '03',
+                icon: ShoppingBag,
+                title: 'Sell your apps',
+                desc: 'Monetize your side projects by listing them for sale directly on the platform.',
+              },
+              {
+                step: '04',
                 icon: MessageCircle,
                 title: 'Connect with devs',
                 desc: 'Meet fellow developers, share ideas, and grow your network.',
               },
               {
-                step: '04',
+                step: '05',
                 icon: Star,
                 title: 'Explore & give feedback',
                 desc: 'Discover inspiring projects and leave ratings to help creators improve.',

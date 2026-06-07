@@ -15,6 +15,7 @@ const {
   toggleUserHidden,
   getResumes,
   deleteUser,
+  deleteProject,
   setResumeData,
   setAdminNote,
 } = require('../controllers/adminController');
@@ -48,6 +49,7 @@ router.patch('/users/:id/note', setAdminNote);
 router.put('/users/:id/resume', setResumeData);
 router.delete('/users/:id', deleteUser);
 router.get('/users/:id/jd-history', adminGetUserJDHistory);
+router.delete('/projects/:id', deleteProject);
 router.patch('/projects/:id/featured', toggleFeatured);
 router.patch('/projects/:id/hide', adminToggleHidden);
 
