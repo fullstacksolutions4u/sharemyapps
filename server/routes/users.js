@@ -32,6 +32,20 @@ router.get('/search', async (req, res) => {
   }
 });
 
+// GET /api/users/recent — last N registered users (for social proof on homepage)
+router.get('/recent', async (req, res) => {
+  try {
+    const limit = Math.min(parseInt(req.query.limit) || 5, 20);
+    const users = await require('../models/User').find(
+      { role: { $ne: 'admin' }, isDeleted: { $ne: true } },
+      { name: 1, avatar: 1, userType: 1 }
+    ).sort({ createdAt: -1 }).limit(limit).lean();
+    res.json(users);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
 // GET /api/users/developers — sorted by community engagement (likes/ratings/comments given to others)
 router.get('/developers', async (req, res) => {
   try {

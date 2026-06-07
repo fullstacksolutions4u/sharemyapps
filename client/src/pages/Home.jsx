@@ -18,8 +18,8 @@ export default function Home() {
       .then(res => setProjects(res.data.projects.slice(0, 6)))
       .catch(() => {})
       .finally(() => setLoading(false));
-    api.get('/users/developers?limit=5')
-      .then(res => setDevAvatars((res.data.developers || res.data).slice(0, 5)))
+    api.get('/users/recent?limit=5')
+      .then(res => setDevAvatars(res.data.slice(0, 5)))
       .catch(() => {})
       .finally(() => setDevsLoading(false));
     api.get('/users/count')

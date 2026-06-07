@@ -764,6 +764,12 @@ export default function Profile() {
                       </a>
                     )}
                   </div>
+
+                  {/* Instructions */}
+                  <p className="mb-3 text-xs text-red-500 leading-snug">
+                    Upload your CV to Google Drive → <span className="font-semibold">Share</span> → <span className="font-semibold">Share</span> → <span className="font-semibold">Anyone with the link</span> → set role to <span className="font-semibold">Viewer</span>, then paste the link below.
+                  </p>
+
                   <div className="relative">
                     <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#9CA3AF]"><FileText size={15} /></span>
                     <input
