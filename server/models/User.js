@@ -58,6 +58,11 @@ const userSchema = new mongoose.Schema({
   resetOtp:       { type: String, default: null },
   resetOtpExpiry: { type: Date,   default: null },
   adminNote:      { type: String, trim: true, default: '' },
+  jdQuota: {
+    freeUsed:      { type: Number, default: 0 },
+    paidRemaining: { type: Number, default: 0 },
+    resetMonth:    { type: String, default: '' }, // "YYYY-MM"
+  },
 }, { timestamps: true });
 
 userSchema.index({ userType: 1, hidden: 1, isDeleted: 1 });

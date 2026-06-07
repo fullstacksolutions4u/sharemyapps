@@ -21,6 +21,7 @@ const vacancyRoutes = require('./routes/vacancies');
 const freelanceRoutes = require('./routes/freelance');
 const mentorshipRoutes = require('./routes/mentorship');
 const jdAnalysisRoutes = require('./routes/jdAnalysis');
+const paymentRoutes = require('./routes/payments');
 
 const app = express();
 
@@ -58,6 +59,7 @@ app.use('/api/announcements', generalLimiter, announcementRoutes);
 app.use('/api/vacancies', generalLimiter, vacancyRoutes);
 app.use('/api/freelance', generalLimiter, freelanceRoutes);
 app.use('/api/mentorship', generalLimiter, mentorshipRoutes);
+app.use('/api/payments', generalLimiter, paymentRoutes);
 
 app.get('/api/health', (_req, res) => res.json({ status: 'ok' }));
 

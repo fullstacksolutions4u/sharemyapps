@@ -1,4 +1,6 @@
 const JDSearchHistory = require('../models/JDSearchHistory');
+const User = require('../models/User');
+const { FREE_LIMIT, PAID_PACK_SIZE, currentMonth } = require('../middleware/jdQuota');
 
 const saveSearchHistory = async (req, res) => {
   try {
@@ -62,4 +64,25 @@ const clearAllSearchHistory = async (req, res) => {
   }
 };
 
-module.exports = { saveSearchHistory, getSearchHistory, deleteSearchHistory, clearAllSearchHistory, adminGetUserJDHistory };
+const getQuota = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id).select('jdQuota').lean();
+    const quota = user?.jdQuota || {};
+    const month = currentMonth();
+
+    const freeUsed = quota.resetMonth === month ? (quota.freeUsed ?? 0) : 0;
+    const paidRemaining = quota.paidRemaining ?? 0;
+
+    res.json({
+      freeUsed,
+      freeLimit: FREE_LIMIT,
+      paidRemaining,
+      paidPackSize: PAID_PACK_SIZE,
+      resetMonth: month,
+    });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+module.exports = { saveSearchHistory, getSearchHistory, deleteSearchHistory, clearAllSearchHistory, adminGetUserJDHistory, getQuota };

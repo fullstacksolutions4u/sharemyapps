@@ -2,13 +2,14 @@ import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Search, Users, CheckCircle2, Sparkles,
-  RotateCcw, Clock, ChevronRight, History, Brain, Trash2, Download,
+  RotateCcw, Clock, ChevronRight, History, Brain, Trash2, Download, Zap,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import api from '../api/axios';
 import toast from 'react-hot-toast';
 import { timeAgo, vacancyTitle } from '../components/recruiter/developerUtils';
 import DeveloperCard from '../components/recruiter/DeveloperCard';
+import JDPaymentModal from '../components/recruiter/JDPaymentModal';
 import * as XLSX from 'xlsx';
 
 /* ── Loading step labels ─────────────────────────────────── */
@@ -85,6 +86,56 @@ function LoadingAnimation({ step }) {
 }
 
 const PAGE_SIZE = 20;
+
+/* ── Quota status bar ────────────────────────────────────── */
+function QuotaBar({ quota, onBuyClick }) {
+  if (!quota) return null;
+
+  const { freeUsed, freeLimit, paidRemaining } = quota;
+  const freeLeft = Math.max(freeLimit - freeUsed, 0);
+  const exhausted = freeLeft === 0 && paidRemaining === 0;
+  const usingPaid = freeLeft === 0 && paidRemaining > 0;
+
+  return (
+    <div className={`flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-medium mb-3 border ${
+      exhausted
+        ? 'bg-red-50 border-red-200 text-red-700'
+        : usingPaid
+        ? 'bg-violet-50 border-violet-200 text-violet-700'
+        : 'bg-bg border-border text-muted'
+    }`}>
+      <Zap size={13} className={exhausted ? 'text-red-500' : usingPaid ? 'text-violet-500' : 'text-accent'} />
+
+      {exhausted ? (
+        <>
+          <span className="flex-1">You've used all 5 free analyses this month.</span>
+          <button
+            onClick={onBuyClick}
+            className="flex items-center gap-1 bg-accent hover:bg-accent-hover text-white px-3 py-1.5 rounded-lg font-semibold transition-colors text-[11px]"
+          >
+            <Zap size={10} /> Buy 5 for ₹499
+          </button>
+        </>
+      ) : usingPaid ? (
+        <span className="flex-1">{paidRemaining} paid {paidRemaining === 1 ? 'analysis' : 'analyses'} remaining</span>
+      ) : (
+        <>
+          <span className="flex-1">
+            {freeLeft} free {freeLeft === 1 ? 'analysis' : 'analyses'} left this month
+          </span>
+          <div className="flex gap-0.5">
+            {Array.from({ length: freeLimit }).map((_, i) => (
+              <div
+                key={i}
+                className={`w-4 h-1.5 rounded-full ${i < freeUsed ? 'bg-accent/30' : 'bg-accent'}`}
+              />
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
 
 /* ── Export helpers ──────────────────────────────────────── */
 function exportToExcel(developers) {
@@ -280,6 +331,8 @@ export default function FindDevelopers() {
   const [resultsReady, setResultsReady] = useState(false);
   const [recentSearches, setRecentSearches] = useState([]);
   const [historyLoading, setHistoryLoading] = useState(true);
+  const [quota, setQuota] = useState(null);
+  const [showPayModal, setShowPayModal] = useState(false);
   const intervalRef = useRef(null);
 
   useEffect(() => {
@@ -288,11 +341,15 @@ export default function FindDevelopers() {
       navigate('/portfolios', { replace: true });
       return;
     }
-    api.get('/jd/history')
-      .then(r => setRecentSearches(r.data.slice(0, 3)))
-      .catch(() => {})
-      .finally(() => setHistoryLoading(false));
+    Promise.all([
+      api.get('/jd/history').then(r => setRecentSearches(r.data.slice(0, 3))).catch(() => {}),
+      api.get('/jd/quota').then(r => setQuota(r.data)).catch(() => {}),
+    ]).finally(() => setHistoryLoading(false));
   }, [user, navigate]);
+
+  const refreshQuota = () => {
+    api.get('/jd/quota').then(r => setQuota(r.data)).catch(() => {});
+  };
 
   const refreshRecent = () => {
     api.get('/jd/history')
@@ -341,6 +398,7 @@ export default function FindDevelopers() {
       }).catch(() => {}); // don't block results if history save fails
 
       refreshRecent();
+      refreshQuota();
 
       setTimeout(() => {
         setDevelopers(data.developers);
@@ -351,6 +409,12 @@ export default function FindDevelopers() {
 
     } catch (err) {
       clearInterval(intervalRef.current);
+      if (err.response?.data?.code === 'QUOTA_EXCEEDED') {
+        setShowPayModal(true);
+        setPageState('idle');
+        setLoadingStep(0);
+        return;
+      }
       toast.error(err.response?.data?.message || 'Search failed. Try again.');
       setPageState('idle');
       setLoadingStep(0);
@@ -394,9 +458,22 @@ export default function FindDevelopers() {
         </span>
       </div>
 
+      {/* ── Payment modal ───────────────────────────────── */}
+      {showPayModal && (
+        <JDPaymentModal
+          onClose={() => setShowPayModal(false)}
+          onSuccess={(paidRemaining) => {
+            setShowPayModal(false);
+            setQuota(prev => prev ? { ...prev, paidRemaining } : prev);
+          }}
+        />
+      )}
+
       {/* ── Idle state ─────────────────────────────────── */}
       {pageState === 'idle' && (
         <>
+          <QuotaBar quota={quota} onBuyClick={() => setShowPayModal(true)} />
+
           <div className="bg-white border border-border rounded-2xl overflow-hidden shadow-[0_4px_24px_-4px_rgba(0,166,147,0.10),0_2px_8px_-2px_rgba(0,0,0,0.06)]">
             <div className="flex min-h-65">
               {/* Left panel — guidance */}
