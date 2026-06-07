@@ -38,7 +38,7 @@ function StatusBadge({ enabled }) {
 /* ── Services list ───────────────────────────────────────── */
 function ServicesList({ config, onSelect }) {
   return (
-    <div className="max-w-3xl mx-auto">
+    <div className="max-w-3xl">
       <h2 className="text-xl font-bold text-text mb-6">Plans & Pricing</h2>
 
       <div className="space-y-3">
@@ -155,7 +155,7 @@ function ServiceDetail({ serviceKey, config, onBack, onSaved }) {
   const Icon = svc.icon;
 
   return (
-    <div className="max-w-2xl mx-auto">
+    <div className="max-w-2xl">
       {/* Header */}
       <div className="flex items-center gap-3 mb-6">
         <button
