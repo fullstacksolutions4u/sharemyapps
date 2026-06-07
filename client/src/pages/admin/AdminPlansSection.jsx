@@ -106,21 +106,13 @@ function ServicesList({ config, onSelect }) {
 /* ── Service detail ──────────────────────────────────────── */
 function ServiceDetail({ serviceKey, config, onBack, onSaved }) {
   const svc = SERVICES.find(s => s.key === serviceKey);
-  const [form, setForm] = useState(null);
   const [saving, setSaving] = useState(false);
-
-  useEffect(() => {
-    if (!config) return;
-    const initial = {};
-    svc.fields.forEach(f => {
-      if (f.type === 'rupees') {
-        initial[f.key] = config[f.key] / 100;
-      } else {
-        initial[f.key] = config[f.key];
-      }
-    });
-    setForm(initial);
-  }, [config, svc]);
+  const [form, setForm] = useState(() => {
+    if (!config) return null;
+    return Object.fromEntries(
+      svc.fields.map(f => [f.key, f.type === 'rupees' ? config[f.key] / 100 : config[f.key]])
+    );
+  });
 
   if (!form) return null;
 
