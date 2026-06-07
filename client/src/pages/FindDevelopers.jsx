@@ -2,13 +2,14 @@ import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Search, Users, CheckCircle2, Sparkles,
-  RotateCcw, Clock, ChevronRight, History, Brain, Trash2,
+  RotateCcw, Clock, ChevronRight, History, Brain, Trash2, Download,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import api from '../api/axios';
 import toast from 'react-hot-toast';
 import { timeAgo, vacancyTitle } from '../components/recruiter/developerUtils';
 import DeveloperCard from '../components/recruiter/DeveloperCard';
+import * as XLSX from 'xlsx';
 
 /* ── Loading step labels ─────────────────────────────────── */
 const STEPS = [
@@ -85,6 +86,48 @@ function LoadingAnimation({ step }) {
 
 const PAGE_SIZE = 20;
 
+/* ── Export helpers ──────────────────────────────────────── */
+function exportToExcel(developers) {
+  const rows = developers.map((dev, i) => {
+    const skills = [
+      ...(Array.isArray(dev.mentorshipTech) ? dev.mentorshipTech : []),
+      ...(Array.isArray(dev.resumeData?.skills) ? dev.resumeData.skills : []),
+    ].filter((v, idx, a) => v && a.indexOf(v) === idx);
+
+    const role = dev.designations?.[0] || dev.resumeData?.experience?.[0]?.role || '';
+    const location = [dev.place, dev.district, dev.state].filter(Boolean).join(', ') || dev.country || '';
+
+    return {
+      '#': i + 1,
+      Name: dev.name || '',
+      Role: role,
+      Email: dev.email || '',
+      Phone: dev.phone || '',
+      Skills: skills.join(', '),
+      'Experience (yrs)': dev.yearsOfExperience || '',
+      'Expected Salary (LPA)': dev.expectedSalary
+        ? (Number(dev.expectedSalary) / 100000).toFixed(1)
+        : '',
+      'Joining Availability': dev.joiningAvailability || '',
+      Location: location,
+    };
+  });
+
+  const ws = XLSX.utils.json_to_sheet(rows);
+
+  // Column widths
+  ws['!cols'] = [
+    { wch: 4 }, { wch: 22 }, { wch: 24 }, { wch: 28 }, { wch: 14 },
+    { wch: 40 }, { wch: 16 }, { wch: 20 }, { wch: 20 },
+    { wch: 24 },
+  ];
+
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Shortlisted Developers');
+  const date = new Date().toISOString().slice(0, 10);
+  XLSX.writeFile(wb, `shortlisted-developers-${date}.xlsx`);
+}
+
 /* ── Results section ─────────────────────────────────────── */
 function ResultsSection({ developers, ready, jd, onSearchAgain }) {
   const [showAll, setShowAll] = useState(false);
@@ -105,6 +148,12 @@ function ResultsSection({ developers, ready, jd, onSearchAgain }) {
           </span>
           {jd.trim().length > 100 ? '…' : ''}
         </p>
+        <button
+          onClick={() => exportToExcel(developers)}
+          className="flex items-center gap-1.5 text-xs font-semibold text-emerald-700 border border-emerald-300 hover:border-emerald-500 bg-emerald-50 hover:bg-emerald-100 px-3.5 py-2 rounded-xl transition-colors shrink-0"
+        >
+          <Download size={12} /> Export Excel
+        </button>
         <button
           onClick={onSearchAgain}
           className="flex items-center gap-1.5 text-xs font-semibold text-accent border border-accent/30 hover:border-accent bg-accent/5 hover:bg-accent/10 px-3.5 py-2 rounded-xl transition-colors shrink-0"

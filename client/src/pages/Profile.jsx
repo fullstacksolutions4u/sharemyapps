@@ -265,7 +265,7 @@ export default function Profile() {
   ];
   const completedCount = COMPLETION_ITEMS.filter(i => i.done).length;
   const completionPct = Math.round((completedCount / COMPLETION_ITEMS.length) * 100);
-  const completionColor = completionPct >= 80 ? '#00A693' : completionPct >= 50 ? '#F59E0B' : '#EF4444';
+  const completionColor = completionPct >= 80 ? '#00A693' : '#F59E0B';
 
   return (
     <div className="max-w-6xl mx-auto px-2 sm:px-3 pt-2 pb-6">
@@ -282,12 +282,29 @@ export default function Profile() {
         <div className="w-full lg:w-72 shrink-0 lg:sticky lg:top-6 space-y-4 lg:mt-20">
 
           {/* Avatar card with full progress border */}
-          <div
-            className="rounded-2xl p-0.5 transition-all duration-500"
-            style={{
-              background: `conic-gradient(from -90deg, ${completionColor} ${completionPct}%, #E5E1DA ${completionPct}%)`,
-            }}
-          >
+          <div className="relative group">
+            {/* Missing items tooltip */}
+            {COMPLETION_ITEMS.some(i => !i.done) && (
+              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2.5 z-50 w-56 bg-gray-900 text-white text-xs rounded-xl px-3.5 py-3 shadow-xl opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200">
+                <p className="font-semibold text-[11px] text-gray-300 mb-2">Missing to complete profile:</p>
+                <ul className="space-y-1.5">
+                  {COMPLETION_ITEMS.filter(i => !i.done).map(item => (
+                    <li key={item.label} className="flex items-center gap-2">
+                      <span className="w-1.5 h-1.5 rounded-full bg-red-400 shrink-0" />
+                      <span>{item.label}</span>
+                    </li>
+                  ))}
+                </ul>
+                {/* Arrow */}
+                <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900" />
+              </div>
+            )}
+            <div
+              className="rounded-2xl p-0.75 transition-all duration-500"
+              style={{
+                background: `conic-gradient(from -90deg, ${completionColor} ${completionPct}%, #EF4444 ${completionPct}%)`,
+              }}
+            >
             <div className="bg-white rounded-[14px] p-5 relative">
               <span className="absolute top-2 right-3 text-[10px] font-semibold" style={{ color: completionColor }}>
                 {completionPct}%
@@ -336,6 +353,7 @@ export default function Profile() {
                   </span>
                 </div>
               </div>
+            </div>
             </div>
           </div>
 
