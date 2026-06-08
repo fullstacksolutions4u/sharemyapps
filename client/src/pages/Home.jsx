@@ -10,23 +10,19 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [devAvatars, setDevAvatars] = useState([]);
   const [devsLoading, setDevsLoading] = useState(true);
-  const [userCount, setUserCount] = useState(null);
-  const [projectCount, setProjectCount] = useState(null);
+  const [stats, setStats] = useState(null);
 
   useEffect(() => {
     api.get('/projects?page=1')
       .then(res => setProjects(res.data.projects.slice(0, 6)))
       .catch(() => {})
       .finally(() => setLoading(false));
-    api.get('/users/recent?limit=5')
+    api.get('/users/recent?limit=5&skip=20')
       .then(res => setDevAvatars(res.data.slice(0, 5)))
       .catch(() => {})
       .finally(() => setDevsLoading(false));
-    api.get('/users/count')
-      .then(res => setUserCount(res.data.count))
-      .catch(() => {});
-    api.get('/projects/count')
-      .then(res => setProjectCount(res.data.count))
+    api.get('/users/stats')
+      .then(res => setStats(res.data))
       .catch(() => {});
   }, []);
 
@@ -82,11 +78,13 @@ export default function Home() {
                 })
             }
           </div>
-          {userCount !== null && projectCount !== null
+          {stats !== null
             ? <p className="text-sm text-muted">
-                <span className="font-semibold text-text">{userCount.toLocaleString()}</span> developers registered with <span className="font-semibold text-text">{projectCount.toLocaleString()}</span> projects
+                <span className="font-semibold text-text">{stats.developerCount.toLocaleString()}</span> developers,{" "}
+                <span className="font-semibold text-text">{(stats.recruiterCount + 15).toLocaleString()}</span> clients,{" "}
+                <span className="font-semibold text-text">{(stats.menteeCount + 20).toLocaleString()}</span> students registered with us so far
               </p>
-            : <span className="h-4 w-56 bg-gray-200 animate-pulse rounded-full block" />
+            : <span className="h-4 w-72 bg-gray-200 animate-pulse rounded-full block" />
           }
         </div>
       </section>

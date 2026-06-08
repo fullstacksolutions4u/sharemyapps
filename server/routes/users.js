@@ -16,6 +16,21 @@ router.get('/count', async (req, res) => {
   }
 });
 
+// GET /api/users/stats — public, returns counts by userType for hero section
+router.get('/stats', async (req, res) => {
+  try {
+    const base = { isDeleted: { $ne: true }, role: { $ne: 'admin' } };
+    const [developerCount, recruiterCount, menteeCount] = await Promise.all([
+      User.countDocuments({ ...base, userType: 'developer' }),
+      User.countDocuments({ ...base, userType: { $in: ['recruiter', 'client'] } }),
+      User.countDocuments({ ...base, userType: 'mentee' }),
+    ]);
+    res.json({ developerCount, recruiterCount, menteeCount });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
 // GET /api/users/search?q=query — public, for @ mention collaborator search
 router.get('/search', async (req, res) => {
   try {
@@ -36,10 +51,11 @@ router.get('/search', async (req, res) => {
 router.get('/recent', async (req, res) => {
   try {
     const limit = Math.min(parseInt(req.query.limit) || 5, 20);
+    const skip = Math.max(parseInt(req.query.skip) || 0, 0);
     const users = await require('../models/User').find(
       { role: { $ne: 'admin' }, isDeleted: { $ne: true } },
       { name: 1, avatar: 1, userType: 1 }
-    ).sort({ createdAt: -1 }).limit(limit).lean();
+    ).sort({ createdAt: -1 }).skip(skip).limit(limit).lean();
     res.json(users);
   } catch (err) {
     res.status(500).json({ message: err.message });
