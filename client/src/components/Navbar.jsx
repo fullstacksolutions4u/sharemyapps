@@ -313,11 +313,8 @@ export default function Navbar() {
               <Link to="/register" className="flex items-center gap-1.5 text-sm border border-accent text-accent hover:bg-accent hover:text-white px-3.5 py-2 rounded-lg transition-colors font-medium">
                 <Plus size={14} /> Add Project
               </Link>
-              <Link to="/login" className="text-sm border border-border text-text hover:border-accent hover:text-accent px-4 py-2 rounded-lg transition-colors font-medium">
-                Sign in
-              </Link>
-              <Link to="/register" className="text-sm bg-accent hover:bg-accent-hover text-white px-4 py-2 rounded-lg transition-colors font-medium">
-                Sign up
+              <Link to="/login" className="text-sm bg-accent hover:bg-accent-hover text-white px-4 py-2 rounded-lg transition-colors font-medium">
+                Join Now
               </Link>
             </div>
           )}
@@ -376,9 +373,7 @@ export default function Navbar() {
             </>
           ) : (
             <>
-              <Link to="/register" onClick={() => setMenuOpen(false)} className="flex items-center justify-center gap-1.5 text-sm border border-accent text-accent px-4 py-2 rounded-lg text-center font-medium"><Plus size={14} /> Add Project</Link>
-              <Link to="/login" onClick={() => setMenuOpen(false)} className="block text-sm border border-border text-text px-4 py-2 rounded-lg text-center font-medium">Sign in</Link>
-              <Link to="/register" onClick={() => setMenuOpen(false)} className="block text-sm bg-accent text-white px-4 py-2 rounded-lg text-center font-medium">Sign up</Link>
+              <Link to="/login" onClick={() => setMenuOpen(false)} className="block text-sm bg-accent text-white px-4 py-2 rounded-lg text-center font-medium">Join Now</Link>
             </>
           )}
         </div>
