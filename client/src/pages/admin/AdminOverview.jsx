@@ -35,11 +35,11 @@ export default function AdminOverview({ stats, onNavigate }) {
   const [growthLoading, setGrowthLoading] = useState(true);
 
   useEffect(() => {
-    setGrowthLoading(true);
+    let cancelled = false;
     api.get(`/admin/user-growth?days=${growthDays}`)
-      .then(res => setGrowth(res.data))
-      .catch(() => {})
-      .finally(() => setGrowthLoading(false));
+      .then(res => { if (!cancelled) { setGrowth(res.data); setGrowthLoading(false); } })
+      .catch(() => { if (!cancelled) setGrowthLoading(false); });
+    return () => { cancelled = true; };
   }, [growthDays]);
 
   if (!stats) return (
