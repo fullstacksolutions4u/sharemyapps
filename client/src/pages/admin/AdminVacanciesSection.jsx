@@ -13,7 +13,7 @@ const TYPE_STYLE = {
   hybrid: 'bg-purple-50 text-purple-700 border-purple-200',
 };
 const EMPTY_FORM = { title: '', company: '', description: '', skills: '', location: '', type: 'remote', industry: '', jobType: '', experience: '', salaryRange: '', status: 'active' };
-const EXPERIENCE_OPTIONS = ['Fresher', '0-1 years', '1-3 years', '3-5 years', '5-8 years', '8+ years'];
+const EXPERIENCE_OPTIONS = ['Fresher', '0-1 years', '0-2 years', '1-3 years', '3-5 years', '5-8 years', '8+ years'];
 const inp = 'w-full px-3.5 py-2.5 border border-[#E5E1DA] rounded-xl text-sm text-[#1A1A1A] bg-white placeholder-[#9CA3AF] focus:outline-none focus:border-[#00A693] focus:ring-2 focus:ring-[#00A693]/10 transition';
 
 function VacancyFormFields({ form, onChange }) {

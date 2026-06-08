@@ -341,12 +341,34 @@ exports.setResumeData = async (req, res) => {
     if (resumeData !== null && typeof resumeData !== 'object') {
       return res.status(400).json({ message: 'resumeData must be a JSON object or null' });
     }
-    const user = await User.findByIdAndUpdate(
-      req.params.id,
-      { resumeData: resumeData ?? null },
-      { new: true }
-    ).select('-password');
+
+    const user = await User.findById(req.params.id);
     if (!user) return res.status(404).json({ message: 'User not found' });
+
+    user.resumeData = resumeData ?? null;
+
+    // Sync profile fields from resume — profile value always wins (only fill if empty)
+    if (resumeData) {
+      const info = resumeData.personalInfo || {};
+      const isEmpty = v => !v || (Array.isArray(v) && v.length === 0);
+
+      if (isEmpty(user.place)             && info.place)                          user.place             = info.place;
+      if (isEmpty(user.district)          && info.district)                       user.district          = info.district;
+      if (isEmpty(user.state)             && info.state)                          user.state             = info.state;
+      if (isEmpty(user.country)           && info.country)                        user.country           = info.country;
+      if (isEmpty(user.linkedinUrl)       && info.linkedin)                       user.linkedinUrl       = info.linkedin;
+      if (isEmpty(user.githubUrl)         && info.github)                         user.githubUrl         = info.github;
+      if (isEmpty(user.portfolioUrl)      && info.portfolio)                      user.portfolioUrl      = info.portfolio;
+      if (isEmpty(user.bio)               && info.summary)                        user.bio               = info.summary;
+      if (isEmpty(user.preferredLocations) && resumeData.preferredLocations?.length) user.preferredLocations = resumeData.preferredLocations;
+      if (isEmpty(user.jobMode)           && resumeData.jobMode?.length)          user.jobMode           = resumeData.jobMode;
+      if (isEmpty(user.yearsOfExperience) && resumeData.totalExperienceYears)     user.yearsOfExperience = String(resumeData.totalExperienceYears);
+      if (isEmpty(user.joiningAvailability) && resumeData.noticePeriod)           user.joiningAvailability = resumeData.noticePeriod;
+      if (!user.expectedSalary            && resumeData.expectedSalary)           user.expectedSalary    = Number(resumeData.expectedSalary) || null;
+      if (!user.currentSalary             && resumeData.currentSalary)            user.currentSalary     = Number(resumeData.currentSalary) || null;
+    }
+
+    await user.save();
     res.json({ resumeData: user.resumeData });
   } catch (err) { res.status(500).json({ message: err.message }); }
 };

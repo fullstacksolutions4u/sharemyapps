@@ -496,20 +496,30 @@ router.post('/find-developers', protect, jdQuota, aiLimit, async (req, res) => {
       .map(dev => {
         const pid = dev._id.toString();
         const toArr = v => Array.isArray(v) ? v : (v && typeof v === 'object' ? Object.values(v).flat() : []);
+
+        // — resume data —
+        const resumeSkills       = toArr(dev.resumeData?.skills).map(s => s.toLowerCase());
+        const resumeStack        = toArr(dev.resumeData?.techStack).map(s => s.toLowerCase());
+        const resumeProjectTech  = (dev.resumeData?.projects || []).flatMap(p => toArr(p.techStack)).map(s => s.toLowerCase());
+        const resumeRoles        = (dev.resumeData?.experience || []).map(e => (e.role || '').toLowerCase()).filter(Boolean);
+        const resumeCerts        = (dev.resumeData?.certifications || []).map(c => (c.name || '').toLowerCase()).filter(Boolean);
+
+        // — profile data —
         const techTags     = projectMap[pid]?.techTags || [];
         const mentorTech   = toArr(dev.mentorshipTech).map(t => t.toLowerCase());
         const designations = toArr(dev.designations).map(d => d.toLowerCase());
         const langPref     = toArr(dev.languagePreference).map(l => l.toLowerCase());
-        const resumeSkills = toArr(dev.resumeData?.skills).map(s => s.toLowerCase());
-        const resumeStack  = toArr(dev.resumeData?.techStack).map(s => s.toLowerCase());
+        const devJobModes  = toArr(dev.jobMode).map(m => m.toLowerCase());
 
         const rawScore =
-          scoreMatches(techTags,     skills) * 3 +
-          scoreMatches(resumeSkills, skills) * 3 +
-          scoreMatches(resumeStack,  skills) * 2 +
-          scoreMatches(mentorTech,   skills) * 2 +
-          scoreMatches(designations, roles)  * 2 +
-          scoreMatches(langPref,     skills) * 1;
+          scoreMatches(techTags,          skills) * 3   +   // approved project tags
+          scoreMatches(resumeSkills,      skills) * 3   +   // resume skills block
+          scoreMatches(resumeStack,       skills) * 2   +   // resume techStack flat list
+          scoreMatches(resumeProjectTech, skills) * 1.5 +   // resume project tech
+          scoreMatches(mentorTech,        skills) * 2   +   // profile mentorship tech
+          scoreMatches(designations,      roles)  * 2   +   // profile designations vs JD roles
+          scoreMatches(resumeRoles,       roles)  * 1.5 +   // resume job titles vs JD roles
+          scoreMatches(langPref,          skills) * 1;      // language preference
 
         // Apply level multiplier
         const devLevel = inferDevLevel(dev);
@@ -522,12 +532,21 @@ router.post('/find-developers', protect, jdQuota, aiLimit, async (req, res) => {
           finalScore += yearsScore * 2;
         }
 
+        // jobMode match vs JD locationType (+1.0)
+        if (locationType !== 'any' && devJobModes.length > 0) {
+          if (devJobModes.some(m => m.includes(locationType) || locationType.includes(m))) {
+            finalScore += 1.0;
+          }
+        }
+
         // Nice-to-have skills (low weight bonus)
         if (niceToHave.length > 0) {
           finalScore +=
-            scoreMatches(techTags,     niceToHave) * 0.5 +
-            scoreMatches(resumeSkills, niceToHave) * 0.5 +
-            scoreMatches(resumeStack,  niceToHave) * 0.3;
+            scoreMatches(techTags,          niceToHave) * 0.5 +
+            scoreMatches(resumeSkills,      niceToHave) * 0.5 +
+            scoreMatches(resumeStack,       niceToHave) * 0.3 +
+            scoreMatches(resumeProjectTech, niceToHave) * 0.3 +
+            scoreMatches(resumeCerts,       niceToHave) * 0.2;
         }
 
         // Profile completeness tie-breaker (max +1.5)
