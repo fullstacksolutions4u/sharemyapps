@@ -7,6 +7,7 @@ const {
   adminUpdateProject,
   getAllUsers,
   getStats,
+  getUserGrowth,
   setBadge,
   setDesignation,
   adminUpdateUser,
@@ -38,6 +39,7 @@ const { aiChat } = require('../controllers/aiChatController');
 router.use(protect, requireAdmin);
 
 router.get('/stats', getStats);
+router.get('/user-growth', getUserGrowth);
 router.get('/projects', getAllProjects);
 router.get('/projects/pending', getPendingProjects);
 router.patch('/projects/:id/status', updateProjectStatus);

@@ -1,182 +1,216 @@
-import { FolderOpen, Clock, CheckCircle, XCircle, ArrowRight, AlertCircle, TrendingUp, Briefcase } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { CheckCircle, AlertCircle, ArrowRight, Users } from 'lucide-react';
+import {
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
+  LabelList, PieChart, Pie, Cell, Rectangle,
+} from 'recharts';
+import api from '../../api/axios';
 
-const STAT_CARDS = (stats) => [
-  {
-    label: 'Total Projects',
-    value: stats.total,
-    icon: FolderOpen,
-    gradient: 'from-slate-600 to-slate-800',
-    iconBg: 'bg-white/20',
-    sub: 'All submitted projects',
-  },
-  {
-    label: 'Pending Review',
-    value: stats.pending,
-    icon: Clock,
-    gradient: 'from-amber-400 to-orange-500',
-    iconBg: 'bg-white/20',
-    sub: 'Awaiting moderation',
-    pulse: stats.pending > 0,
-  },
-  {
-    label: 'Approved',
-    value: stats.approved,
-    icon: CheckCircle,
-    gradient: 'from-emerald-400 to-teal-600',
-    iconBg: 'bg-white/20',
-    sub: 'Live on platform',
-  },
-  {
-    label: 'Rejected',
-    value: stats.rejected,
-    icon: XCircle,
-    gradient: 'from-rose-400 to-pink-600',
-    iconBg: 'bg-white/20',
-    sub: 'Not published',
-  },
-  {
-    label: 'Developers',
-    value: stats.developers,
-    icon: TrendingUp,
-    gradient: 'from-violet-500 to-purple-700',
-    iconBg: 'bg-white/20',
-    sub: 'Registered developers',
-  },
-  {
-    label: 'Clients',
-    value: stats.clients,
-    icon: Briefcase,
-    gradient: 'from-sky-400 to-blue-600',
-    iconBg: 'bg-white/20',
-    sub: 'Business accounts',
-  },
-];
+const PIE_COLORS = ['#f59e0b', '#10b981', '#f43f5e'];
+const BAR_COLORS = ['#6366f1','#10b981','#f59e0b','#f43f5e','#3b82f6','#a855f7','#14b8a6','#f97316','#ec4899','#84cc16','#06b6d4','#eab308','#8b5cf6','#22c55e'];
+
+const CustomPieTooltip = ({ active, payload }) => {
+  if (!active || !payload?.length) return null;
+  return (
+    <div className="bg-white border border-border rounded-xl px-3 py-2 shadow-sm text-xs">
+      <p className="font-semibold text-text">{payload[0].name}</p>
+      <p className="text-muted">{payload[0].value} projects</p>
+    </div>
+  );
+};
+
+const CustomAreaTooltip = ({ active, payload, label }) => {
+  if (!active || !payload?.length) return null;
+  return (
+    <div className="bg-white border border-border rounded-xl px-3 py-2 shadow-sm text-xs">
+      <p className="font-semibold text-text mb-0.5">{label}</p>
+      <p className="text-indigo-600">{payload[0].value} new user{payload[0].value !== 1 ? 's' : ''}</p>
+    </div>
+  );
+};
 
 export default function AdminOverview({ stats, onNavigate }) {
+  const [growth, setGrowth] = useState([]);
+  const [growthDays, setGrowthDays] = useState(7);
+  const [growthLoading, setGrowthLoading] = useState(true);
+
+  useEffect(() => {
+    setGrowthLoading(true);
+    api.get(`/admin/user-growth?days=${growthDays}`)
+      .then(res => setGrowth(res.data))
+      .catch(() => {})
+      .finally(() => setGrowthLoading(false));
+  }, [growthDays]);
+
   if (!stats) return (
     <div className="flex items-center justify-center h-64">
       <div className="flex flex-col items-center gap-3">
-        <div className="w-8 h-8 border-3 border-accent border-t-transparent rounded-full animate-spin" />
+        <div className="w-8 h-8 border-2 border-accent border-t-transparent rounded-full animate-spin" />
         <p className="text-sm text-muted">Loading overview…</p>
       </div>
     </div>
   );
 
-  const approvalRate = stats.total > 0 ? Math.round((stats.approved / stats.total) * 100) : 0;
+  const pieData = [
+    { name: 'Pending',  value: stats.pending  || 0 },
+    { name: 'Approved', value: stats.approved || 0 },
+    { name: 'Rejected', value: stats.rejected || 0 },
+  ].filter(d => d.value > 0);
+
+  const totalGrowthUsers = growth.reduce((s, d) => s + d.count, 0);
+
+  const chartData = growth.map(d => ({
+    ...d,
+    label: new Date(d.date + 'T00:00:00').toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }),
+  }));
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
 
       {/* Header */}
-      <div className="flex items-start justify-between">
-        <div>
-          <h2 className="text-2xl font-bold text-text">Dashboard Overview</h2>
-          <p className="text-sm text-muted mt-1">Platform health and key metrics at a glance</p>
-        </div>
-        <div className="hidden sm:flex flex-col items-end gap-1">
-          <span className="text-xs font-medium text-muted bg-[#F3F0EB] px-3 py-1.5 rounded-full border border-border">
-            {new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
-          </span>
-        </div>
+      <div className="flex justify-end">
+        <span className="hidden sm:inline text-xs text-muted px-3 py-1.5 rounded-full border border-border bg-white">
+          {new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+        </span>
       </div>
 
       {/* Pending alert */}
       {stats.pending > 0 && (
-        <div className="relative overflow-hidden bg-linear-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-2xl p-5">
-          <div className="absolute top-0 left-0 w-1 h-full bg-linear-to-b from-amber-400 to-orange-500 rounded-l-2xl" />
-          <div className="flex items-center justify-between gap-4 pl-2">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-amber-100 rounded-xl flex items-center justify-center shrink-0">
-                <AlertCircle size={18} className="text-amber-600" />
-              </div>
-              <div>
-                <p className="font-semibold text-amber-900 text-sm">
-                  {stats.pending} project{stats.pending !== 1 ? 's' : ''} waiting for review
-                </p>
-                <p className="text-xs text-amber-700 mt-0.5">Review and approve or reject user submissions to keep the platform fresh.</p>
-              </div>
-            </div>
-            <button
-              onClick={() => onNavigate('projects')}
-              className="flex items-center gap-1.5 text-xs font-semibold bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-xl transition-colors shrink-0"
-            >
-              Review Now <ArrowRight size={13} />
-            </button>
+        <div className="flex items-center justify-between gap-4 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3">
+          <div className="flex items-center gap-3">
+            <AlertCircle size={16} className="text-amber-500 shrink-0" />
+            <p className="text-sm text-amber-800 font-medium">
+              {stats.pending} project{stats.pending !== 1 ? 's' : ''} waiting for review
+            </p>
           </div>
+          <button
+            onClick={() => onNavigate('projects')}
+            className="flex items-center gap-1.5 text-xs font-semibold bg-amber-500 hover:bg-amber-600 text-white px-3 py-1.5 rounded-lg transition-colors shrink-0"
+          >
+            Review <ArrowRight size={12} />
+          </button>
         </div>
       )}
 
-      {/* Stat Cards */}
-      <div className="grid grid-cols-2 xl:grid-cols-3 gap-4">
-        {STAT_CARDS(stats).map(({ label, value, icon: Icon, gradient, iconBg, sub, pulse }) => (
-          <div
-            key={label}
-            className={`relative overflow-hidden bg-linear-to-br ${gradient} rounded-2xl p-5 text-white shadow-sm`}
-          >
-            {pulse && (
-              <span className="absolute top-3 right-3 flex h-2.5 w-2.5">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75" />
-                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-white" />
-              </span>
-            )}
-            <div className="absolute -right-4 -bottom-4 w-24 h-24 rounded-full bg-white/10" />
-            <div className="absolute -right-2 -bottom-8 w-16 h-16 rounded-full bg-white/10" />
-            <div className={`w-10 h-10 ${iconBg} rounded-xl flex items-center justify-center mb-4`}>
-              <Icon size={18} className="text-white" />
-            </div>
-            <p className="text-3xl font-bold tracking-tight">{value ?? '—'}</p>
-            <p className="text-sm font-semibold mt-0.5 opacity-95">{label}</p>
-            <p className="text-xs mt-0.5 opacity-70">{sub}</p>
+      {/* Key stat cards — approved projects + total users */}
+      <div className="grid grid-cols-2 gap-3">
+        <div className="bg-white border border-border rounded-xl p-5">
+          <div className="w-9 h-9 bg-emerald-50 border border-emerald-200 rounded-lg flex items-center justify-center mb-3">
+            <CheckCircle size={16} className="text-emerald-600" />
           </div>
-        ))}
+          <p className="text-3xl font-bold text-text tracking-tight">{stats.approved ?? '—'}</p>
+          <p className="text-sm font-medium text-text mt-1">Approved Projects</p>
+          <p className="text-xs text-muted mt-0.5">Live on platform</p>
+        </div>
+        <div className="bg-white border border-border rounded-xl p-5">
+          <div className="w-9 h-9 bg-indigo-50 border border-indigo-200 rounded-lg flex items-center justify-center mb-3">
+            <Users size={16} className="text-indigo-600" />
+          </div>
+          <p className="text-3xl font-bold text-text tracking-tight">{stats.users ?? '—'}</p>
+          <p className="text-sm font-medium text-text mt-1">Total Users</p>
+          <p className="text-xs text-muted mt-0.5">{stats.developers ?? 0} devs · {stats.clients ?? 0} clients</p>
+        </div>
       </div>
 
-      {/* Bottom row: approval rate + quick actions */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-
-        {/* Approval rate */}
-        <div className="bg-white border border-border rounded-2xl p-5 space-y-4">
-          <div className="flex items-center justify-between">
-            <p className="text-sm font-semibold text-text">Approval Rate</p>
-            <span className="text-sm font-bold text-accent">{approvalRate}%</span>
+      {/* Daily User Registrations */}
+      <div className="bg-white border border-border rounded-xl p-5">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <p className="text-sm font-semibold text-text">Daily Registrations</p>
+            <p className="text-xs text-muted mt-0.5">
+              {totalGrowthUsers} new user{totalGrowthUsers !== 1 ? 's' : ''} in last {growthDays} days
+            </p>
           </div>
-          <div className="w-full bg-[#F3F0EB] rounded-full h-2.5 overflow-hidden">
-            <div
-              className="h-2.5 rounded-full bg-linear-to-r from-accent to-emerald-400 transition-all duration-700"
-              style={{ width: `${approvalRate}%` }}
-            />
-          </div>
-          <div className="flex justify-between text-xs text-muted pt-1">
-            <span>{stats.approved} approved</span>
-            <span>{stats.rejected} rejected</span>
-          </div>
-        </div>
-
-        {/* Quick Actions */}
-        <div className="bg-white border border-border rounded-2xl p-5 space-y-3">
-          <p className="text-sm font-semibold text-text">Quick Actions</p>
-          <div className="space-y-2">
-            {[
-              { label: 'Review Pending Projects', key: 'projects', badge: stats.pending, color: 'text-amber-600 bg-amber-50 border-amber-200' },
-              { label: 'Manage Users',             key: 'users',    badge: stats.users,   color: 'text-violet-600 bg-violet-50 border-violet-200' },
-              { label: 'Manage Opportunities',     key: 'opportunities', badge: null,     color: 'text-accent bg-accent-light border-accent/20' },
-            ].map(({ label, key, badge, color }) => (
+          <div className="flex gap-1">
+            {[7, 14, 30].map(d => (
               <button
-                key={key}
-                onClick={() => onNavigate(key)}
-                className="w-full flex items-center justify-between px-4 py-2.5 rounded-xl border border-border hover:border-accent/30 hover:bg-accent/5 transition-all text-sm text-text group"
+                key={d}
+                onClick={() => setGrowthDays(d)}
+                className={`text-xs px-2.5 py-1 rounded-lg transition-colors ${
+                  growthDays === d
+                    ? 'bg-indigo-600 text-white font-semibold'
+                    : 'text-muted hover:text-text border border-border'
+                }`}
               >
-                <span className="font-medium">{label}</span>
-                <div className="flex items-center gap-2">
-                  {badge > 0 && (
-                    <span className={`text-xs font-bold px-2 py-0.5 rounded-full border ${color}`}>{badge}</span>
-                  )}
-                  <ArrowRight size={14} className="text-muted group-hover:text-accent transition-colors" />
-                </div>
+                {d}d
               </button>
             ))}
           </div>
         </div>
+
+        {growthLoading ? (
+          <div className="h-48 flex items-center justify-center">
+            <div className="w-6 h-6 border-2 border-indigo-400 border-t-transparent rounded-full animate-spin" />
+          </div>
+        ) : (
+          <ResponsiveContainer width="100%" height={220}>
+            <BarChart data={chartData} margin={{ top: 24, right: 4, left: -20, bottom: 0 }} barSize={growthDays === 7 ? 32 : growthDays === 14 ? 20 : 12}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#F3F0EB" vertical={false} />
+              <XAxis
+                dataKey="label"
+                tick={{ fontSize: 10, fill: '#aaa' }}
+                axisLine={false}
+                tickLine={false}
+                interval={growthDays === 7 ? 0 : growthDays === 14 ? 1 : 4}
+              />
+              <YAxis
+                tick={{ fontSize: 10, fill: '#aaa' }}
+                axisLine={false}
+                tickLine={false}
+                width={24}
+                allowDecimals={false}
+              />
+              <Tooltip content={<CustomAreaTooltip />} cursor={{ fill: '#F3F0EB' }} />
+              <Bar dataKey="count" radius={[4, 4, 0, 0]} shape={(props) => {
+                const color = BAR_COLORS[props.index % BAR_COLORS.length];
+                return <Rectangle {...props} fill={color} />;
+              }}>
+                <LabelList dataKey="count" position="top" style={{ fontSize: 10, fontWeight: 600, fill: '#555' }} />
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+        )}
+      </div>
+
+      {/* Project Status donut */}
+      <div className="bg-white border border-border rounded-xl p-5">
+        <p className="text-sm font-semibold text-text mb-4">Project Status Distribution</p>
+        {pieData.length > 0 ? (
+          <div className="flex items-center gap-6">
+            <ResponsiveContainer width={160} height={160}>
+              <PieChart>
+                <Pie
+                  data={pieData}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={45}
+                  outerRadius={70}
+                  paddingAngle={3}
+                  dataKey="value"
+                  strokeWidth={0}
+                >
+                  {pieData.map((_, i) => (
+                    <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />
+                  ))}
+                </Pie>
+                <Tooltip content={<CustomPieTooltip />} />
+              </PieChart>
+            </ResponsiveContainer>
+            <div className="space-y-3 flex-1">
+              {pieData.map((d, i) => (
+                <div key={d.name} className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: PIE_COLORS[i] }} />
+                    <span className="text-sm text-text">{d.name}</span>
+                  </div>
+                  <span className="text-sm font-semibold text-text">{d.value}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : (
+          <div className="h-32 flex items-center justify-center text-sm text-muted">No project data yet</div>
+        )}
       </div>
 
     </div>
