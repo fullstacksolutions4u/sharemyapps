@@ -47,7 +47,8 @@ export default function Home() {
           <span className="text-accent font-semibold">hiring</span>,{" "}
           <span className="text-[#6366F1] font-semibold">freelance projects</span>{" "}
           and{" "}
-          <span className="text-[#F59E0B] font-semibold">mentorship</span>
+          <span className="text-[#F59E0B] font-semibold">mentorship</span>{" "}
+          Opportunities
         </p>
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
           <Link

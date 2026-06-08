@@ -67,7 +67,7 @@ function DeveloperCard({ dev, idx }) {
       {(() => {
         const bannerItems = [
           ...(dev.designations || []),
-          ...(dev.mentorshipAvailable ? ['Mentor'] : []),
+          ...(dev.mentorshipAvailable ? [dev.mentorshipRate ? `Mentor (₹${dev.mentorshipRate}/hr)` : 'Mentor'] : []),
         ];
         return (
           <div className={`bg-linear-to-r ${accent} relative overflow-hidden ${bannerItems.length ? 'h-24' : 'h-16'}`}>
@@ -161,7 +161,7 @@ function DeveloperCard({ dev, idx }) {
               <Layers size={10} /> Projects
             </p>
             <div className="grid grid-cols-2 gap-1.5">
-              {dev.projects.slice(0, 4).map((p, pi) => {
+              {dev.projects.slice(0, 2).map((p, pi) => {
                 const TypeIcon = p.appType === 'mobile' ? Smartphone : Monitor;
                 return (
                   <Link key={p._id} to={`/project/${p._id}`} title={p.title}
@@ -171,10 +171,13 @@ function DeveloperCard({ dev, idx }) {
                   </Link>
                 );
               })}
-              {dev.projects.length > 4 && (
+              {dev.projects.length > 2 && (
                 <Link to={`/portfolio/${dev._id}`}
-                  className="col-span-2 text-[11px] text-accent hover:underline font-medium px-1">
-                  +{dev.projects.length - 4} more
+                  className="col-span-2 flex items-center justify-between text-[11px] font-medium px-1">
+                  <span className="text-accent hover:underline">+{dev.projects.length - 2} more</span>
+                  {dev.freelanceRate && (
+                    <span className="text-[#FFAB91] font-semibold">Freelance: <strong>₹{dev.freelanceRate}/hr</strong></span>
+                  )}
                 </Link>
               )}
             </div>
