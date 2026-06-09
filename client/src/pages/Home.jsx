@@ -17,8 +17,11 @@ export default function Home() {
       .then(res => setProjects(res.data.projects.slice(0, 6)))
       .catch(() => {})
       .finally(() => setLoading(false));
-    api.get('/users/recent?limit=5&skip=20')
-      .then(res => setDevAvatars(res.data.slice(0, 5)))
+    api.get('/users/recent?limit=30')
+      .then(res => {
+        const withPhoto = res.data.filter(u => u.avatar);
+        setDevAvatars(withPhoto.slice(0, 5));
+      })
       .catch(() => {})
       .finally(() => setDevsLoading(false));
     api.get('/users/stats')
@@ -68,14 +71,9 @@ export default function Home() {
               ? Array.from({ length: 5 }).map((_, i) => (
                   <span key={i} className="w-8 h-8 rounded-full border-2 border-white bg-gray-200 animate-pulse shadow-sm block" />
                 ))
-              : (['#E85D4A','#F4861F','#4A90D9','#43A047','#7B68EE']).map((color, i) => {
-                  const dev = devAvatars[i];
-                  return dev?.avatar
-                    ? <img key={i} src={dev.avatar} alt={dev.name} title={dev.name} className="w-8 h-8 rounded-full border-2 border-white object-cover shadow-sm" />
-                    : <span key={i} style={{ backgroundColor: color }} title={dev?.name} className="w-8 h-8 rounded-full border-2 border-white flex items-center justify-center text-white text-xs font-bold shadow-sm">
-                        {dev ? dev.name[0].toUpperCase() : String.fromCharCode(65 + i)}
-                      </span>;
-                })
+              : devAvatars.map((dev, i) => (
+                  <img key={i} src={dev.avatar} alt={dev.name} title={dev.name} className="w-8 h-8 rounded-full border-2 border-white object-cover shadow-sm" />
+                ))
             }
           </div>
           {stats !== null
