@@ -19,7 +19,7 @@ export default function Home() {
       .finally(() => setLoading(false));
     api.get('/users/recent?limit=30')
       .then(res => {
-        const withPhoto = res.data.filter(u => u.avatar);
+        const withPhoto = res.data.filter(u => u.avatar && u.avatar.startsWith('http'));
         setDevAvatars(withPhoto.slice(0, 5));
       })
       .catch(() => {})
