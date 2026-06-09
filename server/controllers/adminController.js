@@ -137,6 +137,7 @@ exports.adminUpdateProject = async (req, res) => {
     if (githubVisible !== undefined) project.githubVisible = githubVisible !== 'false' && githubVisible !== false;
 
     await project.save();
+    await project.populate('owner', 'name email avatar');
     res.json(project);
   } catch (err) {
     res.status(500).json({ message: err.message });
