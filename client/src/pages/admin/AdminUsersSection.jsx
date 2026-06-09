@@ -781,7 +781,8 @@ export default function AdminUsersSection({ initialTab = 'developers' }) {
 
   const activeUsers = users.filter(u => !u.isDeleted);
   const developers = activeUsers.filter(u => u.userType === 'developer');
-  const pendingCvCount = developers.filter(u => (u.projectCount || 0) >= 1 && (!u.cvUrl || !u.resumeData)).length;
+  const missingCvCount = developers.filter(u => !u.cvUrl).length;
+  const missingSummaryCount = developers.filter(u => !u.resumeData).length;
   const recruiters = activeUsers.filter(u => u.userType === 'recruiter');
   const clients    = activeUsers.filter(u => u.userType === 'client');
   const mentees    = activeUsers.filter(u => u.userType === 'mentee');
@@ -838,10 +839,20 @@ export default function AdminUsersSection({ initialTab = 'developers' }) {
           )}
         </div>
         {search && <p className="text-xs text-[#6B7280]">{list.length} result{list.length !== 1 ? 's' : ''} for <span className="font-medium text-[#1A1A1A]">"{search}"</span></p>}
-        {!loading && pendingCvCount > 0 && (
-          <div className="ml-auto flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-xl border border-orange-200 bg-orange-50 text-orange-600 font-medium whitespace-nowrap">
-            <AlertCircle size={12} className="shrink-0" />
-            <span><span className="font-bold">{pendingCvCount}</span> developer{pendingCvCount !== 1 ? 's' : ''} missing CV / summary</span>
+        {!loading && (missingCvCount > 0 || missingSummaryCount > 0) && (
+          <div className="ml-auto flex items-center gap-2 flex-wrap justify-end">
+            {missingCvCount > 0 && (
+              <div className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-xl border border-orange-200 bg-orange-50 text-orange-600 font-medium whitespace-nowrap">
+                <AlertCircle size={12} className="shrink-0" />
+                <span><span className="font-bold">{missingCvCount}</span> missing CV link</span>
+              </div>
+            )}
+            {missingSummaryCount > 0 && (
+              <div className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-xl border border-yellow-200 bg-yellow-50 text-yellow-600 font-medium whitespace-nowrap">
+                <AlertCircle size={12} className="shrink-0" />
+                <span><span className="font-bold">{missingSummaryCount}</span> missing summary</span>
+              </div>
+            )}
           </div>
         )}
       </div>
