@@ -28,7 +28,7 @@ Stay active on the platform by testing other developers' project features, explo
 
 Best wishes for your job search, and we look forward to reviewing your projects.`;
 
-function ProjectReviewPage({ project: initial, onBack, onApprove, onReject, updating }) {
+function ProjectReviewPage({ project: initial, onBack, onSave, onApprove, onReject, updating }) {
   const [form, setForm] = useState({
     title: initial.title || '',
     description: initial.description || '',
@@ -56,7 +56,8 @@ function ProjectReviewPage({ project: initial, onBack, onApprove, onReject, upda
   const handleSave = async () => {
     setSaving(true);
     try {
-      await api.put(`/admin/projects/${initial._id}`, { ...form, githubUrls, githubVisible });
+      const res = await api.put(`/admin/projects/${initial._id}`, { ...form, githubUrls, githubVisible });
+      onSave(res.data);
       toast.success('Changes saved');
     } catch { toast.error('Failed to save changes'); }
     finally { setSaving(false); }
@@ -395,11 +396,17 @@ export default function AdminProjectsSection({ stats }) {
     } catch { toast.error('Failed to delete project'); }
   };
 
+  const handleSaved = (updatedProject) => {
+    setProjects(p => p.map(x => x._id === updatedProject._id ? { ...x, ...updatedProject } : x));
+    setSelected(prev => ({ ...prev, ...updatedProject }));
+  };
+
   if (selected) {
     return (
       <ProjectReviewPage
         project={selected}
         onBack={() => setSelected(null)}
+        onSave={handleSaved}
         onApprove={(id, note) => updateStatus(id, 'approved', note)}
         onReject={(id, note) => updateStatus(id, 'rejected', note)}
         updating={updating}
