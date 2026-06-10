@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, LayoutGrid, Users, MessageCircle, Star, ShoppingBag } from 'lucide-react';
+import { ArrowRight, LayoutGrid, Users, MessageCircle, Star, ShoppingBag, Hammer, Share2, CircleDollarSign } from 'lucide-react';
 import api from '../api/axios';
 import ProjectCard from '../components/ProjectCard';
 import ProjectSkeleton from '../components/ProjectSkeleton';
@@ -46,8 +46,10 @@ export default function Home() {
     <div className="min-h-screen">
       {/* Hero */}
       <section className="max-w-6xl mx-auto px-4 sm:px-6 pt-20 pb-16 text-center">
-        <div className="inline-flex items-center gap-4 bg-[#E6F7F5] text-[#00A693] text-xs font-medium px-3 py-1.5 rounded-full mb-6">
-          <span>• Build</span><span>• Share</span><span>• Earn</span>
+        <div className="inline-flex items-center gap-5 bg-[#E6F7F5] text-[#00A693] text-sm font-semibold px-5 py-2 rounded-full mb-6">
+          <span className="flex items-center gap-1.5"><Hammer size={15} className="text-violet-500" /> Build</span>
+          <span className="flex items-center gap-1.5"><Share2 size={15} className="text-blue-500" /> Share</span>
+          <span className="flex items-center gap-1.5"><CircleDollarSign size={15} className="text-amber-500" /> Earn</span>
         </div>
         <h1 className="text-5xl sm:text-6xl font-bold text-[#1A1A1A] tracking-tight leading-tight mb-6">
           Turning side projects into<br />
@@ -139,7 +141,6 @@ export default function Home() {
                   <div className="w-10 h-10 bg-accent-light rounded-xl flex items-center justify-center">
                     <Icon size={19} className="text-accent" />
                   </div>
-                  <span className="text-2xl font-bold text-border">{step}</span>
                 </div>
                 <div>
                   <h3 className="font-semibold text-text text-sm mb-1">{title}</h3>
