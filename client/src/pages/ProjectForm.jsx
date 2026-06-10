@@ -17,7 +17,14 @@ const CATEGORIES = [
   'Healthcare & Fitness', 'Education & Learning Platforms', 'HR & Recruitment',
   'Marketing & SEO', 'Real Estate', 'Travel & Booking', 'Food Delivery & Restaurant',
   'Gaming', 'Blockchain & Web3', 'Automation Tools', 'Analytics & Reporting',
-  'Communication & Chat Apps', 'Inventory Management', 'Event Management', 'Open Source Project', 'Others',
+  'Communication & Chat Apps', 'Inventory Management', 'Event Management',
+  'AI & Machine Learning', 'DevTools & Developer Utilities', 'Cybersecurity',
+  'IoT & Embedded Systems', 'AR & VR', 'Media & Entertainment',
+  'Legal & Compliance', 'Logistics & Supply Chain', 'Agriculture & Farming',
+  'Environment & Sustainability', 'Non-Profit & Social Impact',
+  'Personal Finance & Budgeting', 'Job Board & Freelancing',
+  'News & Blogging', 'Sports & Recreation', 'Fashion & Lifestyle',
+  'Open Source Project', 'Portfolios', 'Company Website', 'Others',
 ];
 
 export default function ProjectForm() {
