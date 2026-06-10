@@ -53,7 +53,7 @@ router.get('/recent', async (req, res) => {
     const limit = Math.min(parseInt(req.query.limit) || 5, 50);
     const skip = Math.max(parseInt(req.query.skip) || 0, 0);
     const users = await require('../models/User').find(
-      { role: { $ne: 'admin' }, isDeleted: { $ne: true }, userType: 'developer' },
+      { role: { $ne: 'admin' }, isDeleted: { $ne: true }, userType: 'developer', avatar: { $regex: '^https?://', $options: 'i' } },
       { name: 1, avatar: 1, userType: 1 }
     ).sort({ createdAt: -1 }).skip(skip).limit(limit).lean();
     res.json(users);

@@ -1056,18 +1056,25 @@ export default function AdminUsersSection({ initialTab = 'developers' }) {
         </div>
       )}
 
-      {totalPages > 1 && (
-        <div className="flex flex-col items-center gap-2 pt-2">
-          <p className="text-xs text-[#9CA3AF]">Showing {(page - 1) * PER_PAGE + 1}–{Math.min(page * PER_PAGE, list.length)} of {list.length}</p>
-          <div className="flex items-center gap-1">
-            <button onClick={() => setPage(p => p - 1)} disabled={page === 1} className="px-3 h-8 text-sm border border-border rounded-lg text-muted hover:border-accent hover:text-accent disabled:opacity-40 disabled:cursor-not-allowed transition">‹</button>
-            {Array.from({ length: totalPages }, (_, i) => i + 1).map(n => (
-              <button key={n} onClick={() => setPage(n)} className={`w-8 h-8 text-sm rounded-lg border transition ${n === page ? 'bg-accent text-white border-accent font-medium' : 'border-border text-muted hover:border-accent hover:text-accent'}`}>{n}</button>
-            ))}
-            <button onClick={() => setPage(p => p + 1)} disabled={page === totalPages} className="px-3 h-8 text-sm border border-border rounded-lg text-muted hover:border-accent hover:text-accent disabled:opacity-40 disabled:cursor-not-allowed transition">›</button>
+      {totalPages > 1 && (() => {
+        const GROUP = 10;
+        const groupStart = Math.floor((page - 1) / GROUP) * GROUP + 1;
+        const groupEnd = Math.min(groupStart + GROUP - 1, totalPages);
+        return (
+          <div className="flex flex-col items-center gap-2 pt-2">
+            <p className="text-xs text-[#9CA3AF]">Showing {(page - 1) * PER_PAGE + 1}–{Math.min(page * PER_PAGE, list.length)} of {list.length}</p>
+            <div className="flex items-center gap-1">
+              <button onClick={() => setPage(p => p - 1)} disabled={page === 1} className="px-3 h-8 text-sm border border-border rounded-lg text-muted hover:border-accent hover:text-accent disabled:opacity-40 disabled:cursor-not-allowed transition">‹</button>
+              {groupStart > 1 && <button onClick={() => setPage(groupStart - 1)} className="px-3 h-8 text-sm border border-border rounded-lg text-muted hover:border-accent hover:text-accent transition">…</button>}
+              {Array.from({ length: groupEnd - groupStart + 1 }, (_, i) => groupStart + i).map(n => (
+                <button key={n} onClick={() => setPage(n)} className={`w-8 h-8 text-sm rounded-lg border transition ${n === page ? 'bg-accent text-white border-accent font-medium' : 'border-border text-muted hover:border-accent hover:text-accent'}`}>{n}</button>
+              ))}
+              {groupEnd < totalPages && <button onClick={() => setPage(groupEnd + 1)} className="px-3 h-8 text-sm border border-border rounded-lg text-muted hover:border-accent hover:text-accent transition">…</button>}
+              <button onClick={() => setPage(p => p + 1)} disabled={page === totalPages} className="px-3 h-8 text-sm border border-border rounded-lg text-muted hover:border-accent hover:text-accent disabled:opacity-40 disabled:cursor-not-allowed transition">›</button>
+            </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
 
       {viewingUser && (() => {
         const u = users.find(x => x._id === viewingUser._id) || viewingUser;
