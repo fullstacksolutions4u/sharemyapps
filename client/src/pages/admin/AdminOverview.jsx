@@ -2,22 +2,11 @@ import { useEffect, useState } from 'react';
 import { CheckCircle, AlertCircle, ArrowRight, Users } from 'lucide-react';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-  LabelList, PieChart, Pie, Cell, Rectangle,
+  LabelList, Rectangle,
 } from 'recharts';
 import api from '../../api/axios';
 
-const PIE_COLORS = ['#f59e0b', '#10b981', '#f43f5e'];
 const BAR_COLORS = ['#6366f1','#10b981','#f59e0b','#f43f5e','#3b82f6','#a855f7','#14b8a6','#f97316','#ec4899','#84cc16','#06b6d4','#eab308','#8b5cf6','#22c55e'];
-
-const CustomPieTooltip = ({ active, payload }) => {
-  if (!active || !payload?.length) return null;
-  return (
-    <div className="bg-white border border-border rounded-xl px-3 py-2 shadow-sm text-xs">
-      <p className="font-semibold text-text">{payload[0].name}</p>
-      <p className="text-muted">{payload[0].value} projects</p>
-    </div>
-  );
-};
 
 const CustomAreaTooltip = ({ active, payload, label }) => {
   if (!active || !payload?.length) return null;
@@ -50,12 +39,6 @@ export default function AdminOverview({ stats, onNavigate }) {
       </div>
     </div>
   );
-
-  const pieData = [
-    { name: 'Pending',  value: stats.pending  || 0 },
-    { name: 'Approved', value: stats.approved || 0 },
-    { name: 'Rejected', value: stats.rejected || 0 },
-  ].filter(d => d.value > 0);
 
   const totalGrowthUsers = growth.reduce((s, d) => s + d.count, 0);
 
