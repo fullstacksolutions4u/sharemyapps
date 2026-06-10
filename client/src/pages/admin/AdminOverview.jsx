@@ -172,46 +172,6 @@ export default function AdminOverview({ stats, onNavigate }) {
         )}
       </div>
 
-      {/* Project Status donut */}
-      <div className="bg-white border border-border rounded-xl p-5">
-        <p className="text-sm font-semibold text-text mb-4">Project Status Distribution</p>
-        {pieData.length > 0 ? (
-          <div className="flex items-center gap-6">
-            <ResponsiveContainer width={160} height={160}>
-              <PieChart>
-                <Pie
-                  data={pieData}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={45}
-                  outerRadius={70}
-                  paddingAngle={3}
-                  dataKey="value"
-                  strokeWidth={0}
-                >
-                  {pieData.map((_, i) => (
-                    <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />
-                  ))}
-                </Pie>
-                <Tooltip content={<CustomPieTooltip />} />
-              </PieChart>
-            </ResponsiveContainer>
-            <div className="space-y-3 flex-1">
-              {pieData.map((d, i) => (
-                <div key={d.name} className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: PIE_COLORS[i] }} />
-                    <span className="text-sm text-text">{d.name}</span>
-                  </div>
-                  <span className="text-sm font-semibold text-text">{d.value}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        ) : (
-          <div className="h-32 flex items-center justify-center text-sm text-muted">No project data yet</div>
-        )}
-      </div>
 
     </div>
   );
