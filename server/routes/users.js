@@ -82,7 +82,8 @@ router.get('/developers', async (req, res) => {
         let: { uid: '$_id' },
         pipeline: [
           { $match: { $expr: { $and: [{ $eq: ['$owner', '$$uid'] }, { $eq: ['$status', 'approved'] }, { $ne: ['$hidden', true] }] } } },
-          { $project: { _id: 1, title: 1, appType: 1 } },
+          { $sort: { createdAt: -1 } },
+          { $project: { _id: 1, title: 1, appType: 1, createdAt: 1 } },
         ],
         as: 'projects',
       },
@@ -144,10 +145,11 @@ router.get('/developers', async (req, res) => {
       commentsLookup,
       {
         $addFields: {
-          hasProjects:   { $gt: [{ $size: '$projects' }, 0] },
-          likesGiven:    { $size: '$_likedProjects' },
-          ratingsGiven:  { $size: '$_ratedProjects' },
-          commentsGiven: { $size: '$_userComments' },
+          hasProjects:    { $gt: [{ $size: '$projects' }, 0] },
+          lastProjectAt:  { $max: '$projects.createdAt' },
+          likesGiven:     { $size: '$_likedProjects' },
+          ratingsGiven:   { $size: '$_ratedProjects' },
+          commentsGiven:  { $size: '$_userComments' },
           communityScore: {
             $add: [
               { $size: '$_likedProjects' },
@@ -157,7 +159,7 @@ router.get('/developers', async (req, res) => {
           },
         },
       },
-      { $sort: { hasProjects: -1, communityScore: -1, createdAt: -1 } },
+      { $sort: { lastProjectAt: -1, hasProjects: -1, createdAt: -1 } },
       {
         $facet: {
           total: [{ $count: 'n' }],

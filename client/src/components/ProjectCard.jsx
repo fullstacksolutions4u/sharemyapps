@@ -34,7 +34,7 @@ const ProjectCard = memo(function ProjectCard({ project }) {
   const avg = avgRating(ratings);
 
   return (
-    <div className="group bg-white border border-accent/30 rounded-xl overflow-hidden shadow-md hover:shadow-xl hover:-translate-y-1 hover:border-accent/60 transition-all duration-200 flex flex-col">
+    <div className="group bg-white border border-accent/30 rounded-xl overflow-hidden shadow-md hover:shadow-xl hover:border-accent/60 transition-all duration-200 flex flex-col">
       {/* Banner */}
       <Link to={`/project/${_id}`} className="block overflow-hidden relative">
         <div className="absolute top-2 left-2 z-10 flex flex-col items-start gap-1">

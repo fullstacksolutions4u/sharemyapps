@@ -61,7 +61,7 @@ function DeveloperCard({ dev, idx }) {
   const accent = CARD_ACCENTS[idx % CARD_ACCENTS.length];
 
   return (
-    <div className="group bg-white rounded-2xl border border-border overflow-hidden hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col">
+    <div className="group bg-white rounded-2xl border border-border overflow-hidden hover:shadow-xl hover:border-accent/60 transition-all duration-200 flex flex-col">
 
       {/* Gradient banner */}
       {(() => {
@@ -88,9 +88,9 @@ function DeveloperCard({ dev, idx }) {
       <div className="px-5 -mt-8 mb-3 flex items-end justify-between">
         {dev.avatar ? (
           <img src={dev.avatar} alt={dev.name} loading="lazy"
-            className="w-16 h-16 rounded-2xl object-cover border-4 border-white shadow-md group-hover:scale-105 transition-transform duration-300" />
+            className="w-16 h-16 rounded-2xl object-cover border-4 border-white shadow-md transition-none" />
         ) : (
-          <div className={`w-16 h-16 rounded-2xl bg-linear-to-br ${accent} border-4 border-white shadow-md flex items-center justify-center group-hover:scale-105 transition-transform duration-300`}>
+          <div className={`w-16 h-16 rounded-2xl bg-linear-to-br ${accent} border-4 border-white shadow-md flex items-center justify-center transition-none`}>
             <span className="text-xl font-bold text-accent">{initials}</span>
           </div>
         )}

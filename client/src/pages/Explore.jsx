@@ -1,7 +1,7 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { useSearchParams, useLocation } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { Search, X, Megaphone, Sparkles } from 'lucide-react';
+import { Search, X, Megaphone } from 'lucide-react';
 import api from '../api/axios';
 import ProjectCard from '../components/ProjectCard';
 import ProjectSkeleton from '../components/ProjectSkeleton';
@@ -12,7 +12,14 @@ const CATEGORIES = [
   'Healthcare & Fitness', 'Education & Learning Platforms', 'HR & Recruitment',
   'Marketing & SEO', 'Real Estate', 'Travel & Booking', 'Food Delivery & Restaurant',
   'Gaming', 'Blockchain & Web3', 'Automation Tools', 'Analytics & Reporting',
-  'Communication & Chat Apps', 'Inventory Management', 'Event Management', 'Open Source Project', 'Others',
+  'Communication & Chat Apps', 'Inventory Management', 'Event Management',
+  'AI & Machine Learning', 'DevTools & Developer Utilities', 'Cybersecurity',
+  'IoT & Embedded Systems', 'AR & VR', 'Media & Entertainment',
+  'Legal & Compliance', 'Logistics & Supply Chain', 'Agriculture & Farming',
+  'Environment & Sustainability', 'Non-Profit & Social Impact',
+  'Personal Finance & Budgeting', 'Job Board & Freelancing',
+  'News & Blogging', 'Sports & Recreation', 'Fashion & Lifestyle',
+  'Open Source Project', 'Others',
 ];
 
 const SKELETONS = Array.from({ length: 12 });
@@ -138,11 +145,7 @@ export default function Explore() {
           <div className="flex items-center gap-2 flex-4 overflow-hidden border-b border-border px-3">
             <Megaphone size={15} className="text-orange-500 shrink-0" />
             <div className="flex-1 overflow-hidden h-full flex items-center gap-1.5">
-              {announcements[tickerIdx]?.kind === 'new_project' && (
-                <span className="animate-ticker-up flex items-center shrink-0">
-                  <Sparkles size={12} className="text-amber-400" />
-                </span>
-              )}
+
               <span
                 className={`animate-ticker-up text-sm truncate block ${
                   announcements[tickerIdx]?.kind === 'activity'    ? 'text-violet-500' :
@@ -177,6 +180,8 @@ export default function Explore() {
       {/* Full-width divider */}
       <div className="h-px bg-border" />
       </div>{/* end sticky bar */}
+
+      <div className="mt-4" />
 
       {/* Active filters */}
       {hasFilters && (

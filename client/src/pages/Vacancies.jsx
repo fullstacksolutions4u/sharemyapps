@@ -17,6 +17,30 @@ const SKILL_COLORS = [
   'bg-rose-50 text-rose-700 border-rose-200',
 ];
 
+function SkillsList({ skills, colors }) {
+  const [expanded, setExpanded] = useState(false);
+  const VISIBLE = 3;
+  const shown = expanded ? skills : skills.slice(0, VISIBLE);
+  const extra = skills.length - VISIBLE;
+  return (
+    <div className="flex flex-wrap gap-2">
+      {shown.map((s, i) => (
+        <span key={s} className={`text-sm font-medium px-3 py-1.5 rounded-xl border ${colors[i % colors.length]}`}>{s}</span>
+      ))}
+      {!expanded && extra > 0 && (
+        <button onClick={() => setExpanded(true)} className="text-sm font-medium px-3 py-1.5 rounded-xl border border-accent/40 text-accent bg-accent/5 hover:bg-accent/10 transition-colors">
+          +{extra} more
+        </button>
+      )}
+      {expanded && extra > 0 && (
+        <button onClick={() => setExpanded(false)} className="text-sm font-medium px-3 py-1.5 rounded-xl border border-border text-muted hover:text-text transition-colors">
+          Show less
+        </button>
+      )}
+    </div>
+  );
+}
+
 const TYPE_LABEL = { remote: 'Remote', onsite: 'On-site', hybrid: 'Hybrid' };
 const TYPE_DOT = {
   remote:  'bg-green-500',
@@ -181,9 +205,9 @@ export default function Vacancies() {
         </div>
       </div>
 
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
       {TAB_CONFIG[activeTab].loading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
           {Array.from({ length: 4 }).map((_, i) => <SkeletonCard key={i} />)}
         </div>
       ) : TAB_CONFIG[activeTab].data.length === 0 ? (
@@ -193,12 +217,12 @@ export default function Vacancies() {
           <p className="text-xs text-[#9CA3AF] mt-1">Check back soon — new listings are posted regularly.</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
           {TAB_CONFIG[activeTab].data.map(v => {
             const initial = (v.company || v.title || '?')[0].toUpperCase();
             const subLabel = activeTab === 'freelance' ? null : activeTab === 'mentorship' ? (v.type === 'paid' ? 'Paid' : 'Free') : (v.industry || v.company);
             return (
-              <div key={v._id} className={`bg-white rounded-2xl shadow-[0_2px_16px_rgba(0,0,0,0.08)] hover:shadow-[0_4px_24px_rgba(0,0,0,0.13)] border border-border/60 p-5 flex flex-col gap-4 transition-shadow ${v.status === 'closed' ? 'opacity-70' : ''}`}>
+              <div key={v._id} className={`bg-white rounded-2xl shadow-[0_2px_16px_rgba(0,0,0,0.08)] hover:shadow-[0_4px_24px_rgba(0,0,0,0.13)] border border-border/60 hover:border-accent/60 p-5 flex flex-col gap-4 transition-all duration-200 ${v.status === 'closed' ? 'opacity-70' : ''}`}>
 
                 {/* Header: avatar + title + type badge */}
                 <div className="flex items-start gap-3">
@@ -280,13 +304,7 @@ export default function Vacancies() {
 
                 {/* Skills / Topics */}
                 {(v.skills?.length > 0 || v.topics?.length > 0) && (
-                  <div className="flex flex-wrap gap-2">
-                    {(v.skills || v.topics || []).map((s, i) => (
-                      <span key={s} className={`text-sm font-medium px-3 py-1.5 rounded-xl border ${SKILL_COLORS[i % SKILL_COLORS.length]}`}>
-                        {s}
-                      </span>
-                    ))}
-                  </div>
+                  <SkillsList skills={v.skills || v.topics || []} colors={SKILL_COLORS} />
                 )}
 
                 {/* Footer */}
