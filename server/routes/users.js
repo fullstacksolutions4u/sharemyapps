@@ -53,7 +53,7 @@ router.get('/recent', async (req, res) => {
     const limit = Math.min(parseInt(req.query.limit) || 5, 50);
     const skip = Math.max(parseInt(req.query.skip) || 0, 0);
     const users = await require('../models/User').find(
-      { role: { $ne: 'admin' }, isDeleted: { $ne: true }, userType: { $ne: 'mentee' } },
+      { role: { $ne: 'admin' }, isDeleted: { $ne: true }, userType: 'developer' },
       { name: 1, avatar: 1, userType: 1 }
     ).sort({ createdAt: -1 }).skip(skip).limit(limit).lean();
     res.json(users);
@@ -493,8 +493,13 @@ router.post('/find-developers', protect, jdQuota, aiLimit, async (req, res) => {
         }
       : () => true;
 
+    const hasValidResume = dev => {
+      const cv = (dev.cvUrl || '').trim();
+      return cv.length > 0 && !cv.includes('drive.google.com');
+    };
+
     const scored = developers
-      .filter(dev => projectMap[dev._id.toString()]?.count > 0 && locationFilter(dev))
+      .filter(dev => projectMap[dev._id.toString()]?.count > 0 && locationFilter(dev) && hasValidResume(dev))
       .map(dev => {
         const pid = dev._id.toString();
         const toArr = v => Array.isArray(v) ? v : (v && typeof v === 'object' ? Object.values(v).flat() : []);
