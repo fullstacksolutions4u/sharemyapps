@@ -5,6 +5,20 @@ import api from '../api/axios';
 import ProjectCard from '../components/ProjectCard';
 import ProjectSkeleton from '../components/ProjectSkeleton';
 
+const AVATAR_PALETTE = ['#F87171','#FB923C','#FBBF24','#34D399','#38BDF8','#818CF8','#E879F9','#F472B6','#00A693'];
+const avatarBg = name => AVATAR_PALETTE[(name?.charCodeAt(0) ?? 0) % AVATAR_PALETTE.length];
+const defaultAvatar = name => {
+  const bg = avatarBg(name).replace('#', '%23');
+  return `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Ccircle cx='20' cy='20' r='20' fill='${bg}'/%3E%3Ccircle cx='20' cy='15' r='7' fill='%231a1a1a' opacity='.85'/%3E%3Cellipse cx='20' cy='35' rx='12' ry='9' fill='%231a1a1a' opacity='.85'/%3E%3C/svg%3E`;
+};
+
+function DevAvatar({ dev }) {
+  const [failed, setFailed] = useState(false);
+  if (!dev.avatar || failed)
+    return <img src={defaultAvatar(dev.name)} alt={dev.name} title={dev.name} className="w-8 h-8 rounded-full border-2 border-white object-cover shadow-sm" />;
+  return <img src={dev.avatar} alt={dev.name} title={dev.name} className="w-8 h-8 rounded-full border-2 border-white object-cover shadow-sm" onError={() => setFailed(true)} />;
+}
+
 export default function Home() {
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -69,9 +83,7 @@ export default function Home() {
               ? Array.from({ length: 5 }).map((_, i) => (
                   <span key={i} className="w-8 h-8 rounded-full border-2 border-white bg-gray-200 animate-pulse shadow-sm block" />
                 ))
-              : devAvatars.map((dev, i) => (
-                  <img key={i} src={dev.avatar} alt={dev.name} title={dev.name} className="w-8 h-8 rounded-full border-2 border-white object-cover shadow-sm" />
-                ))
+              : devAvatars.map((dev, i) => <DevAvatar key={i} dev={dev} />)
             }
           </div>
           {stats !== null
