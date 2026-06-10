@@ -17,10 +17,9 @@ export default function Home() {
       .then(res => setProjects(res.data.projects.slice(0, 6)))
       .catch(() => {})
       .finally(() => setLoading(false));
-    api.get('/users/recent?limit=30')
+    api.get('/users/recent?limit=25')
       .then(res => {
-        const withPhoto = res.data.filter(u => u.avatar && u.avatar.startsWith('http'));
-        setDevAvatars(withPhoto.slice(0, 5));
+        setDevAvatars(res.data.slice(-5));
       })
       .catch(() => {})
       .finally(() => setDevsLoading(false));
@@ -33,9 +32,8 @@ export default function Home() {
     <div className="min-h-screen">
       {/* Hero */}
       <section className="max-w-6xl mx-auto px-4 sm:px-6 pt-20 pb-16 text-center">
-        <div className="inline-flex items-center gap-2 bg-[#E6F7F5] text-[#00A693] text-xs font-medium px-3 py-1.5 rounded-full mb-6">
-          <span className="w-1.5 h-1.5 bg-[#00A693] rounded-full animate-pulse" />
-          Every project tells a story. Connect with the developer behind it.
+        <div className="inline-flex items-center gap-4 bg-[#E6F7F5] text-[#00A693] text-xs font-medium px-3 py-1.5 rounded-full mb-6">
+          <span>• Build</span><span>• Share</span><span>• Earn</span>
         </div>
         <h1 className="text-5xl sm:text-6xl font-bold text-[#1A1A1A] tracking-tight leading-tight mb-6">
           Turning side projects into<br />
