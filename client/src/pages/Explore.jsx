@@ -19,7 +19,7 @@ const CATEGORIES = [
   'Environment & Sustainability', 'Non-Profit & Social Impact',
   'Personal Finance & Budgeting', 'Job Board & Freelancing',
   'News & Blogging', 'Sports & Recreation', 'Fashion & Lifestyle',
-  'Open Source Project', 'Portfolios', 'Company Website', 'Others',
+  'Open Source Project', 'Portfolios', 'Company Website', 'Mobile Application for Client', 'Others',
 ];
 
 const SKELETONS = Array.from({ length: 12 });
