@@ -495,11 +495,20 @@ router.post('/find-developers', protect, jdQuota, aiLimit, async (req, res) => {
 
     const hasValidResume = dev => {
       const cv = (dev.cvUrl || '').trim();
-      return cv.length > 0 && !cv.includes('drive.google.com');
+      const hasUploadedCv = cv.length > 0 && !cv.includes('drive.google.com');
+      const hasJsonResume = dev.resumeData && (
+        (dev.resumeData.skills?.length > 0) ||
+        (dev.resumeData.techStack?.length > 0) ||
+        (dev.resumeData.experience?.length > 0)
+      );
+      return hasUploadedCv || hasJsonResume;
     };
 
+    const hasProfileData = dev =>
+      projectMap[dev._id.toString()]?.count > 0 || hasValidResume(dev);
+
     const scored = developers
-      .filter(dev => projectMap[dev._id.toString()]?.count > 0 && locationFilter(dev) && hasValidResume(dev))
+      .filter(dev => hasProfileData(dev) && locationFilter(dev) && hasValidResume(dev))
       .map(dev => {
         const pid = dev._id.toString();
         const toArr = v => Array.isArray(v) ? v : (v && typeof v === 'object' ? Object.values(v).flat() : []);
