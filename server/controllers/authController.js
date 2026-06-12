@@ -177,6 +177,22 @@ exports.updateProfile = async (req, res) => {
   }
 };
 
+exports.deleteAvatar = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+    if (user.avatar && user.avatar.includes('cloudinary')) {
+      const pid = user.avatar.split('/').pop().split('.')[0];
+      await cloudinary.uploader.destroy(`sharemyapp/${pid}`).catch(() => {});
+    }
+    user.avatar = '';
+    await user.save();
+    res.json({ user: user.toPublicJSON() });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
 exports.deleteAccount = async (req, res) => {
   try {
     const userId = req.user._id;

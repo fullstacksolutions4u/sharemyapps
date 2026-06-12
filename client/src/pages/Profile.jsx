@@ -188,6 +188,16 @@ export default function Profile() {
 
   const handle = e => setForm(f => ({ ...f, [e.target.name]: e.target.value }));
 
+  const handleDeleteAvatar = async () => {
+    try {
+      const res = await api.delete('/auth/avatar');
+      setUser(res.data.user);
+      toast.success('Profile photo removed');
+    } catch {
+      toast.error('Failed to remove photo');
+    }
+  };
+
   const handleAvatarChange = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -285,7 +295,9 @@ export default function Profile() {
           <div className="relative group">
             {/* Missing items tooltip */}
             {COMPLETION_ITEMS.some(i => !i.done) && (
-              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2.5 z-50 w-56 bg-gray-900 text-white text-xs rounded-xl px-3.5 py-3 shadow-xl opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200">
+              <div className="absolute top-full inset-x-0 mx-auto mt-2.5 z-50 w-56 bg-gray-900 text-white text-xs rounded-xl px-3.5 py-3 shadow-xl opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200">
+                {/* Arrow */}
+                <div className="absolute bottom-full left-1/2 -translate-x-1/2 border-4 border-transparent border-b-gray-900" />
                 <p className="font-semibold text-[11px] text-gray-300 mb-2">Missing to complete profile:</p>
                 <ul className="space-y-1.5">
                   {COMPLETION_ITEMS.filter(i => !i.done).map(item => (
@@ -295,8 +307,6 @@ export default function Profile() {
                     </li>
                   ))}
                 </ul>
-                {/* Arrow */}
-                <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900" />
               </div>
             )}
             <div
@@ -331,6 +341,16 @@ export default function Profile() {
                       : <Camera size={12} className="text-white" />
                     }
                   </button>
+                  {user?.avatar && (
+                    <button
+                      type="button"
+                      onClick={handleDeleteAvatar}
+                      className="absolute -bottom-0.5 -left-0.5 w-7 h-7 bg-red-500 hover:bg-red-600 rounded-full flex items-center justify-center border-2 border-white transition-colors"
+                      title="Remove photo"
+                    >
+                      <Trash2 size={12} className="text-white" />
+                    </button>
+                  )}
                   {!user?.avatar && (
                     <span className="absolute -top-1 -left-1 w-6 h-6 bg-amber-400 rounded-full flex items-center justify-center border-2 border-white" title="No profile photo">
                       <AlertTriangle size={11} className="text-white" />
