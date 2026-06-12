@@ -124,7 +124,15 @@ exports.updateProfile = async (req, res) => {
     if (githubUrl !== undefined) user.githubUrl = githubUrl.trim();
     if (leetcodeUrl !== undefined) user.leetcodeUrl = leetcodeUrl.trim();
     if (portfolioUrl !== undefined) user.portfolioUrl = portfolioUrl.trim();
-    if (cvUrl !== undefined) user.cvUrl = cvUrl.trim();
+    if (cvUrl !== undefined) {
+      const trimmed = cvUrl.trim();
+      const isPlaceholder = (u) => {
+        const c = u.replace(/^https?:\/\//, '').replace(/\/$/, '');
+        return c === 'drive.google.com' || (u.includes('drive.google.com') && !u.includes('/file/d/'));
+      };
+      if (trimmed && isPlaceholder(trimmed)) user.cvWasPlaceholder = true;
+      user.cvUrl = trimmed;
+    }
     if (companyName !== undefined) user.companyName = companyName.trim();
     if (companyWebsite !== undefined) user.companyWebsite = companyWebsite.trim();
     if (industry !== undefined) user.industry = industry.trim();

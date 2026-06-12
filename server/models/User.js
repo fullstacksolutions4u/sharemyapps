@@ -16,6 +16,7 @@ const userSchema = new mongoose.Schema({
   leetcodeUrl: { type: String, trim: true, default: '' },
   portfolioUrl: { type: String, trim: true, default: '' },
   cvUrl: { type: String, trim: true, default: '' },
+  cvWasPlaceholder: { type: Boolean, default: false },
   bio: { type: String, trim: true, default: '' },
   // Client-specific fields
   companyName: { type: String, trim: true, default: '' },

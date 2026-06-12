@@ -686,6 +686,7 @@ export default function AdminUsersSection({ initialTab = 'developers' }) {
   const [editingNote, setEditingNote] = useState(null); // { id, text }
   const [noteSaving, setNoteSaving] = useState(null);
   const [filterPlaceholderCv, setFilterPlaceholderCv] = useState(false);
+  const [filterUpdatedCv, setFilterUpdatedCv] = useState(false);
   const [messagingUser, setMessagingUser] = useState(null);
   const [messageText, setMessageText] = useState('');
   const [messageSending, setMessageSending] = useState(false);
@@ -791,6 +792,7 @@ export default function AdminUsersSection({ initialTab = 'developers' }) {
   const missingCvCount = developers.filter(u => !u.cvUrl).length;
   const missingSummaryCount = developers.filter(u => !u.resumeData).length;
   const placeholderCvCount = developers.filter(u => isPlaceholderCv(u.cvUrl)).length;
+  const updatedCvCount = developers.filter(u => u.cvWasPlaceholder && !isPlaceholderCv(u.cvUrl) && u.cvUrl).length;
   const recruiters = activeUsers.filter(u => u.userType === 'recruiter');
   const clients    = activeUsers.filter(u => u.userType === 'client');
   const mentees    = activeUsers.filter(u => u.userType === 'mentee');
@@ -801,6 +803,7 @@ export default function AdminUsersSection({ initialTab = 'developers' }) {
   const list = (listMap[tab] || [])
     .filter(u => !q || u.name?.toLowerCase().includes(q) || u.email?.toLowerCase().includes(q))
     .filter(u => !filterPlaceholderCv || isPlaceholderCv(u.cvUrl))
+    .filter(u => !filterUpdatedCv || (u.cvWasPlaceholder && !isPlaceholderCv(u.cvUrl) && u.cvUrl))
     .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
   const totalPages = Math.ceil(list.length / PER_PAGE);
   const paged = list.slice((page - 1) * PER_PAGE, page * PER_PAGE);
@@ -828,7 +831,7 @@ export default function AdminUsersSection({ initialTab = 'developers' }) {
             { key: 'mentees',    label: `Mentees (${mentees.length})` },
             { key: 'deleted',    label: `Deleted (${deletedUsers.length})` },
           ].map(t => (
-            <button key={t.key} onClick={() => { setTab(t.key); setPage(1); setSearch(''); setFilterPlaceholderCv(false); }}
+            <button key={t.key} onClick={() => { setTab(t.key); setPage(1); setSearch(''); setFilterPlaceholderCv(false); setFilterUpdatedCv(false); }}
               className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${tab === t.key ? (t.key === 'deleted' ? 'bg-white text-red-600 shadow-sm' : 'bg-white text-[#1A1A1A] shadow-sm') : 'text-[#6B7280] hover:text-[#1A1A1A]'}`}>
               {t.label}
             </button>
@@ -847,7 +850,7 @@ export default function AdminUsersSection({ initialTab = 'developers' }) {
           )}
         </div>
         {search && <p className="text-xs text-[#6B7280]">{list.length} result{list.length !== 1 ? 's' : ''} for <span className="font-medium text-[#1A1A1A]">"{search}"</span></p>}
-        {!loading && (missingCvCount > 0 || missingSummaryCount > 0 || placeholderCvCount > 0) && (
+        {!loading && (missingCvCount > 0 || missingSummaryCount > 0 || placeholderCvCount > 0 || updatedCvCount > 0) && (
           <div className="ml-auto flex items-center gap-2 shrink-0">
             {missingCvCount > 0 && (
               <div className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-xl border border-orange-200 bg-orange-50 text-orange-600 font-medium whitespace-nowrap">
@@ -857,7 +860,7 @@ export default function AdminUsersSection({ initialTab = 'developers' }) {
             )}
             {placeholderCvCount > 0 && (
               <button
-                onClick={() => { setTab('developers'); setFilterPlaceholderCv(f => !f); setPage(1); }}
+                onClick={() => { setTab('developers'); setFilterPlaceholderCv(f => !f); setFilterUpdatedCv(false); setPage(1); }}
                 className={`flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-xl border font-medium whitespace-nowrap transition-colors ${
                   filterPlaceholderCv
                     ? 'border-purple-400 bg-purple-100 text-purple-700'
@@ -866,6 +869,19 @@ export default function AdminUsersSection({ initialTab = 'developers' }) {
               >
                 <AlertCircle size={12} className="shrink-0" />
                 <span>Placeholder · <span className="font-bold">{placeholderCvCount}</span></span>
+              </button>
+            )}
+            {updatedCvCount > 0 && (
+              <button
+                onClick={() => { setTab('developers'); setFilterUpdatedCv(f => !f); setFilterPlaceholderCv(false); setPage(1); }}
+                className={`flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-xl border font-medium whitespace-nowrap transition-colors ${
+                  filterUpdatedCv
+                    ? 'border-blue-400 bg-blue-100 text-blue-700'
+                    : 'border-blue-200 bg-blue-50 text-blue-600 hover:bg-blue-100'
+                }`}
+              >
+                <FileText size={12} className="shrink-0" />
+                <span>CV Updated · <span className="font-bold">{updatedCvCount}</span></span>
               </button>
             )}
             {missingSummaryCount > 0 && (
@@ -913,6 +929,8 @@ export default function AdminUsersSection({ initialTab = 'developers' }) {
                         ? <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-orange-50 text-orange-500 border border-orange-200 font-medium w-fit"><AlertCircle size={10} /> No CV link</span>
                         : isPlaceholderCv(u.cvUrl)
                         ? <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-purple-50 text-purple-600 border border-purple-200 font-medium w-fit" title={u.cvUrl}><AlertCircle size={10} /> Placeholder CV</span>
+                        : u.cvWasPlaceholder
+                        ? <a href={u.cvUrl.startsWith('http') ? u.cvUrl : `https://${u.cvUrl}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-blue-50 text-blue-600 border border-blue-200 font-medium w-fit hover:bg-blue-100 transition-colors"><FileText size={10} /> CV Updated</a>
                         : <a href={u.cvUrl.startsWith('http') ? u.cvUrl : `https://${u.cvUrl}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-xs text-[#00A693] hover:underline font-medium"><FileText size={11} /> View CV</a>
                       }
                       {!u.resumeData && <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-yellow-50 text-yellow-600 border border-yellow-200 font-medium w-fit"><AlertCircle size={10} /> No summary</span>}
