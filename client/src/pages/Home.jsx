@@ -75,7 +75,7 @@ export default function Home() {
       .then(res => setProjects(res.data.projects.slice(0, 6)))
       .catch(() => {})
       .finally(() => setLoading(false));
-    api.get('/users/recent?limit=5')
+    api.get('/users/recent?limit=5&skip=20')
       .then(res => {
         setDevAvatars(res.data);
       })
