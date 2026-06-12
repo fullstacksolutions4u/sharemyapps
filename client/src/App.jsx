@@ -83,6 +83,15 @@ function ScrollToTop() {
   return null;
 }
 
+function AdminRedirect() {
+  const { user, loading } = useAuth();
+  const location = useLocation();
+  if (!loading && user?.role === 'admin' && !location.pathname.startsWith('/admin')) {
+    return <Navigate to="/admin" replace />;
+  }
+  return null;
+}
+
 function AppRoutes() {
   const location = useLocation();
   const isAdmin = location.pathname.startsWith('/admin');
@@ -90,6 +99,7 @@ function AppRoutes() {
   return (
     <div className="min-h-screen flex flex-col bg-bg">
       <ScrollToTop />
+      <AdminRedirect />
       {!isAdmin && <Navbar />}
       <main>
         <Suspense fallback={<PageLoader />}>
