@@ -1,6 +1,7 @@
 const Message = require('../models/Message');
 const Project = require('../models/Project');
 const User = require('../models/User');
+const { sendFeedbackEmail } = require('../utils/email');
 
 exports.replyMessage = async (req, res) => {
   try {
@@ -137,6 +138,12 @@ exports.sendToAdmin = async (req, res) => {
     });
     await msg.populate('sender', 'name avatar');
     res.status(201).json(msg);
+
+    sendFeedbackEmail({
+      senderName: req.user.name,
+      senderEmail: req.user.email,
+      text,
+    }).catch(() => {});
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

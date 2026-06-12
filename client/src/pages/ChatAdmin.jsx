@@ -34,7 +34,6 @@ export default function ChatAdmin() {
         </div>
         <div>
           <h1 className="text-xl font-bold text-text">Message Admin</h1>
-          <p className="text-sm text-muted mt-0.5">Send a message directly to the platform admin</p>
         </div>
       </div>
 
@@ -43,8 +42,8 @@ export default function ChatAdmin() {
         <Mail size={16} className="text-accent shrink-0" />
         <p className="text-sm text-text">
           You can also email us directly at{' '}
-          <a href="mailto:sharemyappsportal@gmail.com" className="text-accent hover:underline font-medium">
-            sharemyappsportal@gmail.com
+          <a href="mailto:hello@sharemyapps.in" className="text-accent hover:underline font-medium">
+            hello@sharemyapps.in
           </a>
         </p>
       </div>

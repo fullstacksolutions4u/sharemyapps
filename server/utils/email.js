@@ -17,6 +17,28 @@ const FOOTER = (text) => `
   </div>
 `;
 
+exports.sendFeedbackEmail = async ({ senderName, senderEmail, text }) => {
+  await api.sendTransacEmail({
+    sender: FROM,
+    to: [{ email: 'hello@sharemyapps.in', name: 'ShareMyApps' }],
+    replyTo: { email: senderEmail, name: senderName },
+    subject: `New Feedback from ${senderName}`,
+    htmlContent: `
+      <div style="font-family:Inter,Arial,sans-serif;max-width:560px;margin:0 auto;background:#fff;border-radius:12px;overflow:hidden;border:1px solid #E5E1DA;">
+        <div style="background:#00A693;padding:24px 32px;text-align:center;">
+          <img src="${LOGO_URL}" alt="ShareMyApps" style="height:80px;object-fit:contain;" />
+        </div>
+        <div style="padding:32px;">
+          <h2 style="margin:0 0 16px;font-size:18px;color:#1A1A1A;">New Feedback Received</h2>
+          <p style="color:#374151;margin:0 0 4px;font-size:13px;"><strong>From:</strong> ${senderName} (${senderEmail})</p>
+          <div style="background:#F9FAFB;border:1px solid #E5E7EB;border-radius:8px;padding:16px;margin-top:16px;white-space:pre-wrap;font-size:14px;color:#374151;">${text}</div>
+        </div>
+        ${FOOTER('This is an automated notification from ShareMyApps feedback form.')}
+      </div>
+    `,
+  });
+};
+
 exports.sendProjectApprovedEmail = async ({ to, name, projectTitle, projectId, adminNote }) => {
   const projectUrl = `${BASE_URL}/project/${projectId}`;
 

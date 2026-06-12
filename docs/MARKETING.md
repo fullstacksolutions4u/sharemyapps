@@ -1,143 +1,171 @@
-# ShareMyApps — Social Media Marketing Plan
+# ShareMyApps — Cold Email Outreach Guide
 
-## What is ShareMyApps?
-A platform for developers to showcase side projects to clients and recruiters. Developers post projects (with screenshots, descriptions, links); clients browse and message developers directly.
-
-**Live at:** (add your production URL here)
-**Target audience:** indie developers, freelancers, recruiters, tech clients
+## Goal
+Reach hiring managers, startup founders, and SMBs who need developers — drive them to browse ShareMyApps developer portfolios and hire through the platform.
 
 ---
 
-## Goals
-- [ ] Get first 100 registered developers
-- [ ] Get first 50 client sign-ups
-- [ ] Drive consistent organic traffic from social posts
-- [ ] Build a recognizable brand in the indie dev / side-project community
+## 1. Domain Email Setup (GoDaddy / Titan)
+
+**Buy:** Pro Light plan (₹39/mo) — enough for outreach.
+
+**Create these inboxes:**
+- `hello@sharemyapps.in` — primary outreach
+- `team@sharemyapps.in` — secondary
+- `support@sharemyapps.in` — tertiary
+
+Send max 20–30 emails/day per inbox. Never blast from one address.
 
 ---
 
-## Channels
+## 2. DNS Records to Configure (Don't Skip)
 
-| Channel | Handle / Link | Status |
-|---------|--------------|--------|
-| Twitter / X | @sharemyapps (TBD) | Not started |
-| LinkedIn | (TBD) | Not started |
-| Reddit | r/sideproject, r/webdev, r/forhire posts | Not started |
-| Product Hunt | (launch listing TBD) | Not started |
-| Dev.to / Hashnode | blog posts (TBD) | Not started |
-| Instagram | (TBD) | Not started |
+After purchase, set these in your domain DNS:
 
----
-
-## Content Pillars
-1. **Project Spotlights** — feature a developer's project (screenshot + short blurb + link)
-2. **Dev Tips** — short tips on showcasing projects, writing good descriptions, portfolio advice
-3. **Behind the Build** — your own story building ShareMyApps (builds trust + authenticity)
-4. **Social Proof** — testimonials, likes counts, success stories from the platform
-5. **Platform Updates** — new features, improvements
-
----
-
-## Phase 1 — Foundation (Week 1–2)
-> Goal: Set up accounts and seed content before promoting
-
-- [ ] Register handles on Twitter/X, LinkedIn, Instagram
-- [ ] Write platform bio + consistent description for all channels
-- [ ] Create a logo / banner image for social profiles
-- [ ] Draft 5–10 evergreen posts (project spotlights, tips) before going live
-- [ ] Write and publish a "Why I built ShareMyApps" post on Dev.to or Hashnode
-- [ ] Add social links to the ShareMyApps homepage
-
----
-
-## Phase 2 — Soft Launch (Week 3–4)
-> Goal: First real posts and community engagement
-
-- [ ] Post 3x/week on Twitter/X
-- [ ] Post 2x/week on LinkedIn
-- [ ] Share "Why I built this" article across Reddit (r/sideproject, r/webdev, r/programming)
-- [ ] Engage with replies, DMs — no bot behavior, genuine conversation
-- [ ] DM 10 developers personally and invite them to list their projects
-- [ ] Submit to indie directories: Indie Hackers, SaaSHub, BetaList
-
----
-
-## Phase 3 — Product Hunt Launch (Week 5–6)
-> Goal: Spike in traffic and sign-ups
-
-- [ ] Prepare Product Hunt listing (tagline, gallery, description)
-- [ ] Schedule launch for Tuesday–Thursday (peak PH days)
-- [ ] Alert supporters to upvote on launch day (Reddit, Twitter, personal network)
-- [ ] Respond to every PH comment on launch day
-- [ ] Follow up with new sign-ups personally
-
----
-
-## Phase 4 — Sustained Growth (Month 2+)
-> Goal: Consistent posting cadence + data-driven iteration
-
-- [ ] Review which content type gets most engagement (spreadsheet or simple notes below)
-- [ ] Post weekly project spotlights featuring real user projects
-- [ ] Run a monthly "Featured Developer" post series
-- [ ] Explore paid promotion (Twitter/X ads or Reddit ads) if budget allows
-- [ ] Reach out to dev YouTubers / newsletter authors for a mention
-
----
-
-## Post Templates
-
-### Project Spotlight (Twitter/X)
+**SPF**
 ```
-🚀 Developer Spotlight
-
-[Project Name] — [one-line description]
-
-Built by @[developer handle]
-
-🔗 [link to project on ShareMyApps]
-
-#buildinpublic #sideproject #indiedev
+v=spf1 include:_spf.titan.email ~all
 ```
+*(GoDaddy/Titan will give you the exact value — use theirs)*
 
-### LinkedIn Version
+**DKIM**
+Enable in the Titan/GoDaddy email dashboard. This cryptographically signs your emails as genuine.
+
+**DMARC**
+Start with:
 ```
-I want to highlight a developer doing great work.
-
-[Project Name] by [developer name]:
-[2–3 sentences about the project and what makes it interesting]
-
-You can see the full project (and hundreds like it) on ShareMyApps — a platform where developers showcase their side projects for clients and recruiters.
-
-[link]
-
-#developer #sideproject #hiring #freelance
+v=DMARC1; p=none;
+```
+After 4 weeks of clean sending, upgrade to:
+```
+v=DMARC1; p=quarantine;
 ```
 
 ---
 
-## Engagement Log
+## 3. Domain Warm-Up Schedule
 
-| Date | Channel | Post / Action | Result / Notes |
-|------|---------|--------------|---------------|
-| — | — | — | — |
+New domain = zero trust. Build it slowly.
 
----
+| Period | Emails/day |
+|--------|-----------|
+| Week 1 | 5–10 |
+| Week 2 | 20–30 |
+| Week 3 | 40–50 |
+| Week 4+ | 80–100 |
 
-## Metrics (update monthly)
-
-| Metric | Start | Month 1 | Month 2 | Month 3 |
-|--------|-------|---------|---------|---------|
-| Twitter/X followers | 0 | | | |
-| LinkedIn followers | 0 | | | |
-| Registered developers | | | | |
-| Registered clients | | | | |
-| Monthly site visitors | | | | |
-| Product Hunt upvotes | — | — | | |
+Sending 200+ emails from day one will blacklist your domain.
 
 ---
 
-## Notes / Ideas Backlog
-- Consider a weekly newsletter ("What's new on ShareMyApps this week")
-- Build-in-public thread on Twitter documenting feature releases
-- Reach out to CS students / bootcamp grads — they have fresh projects and no portfolio
-- Partner with a dev community (e.g., Hashnode, 100Devs) for cross-promotion
+## 4. Email Copy Rules
+
+**Subject line — rotate per batch (never repeat the same one):**
+- `A few website improvements we noticed`
+- `Some observations about your website`
+- `Quick feedback on your website`
+- `Website issues we came across while reviewing`
+- `Developers available for your next project`
+
+**Body rules:**
+- Plain text only — no HTML templates, no fancy formatting
+- One link maximum
+- Don't say `https://sharemyapps.in/explore` — say *"You can review developer portfolios on the ShareMyApps platform"* and link just the homepage
+- No attachments
+- Personalize the company name in each email
+
+**Signature — use a real name:**
+```
+Tony
+Founder, ShareMyApps
++91 8848118585
+sharemyapps.in
+```
+Not: *"Team ShareMyApps"*
+
+---
+
+## 5. What NOT to Do
+
+- No Mailchimp / mass mailing tools for cold outreach
+- No open/click tracking pixels initially (spam filters detect these)
+- No sending the same subject to 100 people
+- No more than 2 links in one email
+- No bulk sending from Gmail (`@gmail.com` = zero credibility for B2B)
+
+---
+
+## 6. Sending Stack (Recommended)
+
+**Phase 1 — Manual (Weeks 1–3)**
+- GoDaddy Titan email via webmail or Gmail SMTP
+- 30 emails/day across 2 inboxes
+- Personalized, one by one
+
+**Phase 2 — Semi-automated (Week 4+)**
+- Tool: [Instantly.ai](https://instantly.ai) or [Lemlist](https://lemlist.com)
+- Connect multiple inboxes
+- Rotate subjects and sending schedules
+- Still keep per-inbox volume under 50/day
+
+---
+
+## 7. Target Audience for Outreach
+
+| Segment | What to offer |
+|---------|--------------|
+| Startups / SMBs | Hire vetted developers via portfolios |
+| IT recruiters | Source candidates with live project proof |
+| Digital agencies | Find freelance developers for project work |
+| Non-tech founders | Get a tech co-founder or contract developer |
+
+---
+
+## 8. Sample Cold Email
+
+**Subject:** `A few observations about your website`
+
+```
+Hi [First Name],
+
+I came across [Company Name] while looking at businesses in [industry/city].
+
+I run ShareMyApps — a platform where developers showcase live projects and 
+side products. We currently have 300+ verified developers across web, mobile, 
+and full-stack roles, all with working demos you can actually try.
+
+If you ever need to hire a developer or get a project built quickly, it might 
+be worth a look: sharemyapps.in
+
+Happy to connect if useful.
+
+Tony
+Founder, ShareMyApps
++91 8848118585
+```
+
+---
+
+## 9. Tracking What Works
+
+Keep a simple spreadsheet:
+- Date sent
+- Inbox used
+- Subject line used
+- Replies received
+- Conversions (visits / signups)
+
+Iterate subject lines weekly based on reply rate.
+
+---
+
+## 10. Summary Checklist
+
+- [ ] Buy GoDaddy Pro Light (₹39/mo)
+- [ ] Create `hello@`, `team@`, `support@` inboxes
+- [ ] Set SPF + DKIM + DMARC records
+- [ ] Warm up — max 10 emails day 1
+- [ ] Plain text only, one link, real name signature
+- [ ] Rotate subject lines per batch
+- [ ] No tracking pixels for first month
+- [ ] Move to Instantly/Lemlist after week 4

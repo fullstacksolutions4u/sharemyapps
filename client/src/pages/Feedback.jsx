@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Lightbulb, Send, CheckCircle, Star } from 'lucide-react';
+import { Lightbulb, Send, CheckCircle, Star, Mail } from 'lucide-react';
 import api from '../api/axios';
 import toast from 'react-hot-toast';
 
@@ -56,8 +56,17 @@ export default function Feedback() {
         </div>
         <div>
           <h1 className="text-xl font-bold text-text">Feedback & Suggestions</h1>
-          <p className="text-sm text-muted mt-0.5">Help us make ShareMyApps better</p>
         </div>
+      </div>
+
+      <div className="flex items-center gap-2 bg-accent-light border border-accent/20 rounded-xl px-4 py-3 mb-2">
+        <Mail size={16} className="text-accent shrink-0" />
+        <p className="text-sm text-text">
+          You can also email us directly at{' '}
+          <a href="mailto:hello@sharemyapps.in" className="text-accent hover:underline font-medium">
+            hello@sharemyapps.in
+          </a>
+        </p>
       </div>
 
       <form onSubmit={handleSubmit} className="bg-white border border-border rounded-2xl p-6 shadow-sm flex flex-col gap-5">
