@@ -5,45 +5,73 @@ Reach hiring managers, startup founders, and SMBs who need developers — drive 
 
 ---
 
-## 1. Domain Email Setup (GoDaddy / Titan)
+## 1. Domain Email Setup (GoDaddy / Outlook)
 
-**Buy:** Pro Light plan (₹39/mo) — enough for outreach.
-
-**Create these inboxes:**
-- `hello@sharemyapps.in` — primary outreach
-- `team@sharemyapps.in` — secondary
-- `support@sharemyapps.in` — tertiary
+**Active inbox:** `hello@sharemyapps.in` — set up via GoDaddy Workspace (Outlook/secureserver.net)
 
 Send max 20–30 emails/day per inbox. Never blast from one address.
 
 ---
 
-## 2. DNS Records to Configure (Don't Skip)
+## 2. DNS Records — Current Live Configuration
 
-After purchase, set these in your domain DNS:
+All records are configured on GoDaddy DNS for `sharemyapps.in`.
 
-**SPF**
+### SPF (TXT @ record)
 ```
-v=spf1 include:_spf.titan.email ~all
+v=spf1 include:secureserver.net include:spf.brevo.com ~all
 ```
-*(GoDaddy/Titan will give you the exact value — use theirs)*
+Covers both GoDaddy/Outlook and Brevo sending.
 
-**DKIM**
-Enable in the Titan/GoDaddy email dashboard. This cryptographically signs your emails as genuine.
+### DKIM
+| Selector | Type | Status |
+|----------|------|--------|
+| `secureserver1._domainkey` | CNAME → s1.dkim.sharemyapps_in.73e.onsecureserver.net | ✓ Active (Outlook) |
+| `secureserver2._domainkey` | CNAME → s2.dkim.sharemyapps_in.73e.onsecureserver.net | ✓ Active (Outlook) |
+| `brevo1._domainkey` | CNAME → b1.sharemyapps-in.dkim.brevo.com | ✓ Active (Brevo) |
+| `brevo2._domainkey` | CNAME → b2.sharemyapps-in.dkim.brevo.com | ✓ Active (Brevo) |
 
-**DMARC**
-Start with:
+### DMARC (TXT _dmarc record)
 ```
-v=DMARC1; p=none;
+v=DMARC1; p=quarantine; adkim=r; aspf=r; rua=mailto:hello@sharemyapps.in;
 ```
-After 4 weeks of clean sending, upgrade to:
-```
-v=DMARC1; p=quarantine;
-```
+DMARC reports are sent to `hello@sharemyapps.in`. Upgrade to `p=reject` after 2–3 months of clean sending.
+
+### MX Records
+| Priority | Server |
+|----------|--------|
+| 0 | smtp.secureserver.net |
+| 10 | mailstore1.secureserver.net |
 
 ---
 
-## 3. Domain Warm-Up Schedule
+## 3. Email Health Check Results (Jun 12, 2026)
+
+### Mail-Tester Score: 8.7/10
+| Issue | Points Lost | Status |
+|-------|-------------|--------|
+| New domain age penalty (`FROM_FMBLA_NEWDOM14`) | -0.999 | Auto-resolves after 14 days — nothing to fix |
+| LinkedIn link blocked by bot detection | -0.5 | LinkedIn returns 999 to crawlers — not actually broken; remove from email body |
+| DKIM signed + valid | ✓ | — |
+| IP clean — not listed on any of 23 blocklists | ✓ | — |
+
+### EasyDMARC Score: 5/10 (misleading for new domains)
+- **SPF:** Valid ✓
+- **DKIM:** "Undetected" — EasyDMARC needs DMARC aggregate reports to discover selectors; will resolve with email traffic
+- **DMARC:** Warning — they want their own email in `rua` (sales pitch); our config is correct
+
+**Target: Re-test on mail-tester.com after 2 weeks — expected score 9.5+/10.**
+
+### How to Check Email Health
+1. **mail-tester.com** — send a real email to their temp address, get score + full breakdown (best all-in-one check)
+2. **mxtoolbox.com** — check individual SPF / DKIM / DMARC / blacklist records
+3. **postmaster.google.com** — add domain for ongoing Gmail delivery monitoring
+4. **Brevo dashboard** → Settings → Senders & IP → Domains — green checkmarks for SPF/DKIM
+5. **Gmail "Show original"** — send to Gmail, open email → ⋮ → Show original → verify `SPF: PASS`, `DKIM: PASS`, `DMARC: PASS`
+
+---
+
+## 4. Domain Warm-Up Schedule
 
 New domain = zero trust. Build it slowly.
 
@@ -58,7 +86,7 @@ Sending 200+ emails from day one will blacklist your domain.
 
 ---
 
-## 4. Email Copy Rules
+## 5. Email Copy Rules
 
 **Subject line — rotate per batch (never repeat the same one):**
 - `A few website improvements we noticed`
@@ -85,7 +113,7 @@ Not: *"Team ShareMyApps"*
 
 ---
 
-## 5. What NOT to Do
+## 6. What NOT to Do
 
 - No Mailchimp / mass mailing tools for cold outreach
 - No open/click tracking pixels initially (spam filters detect these)
@@ -95,7 +123,7 @@ Not: *"Team ShareMyApps"*
 
 ---
 
-## 6. Sending Stack (Recommended)
+## 7. Sending Stack (Recommended)
 
 **Phase 1 — Manual (Weeks 1–3)**
 - GoDaddy Titan email via webmail or Gmail SMTP
@@ -110,7 +138,7 @@ Not: *"Team ShareMyApps"*
 
 ---
 
-## 7. Target Audience for Outreach
+## 8. Target Audience for Outreach
 
 | Segment | What to offer |
 |---------|--------------|
@@ -121,7 +149,7 @@ Not: *"Team ShareMyApps"*
 
 ---
 
-## 8. Sample Cold Email
+## 9. Sample Cold Email
 
 **Subject:** `A few observations about your website`
 
@@ -146,7 +174,7 @@ Founder, ShareMyApps
 
 ---
 
-## 9. Tracking What Works
+## 10. Tracking What Works
 
 Keep a simple spreadsheet:
 - Date sent
@@ -159,13 +187,19 @@ Iterate subject lines weekly based on reply rate.
 
 ---
 
-## 10. Summary Checklist
+## 11. Summary Checklist
 
-- [ ] Buy GoDaddy Pro Light (₹39/mo)
-- [ ] Create `hello@`, `team@`, `support@` inboxes
-- [ ] Set SPF + DKIM + DMARC records
-- [ ] Warm up — max 10 emails day 1
+- [x] Create `hello@sharemyapps.in` inbox (GoDaddy/Outlook)
+- [x] Set SPF record (covers Outlook + Brevo)
+- [x] Set DKIM records (Outlook + Brevo selectors)
+- [x] Set DMARC record (`p=quarantine`, reports → hello@sharemyapps.in)
+- [x] Email health check — mail-tester.com score: 8.7/10
+- [x] IP clean — not listed on any of 23 blocklists
+- [ ] Re-test on mail-tester.com after 2 weeks (expect 9.5+/10)
+- [ ] Warm up — max 15–20 emails/day for first 2 weeks
 - [ ] Plain text only, one link, real name signature
+- [ ] Remove LinkedIn link from email body (causes -0.5 on mail-tester)
 - [ ] Rotate subject lines per batch
 - [ ] No tracking pixels for first month
+- [ ] Upgrade DMARC to `p=reject` after 2–3 months of clean sending
 - [ ] Move to Instantly/Lemlist after week 4
