@@ -562,7 +562,7 @@ export default function Profile() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <Field
                     icon={<Calendar size={15} />}
-                    label={<>Date of Birth <span className="text-xs text-muted font-normal">(optional)</span></>}
+                    label="Date of Birth"
                     name="dateOfBirth"
                     value={form.dateOfBirth}
                     onChange={handle}
