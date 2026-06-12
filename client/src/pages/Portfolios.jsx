@@ -85,7 +85,7 @@ function DeveloperCard({ dev, idx }) {
       })()}
 
       {/* Avatar — overlapping the banner */}
-      <div className="px-5 -mt-8 mb-3 flex items-end justify-between">
+      <div className="relative z-10 px-5 -mt-8 mb-3 flex items-end justify-between">
         {dev.avatar ? (
           <img src={dev.avatar} alt={dev.name} loading="lazy"
             className="w-16 h-16 rounded-2xl object-cover border-4 border-white shadow-md transition-none" />

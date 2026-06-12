@@ -7,6 +7,16 @@ import {
   Briefcase, BookOpen, IndianRupee, Code2, Languages, Clock, MapPin, Monitor, Calendar,
 } from 'lucide-react';
 
+const PRESET_DESIGNATIONS = [
+  'MERN Stack Developer', 'MEAN Stack Developer', 'MEVN Stack Developer', 'PERN Stack Developer',
+  'Python Full Stack Developer', 'Backend Developer',
+  'React Developer', 'Next.js Developer', 'Vue.js Developer', 'Angular Developer',
+  'PHP Developer', 'Laravel Developer',
+  'Flutter Developer', 'React Native Developer', 'Android Developer', 'iOS Developer',
+  'Data Scientist', 'Machine Learning Engineer', 'DevOps Engineer', 'UI/UX Developer',
+  'Java Full Stack Developer', '.NET Developer', 'Spring Boot Developer',
+];
+
 const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 const DAY_SHORT = { Monday: 'Mon', Tuesday: 'Tue', Wednesday: 'Wed', Thursday: 'Thu', Friday: 'Fri', Saturday: 'Sat', Sunday: 'Sun' };
 import api from '../api/axios';
@@ -119,7 +129,10 @@ export default function Profile() {
     state: user?.state || 'Kerala',
     country: user?.country || 'India',
     dateOfBirth: user?.dateOfBirth ? new Date(user.dateOfBirth).toISOString().split('T')[0] : '2005-01-01',
+    designations: user?.designations?.length ? user.designations : [],
   });
+  const [designationInput, setDesignationInput] = useState('');
+  const [showDesignationInput, setShowDesignationInput] = useState(false);
   const [saving, setSaving] = useState(false);
   const [showDelete, setShowDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -265,6 +278,7 @@ export default function Profile() {
     { label: 'Gender',           done: !!form.gender },
     { label: 'Location',         done: !!(form.country && form.state) },
     { label: 'Date of birth',    done: !!form.dateOfBirth },
+    { label: 'Designation',       done: form.designations.length > 0 },
     { label: 'LinkedIn',         done: !!form.linkedinUrl },
     { label: 'GitHub',           done: !!form.githubUrl },
     { label: 'Portfolio URL',    done: !!form.portfolioUrl },
@@ -544,7 +558,7 @@ export default function Profile() {
                   );
                 })()}
 
-                {/* Row 4: Date of Birth */}
+                {/* Row 4: Date of Birth + Designation */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <Field
                     icon={<Calendar size={15} />}
@@ -555,6 +569,84 @@ export default function Profile() {
                     type="date"
                     placeholder=""
                   />
+                  <div>
+                    <label className="flex items-center gap-1.5 text-sm font-medium text-text mb-2">
+                      <Briefcase size={13} className="text-muted" /> Designation
+                    </label>
+                    {showDesignationInput ? (
+                      <div className="flex gap-1.5">
+                        <input
+                          autoFocus
+                          type="text"
+                          value={designationInput}
+                          onChange={e => setDesignationInput(e.target.value)}
+                          onKeyDown={e => {
+                            if (e.key === 'Enter') {
+                              const val = designationInput.trim();
+                              if (val && !form.designations.includes(val))
+                                setForm(f => ({ ...f, designations: [...f.designations, val] }));
+                              setDesignationInput(''); setShowDesignationInput(false);
+                            }
+                            if (e.key === 'Escape') { setDesignationInput(''); setShowDesignationInput(false); }
+                          }}
+                          placeholder="e.g. Golang Developer"
+                          className="flex-1 pl-3.5 pr-3 py-2.5 border border-accent rounded-xl text-sm text-text placeholder-muted focus:outline-none focus:ring-2 focus:ring-accent/10 bg-white"
+                        />
+                        <button type="button"
+                          onClick={() => {
+                            const val = designationInput.trim();
+                            if (val && !form.designations.includes(val))
+                              setForm(f => ({ ...f, designations: [...f.designations, val] }));
+                            setDesignationInput(''); setShowDesignationInput(false);
+                          }}
+                          className="w-10 h-10 flex items-center justify-center bg-accent text-white rounded-xl hover:bg-accent-hover transition-colors shrink-0">
+                          <Check size={14} />
+                        </button>
+                        <button type="button"
+                          onClick={() => { setDesignationInput(''); setShowDesignationInput(false); }}
+                          className="w-10 h-10 flex items-center justify-center text-muted hover:text-red-400 hover:bg-red-50 border border-border rounded-xl transition-colors shrink-0">
+                          <XIcon size={14} />
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="flex gap-1.5">
+                        <select
+                          value=""
+                          onChange={e => {
+                            const val = e.target.value;
+                            if (val && !form.designations.includes(val))
+                              setForm(f => ({ ...f, designations: [...f.designations, val] }));
+                          }}
+                          className="flex-1 pl-3.5 pr-4 py-2.5 border border-border rounded-xl text-sm text-text bg-white focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/10 transition appearance-none"
+                        >
+                          <option value="">Select designation</option>
+                          {PRESET_DESIGNATIONS.filter(d => !form.designations.includes(d)).map(d => (
+                            <option key={d} value={d}>{d}</option>
+                          ))}
+                        </select>
+                        <button type="button"
+                          onClick={() => setShowDesignationInput(true)}
+                          title="Add custom designation"
+                          className="w-10 h-10 flex items-center justify-center border border-dashed border-accent/60 text-accent hover:bg-accent/5 rounded-xl transition-colors shrink-0">
+                          <Plus size={15} />
+                        </button>
+                      </div>
+                    )}
+                    {form.designations.length > 0 && (
+                      <div className="flex flex-wrap gap-1.5 mt-2">
+                        {form.designations.map(d => (
+                          <span key={d} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium bg-accent/10 text-accent border border-accent/20">
+                            {d}
+                            <button type="button"
+                              onClick={() => setForm(f => ({ ...f, designations: f.designations.filter(x => x !== d) }))}
+                              className="hover:opacity-60 transition-opacity">
+                              <XIcon size={10} />
+                            </button>
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             )}
