@@ -784,7 +784,7 @@ export default function AdminUsersSection({ initialTab = 'developers' }) {
   const isPlaceholderCv = (url) => {
     if (!url) return false;
     const cleaned = url.trim().replace(/^https?:\/\//, '').replace(/\/$/, '');
-    return cleaned === 'drive.google.com' || (url.includes('drive.google.com') && !url.includes('/file/d/'));
+    return cleaned === 'drive.google.com';
   };
 
   const activeUsers = users.filter(u => !u.isDeleted);
@@ -829,10 +829,9 @@ export default function AdminUsersSection({ initialTab = 'developers' }) {
             { key: 'recruiters', label: `Recruiters (${recruiters.length})` },
             { key: 'clients',    label: `Clients (${clients.length})` },
             { key: 'mentees',    label: `Mentees (${mentees.length})` },
-            { key: 'deleted',    label: `Deleted (${deletedUsers.length})` },
           ].map(t => (
             <button key={t.key} onClick={() => { setTab(t.key); setPage(1); setSearch(''); setFilterPlaceholderCv(false); setFilterUpdatedCv(false); }}
-              className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${tab === t.key ? (t.key === 'deleted' ? 'bg-white text-red-600 shadow-sm' : 'bg-white text-[#1A1A1A] shadow-sm') : 'text-[#6B7280] hover:text-[#1A1A1A]'}`}>
+              className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${tab === t.key ? 'bg-white text-[#1A1A1A] shadow-sm' : 'text-[#6B7280] hover:text-[#1A1A1A]'}`}>
               {t.label}
             </button>
           ))}

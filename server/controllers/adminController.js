@@ -307,6 +307,15 @@ exports.adminUpdateUser = async (req, res) => {
     if (update.userType && !['developer', 'client', 'recruiter', 'mentee', 'mentor'].includes(update.userType))
       return res.status(400).json({ message: 'Invalid userType value' });
 
+    const isPlaceholderCv = (u) => {
+      const c = (u || '').trim().replace(/^https?:\/\//, '').replace(/\/$/, '');
+      return c === 'drive.google.com';
+    };
+    if (update.cvUrl !== undefined) {
+      const existing = await User.findById(req.params.id).select('cvUrl cvWasPlaceholder');
+      if (existing && isPlaceholderCv(existing.cvUrl)) update.cvWasPlaceholder = true;
+      if (isPlaceholderCv(update.cvUrl)) update.cvWasPlaceholder = true;
+    }
     const user = await User.findByIdAndUpdate(req.params.id, update, { new: true });
     if (!user) return res.status(404).json({ message: 'User not found' });
     res.json(user.toPublicJSON());

@@ -128,8 +128,9 @@ exports.updateProfile = async (req, res) => {
       const trimmed = cvUrl.trim();
       const isPlaceholder = (u) => {
         const c = u.replace(/^https?:\/\//, '').replace(/\/$/, '');
-        return c === 'drive.google.com' || (u.includes('drive.google.com') && !u.includes('/file/d/'));
+        return c === 'drive.google.com';
       };
+      if (user.cvUrl && isPlaceholder(user.cvUrl)) user.cvWasPlaceholder = true;
       if (trimmed && isPlaceholder(trimmed)) user.cvWasPlaceholder = true;
       user.cvUrl = trimmed;
     }
