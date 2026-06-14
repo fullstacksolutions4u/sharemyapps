@@ -113,8 +113,30 @@ export default function Vacancies() {
     freelance:  { data: freelanceItems,  loading: loadingF, queryKey: 'freelance',  route: '/freelance'  },
   };
 
+  const isPlaceholderCv = (url) => {
+    const cleaned = (url || '').trim().replace(/^https?:\/\//, '').replace(/^www\./, '').replace(/\/$/, '');
+    return cleaned === 'drive.google.com';
+  };
+
   const handleInterest = async (item) => {
     if (!user) { toast.error('Please sign in to show interest'); return; }
+
+    const cv = (user.cvUrl || '').trim();
+    if (!cv || isPlaceholderCv(cv)) {
+      toast((t) => (
+        <span className="flex flex-col gap-1 text-sm">
+          <span className="font-semibold">Resume link required</span>
+          <span className="text-xs text-gray-500">Add your real resume link in your profile to apply.</span>
+          <button
+            onClick={() => { toast.dismiss(t.id); navigate('/profile'); }}
+            className="mt-1 self-start text-xs font-medium text-accent hover:underline"
+          >
+            Go to Profile →
+          </button>
+        </span>
+      ), { duration: 6000, icon: '⚠️' });
+      return;
+    }
 
     if (activeTab === 'freelance') {
       const isProfileComplete = user.freelanceAvailable && user.freelanceRate;
