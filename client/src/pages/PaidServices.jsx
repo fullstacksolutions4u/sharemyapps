@@ -5,6 +5,31 @@ import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 import PlacementPaymentModal from '../components/PlacementPaymentModal';
 
+const ALL_FEATURES = [
+  'ATS-optimised resume creation',
+  'LinkedIn profile optimisation',
+  'Resume distribution services to companies',
+  'Direct referrals to partner companies',
+  'Dedicated Placement Officer',
+  'Technical Mock Interviews',
+];
+
+const PLAN_FEATURES = {
+  Basic: [
+    'ATS-optimised resume creation',
+    'LinkedIn profile optimisation',
+    'Resume distribution services to companies',
+  ],
+  Premium: [
+    'ATS-optimised resume creation',
+    'LinkedIn profile optimisation',
+    'Resume distribution services to companies',
+    'Direct referrals to partner companies',
+    'Dedicated Placement Officer',
+    'Technical Mock Interviews',
+  ],
+};
+
 export default function PaidServices() {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -41,10 +66,7 @@ export default function PaidServices() {
       .catch(() => {});
   };
 
-  // Collect all unique features preserving order of appearance
-  const allFeatures = [...new Map(
-    plans.flatMap(p => p.features).map(f => [f, f])
-  ).values()];
+  const planFeatures = (plan) => PLAN_FEATURES[plan.name] ?? [];
 
   const isPurchased = (plan) =>
     purchases.some(p => p.pack === `placement_${plan.name.toLowerCase()}`);
@@ -111,12 +133,12 @@ export default function PaidServices() {
               </thead>
 
               <tbody>
-                {allFeatures.map((feature, i) => (
+                {ALL_FEATURES.map((feature, i) => (
                   <tr key={i}>
                     <td className="px-6 py-3.5 text-sm text-gray-600 border-t border-gray-100">{feature}</td>
                     {plans.map(plan => {
                       const dark = plan.variant === 'dark';
-                      const has = plan.features.includes(feature);
+                      const has = planFeatures(plan).includes(feature);
                       return (
                         <td key={plan._id} className={`text-center px-5 py-3.5 border-t ${dark ? 'bg-[#00827F] border-[#006B68]' : 'border-gray-100'}`}>
                           {has
@@ -169,7 +191,7 @@ export default function PaidServices() {
 
       {selectedPlan && (
         <PlacementPaymentModal
-          plan={selectedPlan}
+          plan={{ ...selectedPlan, features: planFeatures(selectedPlan) }}
           onClose={() => setSelectedPlan(null)}
           onSuccess={() => { setSelectedPlan(null); refreshPurchases(); }}
         />
