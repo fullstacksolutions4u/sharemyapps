@@ -6,8 +6,9 @@ import { useAuth } from '../context/AuthContext';
 import PlacementPaymentModal from '../components/PlacementPaymentModal';
 
 const ALL_FEATURES = [
-  'ATS-optimised resume creation',
-  'LinkedIn profile optimisation',
+  'ATS Compatible Resume Optimization',
+  'Job Portal Profile Profile Optimization',
+  'LinkedIn Profile Branding & Optimization',
   'Resume distribution services to companies',
   'Direct referrals to partner companies',
   'Dedicated Placement Officer',
@@ -16,19 +17,20 @@ const ALL_FEATURES = [
 
 const PLAN_FEATURES = {
   Basic: [
-    'ATS-optimised resume creation',
-    'LinkedIn profile optimisation',
-    'Resume distribution services to companies',
+    'ATS Compatible Resume Optimization',
+    'Job Portal Profile Profile Optimization',
+    'LinkedIn Profile Branding & Optimization',
   ],
   Standard: [
-    'ATS-optimised resume creation',
-    'LinkedIn profile optimisation',
+    'ATS Compatible Resume Optimization',
+    'Job Portal Profile Profile Optimization',
+    'LinkedIn Profile Branding & Optimization',
     'Resume distribution services to companies',
     'Direct referrals to partner companies',
   ],
   Premium: [
-    'ATS-optimised resume creation',
-    'LinkedIn profile optimisation',
+    'ATS Compatible Resume Optimization',
+    'LinkedIn Profile Branding & Optimization',
     'Resume distribution services to companies',
     'Direct referrals to partner companies',
     'Dedicated Placement Officer',
@@ -94,7 +96,7 @@ export default function PaidServices() {
             className="flex items-center gap-2 border border-amber-200 bg-[#FAF7F0] text-amber-700 text-sm font-medium px-4 py-2 rounded-full hover:bg-amber-100 hover:border-amber-300 transition-colors shrink-0"
           >
             <Mail size={13} />
-            hello@sharemyapps.in
+            Enquiries: hello@sharemyapps.in
           </a>
         </div>
 
@@ -131,7 +133,6 @@ export default function PaidServices() {
                         <p className={`text-2xl font-bold tracking-tight ${dark ? 'text-white' : 'text-[#1a1a1a]'}`}>
                           ₹{Number(plan.price).toLocaleString('en-IN')}
                         </p>
-                        <p className={`text-[11px] mt-0.5 ${dark ? 'text-white/50' : 'text-gray-400'}`}>one-time</p>
                       </th>
                     );
                   })}
@@ -193,6 +194,9 @@ export default function PaidServices() {
           </div>
         )}
 
+        <p className="text-center text-xs text-gray-400 mt-3">
+          One-time payment · No recurring charges · Support continues until you're placed
+        </p>
       </div>
 
       {selectedPlan && (
