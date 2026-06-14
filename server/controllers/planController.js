@@ -14,7 +14,7 @@ const SEED_PLANS = [
       'LinkedIn profile optimisation',
       'Resume distribution services to companies',
       'Direct referrals to partner companies',
-      'Dedicated placement manager',
+      'Dedicated Placement Officer',
     ],
   },
   {
