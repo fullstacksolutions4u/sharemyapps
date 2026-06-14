@@ -31,6 +31,7 @@ const FindDevelopersHistory = lazy(() => import('./pages/FindDevelopersHistory')
 const Mentors            = lazy(() => import('./pages/Mentors'));
 const FreelanceDevelopers = lazy(() => import('./pages/FreelanceDevelopers'));
 const ForgotPassword     = lazy(() => import('./pages/ForgotPassword'));
+const PaidServices       = lazy(() => import('./pages/PaidServices'));
 
 class ErrorBoundary extends Component {
   state = { error: null };
@@ -129,6 +130,7 @@ function AppRoutes() {
             <Route path="/find-developers/history" element={<ProtectedRoute><FindDevelopersHistory /></ProtectedRoute>} />
             <Route path="/mentors" element={<ProtectedRoute><Mentors /></ProtectedRoute>} />
             <Route path="/freelance-developers" element={<FreelanceDevelopers />} />
+            <Route path="/career-services" element={<PaidServices />} />
             <Route path="/portfolio/:userId" element={<PublicPortfolio />} />
             <Route path="/admin" element={<AdminRoute><AdminPanel /></AdminRoute>} />
             <Route path="*" element={<NotFound />} />

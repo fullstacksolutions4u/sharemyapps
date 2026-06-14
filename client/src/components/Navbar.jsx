@@ -1,7 +1,7 @@
 import { useRef, useState, useEffect } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link, useNavigate } from 'react-router-dom';
-import { Menu, X, ChevronDown, LogOut, Plus, ShieldCheck, Bell, CheckCircle, XCircle, Clock, MessageSquare, UserCircle, AlertCircle, Heart, Star, MessageCircle, Headphones, Briefcase, Lightbulb } from 'lucide-react';
+import { Menu, X, ChevronDown, LogOut, Plus, ShieldCheck, Bell, CheckCircle, XCircle, Clock, MessageSquare, UserCircle, AlertCircle, Heart, Star, MessageCircle, Headphones, Briefcase, Lightbulb, Sparkles } from 'lucide-react';
 
 const GeminiIcon = ({ size = 14 }) => (
   <svg width={size} height={size} viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -279,6 +279,15 @@ export default function Navbar() {
                     </Link>
                     {user.role !== 'admin' && (
                       <Link
+                        to="/career-services"
+                        onClick={() => setDropOpen(false)}
+                        className="flex items-center gap-2 px-4 py-2 text-sm text-accent font-medium hover:bg-bg"
+                      >
+                        <Sparkles size={14} /> Placement Support Services
+                      </Link>
+                    )}
+                    {user.role !== 'admin' && (
+                      <Link
                         to="/chat-admin"
                         onClick={() => setDropOpen(false)}
                         className="flex items-center gap-2 px-4 py-2 text-sm text-text hover:bg-bg"
@@ -362,6 +371,9 @@ export default function Navbar() {
               <Link to="/messages" onClick={() => setMenuOpen(false)} className="block text-sm text-muted hover:text-text">Messages</Link>
               {!isRecruiter && !isClient && !isMentee && !isMentor && (
                 <Link to="/dashboard/add" onClick={() => setMenuOpen(false)} className="block text-sm text-text font-medium">Add Project</Link>
+              )}
+              {user.role !== 'admin' && (
+                <Link to="/career-services" onClick={() => setMenuOpen(false)} className="block text-sm text-accent font-medium hover:text-accent-hover">Placement Support Services</Link>
               )}
               {user.role !== 'admin' && (
                 <Link to="/chat-admin" onClick={() => setMenuOpen(false)} className="block text-sm text-muted hover:text-text">Message Admin</Link>

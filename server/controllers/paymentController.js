@@ -2,6 +2,7 @@ const Razorpay = require('razorpay');
 const crypto = require('crypto');
 const User = require('../models/User');
 const Payment = require('../models/Payment');
+const Plan = require('../models/Plan');
 const { getConfig } = require('../utils/configCache');
 
 const razorpay = new Razorpay({
@@ -105,4 +106,64 @@ const adminGetPayments = async (req, res) => {
   }
 };
 
-module.exports = { createJDPackOrder, verifyJDPackPayment, adminGetPayments };
+const createPlacementOrder = async (req, res) => {
+  try {
+    const { planId } = req.body;
+    if (!planId) return res.status(400).json({ message: 'planId is required.' });
+
+    const plan = await Plan.findById(planId).lean();
+    if (!plan || !plan.active) return res.status(404).json({ message: 'Plan not found.' });
+
+    const amountPaise = plan.price * 100;
+    const order = await razorpay.orders.create({
+      amount: amountPaise,
+      currency: 'INR',
+      receipt: `pl_${req.user._id.toString().slice(-8)}_${Date.now().toString().slice(-8)}`,
+      notes: { userId: req.user._id.toString(), plan: plan.name },
+    });
+
+    res.json({ orderId: order.id, amount: order.amount, currency: order.currency, planName: plan.name });
+  } catch (err) {
+    console.error('Placement order error:', err);
+    res.status(500).json({ message: 'Failed to create payment order.' });
+  }
+};
+
+const verifyPlacementPayment = async (req, res) => {
+  try {
+    const { razorpay_order_id, razorpay_payment_id, razorpay_signature, planId } = req.body;
+
+    if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature || !planId) {
+      return res.status(400).json({ message: 'Missing payment fields.' });
+    }
+
+    const expected = crypto
+      .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET)
+      .update(`${razorpay_order_id}|${razorpay_payment_id}`)
+      .digest('hex');
+
+    if (expected !== razorpay_signature) {
+      return res.status(400).json({ message: 'Payment verification failed.' });
+    }
+
+    const plan = await Plan.findById(planId).lean();
+    if (!plan) return res.status(404).json({ message: 'Plan not found.' });
+
+    await Payment.create({
+      user:              req.user._id,
+      razorpayOrderId:   razorpay_order_id,
+      razorpayPaymentId: razorpay_payment_id,
+      amountPaise:       plan.price * 100,
+      pack:              `placement_${plan.name.toLowerCase()}`,
+      analysesGranted:   0,
+      status:            'success',
+    });
+
+    res.json({ ok: true, planName: plan.name });
+  } catch (err) {
+    console.error('Placement verify error:', err);
+    res.status(500).json({ message: 'Payment verification error.' });
+  }
+};
+
+module.exports = { createJDPackOrder, verifyJDPackPayment, adminGetPayments, createPlacementOrder, verifyPlacementPayment };

@@ -35,6 +35,7 @@ const { getAdminConfig, updateAdminConfig } = require('../controllers/configCont
 const freelance = require('../controllers/freelanceOpportunityController');
 const mentorship = require('../controllers/mentorshipOpportunityController');
 const { aiChat } = require('../controllers/aiChatController');
+const { adminGetPlans, adminCreatePlan, adminUpdatePlan, adminDeletePlan } = require('../controllers/planController');
 
 router.use(protect, requireAdmin);
 
@@ -85,6 +86,11 @@ router.post('/mentorship/:id/reply', mentorship.replyToInterest);
 router.get('/payments', adminGetPayments);
 router.get('/config', getAdminConfig);
 router.put('/config', updateAdminConfig);
+
+router.get('/plans', adminGetPlans);
+router.post('/plans', adminCreatePlan);
+router.put('/plans/:id', adminUpdatePlan);
+router.delete('/plans/:id', adminDeletePlan);
 
 router.post('/ai-chat', aiChat);
 

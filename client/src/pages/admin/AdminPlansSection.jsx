@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import {
   Search, ChevronRight, ToggleLeft, ToggleRight,
   Save, ArrowLeft, Zap, IndianRupee, Users,
+  Sparkles, Plus, Trash2, GripVertical, Pencil, X, Check,
 } from 'lucide-react';
 import api from '../../api/axios';
 import toast from 'react-hot-toast';
@@ -21,7 +22,18 @@ const SERVICES = [
       { key: 'jdPackPricePaise', label: 'Pack Price (₹)', type: 'rupees', min: 1 },
     ],
   },
-  // Future services can be added here
+];
+
+const VARIANT_OPTIONS = [
+  { value: 'ghost',  label: 'Ghost (Basic)' },
+  { value: 'accent', label: 'Ivory Amber (Standard)' },
+  { value: 'dark',   label: 'Peacock Green (Premium)' },
+];
+
+const BADGE_STYLE_OPTIONS = [
+  { value: '',           label: 'None' },
+  { value: 'top-center', label: 'Top Center Pill' },
+  { value: 'inline',     label: 'Inline (top-right)' },
 ];
 
 /* ── Status badge ────────────────────────────────────────── */
@@ -35,6 +47,290 @@ function StatusBadge({ enabled }) {
   );
 }
 
+/* ── Placement Plans Editor ─────────────────────────────── */
+function PlacementPlansEditor({ onBack }) {
+  const [plans, setPlans] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [editing, setEditing] = useState(null); // plan id or 'new'
+  const [form, setForm] = useState({});
+  const [saving, setSaving] = useState(false);
+  const [newFeature, setNewFeature] = useState('');
+
+  const load = async () => {
+    try {
+      const { data } = await api.get('/admin/plans');
+      setPlans(data);
+    } catch {
+      toast.error('Failed to load plans');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => { load(); }, []);
+
+  const openEdit = (plan) => {
+    setForm({ ...plan, features: [...plan.features] });
+    setEditing(plan._id);
+    setNewFeature('');
+  };
+
+  const openNew = () => {
+    setForm({ name: '', price: '', description: '', features: [], badge: '', badgeStyle: '', variant: 'ghost', active: true });
+    setEditing('new');
+    setNewFeature('');
+  };
+
+  const handleSave = async () => {
+    if (!form.name.trim() || form.price === '') return toast.error('Name and price are required');
+    setSaving(true);
+    try {
+      if (editing === 'new') {
+        const { data } = await api.post('/admin/plans', { ...form, price: Number(form.price) });
+        setPlans(prev => [...prev, data]);
+        toast.success('Plan created');
+      } else {
+        const { data } = await api.put(`/admin/plans/${editing}`, { ...form, price: Number(form.price) });
+        setPlans(prev => prev.map(p => p._id === editing ? data : p));
+        toast.success('Plan updated');
+      }
+      setEditing(null);
+    } catch {
+      toast.error('Failed to save plan');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleDelete = async (id) => {
+    if (!window.confirm('Delete this plan?')) return;
+    try {
+      await api.delete(`/admin/plans/${id}`);
+      setPlans(prev => prev.filter(p => p._id !== id));
+      toast.success('Plan deleted');
+    } catch {
+      toast.error('Failed to delete');
+    }
+  };
+
+  const toggleActive = async (plan) => {
+    try {
+      const { data } = await api.put(`/admin/plans/${plan._id}`, { active: !plan.active });
+      setPlans(prev => prev.map(p => p._id === plan._id ? data : p));
+    } catch {
+      toast.error('Failed to update');
+    }
+  };
+
+  const addFeature = () => {
+    if (!newFeature.trim()) return;
+    setForm(prev => ({ ...prev, features: [...prev.features, newFeature.trim()] }));
+    setNewFeature('');
+  };
+
+  const removeFeature = (i) => {
+    setForm(prev => ({ ...prev, features: prev.features.filter((_, idx) => idx !== i) }));
+  };
+
+  if (editing !== null) {
+    return (
+      <div className="max-w-2xl">
+        <div className="flex items-center gap-3 mb-6">
+          <button onClick={() => setEditing(null)} className="w-8 h-8 flex items-center justify-center rounded-xl border border-border text-muted hover:text-text hover:bg-bg transition-colors">
+            <ArrowLeft size={15} />
+          </button>
+          <div className="w-9 h-9 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-center">
+            <Sparkles size={16} className="text-amber-600" />
+          </div>
+          <div className="flex-1">
+            <h2 className="text-lg font-bold text-text">{editing === 'new' ? 'New Plan' : 'Edit Plan'}</h2>
+            <p className="text-xs text-muted">Placement Support Services</p>
+          </div>
+          <button
+            onClick={handleSave}
+            disabled={saving}
+            className="flex items-center gap-2 bg-accent hover:bg-accent-hover disabled:opacity-40 text-white text-sm font-semibold px-4 py-2 rounded-xl transition-colors"
+          >
+            {saving ? <span className="w-3.5 h-3.5 border-2 border-white/40 border-t-white rounded-full animate-spin" /> : <Save size={14} />}
+            {saving ? 'Saving…' : 'Save'}
+          </button>
+        </div>
+
+        <div className="space-y-3">
+          {/* Name & Price */}
+          <div className="bg-white border border-border rounded-2xl px-5 py-4 grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-semibold text-muted mb-1.5">Plan Name</label>
+              <input
+                value={form.name}
+                onChange={e => setForm(p => ({ ...p, name: e.target.value }))}
+                placeholder="e.g. Basic"
+                className="w-full border border-border rounded-xl px-3 py-2 text-sm text-text focus:outline-none focus:border-accent"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-muted mb-1.5">Price (₹)</label>
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-lg bg-bg border border-border flex items-center justify-center shrink-0">
+                  <IndianRupee size={13} className="text-muted" />
+                </div>
+                <input
+                  type="number"
+                  value={form.price}
+                  onChange={e => setForm(p => ({ ...p, price: e.target.value }))}
+                  placeholder="499"
+                  className="w-full border border-border rounded-xl px-3 py-2 text-sm font-semibold text-text focus:outline-none focus:border-accent"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Description */}
+          <div className="bg-white border border-border rounded-2xl px-5 py-4">
+            <label className="block text-xs font-semibold text-muted mb-1.5">Description</label>
+            <input
+              value={form.description}
+              onChange={e => setForm(p => ({ ...p, description: e.target.value }))}
+              placeholder="Short plan description"
+              className="w-full border border-border rounded-xl px-3 py-2 text-sm text-text focus:outline-none focus:border-accent"
+            />
+          </div>
+
+          {/* Features */}
+          <div className="bg-white border border-border rounded-2xl px-5 py-4">
+            <label className="block text-xs font-semibold text-muted mb-3">Features</label>
+            <div className="space-y-2 mb-3">
+              {form.features?.map((f, i) => (
+                <div key={i} className="flex items-center gap-2 bg-bg rounded-lg px-3 py-2">
+                  <Check size={13} className="text-accent shrink-0" />
+                  <span className="text-sm text-text flex-1">{f}</span>
+                  <button onClick={() => removeFeature(i)} className="text-muted hover:text-red-500 transition-colors">
+                    <X size={13} />
+                  </button>
+                </div>
+              ))}
+            </div>
+            <div className="flex gap-2">
+              <input
+                value={newFeature}
+                onChange={e => setNewFeature(e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), addFeature())}
+                placeholder="Add a feature…"
+                className="flex-1 border border-border rounded-xl px-3 py-2 text-sm text-text focus:outline-none focus:border-accent"
+              />
+              <button onClick={addFeature} className="px-3 py-2 bg-accent text-white rounded-xl text-sm font-medium hover:bg-accent-hover transition-colors">
+                <Plus size={14} />
+              </button>
+            </div>
+          </div>
+
+          {/* Badge & Style & Variant */}
+          <div className="bg-white border border-border rounded-2xl px-5 py-4 grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-semibold text-muted mb-1.5">Badge Text</label>
+              <input
+                value={form.badge}
+                onChange={e => setForm(p => ({ ...p, badge: e.target.value }))}
+                placeholder="e.g. Most Popular"
+                className="w-full border border-border rounded-xl px-3 py-2 text-sm text-text focus:outline-none focus:border-accent"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-muted mb-1.5">Badge Style</label>
+              <select
+                value={form.badgeStyle}
+                onChange={e => setForm(p => ({ ...p, badgeStyle: e.target.value }))}
+                className="w-full border border-border rounded-xl px-3 py-2 text-sm text-text focus:outline-none focus:border-accent bg-white"
+              >
+                {BADGE_STYLE_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+              </select>
+            </div>
+            <div className="col-span-2">
+              <label className="block text-xs font-semibold text-muted mb-1.5">Button Style</label>
+              <select
+                value={form.variant}
+                onChange={e => setForm(p => ({ ...p, variant: e.target.value }))}
+                className="w-full border border-border rounded-xl px-3 py-2 text-sm text-text focus:outline-none focus:border-accent bg-white"
+              >
+                {VARIANT_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+              </select>
+            </div>
+          </div>
+
+          {/* Active toggle */}
+          <div className="bg-white border border-border rounded-2xl px-5 py-4 flex items-center justify-between">
+            <div>
+              <p className="text-sm font-semibold text-text">Visible on site</p>
+              <p className="text-xs text-muted mt-0.5">Show this plan on the Placement Support Services page</p>
+            </div>
+            <button onClick={() => setForm(p => ({ ...p, active: !p.active }))} className="text-accent">
+              {form.active ? <ToggleRight size={32} /> : <ToggleLeft size={32} className="text-muted" />}
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="max-w-3xl">
+      <div className="flex items-center gap-3 mb-6">
+        <button onClick={onBack} className="w-8 h-8 flex items-center justify-center rounded-xl border border-border text-muted hover:text-text hover:bg-bg transition-colors">
+          <ArrowLeft size={15} />
+        </button>
+        <div className="w-9 h-9 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-center">
+          <Sparkles size={16} className="text-amber-600" />
+        </div>
+        <div className="flex-1">
+          <h2 className="text-lg font-bold text-text">Placement Support Services</h2>
+          <p className="text-xs text-muted">Manage pricing plans shown on the public page</p>
+        </div>
+        <button onClick={openNew} className="flex items-center gap-2 bg-accent hover:bg-accent-hover text-white text-sm font-semibold px-4 py-2 rounded-xl transition-colors">
+          <Plus size={14} /> Add Plan
+        </button>
+      </div>
+
+      {loading ? (
+        <div className="space-y-3">
+          {[1, 2, 3].map(i => <div key={i} className="h-16 bg-bg rounded-2xl animate-pulse" />)}
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {plans.map(plan => (
+            <div key={plan._id} className="bg-white border border-border rounded-2xl px-5 py-4 flex items-center gap-4">
+              <GripVertical size={16} className="text-muted shrink-0" />
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-0.5">
+                  <p className="text-sm font-semibold text-text">{plan.name}</p>
+                  <StatusBadge enabled={plan.active} />
+                  {plan.badge && (
+                    <span className="text-[11px] border border-accent/40 text-accent px-2 py-0.5 rounded-full">{plan.badge}</span>
+                  )}
+                </div>
+                <p className="text-xs text-muted">₹{plan.price.toLocaleString('en-IN')} · {plan.features.length} features</p>
+              </div>
+              <div className="flex items-center gap-2 shrink-0">
+                <button onClick={() => toggleActive(plan)} className="text-muted hover:text-accent transition-colors">
+                  {plan.active ? <ToggleRight size={22} className="text-accent" /> : <ToggleLeft size={22} />}
+                </button>
+                <button onClick={() => openEdit(plan)} className="w-8 h-8 flex items-center justify-center rounded-lg border border-border text-muted hover:text-accent hover:border-accent transition-colors">
+                  <Pencil size={13} />
+                </button>
+                <button onClick={() => handleDelete(plan._id)} className="w-8 h-8 flex items-center justify-center rounded-lg border border-border text-muted hover:text-red-500 hover:border-red-300 transition-colors">
+                  <Trash2 size={13} />
+                </button>
+              </div>
+            </div>
+          ))}
+          {plans.length === 0 && (
+            <div className="text-center py-10 text-sm text-muted">No plans yet. Add your first plan.</div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 /* ── Services list ───────────────────────────────────────── */
 function ServicesList({ config, onSelect }) {
   return (
@@ -42,11 +338,24 @@ function ServicesList({ config, onSelect }) {
       <h2 className="text-xl font-bold text-text mb-6">Plans & Pricing</h2>
 
       <div className="space-y-3">
+        {/* Placement Support Services card */}
+        <button
+          onClick={() => onSelect('placementPlans')}
+          className="w-full bg-white border border-border hover:border-accent/40 hover:shadow-sm rounded-2xl px-5 py-4 flex items-center gap-4 transition-all group text-left"
+        >
+          <div className="w-10 h-10 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-center shrink-0">
+            <Sparkles size={18} className="text-amber-600" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-semibold text-text mb-0.5">Placement Support Services</p>
+            <p className="text-xs text-muted">Manage Basic, Standard & Premium HR placement plans</p>
+          </div>
+          <ChevronRight size={16} className="text-muted group-hover:text-accent transition-colors shrink-0" />
+        </button>
+
         {SERVICES.map(svc => {
           const Icon = svc.icon;
-          const enabled = config?.[`${svc.key.replace('jdAnalysis', 'jd')}FeatureEnabled`]
-            ?? config?.jdFeatureEnabled
-            ?? true;
+          const enabled = config?.jdFeatureEnabled ?? true;
 
           return (
             <button
@@ -54,10 +363,9 @@ function ServicesList({ config, onSelect }) {
               onClick={() => onSelect(svc.key)}
               className="w-full bg-white border border-border hover:border-accent/40 hover:shadow-sm rounded-2xl px-5 py-4 flex items-center gap-4 transition-all group text-left"
             >
-              <div className={`w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center shrink-0`}>
+              <div className="w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center shrink-0">
                 <Icon size={18} className="text-accent" />
               </div>
-
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-0.5">
                   <p className="text-sm font-semibold text-text">{svc.label}</p>
@@ -65,7 +373,6 @@ function ServicesList({ config, onSelect }) {
                 </div>
                 <p className="text-xs text-muted">{svc.description}</p>
               </div>
-
               {config && (
                 <div className="hidden sm:flex items-center gap-6 text-xs text-muted shrink-0 mr-2">
                   <div className="text-center">
@@ -82,13 +389,11 @@ function ServicesList({ config, onSelect }) {
                   </div>
                 </div>
               )}
-
               <ChevronRight size={16} className="text-muted group-hover:text-accent transition-colors shrink-0" />
             </button>
           );
         })}
 
-        {/* Coming soon placeholder */}
         <div className="bg-white border border-dashed border-border rounded-2xl px-5 py-4 flex items-center gap-4 opacity-50">
           <div className="w-10 h-10 rounded-xl bg-bg flex items-center justify-center shrink-0">
             <Users size={18} className="text-muted" />
@@ -148,12 +453,8 @@ function ServiceDetail({ serviceKey, config, onBack, onSaved }) {
 
   return (
     <div className="max-w-2xl">
-      {/* Header */}
       <div className="flex items-center gap-3 mb-6">
-        <button
-          onClick={onBack}
-          className="w-8 h-8 flex items-center justify-center rounded-xl border border-border text-muted hover:text-text hover:bg-bg transition-colors"
-        >
+        <button onClick={onBack} className="w-8 h-8 flex items-center justify-center rounded-xl border border-border text-muted hover:text-text hover:bg-bg transition-colors">
           <ArrowLeft size={15} />
         </button>
         <div className="w-9 h-9 rounded-xl bg-accent/10 flex items-center justify-center">
@@ -175,7 +476,6 @@ function ServiceDetail({ serviceKey, config, onBack, onSaved }) {
         </button>
       </div>
 
-      {/* Fields */}
       <div className="space-y-3">
         {svc.fields.map(field => (
           <div key={field.key} className="bg-white border border-border rounded-2xl px-5 py-4">
@@ -189,13 +489,8 @@ function ServiceDetail({ serviceKey, config, onBack, onSaved }) {
                       : 'Free mode — unlimited access with no payment, 15 analyses/day cap'}
                   </p>
                 </div>
-                <button
-                  onClick={() => setForm(prev => ({ ...prev, [field.key]: !prev[field.key] }))}
-                  className="text-accent"
-                >
-                  {form[field.key]
-                    ? <ToggleRight size={32} />
-                    : <ToggleLeft size={32} className="text-muted" />}
+                <button onClick={() => setForm(prev => ({ ...prev, [field.key]: !prev[field.key] }))} className="text-accent">
+                  {form[field.key] ? <ToggleRight size={32} /> : <ToggleLeft size={32} className="text-muted" />}
                 </button>
               </div>
             ) : field.type === 'rupees' ? (
@@ -237,7 +532,6 @@ function ServiceDetail({ serviceKey, config, onBack, onSaved }) {
           </div>
         ))}
 
-        {/* Live preview */}
         <div className="bg-bg border border-border rounded-2xl px-5 py-4">
           <p className="text-[11px] font-semibold text-muted uppercase tracking-wide mb-2">Recruiter sees</p>
           <div className="flex items-center gap-2 text-sm text-text">
@@ -256,14 +550,18 @@ function ServiceDetail({ serviceKey, config, onBack, onSaved }) {
 
 /* ── Main component ──────────────────────────────────────── */
 export default function AdminPlansSection() {
-  const [config, setConfig]       = useState(null);
-  const [selected, setSelected]   = useState(null);
+  const [config, setConfig]     = useState(null);
+  const [selected, setSelected] = useState(null);
 
   useEffect(() => {
     api.get('/admin/config')
       .then(r => setConfig(r.data))
       .catch(() => toast.error('Failed to load config.'));
   }, []);
+
+  if (selected === 'placementPlans') {
+    return <PlacementPlansEditor onBack={() => setSelected(null)} />;
+  }
 
   if (selected) {
     return (
