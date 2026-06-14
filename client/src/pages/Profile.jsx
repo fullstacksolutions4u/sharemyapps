@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import {
   ArrowLeft, ArrowRight, User, Mail, Phone, Link2, GitBranch,
   Globe, Save, Trash2, AlertTriangle, Camera, Loader2, FileText, Check, Plus, X as XIcon,
-  Briefcase, BookOpen, IndianRupee, Code2, Languages, Clock, MapPin, Monitor, Calendar,
+  Briefcase, BookOpen, IndianRupee, Code2, Languages, Clock, MapPin, Monitor, Calendar, Crown,
 } from 'lucide-react';
 
 const PRESET_DESIGNATIONS = [
@@ -137,6 +137,7 @@ export default function Profile() {
   const [showDelete, setShowDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [avatarUploading, setAvatarUploading] = useState(false);
+  const [placementPlan, setPlacementPlan] = useState(null);
   const avatarInputRef = useRef(null);
   const techRefs = useRef([]);
   const langRefs = useRef([]);
@@ -198,6 +199,18 @@ export default function Profile() {
   useEffect(() => {
     if (user?.userType === 'client') navigate('/client-profile', { replace: true });
   }, [user, navigate]);
+
+  useEffect(() => {
+    api.get('/payments/placement/my-purchases')
+      .then(r => {
+        if (r.data.length > 0) {
+          const top = r.data.reduce((a, b) => b.amountPaise > a.amountPaise ? b : a);
+          const name = top.pack.replace('placement_', '');
+          setPlacementPlan(name.charAt(0).toUpperCase() + name.slice(1));
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   const handle = e => setForm(f => ({ ...f, [e.target.name]: e.target.value }));
 
@@ -382,6 +395,11 @@ export default function Profile() {
                     )}
                   </div>
                   <p className="text-sm text-muted mt-0.5">{user?.email}</p>
+                  {placementPlan && (
+                    <span className="inline-flex items-center gap-1 mt-2 text-[11px] font-semibold text-amber-700 bg-amber-50 border border-amber-200 px-2.5 py-0.5 rounded-full">
+                      <Crown size={10} className="text-amber-500" /> {placementPlan} Plan Active
+                    </span>
+                  )}
                   <span className="text-xs text-muted mt-1 block">
                     {user?.isGoogleUser ? 'Signed in with Google' : 'Click camera to change photo'}
                   </span>

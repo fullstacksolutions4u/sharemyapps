@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Check, Sparkles, Mail } from 'lucide-react';
+import { Check, Sparkles, Mail, Crown } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
@@ -11,7 +11,7 @@ const btnClass = {
   dark:   'bg-[#00827F] text-white hover:bg-[#006B68] transition-colors',
 };
 
-function PlanCard({ plan, onSelect }) {
+function PlanCard({ plan, onSelect, purchased }) {
   return (
     <div className="relative flex flex-col h-full">
       {plan.badgeStyle === 'top-center' && plan.badge && (
@@ -33,11 +33,18 @@ function PlanCard({ plan, onSelect }) {
           }`}>
             {plan.name}
           </p>
-          {plan.badgeStyle === 'inline' && plan.badge && (
-            <span className="text-[11px] font-semibold text-amber-700 border border-amber-300 bg-amber-50 px-2.5 py-0.5 rounded-full uppercase tracking-wide">
-              {plan.badge}
-            </span>
-          )}
+          <div className="flex items-center gap-1.5">
+            {purchased && (
+              <span className="flex items-center gap-1 text-[11px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">
+                <Crown size={10} /> Active
+              </span>
+            )}
+            {plan.badgeStyle === 'inline' && plan.badge && (
+              <span className="text-[11px] font-semibold text-amber-700 border border-amber-300 bg-amber-50 px-2.5 py-0.5 rounded-full uppercase tracking-wide">
+                {plan.badge}
+              </span>
+            )}
+          </div>
         </div>
 
         <div className="flex items-baseline gap-1.5 mb-1.5">
@@ -60,12 +67,18 @@ function PlanCard({ plan, onSelect }) {
           ))}
         </ul>
 
-        <button
-          onClick={() => onSelect(plan)}
-          className={`w-full text-center text-sm font-semibold px-4 py-2.5 rounded-xl ${btnClass[plan.variant] || btnClass.ghost}`}
-        >
-          Get Started
-        </button>
+        {purchased ? (
+          <div className="w-full flex items-center justify-center gap-2 text-sm font-semibold px-4 py-2.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700">
+            <Check size={14} /> Plan Active
+          </div>
+        ) : (
+          <button
+            onClick={() => onSelect(plan)}
+            className={`w-full text-center text-sm font-semibold px-4 py-2.5 rounded-xl ${btnClass[plan.variant] || btnClass.ghost}`}
+          >
+            Get Started
+          </button>
+        )}
       </div>
     </div>
   );
@@ -75,6 +88,7 @@ export default function PaidServices() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [plans, setPlans] = useState([]);
+  const [purchases, setPurchases] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedPlan, setSelectedPlan] = useState(null);
 
@@ -84,6 +98,13 @@ export default function PaidServices() {
       .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
+
+  useEffect(() => {
+    if (!user) return;
+    api.get('/payments/placement/my-purchases')
+      .then(r => setPurchases(r.data))
+      .catch(() => {});
+  }, [user]);
 
   const handleSelect = (plan) => {
     if (!user) {
@@ -103,7 +124,7 @@ export default function PaidServices() {
             <div className="w-10 h-10 rounded-xl bg-[#FAF7F0] border border-amber-200 flex items-center justify-center shrink-0">
               <Sparkles size={18} className="text-amber-600" />
             </div>
-            <h1 className="text-xl font-bold text-[#1a1a1a]">Placement Support Services</h1>
+            <h1 className="text-xl font-bold text-[#1a1a1a]">Premium Plans</h1>
           </div>
           <a
             href="mailto:hello@sharemyapps.in"
@@ -124,7 +145,12 @@ export default function PaidServices() {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 items-stretch">
             {plans.map(plan => (
-              <PlanCard key={plan._id} plan={plan} onSelect={handleSelect} />
+              <PlanCard
+                key={plan._id}
+                plan={plan}
+                onSelect={handleSelect}
+                purchased={purchases.some(p => p.pack === `placement_${plan.name.toLowerCase()}`)}
+              />
             ))}
           </div>
         )}
@@ -135,7 +161,12 @@ export default function PaidServices() {
         <PlacementPaymentModal
           plan={selectedPlan}
           onClose={() => setSelectedPlan(null)}
-          onSuccess={() => setSelectedPlan(null)}
+          onSuccess={() => {
+            setSelectedPlan(null);
+            api.get('/payments/placement/my-purchases')
+              .then(r => setPurchases(r.data))
+              .catch(() => {});
+          }}
         />
       )}
     </div>

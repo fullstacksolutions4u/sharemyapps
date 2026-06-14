@@ -166,4 +166,17 @@ const verifyPlacementPayment = async (req, res) => {
   }
 };
 
-module.exports = { createJDPackOrder, verifyJDPackPayment, adminGetPayments, createPlacementOrder, verifyPlacementPayment };
+const getPlacementPurchases = async (req, res) => {
+  try {
+    const purchases = await Payment.find({
+      user: req.user._id,
+      status: 'success',
+      pack: /^placement_/,
+    }).select('pack amountPaise createdAt').lean();
+    res.json(purchases);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+module.exports = { createJDPackOrder, verifyJDPackPayment, adminGetPayments, createPlacementOrder, verifyPlacementPayment, getPlacementPurchases };
