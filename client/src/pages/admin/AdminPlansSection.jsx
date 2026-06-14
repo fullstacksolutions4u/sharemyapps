@@ -56,18 +56,12 @@ function PlacementPlansEditor({ onBack }) {
   const [saving, setSaving] = useState(false);
   const [newFeature, setNewFeature] = useState('');
 
-  const load = async () => {
-    try {
-      const { data } = await api.get('/admin/plans');
-      setPlans(data);
-    } catch {
-      toast.error('Failed to load plans');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => { load(); }, []);
+  useEffect(() => {
+    api.get('/admin/plans')
+      .then(({ data }) => setPlans(data))
+      .catch(() => toast.error('Failed to load plans'))
+      .finally(() => setLoading(false));
+  }, []);
 
   const openEdit = (plan) => {
     setForm({ ...plan, features: [...plan.features] });
