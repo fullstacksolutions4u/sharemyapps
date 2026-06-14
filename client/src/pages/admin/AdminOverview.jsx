@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { CheckCircle, AlertCircle, ArrowRight, Users } from 'lucide-react';
+import { CheckCircle, AlertCircle, ArrowRight, Users, IndianRupee, CreditCard, ExternalLink } from 'lucide-react';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   LabelList, Rectangle,
@@ -18,10 +18,30 @@ const CustomAreaTooltip = ({ active, payload, label }) => {
   );
 };
 
+function fmt(paise) {
+  return `₹${(paise / 100).toLocaleString('en-IN', { minimumFractionDigits: 2 })}`;
+}
+
+function packLabel(p) {
+  if (p.pack && p.pack.startsWith('placement_')) {
+    return p.pack.replace('placement_', '').replace(/\b\w/g, c => c.toUpperCase());
+  }
+  return `${p.analysesGranted} JD ${p.analysesGranted === 1 ? 'analysis' : 'analyses'}`;
+}
+
+function timeAgo(date) {
+  const s = Math.floor((Date.now() - new Date(date)) / 1000);
+  if (s < 60)   return `${s}s ago`;
+  if (s < 3600)  return `${Math.floor(s / 60)}m ago`;
+  if (s < 86400) return `${Math.floor(s / 3600)}h ago`;
+  return new Date(date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+}
+
 export default function AdminOverview({ stats, onNavigate }) {
   const [growth, setGrowth] = useState([]);
   const [growthDays, setGrowthDays] = useState(7);
   const [growthLoading, setGrowthLoading] = useState(true);
+  const [payments, setPayments] = useState(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -30,6 +50,10 @@ export default function AdminOverview({ stats, onNavigate }) {
       .catch(() => { if (!cancelled) setGrowthLoading(false); });
     return () => { cancelled = true; };
   }, [growthDays]);
+
+  useEffect(() => {
+    api.get('/admin/payments?page=1').then(r => setPayments(r.data)).catch(() => {});
+  }, []);
 
   if (!stats) return (
     <div className="flex items-center justify-center h-64">
@@ -94,6 +118,74 @@ export default function AdminOverview({ stats, onNavigate }) {
           <p className="text-xs text-muted mt-0.5">{stats.developers ?? 0} devs · {stats.clients ?? 0} clients</p>
         </div>
       </div>
+
+      {/* Payment summary cards */}
+      <div className="grid grid-cols-2 gap-3">
+        <div className="bg-white border border-border rounded-xl p-5">
+          <div className="w-9 h-9 bg-emerald-50 border border-emerald-200 rounded-lg flex items-center justify-center mb-3">
+            <IndianRupee size={16} className="text-emerald-600" />
+          </div>
+          <p className="text-3xl font-bold text-text tracking-tight">
+            {payments ? fmt(payments.totalRevenuePaise) : '—'}
+          </p>
+          <p className="text-sm font-medium text-text mt-1">Total Revenue</p>
+          <p className="text-xs text-muted mt-0.5">All successful payments</p>
+        </div>
+        <div className="bg-white border border-border rounded-xl p-5">
+          <div className="w-9 h-9 bg-violet-50 border border-violet-200 rounded-lg flex items-center justify-center mb-3">
+            <CreditCard size={16} className="text-violet-600" />
+          </div>
+          <p className="text-3xl font-bold text-text tracking-tight">
+            {payments ? payments.totalTransactions : '—'}
+          </p>
+          <p className="text-sm font-medium text-text mt-1">Transactions</p>
+          <p className="text-xs text-muted mt-0.5">
+            {payments && payments.totalTransactions > 0
+              ? `Avg ${fmt(Math.round(payments.totalRevenuePaise / payments.totalTransactions))}`
+              : 'No payments yet'}
+          </p>
+        </div>
+      </div>
+
+      {/* Recent Payments */}
+      {payments?.payments?.length > 0 && (
+        <div className="bg-white border border-border rounded-xl overflow-hidden">
+          <div className="flex items-center justify-between px-5 py-4 border-b border-border">
+            <p className="text-sm font-semibold text-text">Recent Payments</p>
+            <button
+              onClick={() => onNavigate('payments')}
+              className="flex items-center gap-1 text-xs text-accent hover:underline font-medium"
+            >
+              View all <ArrowRight size={12} />
+            </button>
+          </div>
+          <div className="divide-y divide-border">
+            {payments.payments.slice(0, 5).map(p => (
+              <div key={p._id} className="flex items-center justify-between px-5 py-3 hover:bg-bg transition-colors">
+                <div className="min-w-0">
+                  <p className="text-sm font-medium text-text truncate">{p.user?.name || '—'}</p>
+                  <p className="text-[11px] text-muted truncate">{p.user?.email || ''}</p>
+                </div>
+                <div className="flex items-center gap-3 shrink-0 ml-3">
+                  <span className="text-xs font-semibold px-2 py-0.5 rounded-lg bg-accent/10 text-accent hidden sm:inline">
+                    {packLabel(p)}
+                  </span>
+                  <p className="text-sm font-semibold text-text">{fmt(p.amountPaise)}</p>
+                  <a
+                    href={`https://dashboard.razorpay.com/app/payments/${p.razorpayPaymentId}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-muted hover:text-accent transition-colors"
+                  >
+                    <ExternalLink size={12} />
+                  </a>
+                  <p className="text-[11px] text-muted w-16 text-right">{timeAgo(p.createdAt)}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Daily User Registrations */}
       <div className="bg-white border border-border rounded-xl p-5">

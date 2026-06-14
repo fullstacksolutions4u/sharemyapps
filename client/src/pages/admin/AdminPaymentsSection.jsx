@@ -6,6 +6,13 @@ function fmt(paise) {
   return `₹${(paise / 100).toLocaleString('en-IN', { minimumFractionDigits: 2 })}`;
 }
 
+function packLabel(p) {
+  if (p.pack && p.pack.startsWith('placement_')) {
+    return p.pack.replace('placement_', '').replace(/\b\w/g, c => c.toUpperCase());
+  }
+  return `${p.analysesGranted} JD ${p.analysesGranted === 1 ? 'analysis' : 'analyses'}`;
+}
+
 function timeAgo(date) {
   const s = Math.floor((Date.now() - new Date(date)) / 1000);
   if (s < 60)   return `${s}s ago`;
@@ -108,7 +115,7 @@ export default function AdminPaymentsSection() {
                       </td>
                       <td className="px-5 py-3.5">
                         <span className="text-xs font-semibold px-2 py-1 rounded-lg bg-accent/10 text-accent">
-                          {p.analysesGranted} JD analyses
+                          {packLabel(p)}
                         </span>
                       </td>
                       <td className="px-5 py-3.5 font-semibold text-text">
