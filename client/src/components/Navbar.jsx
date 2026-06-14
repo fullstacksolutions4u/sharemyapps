@@ -279,29 +279,20 @@ export default function Navbar() {
                     </Link>
                     {user.role !== 'admin' && (
                       <Link
-                        to="/chat-admin"
-                        onClick={() => setDropOpen(false)}
-                        className="flex items-center gap-2 px-4 py-2 text-sm text-text hover:bg-bg"
-                      >
-                        <Headphones size={14} /> Message Admin
-                      </Link>
-                    )}
-                    {user.role !== 'admin' && (
-                      <Link
                         to="/feedback"
                         onClick={() => setDropOpen(false)}
-                        className="flex items-center gap-2 px-4 py-2 text-sm text-text hover:bg-bg"
+                        className="flex items-center gap-2 px-4 py-2 text-sm text-text hover:bg-bg whitespace-nowrap"
                       >
-                        <Lightbulb size={14} /> Feedback
+                        <Lightbulb size={14} className="shrink-0" /> Feedback Message
                       </Link>
                     )}
                     {user.role !== 'admin' && (
                       <Link
                         to="/career-services"
                         onClick={() => setDropOpen(false)}
-                        className="flex items-center gap-2 px-4 py-2 text-sm text-accent font-medium hover:bg-bg"
+                        className="flex items-center gap-2 px-4 py-2 text-sm text-accent font-medium hover:bg-bg whitespace-nowrap"
                       >
-                        <Crown size={14} className="text-amber-500" /> Premium Plans
+                        <Crown size={14} className="text-amber-500 shrink-0" /> Premium Services
                       </Link>
                     )}
                     {user.role === 'admin' && (
@@ -373,13 +364,10 @@ export default function Navbar() {
                 <Link to="/dashboard/add" onClick={() => setMenuOpen(false)} className="block text-sm text-text font-medium">Add Project</Link>
               )}
               {user.role !== 'admin' && (
-                <Link to="/chat-admin" onClick={() => setMenuOpen(false)} className="block text-sm text-muted hover:text-text">Message Admin</Link>
+                <Link to="/feedback" onClick={() => setMenuOpen(false)} className="block text-sm text-muted hover:text-text">Feedback Message</Link>
               )}
               {user.role !== 'admin' && (
-                <Link to="/feedback" onClick={() => setMenuOpen(false)} className="block text-sm text-muted hover:text-text">Feedback</Link>
-              )}
-              {user.role !== 'admin' && (
-                <Link to="/career-services" onClick={() => setMenuOpen(false)} className="flex items-center gap-2 text-sm text-accent font-medium hover:text-accent-hover"><Crown size={14} className="text-amber-500" /> Premium Plans</Link>
+                <Link to="/career-services" onClick={() => setMenuOpen(false)} className="flex items-center gap-2 text-sm text-accent font-medium hover:text-accent-hover"><Crown size={14} className="text-amber-500" /> Premium Services</Link>
               )}
               <button onClick={handleLogout} className="block text-sm text-red-500">Logout</button>
             </>

@@ -59,7 +59,7 @@ export default function PaidServices() {
             <div className="w-9 h-9 rounded-xl bg-[#FAF7F0] border border-amber-200 flex items-center justify-center shrink-0">
               <Crown size={16} className="text-amber-500" />
             </div>
-            <h1 className="text-xl font-bold text-[#1a1a1a]">Premium Plans</h1>
+            <h1 className="text-xl font-bold text-[#1a1a1a]">Premium Services</h1>
           </div>
           <a
             href="mailto:hello@sharemyapps.in"
