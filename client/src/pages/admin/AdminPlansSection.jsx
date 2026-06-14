@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import {
   Search, ChevronRight, ToggleLeft, ToggleRight,
-  Save, ArrowLeft, Zap, IndianRupee, Users,
-  Sparkles, Plus, Trash2, GripVertical, Pencil, X, Check,
+  Save, ArrowLeft, IndianRupee, Users,
+  Sparkles, Plus, Trash2, GripVertical, Pencil,
 } from 'lucide-react';
 import api from '../../api/axios';
 import toast from 'react-hot-toast';
@@ -24,17 +24,6 @@ const SERVICES = [
   },
 ];
 
-const VARIANT_OPTIONS = [
-  { value: 'ghost',  label: 'Ghost (Basic)' },
-  { value: 'accent', label: 'Ivory Amber (Standard)' },
-  { value: 'dark',   label: 'Peacock Green (Premium)' },
-];
-
-const BADGE_STYLE_OPTIONS = [
-  { value: '',           label: 'None' },
-  { value: 'top-center', label: 'Top Center Pill' },
-  { value: 'inline',     label: 'Inline (top-right)' },
-];
 
 /* ── Status badge ────────────────────────────────────────── */
 function StatusBadge({ enabled }) {
@@ -54,7 +43,6 @@ function PlacementPlansEditor({ onBack }) {
   const [editing, setEditing] = useState(null); // plan id or 'new'
   const [form, setForm] = useState({});
   const [saving, setSaving] = useState(false);
-  const [newFeature, setNewFeature] = useState('');
 
   useEffect(() => {
     api.get('/admin/plans')
@@ -64,15 +52,13 @@ function PlacementPlansEditor({ onBack }) {
   }, []);
 
   const openEdit = (plan) => {
-    setForm({ ...plan, features: [...plan.features] });
+    setForm({ name: plan.name, price: plan.price, active: plan.active });
     setEditing(plan._id);
-    setNewFeature('');
   };
 
   const openNew = () => {
-    setForm({ name: '', price: '', description: '', features: [], badge: '', badgeStyle: '', variant: 'ghost', active: true });
+    setForm({ name: '', price: '', active: true });
     setEditing('new');
-    setNewFeature('');
   };
 
   const handleSave = async () => {
@@ -114,16 +100,6 @@ function PlacementPlansEditor({ onBack }) {
     } catch {
       toast.error('Failed to update');
     }
-  };
-
-  const addFeature = () => {
-    if (!newFeature.trim()) return;
-    setForm(prev => ({ ...prev, features: [...prev.features, newFeature.trim()] }));
-    setNewFeature('');
-  };
-
-  const removeFeature = (i) => {
-    setForm(prev => ({ ...prev, features: prev.features.filter((_, idx) => idx !== i) }));
   };
 
   if (editing !== null) {
@@ -179,78 +155,6 @@ function PlacementPlansEditor({ onBack }) {
             </div>
           </div>
 
-          {/* Description */}
-          <div className="bg-white border border-border rounded-2xl px-5 py-4">
-            <label className="block text-xs font-semibold text-muted mb-1.5">Description</label>
-            <input
-              value={form.description}
-              onChange={e => setForm(p => ({ ...p, description: e.target.value }))}
-              placeholder="Short plan description"
-              className="w-full border border-border rounded-xl px-3 py-2 text-sm text-text focus:outline-none focus:border-accent"
-            />
-          </div>
-
-          {/* Features */}
-          <div className="bg-white border border-border rounded-2xl px-5 py-4">
-            <label className="block text-xs font-semibold text-muted mb-3">Features</label>
-            <div className="space-y-2 mb-3">
-              {form.features?.map((f, i) => (
-                <div key={i} className="flex items-center gap-2 bg-bg rounded-lg px-3 py-2">
-                  <Check size={13} className="text-accent shrink-0" />
-                  <span className="text-sm text-text flex-1">{f}</span>
-                  <button onClick={() => removeFeature(i)} className="text-muted hover:text-red-500 transition-colors">
-                    <X size={13} />
-                  </button>
-                </div>
-              ))}
-            </div>
-            <div className="flex gap-2">
-              <input
-                value={newFeature}
-                onChange={e => setNewFeature(e.target.value)}
-                onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), addFeature())}
-                placeholder="Add a feature…"
-                className="flex-1 border border-border rounded-xl px-3 py-2 text-sm text-text focus:outline-none focus:border-accent"
-              />
-              <button onClick={addFeature} className="px-3 py-2 bg-accent text-white rounded-xl text-sm font-medium hover:bg-accent-hover transition-colors">
-                <Plus size={14} />
-              </button>
-            </div>
-          </div>
-
-          {/* Badge & Style & Variant */}
-          <div className="bg-white border border-border rounded-2xl px-5 py-4 grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs font-semibold text-muted mb-1.5">Badge Text</label>
-              <input
-                value={form.badge}
-                onChange={e => setForm(p => ({ ...p, badge: e.target.value }))}
-                placeholder="e.g. Most Popular"
-                className="w-full border border-border rounded-xl px-3 py-2 text-sm text-text focus:outline-none focus:border-accent"
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-semibold text-muted mb-1.5">Badge Style</label>
-              <select
-                value={form.badgeStyle}
-                onChange={e => setForm(p => ({ ...p, badgeStyle: e.target.value }))}
-                className="w-full border border-border rounded-xl px-3 py-2 text-sm text-text focus:outline-none focus:border-accent bg-white"
-              >
-                {BADGE_STYLE_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
-              </select>
-            </div>
-            <div className="col-span-2">
-              <label className="block text-xs font-semibold text-muted mb-1.5">Button Style</label>
-              <select
-                value={form.variant}
-                onChange={e => setForm(p => ({ ...p, variant: e.target.value }))}
-                className="w-full border border-border rounded-xl px-3 py-2 text-sm text-text focus:outline-none focus:border-accent bg-white"
-              >
-                {VARIANT_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
-              </select>
-            </div>
-          </div>
-
           {/* Active toggle */}
           <div className="bg-white border border-border rounded-2xl px-5 py-4 flex items-center justify-between">
             <div>
@@ -301,7 +205,7 @@ function PlacementPlansEditor({ onBack }) {
                     <span className="text-[11px] border border-accent/40 text-accent px-2 py-0.5 rounded-full">{plan.badge}</span>
                   )}
                 </div>
-                <p className="text-xs text-muted">₹{plan.price.toLocaleString('en-IN')} · {plan.features.length} features</p>
+                <p className="text-xs text-muted">₹{plan.price.toLocaleString('en-IN')}</p>
               </div>
               <div className="flex items-center gap-2 shrink-0">
                 <button onClick={() => toggleActive(plan)} className="text-muted hover:text-accent transition-colors">
