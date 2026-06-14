@@ -20,6 +20,12 @@ const PLAN_FEATURES = {
     'LinkedIn profile optimisation',
     'Resume distribution services to companies',
   ],
+  Standard: [
+    'ATS-optimised resume creation',
+    'LinkedIn profile optimisation',
+    'Resume distribution services to companies',
+    'Direct referrals to partner companies',
+  ],
   Premium: [
     'ATS-optimised resume creation',
     'LinkedIn profile optimisation',
