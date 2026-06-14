@@ -130,6 +130,62 @@ exports.sendCollaboratorAddedEmail = async ({ to, name, addedByName, projectTitl
   });
 };
 
+exports.sendPlacementPaymentEmail = async ({ to, name, plan }) => {
+  const featureRows = plan.features.map(f =>
+    `<tr><td style="padding:6px 0;border-bottom:1px solid #F3F0EB;font-size:13px;color:#374151;">✓ ${f}</td></tr>`
+  ).join('');
+
+  await api.sendTransacEmail({
+    sender: FROM,
+    to: [{ email: to, name }],
+    subject: `Payment Confirmed – ${plan.name} Plan | ShareMyApps`,
+    htmlContent: `
+      <div style="font-family:Inter,Arial,sans-serif;max-width:560px;margin:0 auto;background:#fff;border-radius:12px;overflow:hidden;border:1px solid #E5E1DA;">
+        <div style="background:#00A693;padding:24px 32px;text-align:center;">
+          <img src="${LOGO_URL}" alt="ShareMyApps" style="height:80px;object-fit:contain;" />
+        </div>
+        <div style="padding:32px;">
+          <h2 style="margin:0 0 6px;font-size:20px;color:#1A1A1A;">Payment Confirmed!</h2>
+          <p style="color:#6B7280;margin:0 0 24px;font-size:14px;">Hi ${name}, thank you for choosing ShareMyApps Premium Plans.</p>
+
+          <!-- Plan summary box -->
+          <div style="background:#FFFBF0;border:1px solid #F59E0B;border-radius:12px;padding:20px 24px;margin-bottom:24px;">
+            <p style="margin:0 0 4px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#B45309;">${plan.name} Plan</p>
+            <p style="margin:0 0 16px;font-size:28px;font-weight:700;color:#1A1A1A;">₹${Number(plan.price).toLocaleString('en-IN')} <span style="font-size:13px;font-weight:400;color:#6B7280;">one-time payment</span></p>
+            <p style="margin:0 0 8px;font-size:12px;font-weight:600;color:#6B7280;text-transform:uppercase;letter-spacing:0.06em;">Included services</p>
+            <table style="width:100%;border-collapse:collapse;">
+              ${featureRows}
+            </table>
+          </div>
+
+          <!-- Activation notice -->
+          <div style="background:#EFF6FF;border:1px solid #BFDBFE;border-radius:10px;padding:16px 20px;margin-bottom:24px;">
+            <p style="margin:0;font-size:14px;color:#1E40AF;font-weight:600;">⏱ Services activate within 5 business days</p>
+            <p style="margin:6px 0 0;font-size:13px;color:#3B82F6;">Our HR team will review your profile and reach out to you within 5 business days to kick off your placement support.</p>
+          </div>
+
+          <!-- Contact block -->
+          <p style="margin:0 0 12px;font-size:13px;color:#374151;">Have questions? Reach us anytime:</p>
+          <table style="width:100%;border-collapse:collapse;">
+            <tr>
+              <td style="padding:10px 14px;background:#F9F8F6;border-radius:8px;font-size:13px;color:#374151;">
+                📧 <a href="mailto:hello@sharemyapps.in" style="color:#00A693;text-decoration:none;font-weight:600;">hello@sharemyapps.in</a>
+              </td>
+            </tr>
+            <tr><td style="height:8px;"></td></tr>
+            <tr>
+              <td style="padding:10px 14px;background:#F9F8F6;border-radius:8px;font-size:13px;color:#374151;">
+                📞 <a href="tel:+918848118585" style="color:#00A693;text-decoration:none;font-weight:600;">+91 8848118585</a>
+              </td>
+            </tr>
+          </table>
+        </div>
+        ${FOOTER('You received this email because you purchased a Premium Plan on ShareMyApps.')}
+      </div>
+    `,
+  });
+};
+
 exports.sendProjectRejectedEmail = async ({ to, name, projectTitle, projectId, adminNote }) => {
   const editUrl = `${BASE_URL}/dashboard`;
 

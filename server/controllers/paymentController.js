@@ -4,6 +4,7 @@ const User = require('../models/User');
 const Payment = require('../models/Payment');
 const Plan = require('../models/Plan');
 const { getConfig } = require('../utils/configCache');
+const { sendPlacementPaymentEmail } = require('../utils/email');
 
 const razorpay = new Razorpay({
   key_id: process.env.RAZORPAY_KEY_ID,
@@ -158,6 +159,12 @@ const verifyPlacementPayment = async (req, res) => {
       analysesGranted:   0,
       status:            'success',
     });
+
+    sendPlacementPaymentEmail({
+      to:   req.user.email,
+      name: req.user.name,
+      plan,
+    }).catch(err => console.error('Placement email error:', err));
 
     res.json({ ok: true, planName: plan.name });
   } catch (err) {
