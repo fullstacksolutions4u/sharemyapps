@@ -9,8 +9,8 @@ const ALL_FEATURES = [
   'ATS Compatible Resume Optimization',
   'Job Portal Profile Profile Optimization',
   'LinkedIn Profile Branding & Optimization',
-  'Resume distribution services to companies',
-  'Direct referrals to partner companies',
+  'Resume Circulation Across Hiring Network',
+  'Direct Referrals via Our Developer Network',
   'Dedicated Placement Officer',
   'Technical Mock Interviews',
 ];
@@ -25,14 +25,15 @@ const PLAN_FEATURES = {
     'ATS Compatible Resume Optimization',
     'Job Portal Profile Profile Optimization',
     'LinkedIn Profile Branding & Optimization',
-    'Resume distribution services to companies',
-    'Direct referrals to partner companies',
+    'Resume Circulation Across Hiring Network',
+    'Direct Referrals via Our Developer Network',
   ],
   Premium: [
     'ATS Compatible Resume Optimization',
+    'Job Portal Profile Profile Optimization',
     'LinkedIn Profile Branding & Optimization',
-    'Resume distribution services to companies',
-    'Direct referrals to partner companies',
+    'Resume Circulation Across Hiring Network',
+    'Direct Referrals via Our Developer Network',
     'Dedicated Placement Officer',
     'Technical Mock Interviews',
   ],
@@ -195,7 +196,7 @@ export default function PaidServices() {
         )}
 
         <p className="text-center text-xs text-gray-400 mt-3">
-          One-time payment · No recurring charges · Support continues until you're placed
+          A one-time payment with no recurring charges — our support continues until you're placed.
         </p>
       </div>
 
