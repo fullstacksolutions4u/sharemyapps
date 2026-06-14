@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import {
   Search, ChevronRight, ToggleLeft, ToggleRight,
-  Save, ArrowLeft, IndianRupee, Users,
+  Save, ArrowLeft, Zap, IndianRupee, Users,
   Sparkles, Plus, Trash2, GripVertical, Pencil,
 } from 'lucide-react';
 import api from '../../api/axios';
