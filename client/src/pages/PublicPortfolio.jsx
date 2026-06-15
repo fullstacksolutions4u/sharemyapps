@@ -154,6 +154,14 @@ export default function PublicPortfolio() {
       .finally(() => setLoading(false));
   }, [userId]);
 
+  const visitFired = useRef(false);
+  useEffect(() => {
+    if (authUser && authUser.userType === 'recruiter' && authUser._id !== userId && !visitFired.current) {
+      visitFired.current = true;
+      api.post(`/users/${userId}/portfolio-visit`).catch(() => {});
+    }
+  }, [authUser, userId]);
+
   if (loading) return (
     <div className="min-h-screen bg-bg">
       <div className="max-w-5xl mx-auto px-4 py-12 space-y-5">

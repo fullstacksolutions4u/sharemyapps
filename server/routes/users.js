@@ -581,6 +581,36 @@ router.post('/find-developers', protect, jdQuota, aiLimit, async (req, res) => {
   }
 });
 
+// POST /api/users/:id/portfolio-visit — notify developer when a recruiter views their portfolio
+router.post('/:id/portfolio-visit', protect, async (req, res) => {
+  try {
+    if (req.user.userType !== 'recruiter') return res.status(403).json({ message: 'Recruiter only' });
+    const ownerId = req.params.id;
+    if (ownerId === req.user._id.toString()) return res.json({ ok: true });
+
+    const Notification = require('../models/Notification');
+    const since = new Date(Date.now() - 24 * 60 * 60 * 1000);
+    const existing = await Notification.exists({
+      user: ownerId,
+      fromUser: req.user._id,
+      type: 'recruiter_visit',
+      createdAt: { $gte: since },
+    });
+    if (!existing) {
+      await Notification.create({
+        user: ownerId,
+        fromUser: req.user._id,
+        type: 'recruiter_visit',
+        title: 'A recruiter viewed your profile',
+        message: 'A recruiter visited your portfolio page.',
+      });
+    }
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
 // POST /api/users/:id/follow  — toggle follow/unfollow
 router.post('/:id/follow', protect, async (req, res) => {
   try {
