@@ -67,6 +67,7 @@ function DeveloperCard({ dev, idx }) {
       {(() => {
         const bannerItems = [
           ...(dev.designations || []),
+          ...(dev.freelanceAvailable ? [dev.freelanceRate ? `Freelance (₹${dev.freelanceRate}/hr)` : 'Freelance'] : []),
           ...(dev.mentorshipAvailable ? [dev.mentorshipRate ? `Mentor (₹${dev.mentorshipRate}/hr)` : 'Mentor'] : []),
         ];
         return (
