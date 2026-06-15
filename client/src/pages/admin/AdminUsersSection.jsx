@@ -47,6 +47,10 @@ function UserEditPage({ user: initial, onBack, onSaved, allDesignations = [] }) 
     bio:                 initial.bio                 || '',
     gender:              initial.gender              || '',
     place:               initial.place               || '',
+    district:            initial.district            || '',
+    state:               initial.state               || '',
+    country:             initial.country             || '',
+    yearsOfExperience:   initial.yearsOfExperience   || '',
     dateOfBirth:         initial.dateOfBirth ? new Date(initial.dateOfBirth).toISOString().split('T')[0] : '',
     linkedinUrl:         initial.linkedinUrl         || '',
     githubUrl:           initial.githubUrl           || '',
@@ -375,6 +379,21 @@ function UserEditPage({ user: initial, onBack, onSaved, allDesignations = [] }) 
                   <label className="block text-xs font-medium text-[#6B7280] mb-1.5"><MapPin size={11} className="inline mr-1" />Place</label>
                   <input type="text" value={form.place} onChange={set('place')} className={inp} placeholder="e.g. Bangalore, Kerala" />
                 </div>
+                {/* District */}
+                <div>
+                  <label className="block text-xs font-medium text-[#6B7280] mb-1.5"><MapPin size={11} className="inline mr-1" />District</label>
+                  <input type="text" value={form.district} onChange={set('district')} className={inp} placeholder="e.g. Ernakulam" />
+                </div>
+                {/* State */}
+                <div>
+                  <label className="block text-xs font-medium text-[#6B7280] mb-1.5">State</label>
+                  <input type="text" value={form.state} onChange={set('state')} className={inp} placeholder="e.g. Kerala" />
+                </div>
+                {/* Country */}
+                <div>
+                  <label className="block text-xs font-medium text-[#6B7280] mb-1.5">Country</label>
+                  <input type="text" value={form.country} onChange={set('country')} className={inp} placeholder="e.g. India" />
+                </div>
                 {/* Date of Birth */}
                 <div>
                   <label className="block text-xs font-medium text-[#6B7280] mb-1.5"><Calendar size={11} className="inline mr-1" />Date of Birth</label>
@@ -390,6 +409,17 @@ function UserEditPage({ user: initial, onBack, onSaved, allDesignations = [] }) 
               <h3 className="text-sm font-semibold text-[#1A1A1A] flex items-center gap-2">
                 <Briefcase size={15} className="text-[#00A693]" /> Career Preferences
               </h3>
+
+              {/* Years of Experience */}
+              <div>
+                <label className="block text-xs font-medium text-[#6B7280] mb-1.5">Years of Experience</label>
+                <select value={form.yearsOfExperience} onChange={set('yearsOfExperience')} className={inp}>
+                  <option value="">Select…</option>
+                  {['0-1', '1-2', '2-3', '3-5', '5-7', '7-10', '10+'].map(o => (
+                    <option key={o} value={o}>{o} years</option>
+                  ))}
+                </select>
+              </div>
 
               {/* Joining Availability */}
               <div>

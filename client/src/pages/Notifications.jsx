@@ -13,6 +13,7 @@ const typeIcon = {
   commented:     <MessageCircle size={18} className="text-blue-400 shrink-0 mt-0.5" />,
   vacancy_reply:       <Briefcase size={18} className="text-accent shrink-0 mt-0.5" />,
   collaborator_added:  <Users size={18} className="text-violet-500 shrink-0 mt-0.5" />,
+  recruiter_visit:     <Bell size={18} className="text-indigo-500 shrink-0 mt-0.5" />,
 };
 
 const typeBadge = {
@@ -24,6 +25,7 @@ const typeBadge = {
   commented:     'bg-blue-50 text-blue-700 border-blue-200',
   vacancy_reply:       'bg-accent-light text-accent border-accent/20',
   collaborator_added:  'bg-violet-50 text-violet-700 border-violet-200',
+  recruiter_visit:     'bg-indigo-50 text-indigo-700 border-indigo-200',
 };
 
 function timeAgo(date) {
@@ -138,13 +140,17 @@ export default function Notifications() {
                     </span>
                     {n.type && (
                       <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full border capitalize ${typeBadge[n.type] || ''}`}>
-                        {n.type === 'vacancy_reply' ? 'vacancy' : n.type === 'collaborator_added' ? 'collaborator' : n.type}
+                        {n.type === 'vacancy_reply' ? 'vacancy' : n.type === 'collaborator_added' ? 'collaborator' : n.type === 'recruiter_visit' ? 'recruiter' : n.type}
                       </span>
                     )}
                     {!n.read && <span className="w-2 h-2 bg-[#00A693] rounded-full shrink-0" />}
                   </div>
                   <p className="text-sm text-[#374151] leading-relaxed whitespace-pre-wrap">{n.message}</p>
-                  <p className="text-xs text-[#9CA3AF] mt-2">{timeAgo(n.createdAt)}</p>
+                  <p className="text-xs text-[#9CA3AF] mt-2">
+                    {n.type === 'recruiter_visit'
+                      ? new Date(n.createdAt).toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true })
+                      : timeAgo(n.createdAt)}
+                  </p>
                 </div>
               </div>
             </div>

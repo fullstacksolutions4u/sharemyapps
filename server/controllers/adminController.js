@@ -274,7 +274,7 @@ exports.adminUpdateUser = async (req, res) => {
       'linkedinUrl', 'githubUrl', 'leetcodeUrl', 'portfolioUrl', 'cvUrl',
       'companyName', 'companyWebsite', 'industry', 'requirements',
       'badge', 'userType', 'joiningAvailability', 'place', 'district', 'state', 'country',
-      'adminNote',
+      'yearsOfExperience', 'adminNote',
     ];
     const update = {};
     for (const key of strFields) {
@@ -316,9 +316,9 @@ exports.adminUpdateUser = async (req, res) => {
       if (existing && isPlaceholderCv(existing.cvUrl)) update.cvWasPlaceholder = true;
       if (isPlaceholderCv(update.cvUrl)) update.cvWasPlaceholder = true;
     }
-    const user = await User.findByIdAndUpdate(req.params.id, update, { new: true });
+    const user = await User.findByIdAndUpdate(req.params.id, update, { new: true }).select('-password');
     if (!user) return res.status(404).json({ message: 'User not found' });
-    res.json(user.toPublicJSON());
+    res.json(user.toObject());
   } catch (err) { res.status(500).json({ message: err.message }); }
 };
 
