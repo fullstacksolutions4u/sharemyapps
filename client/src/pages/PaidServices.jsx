@@ -7,7 +7,7 @@ import PlacementPaymentModal from '../components/PlacementPaymentModal';
 
 const ALL_FEATURES = [
   'ATS Compatible Resume Optimization',
-  'Job Portal Profile Profile Optimization',
+  'Job Portal Profile Optimization',
   'LinkedIn Profile Branding & Optimization',
   'Resume Circulation Across Hiring Network',
   'Direct Referrals via Our Developer Network',
@@ -18,19 +18,19 @@ const ALL_FEATURES = [
 const PLAN_FEATURES = {
   Basic: [
     'ATS Compatible Resume Optimization',
-    'Job Portal Profile Profile Optimization',
+    'Job Portal Profile Optimization',
     'LinkedIn Profile Branding & Optimization',
   ],
   Standard: [
     'ATS Compatible Resume Optimization',
-    'Job Portal Profile Profile Optimization',
+    'Job Portal Profile Optimization',
     'LinkedIn Profile Branding & Optimization',
     'Resume Circulation Across Hiring Network',
     'Direct Referrals via Our Developer Network',
   ],
   Premium: [
     'ATS Compatible Resume Optimization',
-    'Job Portal Profile Profile Optimization',
+    'Job Portal Profile Optimization',
     'LinkedIn Profile Branding & Optimization',
     'Resume Circulation Across Hiring Network',
     'Direct Referrals via Our Developer Network',
