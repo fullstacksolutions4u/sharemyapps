@@ -58,7 +58,7 @@ function StatsCounter({ devs, clients, students }) {
       <span className="font-medium text-blue-500">clients</span>,{" "}
       <SlotNumber value={students} delay={600} color="text-amber-600" />{" "}
       <span className="font-medium text-amber-500">students</span>{" "}
-      <span className="font-medium text-emerald-500">registered with us so far</span>
+      <span className="font-medium text-black">registered with ShareMyApps community</span>
     </p>
   );
 }
