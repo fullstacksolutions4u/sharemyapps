@@ -39,17 +39,35 @@ const PLAN_FEATURES = {
   ],
 };
 
+const PLANS_CACHE_KEY = 'sma_plans_v1';
+const PLANS_CACHE_TTL = 15 * 60 * 1000; // 15 minutes
+
+function getCachedPlans() {
+  try {
+    const raw = localStorage.getItem(PLANS_CACHE_KEY);
+    if (!raw) return null;
+    const { data, ts } = JSON.parse(raw);
+    return Date.now() - ts < PLANS_CACHE_TTL ? data : null;
+  } catch { return null; }
+}
+
+function setCachedPlans(data) {
+  try { localStorage.setItem(PLANS_CACHE_KEY, JSON.stringify({ data, ts: Date.now() })); } catch {}
+}
+
 export default function PaidServices() {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [plans, setPlans] = useState([]);
+  const cached = getCachedPlans();
+  const [plans, setPlans] = useState(cached ?? []);
   const [purchases, setPurchases] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!cached);
   const [selectedPlan, setSelectedPlan] = useState(null);
 
   useEffect(() => {
+    if (cached) return;
     api.get('/plans')
-      .then(r => setPlans(r.data))
+      .then(r => { setPlans(r.data); setCachedPlans(r.data); })
       .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
