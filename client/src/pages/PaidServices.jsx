@@ -52,7 +52,7 @@ function getCachedPlans() {
 }
 
 function setCachedPlans(data) {
-  try { localStorage.setItem(PLANS_CACHE_KEY, JSON.stringify({ data, ts: Date.now() })); } catch (_e) { /* ignore */ }
+  try { localStorage.setItem(PLANS_CACHE_KEY, JSON.stringify({ data, ts: Date.now() })); } catch { /* ignore */ }
 }
 
 export default function PaidServices() {
