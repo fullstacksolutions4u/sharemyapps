@@ -52,19 +52,19 @@ function getCachedPlans() {
 }
 
 function setCachedPlans(data) {
-  try { localStorage.setItem(PLANS_CACHE_KEY, JSON.stringify({ data, ts: Date.now() })); } catch {}
+  try { localStorage.setItem(PLANS_CACHE_KEY, JSON.stringify({ data, ts: Date.now() })); } catch (_e) { /* ignore */ }
 }
 
 export default function PaidServices() {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const cached = getCachedPlans();
-  const [plans, setPlans] = useState(cached ?? []);
+  const [plans, setPlans] = useState(() => getCachedPlans() ?? []);
   const [purchases, setPurchases] = useState([]);
-  const [loading, setLoading] = useState(!cached);
+  const [loading, setLoading] = useState(() => !getCachedPlans());
   const [selectedPlan, setSelectedPlan] = useState(null);
 
   useEffect(() => {
+    const cached = getCachedPlans();
     if (cached) return;
     api.get('/plans')
       .then(r => { setPlans(r.data); setCachedPlans(r.data); })
