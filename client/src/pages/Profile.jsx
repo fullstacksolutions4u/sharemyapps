@@ -954,7 +954,7 @@ export default function Profile() {
                                 onClick={() => setForm(f => {
                                   const sched = { ...f.mentorshipSchedule };
                                   if (sched[day]) delete sched[day];
-                                  else sched[day] = { from: '09:00', to: '17:00' };
+                                  else sched[day] = { from: '19:00', to: '22:00' };
                                   return { ...f, mentorshipSchedule: sched };
                                 })}
                                 className={`rounded-xl border transition-colors cursor-pointer ${active ? 'bg-purple-50 border-purple-300' : 'bg-[#F9F8F6] border-border hover:border-purple-200'}`}

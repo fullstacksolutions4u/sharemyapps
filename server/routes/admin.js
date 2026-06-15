@@ -56,6 +56,16 @@ router.put('/users/:id/resume', setResumeData);
 router.delete('/users/:id', deleteUser);
 router.post('/users/:id/message', adminSendMessage);
 router.get('/users/:id/jd-history', adminGetUserJDHistory);
+router.get('/users/:id/portfolio-visits', async (req, res) => {
+  try {
+    const Notification = require('../models/Notification');
+    const visits = await Notification.find({ fromUser: req.params.id, type: 'recruiter_visit' })
+      .populate('user', 'name avatar email designations regNumber')
+      .sort({ createdAt: -1 })
+      .lean();
+    res.json(visits);
+  } catch (err) { res.status(500).json({ message: err.message }); }
+});
 router.delete('/projects/:id', deleteProject);
 router.patch('/projects/:id/featured', toggleFeatured);
 router.patch('/projects/:id/hide', adminToggleHidden);

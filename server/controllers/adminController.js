@@ -32,7 +32,7 @@ exports.getAllProjects = async (req, res) => {
         ],
       };
       const [result] = await Project.aggregate([
-        { $lookup: { from: 'users', localField: 'owner', foreignField: '_id', as: 'owner', pipeline: [{ $project: { name: 1, email: 1, avatar: 1 } }] } },
+        { $lookup: { from: 'users', localField: 'owner', foreignField: '_id', as: 'owner', pipeline: [{ $project: { name: 1, email: 1, avatar: 1, phone: 1, linkedinUrl: 1, githubUrl: 1 } }] } },
         { $unwind: { path: '$owner', preserveNullAndEmptyArrays: true } },
         { $match: searchMatch },
         { $sort: { createdAt: -1 } },
@@ -48,7 +48,7 @@ exports.getAllProjects = async (req, res) => {
     const filter = status ? { status } : {};
     const [total, projects] = await Promise.all([
       Project.countDocuments(filter),
-      Project.find(filter).populate('owner', 'name email avatar').sort({ createdAt: -1 }).skip((p - 1) * l).limit(l).lean(),
+      Project.find(filter).populate('owner', 'name email avatar phone linkedinUrl githubUrl').sort({ createdAt: -1 }).skip((p - 1) * l).limit(l).lean(),
     ]);
     res.json({ projects, total, page: p, pages: Math.ceil(total / l) || 1 });
   } catch (err) {

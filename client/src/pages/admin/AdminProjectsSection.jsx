@@ -43,12 +43,12 @@ function ProjectReviewPage({ project: initial, onBack, onSave, onApprove, onReje
     appType: initial.appType || 'web',
     category: initial.category || '',
     techTags: initial.techTags?.join(', ') || '',
-    contactEmail: initial.contactEmail || '',
-    contactPhone: initial.contactPhone || '',
-    linkedinUrl: initial.linkedinUrl || '',
+    contactEmail: initial.contactEmail || initial.owner?.email || '',
+    contactPhone: initial.contactPhone || initial.owner?.phone || '',
+    linkedinUrl: initial.linkedinUrl || initial.owner?.linkedinUrl || '',
   });
   const [githubUrls, setGithubUrls] = useState(
-    initial.githubUrls?.length ? initial.githubUrls : (initial.githubUrl ? [initial.githubUrl] : [''])
+    initial.githubUrls?.length ? initial.githubUrls : (initial.githubUrl ? [initial.githubUrl] : (initial.owner?.githubUrl ? [initial.owner.githubUrl] : ['']))
   );
   const [githubVisible, setGithubVisible] = useState(initial.githubVisible !== false);
   const [saving, setSaving] = useState(false);

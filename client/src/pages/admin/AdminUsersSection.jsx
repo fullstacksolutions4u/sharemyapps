@@ -712,6 +712,9 @@ export default function AdminUsersSection({ initialTab = 'developers' }) {
   const [jdHistoryUser, setJdHistoryUser] = useState(null);
   const [jdHistory, setJdHistory] = useState([]);
   const [jdHistoryLoading, setJdHistoryLoading] = useState(false);
+  const [portfolioVisitsUser, setPortfolioVisitsUser] = useState(null);
+  const [portfolioVisits, setPortfolioVisits] = useState([]);
+  const [portfolioVisitsLoading, setPortfolioVisitsLoading] = useState(false);
   const [expandedJD, setExpandedJD] = useState(null);
   const [editingNote, setEditingNote] = useState(null); // { id, text }
   const [noteSaving, setNoteSaving] = useState(null);
@@ -797,6 +800,17 @@ export default function AdminUsersSection({ initialTab = 'developers' }) {
       toast.success('Note saved');
     } catch { toast.error('Failed to save note'); }
     finally { setNoteSaving(null); }
+  };
+
+  const openPortfolioVisits = async (u) => {
+    setPortfolioVisitsUser(u);
+    setPortfolioVisits([]);
+    setPortfolioVisitsLoading(true);
+    try {
+      const res = await api.get(`/admin/users/${u._id}/portfolio-visits`);
+      setPortfolioVisits(res.data);
+    } catch { toast.error('Failed to load portfolio visits'); }
+    finally { setPortfolioVisitsLoading(false); }
   };
 
   const openJDHistory = async (u) => {
@@ -989,6 +1003,7 @@ export default function AdminUsersSection({ initialTab = 'developers' }) {
                 <th className="text-left px-4 py-3 text-xs font-semibold text-[#6B7280] uppercase tracking-wider">Recruiter</th>
                 <th className="text-left px-4 py-3 text-xs font-semibold text-[#6B7280] uppercase tracking-wider hidden md:table-cell">Company</th>
                 <th className="text-left px-4 py-3 text-xs font-semibold text-[#6B7280] uppercase tracking-wider">JD History</th>
+                <th className="text-left px-4 py-3 text-xs font-semibold text-[#6B7280] uppercase tracking-wider">Portfolio Visits</th>
                 <th className="text-left px-4 py-3 text-xs font-semibold text-[#6B7280] uppercase tracking-wider hidden xl:table-cell">Notes</th>
                 <th className="text-right px-4 py-3 text-xs font-semibold text-[#6B7280] uppercase tracking-wider">Actions</th>
               </tr>
@@ -1002,6 +1017,9 @@ export default function AdminUsersSection({ initialTab = 'developers' }) {
                   </td>
                   <td className="px-4 py-3">
                     <button onClick={() => openJDHistory(u)} className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-lg border border-purple-200 text-purple-600 hover:bg-purple-50 font-medium transition-colors"><History size={10} /> View History</button>
+                  </td>
+                  <td className="px-4 py-3">
+                    <button onClick={() => openPortfolioVisits(u)} className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-lg border border-indigo-200 text-indigo-600 hover:bg-indigo-50 font-medium transition-colors"><Eye size={10} /> View Visits</button>
                   </td>
                   <td className="px-4 py-3 hidden xl:table-cell max-w-[180px]">
                     <NoteCell u={u} editingNote={editingNote} setEditingNote={setEditingNote} noteSaving={noteSaving} handleSaveNote={handleSaveNote} />
@@ -1366,6 +1384,61 @@ export default function AdminUsersSection({ initialTab = 'developers' }) {
             <div className="px-5 py-3 border-t border-[#E5E1DA] shrink-0 flex items-center justify-between">
               <p className="text-xs text-[#9CA3AF]">{jdHistory.length} search{jdHistory.length !== 1 ? 'es' : ''} total</p>
               <button onClick={() => setJdHistoryUser(null)} className="px-4 py-2 rounded-xl border border-[#E5E1DA] text-sm text-[#6B7280] hover:text-[#1A1A1A] font-medium transition-colors">Close</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {portfolioVisitsUser && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4" onClick={() => setPortfolioVisitsUser(null)}>
+          <div className="bg-white rounded-2xl shadow-xl border border-[#E5E1DA] w-full max-w-xl max-h-[80vh] flex flex-col" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between px-5 py-4 border-b border-[#E5E1DA] shrink-0">
+              <div className="flex items-center gap-3">
+                {portfolioVisitsUser.avatar
+                  ? <img src={portfolioVisitsUser.avatar} alt={portfolioVisitsUser.name} className="w-9 h-9 rounded-full object-cover" />
+                  : <span className="w-9 h-9 rounded-full bg-indigo-500 text-white text-sm flex items-center justify-center font-bold">{portfolioVisitsUser.name?.[0]?.toUpperCase()}</span>
+                }
+                <div>
+                  <p className="text-sm font-semibold text-[#1A1A1A]">{portfolioVisitsUser.name}</p>
+                  <p className="text-xs text-[#9CA3AF]">Developer Portfolio Visits</p>
+                </div>
+              </div>
+              <button onClick={() => setPortfolioVisitsUser(null)} className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-[#F3F0EB] text-[#9CA3AF] hover:text-[#1A1A1A] transition-colors"><X size={15} /></button>
+            </div>
+
+            <div className="overflow-y-auto flex-1 px-5 py-4 space-y-2">
+              {portfolioVisitsLoading ? (
+                <div className="space-y-3">
+                  {Array.from({ length: 3 }).map((_, i) => <div key={i} className="h-14 bg-[#F3F0EB] rounded-xl animate-pulse" />)}
+                </div>
+              ) : portfolioVisits.length === 0 ? (
+                <div className="text-center py-12">
+                  <Eye size={32} className="mx-auto text-[#E5E1DA] mb-3" />
+                  <p className="text-sm text-[#9CA3AF]">No portfolio visits yet</p>
+                  <p className="text-xs text-[#9CA3AF] mt-1">This recruiter hasn't visited any developer portfolios.</p>
+                </div>
+              ) : (
+                portfolioVisits.map((visit) => (
+                  <div key={visit._id} className="flex items-center gap-3 px-4 py-3 rounded-xl border border-[#E5E1DA] bg-[#FAF9F6]">
+                    {visit.user?.avatar
+                      ? <img src={visit.user.avatar} alt={visit.user.name} className="w-9 h-9 rounded-full object-cover shrink-0" />
+                      : <span className="w-9 h-9 rounded-full bg-[#00A693] text-white text-sm flex items-center justify-center font-bold shrink-0">{visit.user?.name?.[0]?.toUpperCase()}</span>
+                    }
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-[#1A1A1A] truncate">{visit.user?.name || 'Unknown'}</p>
+                      {visit.user?.designations?.[0] && <p className="text-xs text-[#9CA3AF] truncate">{visit.user.designations[0]}</p>}
+                    </div>
+                    <p className="text-xs text-[#9CA3AF] shrink-0">
+                      {new Date(visit.createdAt).toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true })}
+                    </p>
+                  </div>
+                ))
+              )}
+            </div>
+
+            <div className="px-5 py-3 border-t border-[#E5E1DA] shrink-0 flex items-center justify-between">
+              <p className="text-xs text-[#9CA3AF]">{portfolioVisits.length} visit{portfolioVisits.length !== 1 ? 's' : ''} total</p>
+              <button onClick={() => setPortfolioVisitsUser(null)} className="px-4 py-2 rounded-xl border border-[#E5E1DA] text-sm text-[#6B7280] hover:text-[#1A1A1A] font-medium transition-colors">Close</button>
             </div>
           </div>
         </div>
