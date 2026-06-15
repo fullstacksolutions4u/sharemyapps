@@ -114,7 +114,7 @@ exports.updateProfile = async (req, res) => {
     const { name, phone, linkedinUrl, githubUrl, leetcodeUrl, portfolioUrl, cvUrl, companyName, companyWebsite, industry, hrName, requirements,
       freelanceAvailable, freelanceRate, mentorshipAvailable, mentorshipRate, mentorshipTech, mentorshipSchedule, languagePreference,
       joiningAvailability, currentSalary, expectedSalary, preferredLocations, jobMode, yearsOfExperience,
-      gender, place, district, state, country, dateOfBirth } = req.body;
+      gender, place, district, state, country, dateOfBirth, designations } = req.body;
     const user = await User.findById(req.user._id);
     if (!user) return res.status(404).json({ message: 'User not found' });
 
@@ -158,6 +158,7 @@ exports.updateProfile = async (req, res) => {
     if (state !== undefined) user.state = state.trim();
     if (country !== undefined) user.country = country.trim();
     if (dateOfBirth !== undefined) user.dateOfBirth = dateOfBirth ? new Date(dateOfBirth) : null;
+    if (designations !== undefined) user.designations = (Array.isArray(designations) ? designations : [designations]).map(d => String(d).trim()).filter(Boolean);
 
     const { clientProfile } = req.body;
     if (clientProfile !== undefined && clientProfile && typeof clientProfile === 'object') {
