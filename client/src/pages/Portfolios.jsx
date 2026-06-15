@@ -67,7 +67,6 @@ function DeveloperCard({ dev, idx }) {
       {(() => {
         const bannerItems = [
           ...(dev.designations || []),
-          ...(dev.freelanceAvailable ? [dev.freelanceRate ? `Freelance (₹${dev.freelanceRate}/hr)` : 'Freelance'] : []),
           ...(dev.mentorshipAvailable ? [dev.mentorshipRate ? `Mentor (₹${dev.mentorshipRate}/hr)` : 'Mentor'] : []),
         ];
         return (
@@ -174,14 +173,18 @@ function DeveloperCard({ dev, idx }) {
               })}
               {dev.projects.length > 2 && (
                 <Link to={`/portfolio/${dev._id}`}
-                  className="col-span-2 flex items-center justify-between text-[11px] font-medium px-1">
+                  className="col-span-2 flex items-center text-[11px] font-medium px-1">
                   <span className="text-accent hover:underline">+{dev.projects.length - 2} more</span>
-                  {dev.freelanceRate && (
-                    <span className="text-[#FFAB91] font-semibold">Freelance: <strong>₹{dev.freelanceRate}/hr</strong></span>
-                  )}
                 </Link>
               )}
             </div>
+          </div>
+        )}
+
+        {/* Freelance rate */}
+        {dev.freelanceAvailable && dev.freelanceRate && (
+          <div className="flex items-center justify-end">
+            <span className="text-[11px] text-[#FFAB91] font-semibold">Freelance: <strong>₹{dev.freelanceRate}/hr</strong></span>
           </div>
         )}
 
