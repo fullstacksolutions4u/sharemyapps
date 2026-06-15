@@ -112,7 +112,7 @@ exports.getMe = async (req, res) => {
 exports.updateProfile = async (req, res) => {
   try {
     const { name, phone, linkedinUrl, githubUrl, leetcodeUrl, portfolioUrl, cvUrl, companyName, companyWebsite, industry, hrName, requirements,
-      freelanceAvailable, freelanceRate, mentorshipAvailable, mentorshipRate, mentorshipTech, mentorshipSchedule, languagePreference,
+      freelanceAvailable, freelanceRate, mentorshipAvailable, mentorshipRate, mentorshipTech, familiarTech, mentorshipSchedule, languagePreference,
       joiningAvailability, currentSalary, expectedSalary, preferredLocations, jobMode, yearsOfExperience,
       gender, place, district, state, country, dateOfBirth, designations } = req.body;
     const user = await User.findById(req.user._id);
@@ -144,6 +144,7 @@ exports.updateProfile = async (req, res) => {
     if (mentorshipAvailable !== undefined) user.mentorshipAvailable = Boolean(mentorshipAvailable);
     if (mentorshipRate !== undefined) user.mentorshipRate = mentorshipRate === '' || mentorshipRate === null ? null : Number(mentorshipRate);
     if (mentorshipTech !== undefined) user.mentorshipTech = (Array.isArray(mentorshipTech) ? mentorshipTech : [mentorshipTech]).map(t => t.trim()).filter(Boolean);
+    if (familiarTech !== undefined) user.familiarTech = (Array.isArray(familiarTech) ? familiarTech : [familiarTech]).map(t => t.trim()).filter(Boolean);
     if (mentorshipSchedule !== undefined) user.mentorshipSchedule = (mentorshipSchedule && typeof mentorshipSchedule === 'object') ? mentorshipSchedule : null;
     if (languagePreference !== undefined) user.languagePreference = (Array.isArray(languagePreference) ? languagePreference : [languagePreference]).map(l => l.trim()).filter(Boolean);
     if (joiningAvailability !== undefined) user.joiningAvailability = joiningAvailability.trim();

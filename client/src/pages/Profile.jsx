@@ -115,6 +115,7 @@ export default function Profile() {
     mentorshipAvailable: user?.mentorshipAvailable || false,
     mentorshipRate: user?.mentorshipRate ?? '',
     mentorshipTech: user?.mentorshipTech?.length ? user.mentorshipTech : [''],
+    familiarTech: user?.familiarTech?.length ? user.familiarTech : [],
     mentorshipSchedule: user?.mentorshipSchedule || {},
     languagePreference: user?.languagePreference?.length ? user.languagePreference : [''],
     joiningAvailability: user?.joiningAvailability || '',
@@ -133,6 +134,8 @@ export default function Profile() {
   });
   const [designationInput, setDesignationInput] = useState('');
   const [showDesignationInput, setShowDesignationInput] = useState(false);
+  const [techInput, setTechInput] = useState('');
+  const [familiarTechInput, setFamiliarTechInput] = useState('');
   const [saving, setSaving] = useState(false);
   const [showDelete, setShowDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -676,10 +679,124 @@ export default function Profile() {
                   <Link2 size={15} className="text-accent" />
                   <h2 className="text-sm font-semibold text-text">Developer Links <span className="text-xs text-muted font-normal">(all optional)</span></h2>
                 </div>
-                <Field icon={<Link2 size={15} />} label="LinkedIn" name="linkedinUrl" value={form.linkedinUrl} onChange={handle} placeholder="linkedin.com/in/yourprofile" />
-                <Field icon={<GitBranch size={15} />} label="GitHub" name="githubUrl" value={form.githubUrl} onChange={handle} placeholder="github.com/yourusername" />
-                <Field icon={<LeetCodeIcon />} label="LeetCode" name="leetcodeUrl" value={form.leetcodeUrl} onChange={handle} placeholder="leetcode.com/yourusername" />
-                <Field icon={<Globe size={15} />} label="Portfolio" name="portfolioUrl" value={form.portfolioUrl} onChange={handle} placeholder="yourportfolio.com" />
+
+                {/* Row 1: LinkedIn + GitHub */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <Field icon={<Link2 size={15} />} label="LinkedIn" name="linkedinUrl" value={form.linkedinUrl} onChange={handle} placeholder="linkedin.com/in/yourprofile" />
+                  <Field icon={<GitBranch size={15} />} label="GitHub" name="githubUrl" value={form.githubUrl} onChange={handle} placeholder="github.com/yourusername" />
+                </div>
+
+                {/* Row 2: LeetCode + Portfolio */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <Field icon={<LeetCodeIcon />} label="LeetCode" name="leetcodeUrl" value={form.leetcodeUrl} onChange={handle} placeholder="leetcode.com/yourusername" />
+                  <Field icon={<Globe size={15} />} label="Portfolio" name="portfolioUrl" value={form.portfolioUrl} onChange={handle} placeholder="yourportfolio.com" />
+                </div>
+
+                {/* Tech Stack — Know Well */}
+                <div>
+                  <label className="flex items-center gap-1.5 text-sm font-medium text-text mb-1">
+                    <Code2 size={13} className="text-muted" /> Know Well
+                  </label>
+                  <div className="space-y-2">
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        value={techInput}
+                        onChange={e => setTechInput(e.target.value)}
+                        onKeyDown={e => {
+                          if (e.key === 'Enter' || e.key === ',') {
+                            e.preventDefault();
+                            const val = techInput.trim().replace(/,$/, '');
+                            if (val && !form.mentorshipTech.filter(Boolean).includes(val))
+                              setForm(f => ({ ...f, mentorshipTech: [...f.mentorshipTech.filter(Boolean), val] }));
+                            setTechInput('');
+                          }
+                        }}
+                        placeholder="e.g. React, Node.js… (Enter or comma to add)"
+                        className="flex-1 px-3.5 py-2.5 border border-border rounded-xl text-sm text-text placeholder-muted focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/10 transition bg-white"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const val = techInput.trim();
+                          if (val && !form.mentorshipTech.filter(Boolean).includes(val))
+                            setForm(f => ({ ...f, mentorshipTech: [...f.mentorshipTech.filter(Boolean), val] }));
+                          setTechInput('');
+                        }}
+                        className="w-10 h-10 flex items-center justify-center bg-accent hover:bg-accent-hover text-white rounded-xl transition-colors shrink-0"
+                      >
+                        <Plus size={15} />
+                      </button>
+                    </div>
+                    {form.mentorshipTech.filter(Boolean).length > 0 && (
+                      <div className="flex flex-wrap gap-1.5">
+                        {form.mentorshipTech.filter(Boolean).map((t, i) => (
+                          <span key={i} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium bg-accent/10 text-accent border border-accent/20">
+                            {t}
+                            <button type="button"
+                              onClick={() => setForm(f => ({ ...f, mentorshipTech: f.mentorshipTech.filter((_, j) => j !== i) }))}
+                              className="hover:opacity-60 transition-opacity">
+                              <XIcon size={10} />
+                            </button>
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Tech Stack — Familiar With */}
+                <div>
+                  <label className="flex items-center gap-1.5 text-sm font-medium text-text mb-1">
+                    <Code2 size={13} className="text-muted" /> Familiar With
+                  </label>
+                  <div className="space-y-2">
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        value={familiarTechInput}
+                        onChange={e => setFamiliarTechInput(e.target.value)}
+                        onKeyDown={e => {
+                          if (e.key === 'Enter' || e.key === ',') {
+                            e.preventDefault();
+                            const val = familiarTechInput.trim().replace(/,$/, '');
+                            if (val && !form.familiarTech.includes(val))
+                              setForm(f => ({ ...f, familiarTech: [...f.familiarTech, val] }));
+                            setFamiliarTechInput('');
+                          }
+                        }}
+                        placeholder="e.g. Docker, Kubernetes… (Enter or comma to add)"
+                        className="flex-1 px-3.5 py-2.5 border border-border rounded-xl text-sm text-text placeholder-muted focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/10 transition bg-white"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const val = familiarTechInput.trim();
+                          if (val && !form.familiarTech.includes(val))
+                            setForm(f => ({ ...f, familiarTech: [...f.familiarTech, val] }));
+                          setFamiliarTechInput('');
+                        }}
+                        className="w-10 h-10 flex items-center justify-center bg-muted hover:bg-[#4B5563] text-white rounded-xl transition-colors shrink-0"
+                      >
+                        <Plus size={15} />
+                      </button>
+                    </div>
+                    {form.familiarTech.length > 0 && (
+                      <div className="flex flex-wrap gap-1.5">
+                        {form.familiarTech.map((t, i) => (
+                          <span key={i} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium bg-muted/10 text-muted border border-muted/20">
+                            {t}
+                            <button type="button"
+                              onClick={() => setForm(f => ({ ...f, familiarTech: f.familiarTech.filter((_, j) => j !== i) }))}
+                              className="hover:opacity-60 transition-opacity">
+                              <XIcon size={10} />
+                            </button>
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
             )}
 
