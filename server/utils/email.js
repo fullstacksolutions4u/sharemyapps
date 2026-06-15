@@ -5,7 +5,7 @@ api.setApiKey(Brevo.TransactionalEmailsApiApiKeys.apiKey, process.env.BREVO_API_
 const BASE_URL   = process.env.CLIENT_URL || 'http://localhost:5173';
 const LOGO_URL   = 'https://res.cloudinary.com/di0vbvioi/image/upload/v1780659567/sharemyapp/logo.png';
 const LINKEDIN_URL = 'https://linkedin.com/company/sharemyapps';
-const FROM = { name: 'ShareMyApps', email: process.env.EMAIL_FROM || 'sharemyappsportal@gmail.com' };
+const FROM = { name: 'ShareMyApps', email: process.env.EMAIL_FROM || 'hello@sharemyapps.in' };
 
 const FOOTER = (text) => `
   <div style="background:#F3F0EB;padding:16px 32px;text-align:center;">
@@ -160,8 +160,8 @@ exports.sendPlacementPaymentEmail = async ({ to, name, plan }) => {
 
           <!-- Activation notice -->
           <div style="background:#EFF6FF;border:1px solid #BFDBFE;border-radius:10px;padding:16px 20px;margin-bottom:24px;">
-            <p style="margin:0;font-size:14px;color:#1E40AF;font-weight:600;">⏱ Services activate within 5 business days</p>
-            <p style="margin:6px 0 0;font-size:13px;color:#3B82F6;">Our HR team will review your profile and reach out to you within 5 business days to kick off your placement support.</p>
+            <p style="margin:0;font-size:14px;color:#1E40AF;font-weight:600;">⏱ Services activate within 3 business days</p>
+            <p style="margin:6px 0 0;font-size:13px;color:#3B82F6;">Our HR team will review your profile and reach out to you within 3 business days to kick off your placement support.</p>
           </div>
 
           <!-- Contact block -->
