@@ -13,58 +13,43 @@ const defaultAvatar = name => {
   return `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Ccircle cx='20' cy='20' r='20' fill='${bg}'/%3E%3Ccircle cx='20' cy='15' r='7' fill='%231a1a1a' opacity='.85'/%3E%3Cellipse cx='20' cy='35' rx='12' ry='9' fill='%231a1a1a' opacity='.85'/%3E%3C/svg%3E`;
 };
 
-function SlotDigit({ ch }) {
-  return (
-    <span key={ch} className="inline-block" style={{ animation: 'slotIn 1.2s cubic-bezier(0.22, 1, 0.36, 1) forwards' }}>
-      {ch}
-    </span>
-  );
-}
-
-function SlotNumber({ value, delay = 0, color }) {
-  const [count, setCount] = useState(value - 1);
-  useEffect(() => {
-    if (!value) return;
-    const t = setTimeout(() => setCount(value), delay);
-    return () => clearTimeout(t);
-  }, [value, delay]);
-
-  const str = count.toLocaleString();
-  const prefix = str.slice(0, -1);
-  const last = str.slice(-1);
-
-  return (
-    <span className={`font-bold inline-flex items-baseline ${color || 'text-text'}`}>
-      <span>{prefix}</span>
-      <span className="inline-block overflow-hidden" style={{ height: '1.2em', verticalAlign: 'bottom' }}>
-        <SlotDigit ch={last} />
-      </span>
-    </span>
-  );
-}
 
 function FloatingBubbles({ users, currentUserId }) {
   const COLS = 20;
   const SIZE = 28;
 
+  // Per-element dead zones in the centre column — gaps between elements are left open
+  const DEAD_ZONES = [
+    { l: 18, r: 82, t: 10, b: 50 }, // badge + headline
+    { l: 18, r: 82, t: 55, b: 65 }, // subtitle sentence
+    { l: 18, r: 82, t: 68, b: 82 }, // buttons row
+  ];
+  const inDead = (l, t) => DEAD_ZONES.some(z => l > z.l && l < z.r && t > z.t && t < z.b);
+
   const bubbles = useMemo(() => {
     const rows = Math.ceil(users.length / COLS);
-    return users.map((user, i) => {
+    const result = [];
+    let placed = 0;
+    for (let i = 0; i < users.length; i++) {
       const col = i % COLS;
       const row = Math.floor(i / COLS);
-      // cell centre in %
       const cellW = 100 / COLS;
       const cellH = 100 / rows;
       const jL = ((i * 7 + col * 3) % (cellW * 0.6)) - cellW * 0.3;
       const jT = ((i * 11 + row * 5) % (cellH * 0.6)) - cellH * 0.3;
-      return {
-        user,
-        left: `${col * cellW + cellW / 2 + jL}%`,
-        top:  `${row * cellH + cellH / 2 + jT}%`,
-        duration: `${14 + (i % 8) * 2}s`,
-        delay:    `${-(i * 0.37) % 20}s`,
-      };
-    });
+      const lPct = col * cellW + cellW / 2 + jL;
+      const tPct = row * cellH + cellH / 2 + jT;
+      if (inDead(lPct, tPct)) continue;
+      result.push({
+        user: users[i],
+        left: `${lPct}%`,
+        top:  `${tPct}%`,
+        duration: `${14 + (placed % 8) * 2}s`,
+        delay:    `${-(placed * 0.37) % 20}s`,
+      });
+      placed++;
+    }
+    return result;
   }, [users]);
 
   return (
@@ -113,25 +98,10 @@ function BubbleAvatar({ user, left, top, size, duration, delay, isMe }) {
 
 
 
-function StatsCounter({ devs, clients, students }) {
-  return (
-    <p className="text-sm text-muted">
-      <SlotNumber value={devs} delay={0} color="text-violet-600" />{" "}
-      <span className="font-medium text-violet-500">developers</span>,{" "}
-      <SlotNumber value={clients} delay={300} color="text-blue-600" />{" "}
-      <span className="font-medium text-blue-500">clients</span>,{" "}
-      <SlotNumber value={students} delay={600} color="text-amber-600" />{" "}
-      <span className="font-medium text-amber-500">students</span>{" "}
-      <span className="font-medium text-black">registered with ShareMyApps community for opportunities</span>
-    </p>
-  );
-}
-
 export default function Home() {
   const { user: currentUser } = useAuth();
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [stats, setStats] = useState(null);
   const [bubbleUsers, setBubbleUsers] = useState([]);
 
   useEffect(() => {
@@ -142,15 +112,12 @@ export default function Home() {
     api.get('/users/recent?limit=400')
       .then(res => setBubbleUsers(res.data))
       .catch(() => {});
-    api.get('/users/stats')
-      .then(res => setStats(res.data))
-      .catch(() => {});
   }, []);
 
   return (
     <div className="min-h-screen">
       {/* Hero */}
-      <div className="relative overflow-hidden" style={{ minHeight: 520 }}>
+      <div className="relative overflow-hidden" style={{ minHeight: 600 }}>
         {bubbleUsers.length > 0 && <FloatingBubbles users={bubbleUsers} currentUserId={currentUser?._id} />}
       <section className="max-w-6xl mx-auto px-4 sm:px-6 pt-20 pb-16 text-center relative z-10">
         <div className="inline-flex items-center gap-5 bg-[#E6F7F5] text-[#00A693] text-sm font-semibold px-5 py-2 rounded-full mb-6">
@@ -186,14 +153,6 @@ export default function Home() {
         </div>
 
       </section>
-      </div>
-
-      {/* Social proof */}
-      <div className="flex items-center justify-center py-6 bg-[#FAF9F6]">
-        {stats !== null
-          ? <StatsCounter devs={stats.developerCount} clients={stats.recruiterCount + 15} students={stats.menteeCount + 20} />
-          : <span className="h-4 w-72 bg-gray-200 animate-pulse rounded-full block" />
-        }
       </div>
 
       {/* How it works */}
