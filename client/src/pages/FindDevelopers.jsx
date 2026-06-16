@@ -90,6 +90,7 @@ const PAGE_SIZE = 20;
 /* ── Quota status bar ────────────────────────────────────── */
 function QuotaBar({ quota, onBuyClick, onBuyLabel }) {
   if (!quota) return null;
+  if (quota.featureEnabled === false) return null;
 
   const { freeUsed, freeLimit, paidRemaining } = quota;
   const freeLeft = Math.max(freeLimit - freeUsed, 0);
@@ -459,7 +460,7 @@ export default function FindDevelopers() {
       </div>
 
       {/* ── Payment modal ───────────────────────────────── */}
-      {showPayModal && (
+      {showPayModal && quota?.featureEnabled !== false && (
         <JDPaymentModal
           onClose={() => setShowPayModal(false)}
           onSuccess={(paidRemaining) => {
