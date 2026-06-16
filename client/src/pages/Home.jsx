@@ -153,7 +153,7 @@ export default function Home() {
       {/* Hero */}
       <div className="relative overflow-hidden" style={{ minHeight: 600 }}>
         {bubbleUsers.length > 0 && <FloatingBubbles users={bubbleUsers} currentUserId={currentUser?._id} />}
-        {currentUser && <YouOrbitBubble user={currentUser} />}
+        {currentUser && bubbleUsers.length > 0 && <YouOrbitBubble user={currentUser} />}
       <section className="max-w-6xl mx-auto px-4 sm:px-6 pt-20 pb-16 text-center relative z-10 pointer-events-none">
         <div className="inline-flex items-center gap-5 bg-[#E6F7F5] text-[#00A693] text-sm font-semibold px-5 py-2 rounded-full mb-6 pointer-events-auto">
           <span className="flex items-center gap-1.5"><Hammer size={15} className="text-violet-500" /> Build</span>
