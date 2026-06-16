@@ -1,7 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, LayoutGrid, Users, MessageCircle, Star, ShoppingBag, Hammer, Share2, CircleDollarSign } from 'lucide-react';
 import api from '../api/axios';
+import { useAuth } from '../context/AuthContext';
 import ProjectCard from '../components/ProjectCard';
 import ProjectSkeleton from '../components/ProjectSkeleton';
 
@@ -42,6 +43,75 @@ function SlotNumber({ value, delay = 0, color }) {
   );
 }
 
+function FloatingBubbles({ users, currentUserId }) {
+  const COLS = 20;
+  const SIZE = 28;
+
+  const bubbles = useMemo(() => {
+    const rows = Math.ceil(users.length / COLS);
+    return users.map((user, i) => {
+      const col = i % COLS;
+      const row = Math.floor(i / COLS);
+      // cell centre in %
+      const cellW = 100 / COLS;
+      const cellH = 100 / rows;
+      const jL = ((i * 7 + col * 3) % (cellW * 0.6)) - cellW * 0.3;
+      const jT = ((i * 11 + row * 5) % (cellH * 0.6)) - cellH * 0.3;
+      return {
+        user,
+        left: `${col * cellW + cellW / 2 + jL}%`,
+        top:  `${row * cellH + cellH / 2 + jT}%`,
+        duration: `${14 + (i % 8) * 2}s`,
+        delay:    `${-(i * 0.37) % 20}s`,
+      };
+    });
+  }, [users]);
+
+  return (
+    <div className="absolute inset-0 overflow-hidden pointer-events-none select-none" aria-hidden="false">
+      {bubbles.map(({ user, left, top, duration, delay }, i) => (
+        <BubbleAvatar key={user._id || i} user={user} left={left} top={top} size={SIZE} duration={duration} delay={delay} isMe={user._id === currentUserId} />
+      ))}
+    </div>
+  );
+}
+
+function BubbleAvatar({ user, left, top, size, duration, delay, isMe }) {
+  const [failed, setFailed] = useState(false);
+  const src = (!user.avatar || failed) ? defaultAvatar(user.name) : user.avatar;
+
+  return (
+    <div
+      className="absolute"
+      style={{ left, top, animation: `floatBubble ${duration} ease-in-out ${delay} infinite` }}
+    >
+      <div
+        className="bubble-tip"
+        style={{ width: isMe ? size + 8 : size, height: isMe ? size + 8 : size, transform: 'translate(-50%, -50%)', pointerEvents: 'auto', position: 'relative' }}
+      >
+        <img
+          src={src}
+          alt={user.name}
+          className="w-full h-full rounded-full object-cover shadow-sm"
+          style={{
+            opacity: isMe ? 1 : 0.55,
+            border: isMe ? '2.5px solid #00A693' : '1px solid rgba(255,255,255,0.6)',
+            boxShadow: isMe ? '0 0 0 3px rgba(0,166,147,0.35)' : undefined,
+          }}
+          onError={() => setFailed(true)}
+        />
+        <span className="bubble-tip-label">{isMe ? `You (${user.name})` : user.name}</span>
+        {isMe && (
+          <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 text-[8px] font-bold bg-[#00A693] text-white px-1 rounded-sm leading-tight whitespace-nowrap">
+            You
+          </span>
+        )}
+      </div>
+    </div>
+  );
+}
+
+
 function DevAvatar({ dev }) {
   const [failed, setFailed] = useState(false);
   if (!dev.avatar || failed)
@@ -58,17 +128,19 @@ function StatsCounter({ devs, clients, students }) {
       <span className="font-medium text-blue-500">clients</span>,{" "}
       <SlotNumber value={students} delay={600} color="text-amber-600" />{" "}
       <span className="font-medium text-amber-500">students</span>{" "}
-      <span className="font-medium text-black">registered with ShareMyApps community</span>
+      <span className="font-medium text-black">registered with ShareMyApps community for opportunities</span>
     </p>
   );
 }
 
 export default function Home() {
+  const { user: currentUser } = useAuth();
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const [devAvatars, setDevAvatars] = useState([]);
   const [devsLoading, setDevsLoading] = useState(true);
   const [stats, setStats] = useState(null);
+  const [bubbleUsers, setBubbleUsers] = useState([]);
 
   useEffect(() => {
     api.get('/projects?page=1')
@@ -76,11 +148,12 @@ export default function Home() {
       .catch(() => {})
       .finally(() => setLoading(false));
     api.get('/users/recent?limit=5&skip=20')
-      .then(res => {
-        setDevAvatars(res.data);
-      })
+      .then(res => setDevAvatars(res.data))
       .catch(() => {})
       .finally(() => setDevsLoading(false));
+    api.get('/users/recent?limit=400')
+      .then(res => setBubbleUsers(res.data))
+      .catch(() => {});
     api.get('/users/stats')
       .then(res => setStats(res.data))
       .catch(() => {});
@@ -89,7 +162,9 @@ export default function Home() {
   return (
     <div className="min-h-screen">
       {/* Hero */}
-      <section className="max-w-6xl mx-auto px-4 sm:px-6 pt-20 pb-16 text-center">
+      <div className="relative overflow-hidden" style={{ minHeight: 520 }}>
+        {bubbleUsers.length > 0 && <FloatingBubbles users={bubbleUsers} currentUserId={currentUser?._id} />}
+      <section className="max-w-6xl mx-auto px-4 sm:px-6 pt-20 pb-16 text-center relative z-10">
         <div className="inline-flex items-center gap-5 bg-[#E6F7F5] text-[#00A693] text-sm font-semibold px-5 py-2 rounded-full mb-6">
           <span className="flex items-center gap-1.5"><Hammer size={15} className="text-violet-500" /> Build</span>
           <span className="flex items-center gap-1.5"><Share2 size={15} className="text-blue-500" /> Share</span>
@@ -122,34 +197,16 @@ export default function Home() {
           </Link>
         </div>
 
-        {/* Social proof */}
-        <div className="flex items-center justify-center gap-3 mt-6">
-          <div className="flex -space-x-2">
-            {devsLoading
-              ? Array.from({ length: 5 }).map((_, i) => (
-                  <span key={i} className="w-8 h-8 rounded-full border-2 border-white bg-gray-200 animate-pulse shadow-sm block" />
-                ))
-              : devAvatars.map((dev, i) => (
-                  <div
-                    key={i}
-                    className="avatar-tooltip-wrap"
-                    style={{
-                      animation: `avatarBob 2s ease-in-out infinite`,
-                      animationDelay: `${i * 300}ms`,
-                    }}
-                  >
-                    <span className="avatar-tooltip">{dev.name}</span>
-                    <DevAvatar dev={dev} />
-                  </div>
-                ))
-            }
-          </div>
-          {stats !== null
-            ? <StatsCounter devs={stats.developerCount} clients={stats.recruiterCount + 15} students={stats.menteeCount + 20} />
-            : <span className="h-4 w-72 bg-gray-200 animate-pulse rounded-full block" />
-          }
-        </div>
       </section>
+      </div>
+
+      {/* Social proof */}
+      <div className="flex items-center justify-center py-6 bg-[#FAF9F6]">
+        {stats !== null
+          ? <StatsCounter devs={stats.developerCount} clients={stats.recruiterCount + 15} students={stats.menteeCount + 20} />
+          : <span className="h-4 w-72 bg-gray-200 animate-pulse rounded-full block" />
+        }
+      </div>
 
       {/* How it works */}
       <section className="border-y border-[#E5E1DA] bg-white">
