@@ -31,17 +31,24 @@ function FloatingBubbles({ users, currentUserId }) {
     const result = [];
     let placed = 0;
     for (let i = 0; i < users.length; i++) {
+      const u = users[i];
+      const isMe = u._id === currentUserId;
       const col = i % COLS;
       const row = Math.floor(i / COLS);
       const cellW = 100 / COLS;
       const cellH = 100 / rows;
       const jL = ((i * 7 + col * 3) % (cellW * 0.6)) - cellW * 0.3;
       const jT = ((i * 11 + row * 5) % (cellH * 0.6)) - cellH * 0.3;
-      const lPct = col * cellW + cellW / 2 + jL;
-      const tPct = row * cellH + cellH / 2 + jT;
-      if (inDead(lPct, tPct)) continue;
+      let lPct = col * cellW + cellW / 2 + jL;
+      let tPct = row * cellH + cellH / 2 + jT;
+      if (inDead(lPct, tPct)) {
+        if (!isMe) continue;
+        // Force the current user's bubble to a safe top-left spot
+        lPct = 8;
+        tPct = 8;
+      }
       result.push({
-        user: users[i],
+        user: u,
         left: `${lPct}%`,
         top:  `${tPct}%`,
         duration: `${14 + (placed % 8) * 2}s`,
@@ -50,7 +57,7 @@ function FloatingBubbles({ users, currentUserId }) {
       placed++;
     }
     return result;
-  }, [users]);
+  }, [users, currentUserId]);
 
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none select-none" aria-hidden="false">
