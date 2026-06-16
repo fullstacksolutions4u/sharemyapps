@@ -112,12 +112,6 @@ function BubbleAvatar({ user, left, top, size, duration, delay, isMe }) {
 }
 
 
-function DevAvatar({ dev }) {
-  const [failed, setFailed] = useState(false);
-  if (!dev.avatar || failed)
-    return <img src={defaultAvatar(dev.name)} alt={dev.name} className="w-8 h-8 rounded-full border-2 border-white object-cover shadow-sm" />;
-  return <img src={dev.avatar} alt={dev.name} className="w-8 h-8 rounded-full border-2 border-white object-cover shadow-sm" onError={() => setFailed(true)} />;
-}
 
 function StatsCounter({ devs, clients, students }) {
   return (
@@ -137,8 +131,6 @@ export default function Home() {
   const { user: currentUser } = useAuth();
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [devAvatars, setDevAvatars] = useState([]);
-  const [devsLoading, setDevsLoading] = useState(true);
   const [stats, setStats] = useState(null);
   const [bubbleUsers, setBubbleUsers] = useState([]);
 
@@ -147,10 +139,6 @@ export default function Home() {
       .then(res => setProjects(res.data.projects.slice(0, 6)))
       .catch(() => {})
       .finally(() => setLoading(false));
-    api.get('/users/recent?limit=5&skip=20')
-      .then(res => setDevAvatars(res.data))
-      .catch(() => {})
-      .finally(() => setDevsLoading(false));
     api.get('/users/recent?limit=400')
       .then(res => setBubbleUsers(res.data))
       .catch(() => {});
