@@ -47,6 +47,11 @@
   100% { transform: translate(0, 0); }
 }
 
+@keyframes orbitBadge {
+  from { transform: translate(-50%, -50%) rotate(0deg)   translateX(90px) rotate(0deg); }
+  to   { transform: translate(-50%, -50%) rotate(360deg) translateX(90px) rotate(-360deg); }
+}
+
 .bubble-tip {
   cursor: default;
 }

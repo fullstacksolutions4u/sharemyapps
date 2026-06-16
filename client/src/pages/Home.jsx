@@ -32,21 +32,16 @@ function FloatingBubbles({ users, currentUserId }) {
     let placed = 0;
     for (let i = 0; i < users.length; i++) {
       const u = users[i];
-      const isMe = u._id === currentUserId;
+      if (u._id === currentUserId) continue; // rendered separately as orbit bubble
       const col = i % COLS;
       const row = Math.floor(i / COLS);
       const cellW = 100 / COLS;
       const cellH = 100 / rows;
       const jL = ((i * 7 + col * 3) % (cellW * 0.6)) - cellW * 0.3;
       const jT = ((i * 11 + row * 5) % (cellH * 0.6)) - cellH * 0.3;
-      let lPct = col * cellW + cellW / 2 + jL;
-      let tPct = row * cellH + cellH / 2 + jT;
-      if (inDead(lPct, tPct)) {
-        if (!isMe) continue;
-        // Force the current user's bubble to a safe top-left spot
-        lPct = 8;
-        tPct = 8;
-      }
+      const lPct = col * cellW + cellW / 2 + jL;
+      const tPct = row * cellH + cellH / 2 + jT;
+      if (inDead(lPct, tPct)) continue;
       result.push({
         user: u,
         left: `${lPct}%`,
@@ -105,6 +100,38 @@ function BubbleAvatar({ user, left, top, size, duration, delay, isMe }) {
 
 
 
+function YouOrbitBubble({ user }) {
+  const [failed, setFailed] = useState(false);
+  const src = (!user.avatar || failed) ? defaultAvatar(user.name) : user.avatar;
+  const SIZE = 36;
+  return (
+    <div
+      style={{
+        position: 'absolute',
+        left: '50%',
+        top: 95,
+        animation: 'orbitBadge 12s linear infinite',
+        zIndex: 6,
+        pointerEvents: 'auto',
+      }}
+    >
+      <div className="bubble-tip" style={{ width: SIZE, height: SIZE, transform: 'translate(-50%, -50%)', position: 'relative' }}>
+        <img
+          src={src}
+          alt={user.name}
+          className="w-full h-full rounded-full object-cover"
+          style={{ border: '2.5px solid #00A693', boxShadow: '0 0 0 3px rgba(0,166,147,0.35)', opacity: 1 }}
+          onError={() => setFailed(true)}
+        />
+        <span className="bubble-tip-label">You ({user.name})</span>
+        <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 text-[8px] font-bold bg-[#00A693] text-white px-1 rounded-sm leading-tight whitespace-nowrap">
+          You
+        </span>
+      </div>
+    </div>
+  );
+}
+
 export default function Home() {
   const { user: currentUser } = useAuth();
   const [projects, setProjects] = useState([]);
@@ -126,6 +153,7 @@ export default function Home() {
       {/* Hero */}
       <div className="relative overflow-hidden" style={{ minHeight: 600 }}>
         {bubbleUsers.length > 0 && <FloatingBubbles users={bubbleUsers} currentUserId={currentUser?._id} />}
+        {currentUser && <YouOrbitBubble user={currentUser} />}
       <section className="max-w-6xl mx-auto px-4 sm:px-6 pt-20 pb-16 text-center relative z-10 pointer-events-none">
         <div className="inline-flex items-center gap-5 bg-[#E6F7F5] text-[#00A693] text-sm font-semibold px-5 py-2 rounded-full mb-6 pointer-events-auto">
           <span className="flex items-center gap-1.5"><Hammer size={15} className="text-violet-500" /> Build</span>
@@ -137,12 +165,12 @@ export default function Home() {
           <span className="text-[#00A693]">opportunities and connections</span>
         </h1>
         <p className="text-lg text-[#6B7280] max-w-2xl mx-auto leading-relaxed mb-10" style={{ fontFamily: "'Caveat', cursive", fontSize: "1.35rem" }}>
-          Be active in community for{" "}
+          Be part of the developers community to unlock{" "}
           <span className="text-accent font-semibold">hiring</span>,{" "}
-          <span className="text-[#6366F1] font-semibold">freelance projects</span>{" "}
+          <span className="text-[#6366F1] font-semibold">freelance</span>{" "}
           and{" "}
           <span className="text-[#F59E0B] font-semibold">mentorship</span>{" "}
-          Opportunities
+          opportunities
         </p>
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pointer-events-auto">
           <Link
