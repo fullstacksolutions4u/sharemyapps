@@ -12,7 +12,7 @@ const ALL_FEATURES = [
   'Resume Circulation Across Hiring Network',
   'Direct Referrals via Our Developer Network',
   'Dedicated Placement Officer',
-  'Technical Mock Interviews',
+  'Standing out against other applicants',
 ];
 
 const PLAN_FEATURES = {
@@ -35,7 +35,7 @@ const PLAN_FEATURES = {
     'Resume Circulation Across Hiring Network',
     'Direct Referrals via Our Developer Network',
     'Dedicated Placement Officer',
-    'Technical Mock Interviews',
+    'Standing out against other applicants',
   ],
 };
 
@@ -99,11 +99,11 @@ export default function PaidServices() {
     purchases.some(p => p.pack === `placement_${plan.name.toLowerCase()}`);
 
   return (
-    <div className="h-[calc(100vh-64px)] bg-[#F8F4EE] px-6 sm:px-10 flex flex-col justify-start pt-6 overflow-hidden">
+    <div className="h-[calc(100vh-64px)] bg-[#F8F4EE] px-6 sm:px-10 flex flex-col justify-start pt-4 overflow-hidden">
       <div className="max-w-4xl w-full mx-auto flex flex-col">
 
         {/* Header */}
-        <div className="flex items-center justify-between mb-5">
+        <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-xl bg-[#FAF7F0] border border-amber-200 flex items-center justify-center shrink-0">
               <Crown size={16} className="text-amber-500" />
@@ -123,11 +123,11 @@ export default function PaidServices() {
         {loading ? (
           <div className="bg-white rounded-2xl border border-gray-100 animate-pulse h-64" />
         ) : (
-          <div className="mt-3 bg-white rounded-2xl border border-gray-100 shadow-sm">
+          <div className="mt-2 bg-white rounded-2xl border border-gray-100 shadow-sm">
             <table className="w-full border-separate border-spacing-0">
               <thead>
                 <tr>
-                  <th className="text-left px-6 py-5 text-[11px] font-semibold uppercase tracking-widest text-gray-400 w-[38%] border-b border-gray-100 rounded-tl-2xl">
+                  <th className="text-left px-6 py-3 text-[11px] font-semibold uppercase tracking-widest text-gray-400 w-[38%] border-b border-gray-100 rounded-tl-2xl">
                     Features
                   </th>
 
@@ -137,7 +137,7 @@ export default function PaidServices() {
                     return (
                       <th
                         key={plan._id}
-                        className={`text-center px-5 py-5 relative border-b ${
+                        className={`text-center px-5 py-3 relative border-b ${
                           dark ? 'bg-[#00827F] border-[#006B68]' : 'border-gray-100'
                         } ${isLast ? 'rounded-tr-2xl' : ''}`}
                       >
@@ -149,7 +149,7 @@ export default function PaidServices() {
                         <p className={`text-[11px] font-bold uppercase tracking-widest mb-1 ${dark ? 'text-white/70' : 'text-gray-400'}`}>
                           {plan.name}{dark ? ' ★' : ''}
                         </p>
-                        <p className={`text-2xl font-bold tracking-tight ${dark ? 'text-white' : 'text-[#1a1a1a]'}`}>
+                        <p className={`text-xl font-bold tracking-tight ${dark ? 'text-white' : 'text-[#1a1a1a]'}`}>
                           ₹{Number(plan.price).toLocaleString('en-IN')}
                         </p>
                       </th>
@@ -161,12 +161,12 @@ export default function PaidServices() {
               <tbody>
                 {ALL_FEATURES.map((feature, i) => (
                   <tr key={i}>
-                    <td className="px-6 py-3.5 text-sm text-gray-600 border-t border-gray-100">{feature}</td>
+                    <td className="px-6 py-2 text-sm text-gray-600 border-t border-gray-100">{feature}</td>
                     {plans.map(plan => {
                       const dark = plan.variant === 'dark';
                       const has = planFeatures(plan).includes(feature);
                       return (
-                        <td key={plan._id} className={`text-center px-5 py-3.5 border-t ${dark ? 'bg-[#00827F] border-[#006B68]' : 'border-gray-100'}`}>
+                        <td key={plan._id} className={`text-center px-5 py-2 border-t ${dark ? 'bg-[#00827F] border-[#006B68]' : 'border-gray-100'}`}>
                           {has
                             ? <Check size={15} className={`mx-auto ${dark ? 'text-white' : 'text-accent'}`} strokeWidth={2.5} />
                             : <Minus size={15} className={`mx-auto ${dark ? 'text-white/30' : 'text-gray-300'}`} />
@@ -179,7 +179,7 @@ export default function PaidServices() {
 
                 {/* CTA row */}
                 <tr>
-                  <td className="px-6 py-4 border-t border-gray-100 rounded-bl-2xl" />
+                  <td className="px-6 py-3 border-t border-gray-100 rounded-bl-2xl" />
                   {plans.map((plan, idx) => {
                     const dark = plan.variant === 'dark';
                     const purchased = isPurchased(plan);
@@ -189,13 +189,13 @@ export default function PaidServices() {
                         dark ? 'bg-[#00827F] border-[#006B68]' : 'border-gray-100'
                       } ${isLast ? 'rounded-br-2xl' : ''}`}>
                         {purchased ? (
-                          <div className="inline-flex items-center justify-center gap-1.5 text-sm font-semibold px-5 py-2 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 w-full">
+                          <div className="inline-flex items-center justify-center gap-1.5 text-sm font-semibold px-5 py-1.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 w-full">
                             <Check size={13} /> Active
                           </div>
                         ) : (
                           <button
                             onClick={() => handleSelect(plan)}
-                            className={`w-full text-sm font-semibold px-5 py-2 rounded-xl transition-colors ${
+                            className={`w-full text-sm font-semibold px-5 py-1.5 rounded-xl transition-colors ${
                               dark
                                 ? 'bg-white text-[#00827F] hover:bg-gray-50'
                                 : 'border border-gray-200 text-gray-700 bg-white hover:border-gray-300 hover:bg-gray-50'
@@ -213,7 +213,7 @@ export default function PaidServices() {
           </div>
         )}
 
-        <p className="text-center text-xs text-gray-400 mt-3">
+        <p className="text-center text-xs text-gray-400 mt-2">
           A one-time payment with no recurring charges — our support continues until you're placed.
         </p>
       </div>

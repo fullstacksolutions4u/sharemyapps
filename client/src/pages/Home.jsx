@@ -119,8 +119,8 @@ export default function Home() {
       {/* Hero */}
       <div className="relative overflow-hidden" style={{ minHeight: 600 }}>
         {bubbleUsers.length > 0 && <FloatingBubbles users={bubbleUsers} currentUserId={currentUser?._id} />}
-      <section className="max-w-6xl mx-auto px-4 sm:px-6 pt-20 pb-16 text-center relative z-10">
-        <div className="inline-flex items-center gap-5 bg-[#E6F7F5] text-[#00A693] text-sm font-semibold px-5 py-2 rounded-full mb-6">
+      <section className="max-w-6xl mx-auto px-4 sm:px-6 pt-20 pb-16 text-center relative z-10 pointer-events-none">
+        <div className="inline-flex items-center gap-5 bg-[#E6F7F5] text-[#00A693] text-sm font-semibold px-5 py-2 rounded-full mb-6 pointer-events-auto">
           <span className="flex items-center gap-1.5"><Hammer size={15} className="text-violet-500" /> Build</span>
           <span className="flex items-center gap-1.5"><Share2 size={15} className="text-blue-500" /> Share</span>
           <span className="flex items-center gap-1.5"><CircleDollarSign size={15} className="text-amber-500" /> Earn</span>
@@ -130,14 +130,14 @@ export default function Home() {
           <span className="text-[#00A693]">opportunities and connections</span>
         </h1>
         <p className="text-lg text-[#6B7280] max-w-2xl mx-auto leading-relaxed mb-10" style={{ fontFamily: "'Caveat', cursive", fontSize: "1.35rem" }}>
-          Be active in this platform for{" "}
+          Be active in community for{" "}
           <span className="text-accent font-semibold">hiring</span>,{" "}
           <span className="text-[#6366F1] font-semibold">freelance projects</span>{" "}
           and{" "}
           <span className="text-[#F59E0B] font-semibold">mentorship</span>{" "}
           Opportunities
         </p>
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pointer-events-auto">
           <Link
             to="/explore"
             className="flex items-center gap-2 bg-[#00A693] hover:bg-[#007D6F] text-white px-6 py-3 rounded-xl font-medium transition-colors text-sm"

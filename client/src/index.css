@@ -52,9 +52,9 @@
 }
 .bubble-tip-label {
   position: absolute;
-  bottom: calc(100% + 5px);
+  top: calc(100% + 5px);
   left: 50%;
-  transform: translateX(-50%) translateY(4px);
+  transform: translateX(-50%) translateY(-4px);
   background: #1a1a1a;
   color: #fff;
   font-size: 10px;
