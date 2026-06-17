@@ -22,7 +22,7 @@ const CATEGORIES = [
   'Open Source Project', 'Portfolios', 'Company Website', 'Others',
 ];
 
-const SKELETONS = Array.from({ length: 12 });
+const SKELETONS = Array.from({ length: 16 });
 const GROUP = 10;
 const getPageGroup = (current, total) => {
   const groupStart = Math.floor((current - 1) / GROUP) * GROUP + 1;

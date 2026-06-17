@@ -27,10 +27,10 @@ async function notifyCollaborators(collaboratorIds, addedBy, project) {
   }));
 }
 
-const PAGE_SIZE = 12;
+const PAGE_SIZE = 16;
 
-const SCORE_PAGE1 = 8; // score-sorted slots on page 1 (rows 1–2)
-const NEWLY_ADDED = 4; // newest slots on page 1 (row 3)
+const SCORE_PAGE1 = 12; // score-sorted slots on page 1 (rows 1–3)
+const NEWLY_ADDED = 4;  // newest slots on page 1 (row 4)
 
 const ownerLookupStages = [
   {
