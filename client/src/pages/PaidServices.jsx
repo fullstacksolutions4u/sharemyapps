@@ -10,8 +10,8 @@ const ALL_FEATURES = [
   'Job Portal Profile Optimization',
   'LinkedIn Profile Branding & Optimization',
   'Resume Circulation Across Hiring Network',
-  'Direct Referrals via Our Developer Network',
-  'Dedicated Placement Officer',
+  'Direct Referrals to Companies via Our Developers Community',
+  'Dedicated Placement Officer to guide you in applying for jobs',
   'Standing out against other applicants',
 ];
 
@@ -26,8 +26,8 @@ const PLAN_FEATURES = {
     'Job Portal Profile Optimization',
     'LinkedIn Profile Branding & Optimization',
     'Resume Circulation Across Hiring Network',
-    'Direct Referrals via Our Developer Network',
-    'Dedicated Placement Officer',
+    'Direct Referrals to Companies via Our Developers Community',
+    'Dedicated Placement Officer to guide you in applying for jobs',
     'Standing out against other applicants',
   ],
 };
@@ -206,8 +206,8 @@ export default function PaidServices() {
           </div>
         )}
 
-        <p className="text-center text-xs text-gray-400 mt-2">
-          A one-time payment with no recurring charges — our support continues until you're placed.
+        <p className="text-center text-xs text-slate-800 font-medium mt-2">
+          ₹999 Premium Plan · Money-back guarantee if not placed in 2 months
         </p>
       </div>
 
