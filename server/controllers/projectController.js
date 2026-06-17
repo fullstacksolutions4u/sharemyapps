@@ -112,7 +112,19 @@ exports.getProjects = async (req, res) => {
       { description: { $regex: safeSearch, $options: 'i' } },
     ];
     if (tag) filter.techTags = { $in: [tag] };
-    if (category) filter.category = category;
+    if (category) {
+      if (category === 'Mobile Applications') {
+        const mobileConditions = [
+          { appType: 'mobile' },
+          { category: { $in: ['Mobile Applications', 'Mobile Application for Client'] } },
+        ];
+        filter.$or = filter.$or
+          ? [{ $and: [{ $or: filter.$or }] }, ...mobileConditions]
+          : mobileConditions;
+      } else {
+        filter.category = category;
+      }
+    }
     if (type) filter.appType = type;
 
     const total = await Project.countDocuments(filter);

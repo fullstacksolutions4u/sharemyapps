@@ -14,7 +14,7 @@ const statusStyle = {
   rejected: 'bg-red-50 text-red-700 border-red-200',
 };
 const CATEGORIES = [
-  'E-Commerce', 'Project Management', 'Customer Relationship Management (CRM)',
+  'Mobile Applications', 'E-Commerce', 'Project Management', 'Customer Relationship Management (CRM)',
   'Finance & Accounting', 'Productivity Tools', 'Social Networking & Community',
   'Healthcare & Fitness', 'Education & Learning Platforms', 'HR & Recruitment',
   'Marketing & SEO', 'Real Estate', 'Travel & Booking', 'Food Delivery & Restaurant',
@@ -26,7 +26,7 @@ const CATEGORIES = [
   'Environment & Sustainability', 'Non-Profit & Social Impact',
   'Personal Finance & Budgeting', 'Job Board & Freelancing',
   'News & Blogging', 'Sports & Recreation', 'Fashion & Lifestyle',
-  'Open Source Project', 'Portfolios', 'Company Website', 'Mobile Application for Client', 'Others',
+  'Open Source Project', 'Portfolios', 'Company Website', 'Others',
 ];
 
 const DEFAULT_APPROVE_NOTE = `Complete your profile with your contact details and social links (LinkedIn, GitHub, portfolio, etc.), and showcase your best live projects. Clients often prefer reviewing real projects over resumes, so highlight projects with unique features and ensure they work flawlessly in production.

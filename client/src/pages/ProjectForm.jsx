@@ -12,7 +12,7 @@ const AVATAR_COLORS = [
 const avatarColor = (name = '') => AVATAR_COLORS[name.charCodeAt(0) % AVATAR_COLORS.length];
 
 const CATEGORIES = [
-  'E-Commerce', 'Project Management', 'Customer Relationship Management (CRM)',
+  'Mobile Applications', 'E-Commerce', 'Project Management', 'Customer Relationship Management (CRM)',
   'Finance & Accounting', 'Productivity Tools', 'Social Networking & Community',
   'Healthcare & Fitness', 'Education & Learning Platforms', 'HR & Recruitment',
   'Marketing & SEO', 'Real Estate', 'Travel & Booking', 'Food Delivery & Restaurant',
@@ -24,7 +24,7 @@ const CATEGORIES = [
   'Environment & Sustainability', 'Non-Profit & Social Impact',
   'Personal Finance & Budgeting', 'Job Board & Freelancing',
   'News & Blogging', 'Sports & Recreation', 'Fashion & Lifestyle',
-  'Open Source Project', 'Portfolios', 'Company Website', 'Mobile Application for Client', 'Others',
+  'Open Source Project', 'Portfolios', 'Company Website', 'Others',
 ];
 
 export default function ProjectForm() {
