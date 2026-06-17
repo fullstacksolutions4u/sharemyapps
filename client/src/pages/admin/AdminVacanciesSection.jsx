@@ -245,6 +245,12 @@ export default function AdminVacanciesSection({ hideTitle = false }) {
                           {v.location && <span className="flex items-center gap-1"><MapPin size={10} />{v.location}</span>}
                         </div>
                       )}
+                      {v.createdBy && (
+                        <p className="text-xs text-violet-600 font-medium mb-1">
+                          Posted by recruiter: {v.createdBy.name}
+                          {v.createdBy.email && <span className="text-[#9CA3AF] font-normal ml-1">({v.createdBy.email})</span>}
+                        </p>
+                      )}
                       <p className="text-xs text-[#9CA3AF] line-clamp-2">{v.description}</p>
                       {v.skills?.length > 0 && (
                         <div className="flex flex-wrap gap-1 mt-2">

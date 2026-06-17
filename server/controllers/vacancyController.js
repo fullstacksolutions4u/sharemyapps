@@ -10,7 +10,7 @@ const parseSkills = (skills) =>
 
 exports.getVacancies = async (req, res) => {
   try {
-    const vacancies = await Vacancy.find().sort({ status: 1, createdAt: -1 }).limit(200).lean(); // active first (a < c)
+    const vacancies = await Vacancy.find({ createdBy: { $exists: true, $ne: null } }).sort({ status: 1, createdAt: -1 }).limit(200).lean();
     const userId = req.user?._id?.toString();
     const result = vacancies.map(v => ({
       ...v,
@@ -52,7 +52,8 @@ exports.getAllVacanciesAdmin = async (req, res) => {
   try {
     const vacancies = await Vacancy.find()
       .sort({ createdAt: -1 })
-      .populate('interests', 'name email regNumber userType avatar');
+      .populate('interests', 'name email regNumber userType avatar')
+      .populate('createdBy', 'name email companyName userType');
     res.json(vacancies);
   } catch (err) { res.status(500).json({ message: err.message }); }
 };

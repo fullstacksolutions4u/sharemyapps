@@ -11,6 +11,16 @@ import { toAbs } from '../components/recruiter/developerUtils';
 
 const PAGE_SIZE = 20;
 
+const PRESET_DESIGNATIONS = [
+  'MERN Stack Developer', 'MEAN Stack Developer', 'MEVN Stack Developer', 'PERN Stack Developer',
+  'Python Full Stack Developer', 'Backend Developer',
+  'React Developer', 'Next.js Developer', 'Vue.js Developer', 'Angular Developer',
+  'PHP Developer', 'Laravel Developer',
+  'Flutter Developer', 'React Native Developer', 'Android Developer', 'iOS Developer',
+  'Data Scientist', 'Machine Learning Engineer', 'DevOps Engineer', 'UI/UX Developer',
+  'Java Full Stack Developer', '.NET Developer', 'Spring Boot Developer',
+];
+
 const INDIA_STATES = [
   'Andhra Pradesh', 'Arunachal Pradesh', 'Assam', 'Bihar', 'Chhattisgarh',
   'Goa', 'Gujarat', 'Haryana', 'Himachal Pradesh', 'Jharkhand', 'Karnataka',
@@ -84,7 +94,7 @@ export default function Candidates() {
     if (designation.trim()) {
       const q = designation.toLowerCase();
       list = list.filter(d =>
-        d.designations?.some(des => des.toLowerCase().includes(q))
+        d.designations?.some(des => des.toLowerCase() === q)
       );
     }
 
@@ -149,14 +159,17 @@ export default function Candidates() {
       <div className="bg-white border border-border rounded-xl p-4 mb-5">
         <div className="flex flex-wrap gap-3">
           <div className="relative flex-1 min-w-44">
-            <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted pointer-events-none" />
-            <input
-              type="text"
-              placeholder="Designation…"
+            <select
               value={designation}
               onChange={e => { setDesignation(e.target.value); setPage(1); }}
-              className="w-full pl-8 pr-3 py-2 text-sm border border-border rounded-lg bg-bg focus:outline-none focus:border-accent"
-            />
+              className="w-full appearance-none pl-3 pr-8 py-2 text-sm border border-border rounded-lg bg-bg focus:outline-none focus:border-accent text-text"
+            >
+              <option value="">All Designations</option>
+              {PRESET_DESIGNATIONS.map(d => (
+                <option key={d} value={d}>{d}</option>
+              ))}
+            </select>
+            <ChevronDown size={13} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted pointer-events-none" />
           </div>
           <div className="relative flex-1 min-w-40">
             <MapPin size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted pointer-events-none" />
@@ -280,7 +293,9 @@ export default function Candidates() {
               <tbody className="divide-y divide-[#F3F0EB]">
                 {paginated.map((dev, idx) => {
                   const globalIdx = (page - 1) * PAGE_SIZE + idx + 1;
-                  const role = dev.designations?.[0] || dev.resumeData?.experience?.[0]?.role || null;
+                  const role = (designation
+                    ? dev.designations?.find(des => des.toLowerCase() === designation.toLowerCase())
+                    : null) ?? dev.designations?.[0] ?? dev.resumeData?.experience?.[0]?.role ?? null;
                   const skills = Array.isArray(dev.resumeData?.skills) ? dev.resumeData.skills.slice(0, 4) : [];
                   const locations = (dev.preferredLocations || []).slice(0, 2);
 

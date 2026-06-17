@@ -232,6 +232,9 @@ export default function Navbar() {
           {isRecruiter && (
             <Link to="/find-developers/history" className="relative text-base text-muted hover:text-text transition-colors after:absolute after:left-0 after:-bottom-0.5 after:h-[1.5px] after:w-0 after:bg-accent after:transition-[width] after:duration-300 hover:after:w-full">Developers Directory</Link>
           )}
+          {isRecruiter && (
+            <Link to="/post-vacancy" className="relative text-base text-muted hover:text-text transition-colors after:absolute after:left-0 after:-bottom-0.5 after:h-[1.5px] after:w-0 after:bg-accent after:transition-[width] after:duration-300 hover:after:w-full">Post Vacancy</Link>
+          )}
           {isMentee && (
             <Link to="/mentors" className="relative text-base text-muted hover:text-text transition-colors after:absolute after:left-0 after:-bottom-0.5 after:h-[1.5px] after:w-0 after:bg-accent after:transition-[width] after:duration-300 hover:after:w-full">Mentors</Link>
           )}
@@ -347,6 +350,9 @@ export default function Navbar() {
           )}
           {isRecruiter && (
             <Link to="/find-developers/history" onClick={() => setMenuOpen(false)} className="block text-sm text-muted hover:text-text">Developers Directory</Link>
+          )}
+          {isRecruiter && (
+            <Link to="/post-vacancy" onClick={() => setMenuOpen(false)} className="block text-sm text-muted hover:text-text">Post Vacancy</Link>
           )}
           {isMentee && (
             <Link to="/mentors" onClick={() => setMenuOpen(false)} className="block text-sm text-muted hover:text-text">Mentors</Link>

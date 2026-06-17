@@ -32,6 +32,7 @@ const Mentors            = lazy(() => import('./pages/Mentors'));
 const FreelanceDevelopers = lazy(() => import('./pages/FreelanceDevelopers'));
 const ForgotPassword     = lazy(() => import('./pages/ForgotPassword'));
 const PaidServices       = lazy(() => import('./pages/PaidServices'));
+const AddVacancy         = lazy(() => import('./pages/AddVacancy'));
 
 class ErrorBoundary extends Component {
   state = { error: null };
@@ -128,6 +129,7 @@ function AppRoutes() {
             <Route path="/select-role" element={<SelectRole />} />
             <Route path="/find-developers" element={<ProtectedRoute><FindDevelopers /></ProtectedRoute>} />
             <Route path="/find-developers/history" element={<ProtectedRoute><FindDevelopersHistory /></ProtectedRoute>} />
+            <Route path="/post-vacancy" element={<ProtectedRoute><AddVacancy /></ProtectedRoute>} />
             <Route path="/mentors" element={<ProtectedRoute><Mentors /></ProtectedRoute>} />
             <Route path="/freelance-developers" element={<FreelanceDevelopers />} />
             <Route path="/career-services" element={<PaidServices />} />
