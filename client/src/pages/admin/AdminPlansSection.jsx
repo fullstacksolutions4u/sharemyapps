@@ -246,7 +246,7 @@ function ServicesList({ config, onSelect }) {
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-sm font-semibold text-text mb-0.5">Placement Support Services</p>
-            <p className="text-xs text-muted">Manage Basic, Standard & Premium HR placement plans</p>
+            <p className="text-xs text-muted">Manage Basic & Premium HR placement plans</p>
           </div>
           <ChevronRight size={16} className="text-muted group-hover:text-accent transition-colors shrink-0" />
         </button>

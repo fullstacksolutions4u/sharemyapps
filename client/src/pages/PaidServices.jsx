@@ -21,13 +21,6 @@ const PLAN_FEATURES = {
     'Job Portal Profile Optimization',
     'LinkedIn Profile Branding & Optimization',
   ],
-  Standard: [
-    'ATS Compatible Resume Optimization',
-    'Job Portal Profile Optimization',
-    'LinkedIn Profile Branding & Optimization',
-    'Resume Circulation Across Hiring Network',
-    'Direct Referrals via Our Developer Network',
-  ],
   Premium: [
     'ATS Compatible Resume Optimization',
     'Job Portal Profile Optimization',

@@ -7,7 +7,7 @@ const SEED_PLANS = [
     features: ['ATS-optimised resume creation', 'LinkedIn profile optimisation'],
   },
   {
-    name: 'Premium', price: 1499, order: 1, variant: 'dark', badge: 'Best Value', badgeStyle: 'top-center',
+    name: 'Premium', price: 999, order: 1, variant: 'dark', badge: 'Best Value', badgeStyle: 'top-center',
     description: 'Full-service placement with direct company referrals.',
     features: [
       'ATS-optimised resume creation',
@@ -17,18 +17,10 @@ const SEED_PLANS = [
       'Dedicated Placement Officer',
     ],
   },
-  {
-    name: 'Standard', price: 999, order: 2, variant: 'accent', badge: '', badgeStyle: '',
-    description: 'Resume & LinkedIn essentials plus distribution to companies.',
-    features: [
-      'ATS-optimised resume creation',
-      'LinkedIn profile optimisation',
-      'Resume distribution services to companies',
-    ],
-  },
 ];
 
 async function seedIfEmpty() {
+  await Plan.deleteMany({ name: { $nin: SEED_PLANS.map(p => p.name) } });
   const count = await Plan.countDocuments();
   if (count === 0) {
     await Plan.insertMany(SEED_PLANS);
@@ -36,7 +28,7 @@ async function seedIfEmpty() {
     for (const planData of SEED_PLANS) {
       await Plan.findOneAndUpdate(
         { name: planData.name },
-        { $set: { badge: planData.badge, badgeStyle: planData.badgeStyle, features: planData.features, description: planData.description, variant: planData.variant, order: planData.order } },
+        { $set: { price: planData.price, badge: planData.badge, badgeStyle: planData.badgeStyle, features: planData.features, description: planData.description, variant: planData.variant, order: planData.order } },
         { upsert: false }
       );
     }
