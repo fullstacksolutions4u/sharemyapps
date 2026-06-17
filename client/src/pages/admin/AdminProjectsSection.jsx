@@ -70,6 +70,16 @@ function ProjectReviewPage({ project: initial, onBack, onSave, onApprove, onReje
     finally { setSaving(false); }
   };
 
+  const handleApprove = async (note) => {
+    setSaving(true);
+    try {
+      const res = await api.put(`/admin/projects/${initial._id}`, { ...form, githubUrls, githubVisible });
+      onSave(res.data);
+    } catch { toast.error('Failed to save changes before approving'); setSaving(false); return; }
+    setSaving(false);
+    onApprove(initial._id, note);
+  };
+
   const handleReject = () => {
     const note = rejectTitle.trim() ? `${rejectTitle.trim()}\n\n${rejectBody.trim()}` : rejectBody.trim();
     onReject(initial._id, note);
@@ -225,7 +235,7 @@ function ProjectReviewPage({ project: initial, onBack, onSave, onApprove, onReje
               <>
                 {initial.status !== 'approved' && (
                   <>
-                    <button onClick={() => onApprove(initial._id, '')} disabled={updating === initial._id}
+                    <button onClick={() => handleApprove('')} disabled={updating === initial._id || saving}
                       className="flex items-center gap-1.5 bg-[#00A693] hover:bg-[#007D6F] text-white px-5 py-2.5 rounded-xl font-medium text-sm transition-colors disabled:opacity-50">
                       <Check size={14} /> {updating === initial._id ? 'Approving...' : 'Approve'}
                     </button>
@@ -242,7 +252,7 @@ function ProjectReviewPage({ project: initial, onBack, onSave, onApprove, onReje
                   </button>
                 )}
                 {initial.status === 'rejected' && (
-                  <button onClick={() => onApprove(initial._id, '')} disabled={updating === initial._id}
+                  <button onClick={() => handleApprove('')} disabled={updating === initial._id || saving}
                     className="flex items-center gap-1.5 bg-yellow-50 hover:bg-yellow-100 text-yellow-700 border border-yellow-200 px-5 py-2.5 rounded-xl font-medium text-sm transition-colors">
                     Move to Pending
                   </button>
@@ -256,7 +266,7 @@ function ProjectReviewPage({ project: initial, onBack, onSave, onApprove, onReje
                   className="flex items-center gap-1.5 border border-[#E5E1DA] text-[#6B7280] hover:text-[#1A1A1A] px-5 py-2.5 rounded-xl text-sm font-medium transition-colors">
                   Cancel
                 </button>
-                <button onClick={() => onApprove(initial._id, approveNote.trim())} disabled={updating === initial._id}
+                <button onClick={() => handleApprove(approveNote.trim())} disabled={updating === initial._id || saving}
                   className="flex items-center gap-1.5 bg-green-600 hover:bg-green-700 text-white px-5 py-2.5 rounded-xl font-medium text-sm transition-colors disabled:opacity-50">
                   <Check size={14} /> {updating === initial._id ? 'Approving...' : 'Approve & Send Comment'}
                 </button>
