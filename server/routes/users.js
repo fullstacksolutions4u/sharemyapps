@@ -50,7 +50,7 @@ router.get('/search', async (req, res) => {
 // GET /api/users/recent — last N registered users (for social proof on homepage)
 router.get('/recent', async (req, res) => {
   try {
-    const limit = Math.min(parseInt(req.query.limit) || 5, 500);
+    const limit = Math.min(parseInt(req.query.limit) || 5, 600);
     const skip = Math.max(parseInt(req.query.skip) || 0, 0);
     const users = await require('../models/User').find(
       { role: { $ne: 'admin' }, isDeleted: { $ne: true }, userType: 'developer', avatar: { $exists: true, $ne: '' } },

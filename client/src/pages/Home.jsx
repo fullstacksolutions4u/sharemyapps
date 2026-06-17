@@ -15,7 +15,7 @@ const defaultAvatar = name => {
 
 
 function FloatingBubbles({ users, currentUserId }) {
-  const COLS = 20;
+  const COLS = 24;
   const SIZE = 28;
 
   // Per-element dead zones in the centre column — gaps between elements are left open
@@ -143,7 +143,7 @@ export default function Home() {
       .then(res => setProjects(res.data.projects.slice(0, 6)))
       .catch(() => {})
       .finally(() => setLoading(false));
-    api.get('/users/recent?limit=400')
+    api.get('/users/recent?limit=600')
       .then(res => setBubbleUsers(res.data))
       .catch(() => {});
   }, []);
