@@ -137,7 +137,7 @@ export default function SelectRole() {
     if (u.role === 'admin') return '/admin';
     if (u.userType === 'recruiter' || u.userType === 'client') return '/client-profile';
     if (u.userType === 'mentee') return '/portfolios';
-    return '/profile';
+    return '/dashboard';
   };
 
   if (!user) return <Navigate to="/login" replace />;
@@ -194,7 +194,11 @@ export default function SelectRole() {
       }
       const updated = await selectRole(selected, extraData);
       toast.success('Welcome aboard!');
-      navigate(homeFor(updated), { replace: true });
+      if (updated.userType === 'developer') {
+        navigate('/profile', { replace: true, state: { fromOnboarding: true } });
+      } else {
+        navigate(homeFor(updated), { replace: true });
+      }
     } catch {
       toast.error('Something went wrong. Please try again.');
     } finally {

@@ -1,39 +1,28 @@
 import { useEffect, useState } from 'react';
-import { Check, Crown, Mail, Minus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 import PlacementPaymentModal from '../components/PlacementPaymentModal';
 
-const ALL_FEATURES = [
-  'ATS Compatible Resume Optimization',
-  'Job Portal Profile Optimization',
-  'LinkedIn Profile Branding & Optimization',
-  'Resume Circulation Across Hiring Network',
-  'Direct Referrals to Companies via Our Developers Community',
-  'Dedicated Placement Officer to guide you in applying for jobs',
-  'Standing out against other applicants',
+const FREE_FEATURES = [
+  { b: 'Recruiter Direct', t: ' Hiring' },
+  { b: 'Apply to', t: ' Jobs' },
+  { b: 'Freelance', t: ' Opportunities' },
+  { b: 'Mentoring', t: ' Opportunities' },
 ];
 
-const PLAN_FEATURES = {
-  Basic: [
-    'ATS Compatible Resume Optimization',
-    'Job Portal Profile Optimization',
-    'LinkedIn Profile Branding & Optimization',
-  ],
-  Premium: [
-    'ATS Compatible Resume Optimization',
-    'Job Portal Profile Optimization',
-    'LinkedIn Profile Branding & Optimization',
-    'Resume Circulation Across Hiring Network',
-    'Direct Referrals to Companies via Our Developers Community',
-    'Dedicated Placement Officer to guide you in applying for jobs',
-    'Standing out against other applicants',
-  ],
-};
+const PREMIUM_FEATURES = [
+  { b: 'ATS Compatible', t: ' Resume Optimization' },
+  { b: 'Job Portal Profile', t: ' Optimization' },
+  { b: 'LinkedIn Profile Branding', t: ' & Optimization' },
+  { b: 'Resume Circulation', t: ' Across Hiring Network' },
+  { b: 'Direct Referrals', t: ' to Companies via Our Developers Community' },
+  { b: 'Dedicated Placement Officer', t: ' to guide you' },
+  { b: 'Standing out', t: ' against other applicants' },
+];
 
 const PLANS_CACHE_KEY = 'sma_plans_v1';
-const PLANS_CACHE_TTL = 15 * 60 * 1000; // 15 minutes
+const PLANS_CACHE_TTL = 15 * 60 * 1000;
 
 function getCachedPlans() {
   try {
@@ -72,148 +61,185 @@ export default function PaidServices() {
       .catch(() => {});
   }, [user]);
 
-  const handleSelect = (plan) => {
-    if (!user) {
-      navigate('/login', { state: { from: '/career-services' } });
-      return;
-    }
-    setSelectedPlan(plan);
+  const premiumPlan = plans.find(p => p.name === 'Premium') ?? null;
+  const isPurchased = premiumPlan && purchases.some(p => p.pack === 'placement_premium');
+
+  const handleGetStarted = () => {
+    if (!user) { navigate('/login', { state: { from: '/career-services' } }); return; }
+    if (premiumPlan) setSelectedPlan(premiumPlan);
   };
 
   const refreshPurchases = () => {
-    api.get('/payments/placement/my-purchases')
-      .then(r => setPurchases(r.data))
-      .catch(() => {});
+    api.get('/payments/placement/my-purchases').then(r => setPurchases(r.data)).catch(() => {});
   };
 
-  const planFeatures = (plan) => PLAN_FEATURES[plan.name] ?? [];
-
-  const isPurchased = (plan) =>
-    purchases.some(p => p.pack === `placement_${plan.name.toLowerCase()}`);
-
   return (
-    <div className="h-[calc(100vh-64px)] bg-[#F8F4EE] px-6 sm:px-10 flex flex-col justify-start pt-4 overflow-hidden">
-      <div className="max-w-4xl w-full mx-auto flex flex-col">
+    <div style={{
+      minHeight: 'calc(100vh - 64px)',
+      background: '#e9e6df',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: '48px 24px',
+      fontFamily: "'Manrope', system-ui, sans-serif",
+    }}>
+      <div style={{
+        width: '100%',
+        maxWidth: '780px',
+        background: '#fbfcfb',
+        border: '1px solid #e8edeb',
+        borderRadius: '22px',
+        boxShadow: '0 24px 60px -28px rgba(20,40,38,0.30)',
+        overflow: 'hidden',
+      }}>
 
-        {/* Header */}
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-[#FAF7F0] border border-amber-200 flex items-center justify-center shrink-0">
-              <Crown size={16} className="text-amber-500" />
-            </div>
-            <h1 className="text-xl font-bold text-[#1a1a1a]">Premium Services</h1>
-          </div>
-          <a
-            href="mailto:hello@sharemyapps.in"
-            className="flex items-center gap-2 border border-amber-200 bg-[#FAF7F0] text-amber-700 text-sm font-medium px-4 py-2 rounded-full hover:bg-amber-100 hover:border-amber-300 transition-colors shrink-0"
-          >
-            <Mail size={13} />
-            Enquiries: hello@sharemyapps.in
-          </a>
+        {/* Banner */}
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: '6px',
+          background: '#f0f6f5',
+          borderBottom: '1px solid #e2ecea',
+          padding: '12px 24px',
+          fontSize: '13.5px',
+          color: '#4a6663',
+          flexWrap: 'wrap',
+        }}>
+          <span>Secure a high-paying job and get hired ⚡</span>
+          <span style={{ fontWeight: 800, color: '#0a7373' }}>4x faster</span>
+          <span>with Premium!</span>
         </div>
 
-        {/* Table */}
-        {loading ? (
-          <div className="bg-white rounded-2xl border border-gray-100 animate-pulse h-64" />
-        ) : (
-          <div className="mt-2 bg-white rounded-2xl border border-gray-100 shadow-sm">
-            <table className="w-full border-separate border-spacing-0">
-              <thead>
-                <tr>
-                  <th className="text-left px-6 py-3 text-[11px] font-semibold uppercase tracking-widest text-gray-400 w-[38%] border-b border-gray-100 rounded-tl-2xl">
-                    Features
-                  </th>
+        {/* Two columns */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.15fr' }}>
 
-                  {plans.map((plan, idx) => {
-                    const dark = plan.variant === 'dark';
-                    const isLast = idx === plans.length - 1;
-                    return (
-                      <th
-                        key={plan._id}
-                        className={`text-center px-5 py-3 relative border-b ${
-                          dark ? 'bg-[#00827F] border-[#006B68]' : 'border-gray-100'
-                        } ${isLast ? 'rounded-tr-2xl' : ''}`}
-                      >
-                        {plan.badge && plan.badgeStyle === 'top-center' && (
-                          <span className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-amber-600 text-white text-[10px] font-bold uppercase tracking-widest px-3 py-0.5 rounded-full whitespace-nowrap shadow-sm">
-                            {plan.badge}
-                          </span>
-                        )}
-                        <p className={`text-[11px] font-bold uppercase tracking-widest mb-1 ${dark ? 'text-white/70' : 'text-gray-400'}`}>
-                          {plan.name}{dark ? ' ★' : ''}
-                        </p>
-                        <p className={`text-xl font-bold tracking-tight ${dark ? 'text-white' : 'text-[#1a1a1a]'}`}>
-                          ₹{Number(plan.price).toLocaleString('en-IN')}
-                        </p>
-                      </th>
-                    );
-                  })}
-                </tr>
-              </thead>
-
-              <tbody>
-                {ALL_FEATURES.map((feature, i) => (
-                  <tr key={i}>
-                    <td className="px-6 py-2 text-sm text-gray-600 border-t border-gray-100">{feature}</td>
-                    {plans.map(plan => {
-                      const dark = plan.variant === 'dark';
-                      const has = planFeatures(plan).includes(feature);
-                      return (
-                        <td key={plan._id} className={`text-center px-5 py-2 border-t ${dark ? 'bg-[#00827F] border-[#006B68]' : 'border-gray-100'}`}>
-                          {has
-                            ? <Check size={15} className={`mx-auto ${dark ? 'text-white' : 'text-accent'}`} strokeWidth={2.5} />
-                            : <Minus size={15} className={`mx-auto ${dark ? 'text-white/30' : 'text-gray-300'}`} />
-                          }
-                        </td>
-                      );
-                    })}
-                  </tr>
-                ))}
-
-                {/* CTA row */}
-                <tr>
-                  <td className="px-6 py-3 border-t border-gray-100 rounded-bl-2xl" />
-                  {plans.map((plan, idx) => {
-                    const dark = plan.variant === 'dark';
-                    const purchased = isPurchased(plan);
-                    const isLast = idx === plans.length - 1;
-                    return (
-                      <td key={plan._id} className={`px-5 py-4 text-center border-t ${
-                        dark ? 'bg-[#00827F] border-[#006B68]' : 'border-gray-100'
-                      } ${isLast ? 'rounded-br-2xl' : ''}`}>
-                        {purchased ? (
-                          <div className="inline-flex items-center justify-center gap-1.5 text-sm font-semibold px-5 py-1.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 w-full">
-                            <Check size={13} /> Active
-                          </div>
-                        ) : (
-                          <button
-                            onClick={() => handleSelect(plan)}
-                            className={`w-full text-sm font-semibold px-5 py-1.5 rounded-xl transition-colors ${
-                              dark
-                                ? 'bg-white text-[#00827F] hover:bg-gray-50'
-                                : 'border border-gray-200 text-gray-700 bg-white hover:border-gray-300 hover:bg-gray-50'
-                            }`}
-                          >
-                            Get Started
-                          </button>
-                        )}
-                      </td>
-                    );
-                  })}
-                </tr>
-              </tbody>
-            </table>
+          {/* Free */}
+          <div style={{
+            padding: '32px 30px',
+            display: 'flex',
+            flexDirection: 'column',
+            borderRight: '1px solid #eef2f0',
+          }}>
+            <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: '4px' }}>
+              <span style={{ fontFamily: "'Spectral', serif", fontSize: '25px', fontWeight: 600, color: '#243433' }}>Free</span>
+              <span style={{ fontFamily: "'Spectral', serif", fontSize: '18px', fontWeight: 600, color: '#9aa6a4' }}>₹0</span>
+            </div>
+            <div style={{ height: '1.5px', background: '#dfe6e4', margin: '14px 0 18px' }} />
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '13px', flex: 1 }}>
+              {FREE_FEATURES.map((f, i) => (
+                <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: '11px' }}>
+                  <span style={{ color: '#a8b2af', fontFamily: "'Spectral', serif", fontSize: '15px', lineHeight: 1.3, marginTop: '1px' }}>✓</span>
+                  <span style={{ fontSize: '14px', color: '#586160', lineHeight: 1.4 }}>
+                    <span style={{ fontWeight: 700, color: '#243433' }}>{f.b}</span>{f.t}
+                  </span>
+                </div>
+              ))}
+            </div>
+            <button
+              onClick={() => navigate(user ? '/dashboard' : '/register')}
+              style={{
+                marginTop: '26px',
+                width: '100%',
+                background: '#243433',
+                color: '#fff',
+                border: 'none',
+                borderRadius: '8px',
+                padding: '14px',
+                fontSize: '13.5px',
+                fontWeight: 700,
+                letterSpacing: '.02em',
+                fontFamily: "'Manrope', sans-serif",
+                cursor: 'pointer',
+              }}
+            >
+              Get Started for Free
+            </button>
           </div>
-        )}
 
-        <p className="text-center text-xs text-slate-800 font-medium mt-2">
-          ₹999 Premium Plan · Money-back guarantee if not placed in 2 months
-        </p>
+          {/* Premium */}
+          <div style={{
+            padding: '32px 30px',
+            display: 'flex',
+            flexDirection: 'column',
+            background: '#f5faf9',
+          }}>
+            <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: '4px' }}>
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: '10px' }}>
+                <span style={{ fontFamily: "'Spectral', serif", fontSize: '25px', fontWeight: 600, color: '#243433' }}>Premium</span>
+                <span style={{
+                  fontSize: '10px', fontWeight: 800, letterSpacing: '.1em', textTransform: 'uppercase',
+                  color: '#0a7373', background: '#dcefed', borderRadius: '999px', padding: '3px 9px',
+                }}>Popular</span>
+              </div>
+              <span style={{ fontFamily: "'Spectral', serif", fontSize: '22px', fontWeight: 600, color: '#0a7373' }}>
+                {loading ? '…' : premiumPlan ? `₹${Number(premiumPlan.price).toLocaleString('en-IN')}` : '₹999'}
+              </span>
+            </div>
+            <div style={{ height: '2px', background: '#0c8c8c', margin: '14px 0 18px' }} />
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '11px', flex: 1 }}>
+              {PREMIUM_FEATURES.map((f, i) => (
+                <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: '11px' }}>
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style={{ flex: 'none', marginTop: '2px' }}>
+                    <path d="M3 8.4l3 3 7-7.4" stroke="#0c8c8c" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                  <span style={{ fontSize: '14px', color: '#3f4948', lineHeight: 1.4 }}>
+                    <span style={{ fontWeight: 700, color: '#243433' }}>{f.b}</span>{f.t}
+                  </span>
+                </div>
+              ))}
+            </div>
+            {isPurchased ? (
+              <div style={{
+                marginTop: '26px', width: '100%', background: '#dcefed', color: '#0a7373',
+                border: 'none', borderRadius: '8px', padding: '14px', fontSize: '13.5px',
+                fontWeight: 700, textAlign: 'center', letterSpacing: '.02em',
+              }}>
+                ✓ Active
+              </div>
+            ) : (
+              <button
+                onClick={handleGetStarted}
+                disabled={loading}
+                style={{
+                  marginTop: '26px',
+                  width: '100%',
+                  background: '#0c8c8c',
+                  color: '#fff',
+                  border: 'none',
+                  borderRadius: '8px',
+                  padding: '14px',
+                  fontSize: '13.5px',
+                  fontWeight: 700,
+                  letterSpacing: '.02em',
+                  fontFamily: "'Manrope', sans-serif",
+                  cursor: loading ? 'default' : 'pointer',
+                  opacity: loading ? 0.6 : 1,
+                }}
+              >
+                Get Started
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div style={{
+          textAlign: 'center',
+          padding: '14px 24px',
+          borderTop: '1px solid #eef2f0',
+          fontFamily: "'Spectral', serif",
+          fontStyle: 'italic',
+          fontSize: '13px',
+          color: '#8f9594',
+        }}>
+          ₹999 Premium Plan · Money-back guarantee if not placed within 2 months
+        </div>
       </div>
 
       {selectedPlan && (
         <PlacementPaymentModal
-          plan={{ ...selectedPlan, features: planFeatures(selectedPlan) }}
+          plan={{ ...selectedPlan, features: PREMIUM_FEATURES.map(f => f.b + f.t) }}
           onClose={() => setSelectedPlan(null)}
           onSuccess={() => { setSelectedPlan(null); refreshPurchases(); }}
         />

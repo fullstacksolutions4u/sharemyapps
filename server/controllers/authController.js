@@ -340,16 +340,34 @@ exports.resetPassword = async (req, res) => {
   }
 };
 
-exports.googleCallback = (req, res) => {
-  const token = signToken(req.user._id);
-  setCookie(res, token);
-  let dest = '/select-role';
-  if (req.user.role === 'admin') dest = '/admin';
-  else if (req.user.onboardingComplete) {
-    if (req.user.userType === 'recruiter') dest = req.user.companyName ? '/find-developers' : '/client-profile';
-    else if (req.user.userType === 'client') dest = '/client-profile';
-    else if (req.user.userType === 'mentee') dest = '/developers';
-    else dest = '/dashboard';
+exports.googleCallback = async (req, res) => {
+  try {
+    const token = signToken(req.user._id);
+    setCookie(res, token);
+
+    // Always fetch fresh from DB — Passport may return a stale user object
+    const user = await User.findById(req.user._id);
+
+    let dest = '/select-role';
+    let fromOnboarding = false;
+
+    if (user.role === 'admin') dest = '/admin';
+    else if (user.onboardingComplete) {
+      if (user.userType === 'recruiter') dest = user.companyName ? '/find-developers' : '/client-profile';
+      else if (user.userType === 'client') dest = '/client-profile';
+      else if (user.userType === 'mentee') dest = '/developers';
+      else if (user.userType === 'developer') {
+        const profileComplete = user.phone && user.socialLinks &&
+          Object.values(user.socialLinks).some(v => v);
+        if (!profileComplete) { dest = '/profile'; fromOnboarding = true; }
+        else dest = '/dashboard';
+      }
+    }
+
+    const query = fromOnboarding ? `?token=${token}&fromOnboarding=true` : `?token=${token}`;
+    res.redirect(`${process.env.CLIENT_URL}${dest}${query}`);
+  } catch (err) {
+    console.error('[googleCallback] error:', err);
+    res.redirect(`${process.env.CLIENT_URL}/login?error=oauth`);
   }
-  res.redirect(`${process.env.CLIENT_URL}${dest}?token=${token}`);
 };

@@ -186,6 +186,135 @@ exports.sendPlacementPaymentEmail = async ({ to, name, plan }) => {
   });
 };
 
+exports.sendMarketingCampaignEmail = async ({ to, name }) => {
+  const hrUrl = `${BASE_URL}/hr-services`;
+
+  await api.sendTransacEmail({
+    sender: FROM,
+    to: [{ email: to, name }],
+    subject: `You've sent 50+ apps. We'll send 10 that actually land interviews — or your ₹999 back.`,
+    htmlContent: `
+      <div style="font-family:Inter,Arial,sans-serif;max-width:600px;margin:0 auto;background:#ffffff;border-radius:16px;overflow:hidden;border:1px solid #E5E1DA;">
+
+        <!-- Header -->
+        <div style="background:linear-gradient(135deg,#00A693 0%,#007A6D 100%);padding:32px;text-align:center;">
+          <img src="${LOGO_URL}" alt="ShareMyApps" style="height:64px;object-fit:contain;" />
+          <p style="color:rgba(255,255,255,0.85);margin:12px 0 0;font-size:13px;letter-spacing:0.04em;text-transform:uppercase;font-weight:600;">Placement Support · Exclusively for Our Members</p>
+        </div>
+
+        <!-- Pain-point hook -->
+        <div style="padding:36px 36px 0;">
+          <h1 style="margin:0 0 8px;font-size:24px;font-weight:800;color:#111827;line-height:1.3;">
+            Still waiting for that one reply?
+          </h1>
+          <p style="margin:0 0 24px;font-size:15px;color:#6B7280;line-height:1.6;">
+            Hi ${name},
+          </p>
+          <p style="margin:0 0 16px;font-size:15px;color:#374151;line-height:1.7;">
+            We know the feeling. You spent hours tailoring your resume, wrote a perfect cover letter, hit <em>Apply</em> — and heard nothing. Then you did it again. And again. <strong>No reply. No interview. No feedback.</strong>
+          </p>
+          <p style="margin:0 0 24px;font-size:15px;color:#374151;line-height:1.7;">
+            The job market in 2025 is brutal. ATS filters, ghost recruiters, and hundreds of applicants for every role. <strong>It's not your fault — the system is broken.</strong>
+          </p>
+        </div>
+
+        <!-- Divider with callout -->
+        <div style="margin:0 36px;padding:20px 24px;background:#FFF7ED;border-left:4px solid #F97316;border-radius:0 10px 10px 0;">
+          <p style="margin:0;font-size:15px;font-weight:700;color:#C2410C;">The average developer sends 80+ applications before landing an interview.</p>
+          <p style="margin:6px 0 0;font-size:13px;color:#9A3412;">That's weeks of effort with no guarantee of even a callback.</p>
+        </div>
+
+        <!-- Solution section -->
+        <div style="padding:28px 36px 0;">
+          <h2 style="margin:0 0 12px;font-size:20px;font-weight:700;color:#111827;">We apply for you — the right way.</h2>
+          <p style="margin:0 0 20px;font-size:15px;color:#374151;line-height:1.7;">
+            ShareMyApps now offers a <strong>dedicated HR team</strong> that handles your job search end-to-end. Real people. Real connections. Personalized outreach — not bulk spam.
+          </p>
+        </div>
+
+        <!-- Plans comparison -->
+        <div style="padding:0 36px 28px;display:flex;gap:16px;">
+
+          <!-- Basic Plan -->
+          <div style="flex:1;border:1px solid #E5E7EB;border-radius:12px;padding:20px;background:#F9FAFB;">
+            <p style="margin:0 0 4px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#6B7280;">Basic</p>
+            <p style="margin:0 0 16px;font-size:26px;font-weight:800;color:#111827;">₹499</p>
+            <ul style="margin:0;padding:0 0 0 4px;list-style:none;">
+              <li style="font-size:13px;color:#374151;padding:5px 0;border-bottom:1px solid #F3F4F6;">✅ Resume review &amp; expert feedback</li>
+              <li style="font-size:13px;color:#374151;padding:5px 0;border-bottom:1px solid #F3F4F6;">✅ LinkedIn &amp; GitHub profile tips</li>
+              <li style="font-size:13px;color:#374151;padding:5px 0;">✅ 48-hr turnaround</li>
+            </ul>
+          </div>
+
+          <!-- Standard Plan — hero -->
+          <div style="flex:1;border:2px solid #00A693;border-radius:12px;padding:20px;background:#F0FDFB;position:relative;">
+            <div style="position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:#00A693;color:#fff;font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;padding:4px 14px;border-radius:20px;white-space:nowrap;">Most Popular</div>
+            <p style="margin:0 0 4px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#00A693;">Standard</p>
+            <p style="margin:0 0 2px;font-size:26px;font-weight:800;color:#111827;">₹999</p>
+            <p style="margin:0 0 16px;font-size:11px;color:#6B7280;">one-time · no hidden fees</p>
+            <ul style="margin:0;padding:0 0 0 4px;list-style:none;">
+              <li style="font-size:13px;color:#374151;padding:5px 0;border-bottom:1px solid #D1FAF5;">✅ Everything in Basic</li>
+              <li style="font-size:13px;color:#374151;padding:5px 0;border-bottom:1px solid #D1FAF5;">✅ <strong>10 targeted job applications</strong> by our HR team</li>
+              <li style="font-size:13px;color:#374151;padding:5px 0;border-bottom:1px solid #D1FAF5;">✅ Weekly progress updates</li>
+              <li style="font-size:13px;color:#374151;padding:5px 0;border-bottom:1px solid #D1FAF5;">✅ Personalized cover letters per role</li>
+              <li style="font-size:13px;font-weight:700;color:#DC2626;padding:5px 0;">🔒 Full refund if zero callbacks*</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Refund guarantee callout -->
+        <div style="margin:0 36px 28px;padding:20px 24px;background:linear-gradient(135deg,#FEF2F2 0%,#FFF5F5 100%);border:1px solid #FECACA;border-radius:12px;text-align:center;">
+          <p style="margin:0 0 6px;font-size:22px;">🛡️</p>
+          <p style="margin:0 0 6px;font-size:16px;font-weight:800;color:#991B1B;">Zero-Risk Guarantee</p>
+          <p style="margin:0;font-size:14px;color:#7F1D1D;line-height:1.6;">
+            We're so confident in our team that if you don't receive <strong>a single interview callback</strong> from our 10 applications within <strong>30 days</strong>, we'll refund your entire ₹999. No questions asked.
+          </p>
+        </div>
+
+        <!-- Social proof / trust signals -->
+        <div style="margin:0 36px 28px;display:flex;gap:12px;text-align:center;">
+          <div style="flex:1;padding:14px;background:#F9FAFB;border-radius:10px;border:1px solid #E5E7EB;">
+            <p style="margin:0 0 4px;font-size:22px;font-weight:800;color:#00A693;">48h</p>
+            <p style="margin:0;font-size:12px;color:#6B7280;">Avg. service activation</p>
+          </div>
+          <div style="flex:1;padding:14px;background:#F9FAFB;border-radius:10px;border:1px solid #E5E7EB;">
+            <p style="margin:0 0 4px;font-size:22px;font-weight:800;color:#00A693;">10+</p>
+            <p style="margin:0;font-size:12px;color:#6B7280;">Targeted applications sent</p>
+          </div>
+          <div style="flex:1;padding:14px;background:#F9FAFB;border-radius:10px;border:1px solid #E5E7EB;">
+            <p style="margin:0 0 4px;font-size:22px;font-weight:800;color:#00A693;">100%</p>
+            <p style="margin:0;font-size:12px;color:#6B7280;">Money-back if no callbacks</p>
+          </div>
+        </div>
+
+        <!-- CTA -->
+        <div style="padding:0 36px 36px;text-align:center;">
+          <a href="${hrUrl}" style="display:inline-block;background:linear-gradient(135deg,#00A693 0%,#007A6D 100%);color:#ffffff;text-decoration:none;padding:16px 40px;border-radius:50px;font-weight:700;font-size:16px;letter-spacing:0.02em;box-shadow:0 4px 14px rgba(0,166,147,0.35);">
+            Claim My ₹999 Plan →
+          </a>
+          <p style="margin:16px 0 0;font-size:12px;color:#9CA3AF;">Spots are limited. Our HR team handles requests one at a time.</p>
+
+          <!-- PS line -->
+          <div style="margin-top:24px;padding:16px;background:#FFFBF0;border-radius:10px;border:1px solid #FDE68A;text-align:left;">
+            <p style="margin:0;font-size:13px;color:#92400E;line-height:1.6;">
+              <strong>P.S.</strong> — You already built the apps. You have the skills. The only thing missing is someone who knows <em>how to get them seen</em>. That's exactly what we do. Don't let another month go by without a single interview.
+            </p>
+          </div>
+        </div>
+
+        <!-- Fine print -->
+        <div style="padding:0 36px 20px;">
+          <p style="margin:0;font-size:11px;color:#D1D5DB;line-height:1.5;">
+            *Refund applies to the Standard (₹999) plan only. Eligibility requires a valid, up-to-date resume, completion of the job preference form, and no rejection of applications by the developer. Refund processed within 7 business days of claim.
+          </p>
+        </div>
+
+        ${FOOTER('You received this because you are a registered developer on ShareMyApps. To unsubscribe, reply with "unsubscribe".')}
+      </div>
+    `,
+  });
+};
+
 exports.sendProjectRejectedEmail = async ({ to, name, projectTitle, projectId, adminNote }) => {
   const editUrl = `${BASE_URL}/dashboard`;
 
