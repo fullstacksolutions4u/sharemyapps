@@ -357,7 +357,7 @@ exports.googleCallback = async (req, res) => {
       else if (user.userType === 'client') dest = '/client-profile';
       else if (user.userType === 'mentee') dest = '/developers';
       else if (user.userType === 'developer') {
-        const profileComplete = user.phone && (user.linkedinUrl || user.githubUrl || user.portfolioUrl || user.leetcodeUrl);
+        const profileComplete = !!(user.cvUrl && user.cvUrl.trim());
         if (!profileComplete) { dest = '/profile'; fromOnboarding = true; }
         else dest = '/dashboard';
       }

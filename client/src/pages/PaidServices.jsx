@@ -5,20 +5,20 @@ import { useAuth } from '../context/AuthContext';
 import PlacementPaymentModal from '../components/PlacementPaymentModal';
 
 const FREE_FEATURES = [
-  { b: 'Recruiter Direct', t: ' Hiring' },
-  { b: 'Apply to', t: ' Jobs' },
-  { b: 'Freelance', t: ' Opportunities' },
-  { b: 'Mentoring', t: ' Opportunities' },
+  'Recruiter Direct Hiring',
+  'Apply to Jobs',
+  'Freelance Opportunities',
+  'Mentoring Opportunities',
 ];
 
 const PREMIUM_FEATURES = [
-  { b: 'ATS Compatible', t: ' Resume Optimization' },
-  { b: 'Job Portal Profile', t: ' Optimization' },
-  { b: 'LinkedIn Profile Branding', t: ' & Optimization' },
-  { b: 'Resume Circulation', t: ' Across Hiring Network' },
-  { b: 'Direct Referrals', t: ' to Companies via Our Developers Community' },
-  { b: 'Dedicated Placement Officer', t: ' to guide you' },
-  { b: 'Standing out', t: ' against other applicants' },
+  'ATS Compatible Resume Optimization',
+  'Job Portal Profile Optimization',
+  'LinkedIn Profile Branding & Optimization',
+  'Resume Circulation Across Hiring Network',
+  'Direct Referrals to Companies via Our Developers Community',
+  'Dedicated Placement Officer to guide you',
+  'Standing out against other applicants',
 ];
 
 const PLANS_CACHE_KEY = 'sma_plans_v1';
@@ -130,9 +130,7 @@ export default function PaidServices() {
               {FREE_FEATURES.map((f, i) => (
                 <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: '11px' }}>
                   <span style={{ color: '#a8b2af', fontFamily: "'Spectral', serif", fontSize: '15px', lineHeight: 1.3, marginTop: '1px' }}>✓</span>
-                  <span style={{ fontSize: '14px', color: '#586160', lineHeight: 1.4 }}>
-                    <span style={{ fontWeight: 700, color: '#243433' }}>{f.b}</span>{f.t}
-                  </span>
+                  <span style={{ fontSize: '14px', color: '#586160', lineHeight: 1.4 }}>{f}</span>
                 </div>
               ))}
             </div>
@@ -183,9 +181,7 @@ export default function PaidServices() {
                   <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style={{ flex: 'none', marginTop: '2px' }}>
                     <path d="M3 8.4l3 3 7-7.4" stroke="#0c8c8c" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
-                  <span style={{ fontSize: '14px', color: '#3f4948', lineHeight: 1.4 }}>
-                    <span style={{ fontWeight: 700, color: '#243433' }}>{f.b}</span>{f.t}
-                  </span>
+                  <span style={{ fontSize: '14px', color: '#3f4948', lineHeight: 1.4 }}>{f}</span>
                 </div>
               ))}
             </div>
@@ -239,7 +235,7 @@ export default function PaidServices() {
 
       {selectedPlan && (
         <PlacementPaymentModal
-          plan={{ ...selectedPlan, features: PREMIUM_FEATURES.map(f => f.b + f.t) }}
+          plan={{ ...selectedPlan, features: PREMIUM_FEATURES }}
           onClose={() => setSelectedPlan(null)}
           onSuccess={() => { setSelectedPlan(null); refreshPurchases(); }}
         />
