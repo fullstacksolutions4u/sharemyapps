@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate, Navigate } from 'react-router-dom';
 import { Code2, Briefcase, GraduationCap, Handshake, X, Plus, IndianRupee } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
@@ -108,10 +108,11 @@ function TagInput({ tags, onAdd, onRemove, inputValue, onInputChange, placeholde
 }
 
 export default function SelectRole() {
-  const { user, selectRole } = useAuth();
+  const { user, loading: authLoading, selectRole } = useAuth();
   const navigate = useNavigate();
   const [selected, setSelected] = useState(null);
   const [loading, setLoading] = useState(false);
+  const completingRef = useRef(false);
 
   const [menteeForm, setMenteeForm] = useState({
     education: '',
@@ -140,8 +141,14 @@ export default function SelectRole() {
     return '/dashboard';
   };
 
+  useEffect(() => {
+    if (!authLoading && user?.onboardingComplete && !completingRef.current) {
+      navigate(homeFor(user), { replace: true });
+    }
+  }, [authLoading, user, navigate]);
+
+  if (authLoading) return null;
   if (!user) return <Navigate to="/login" replace />;
-  if (user.onboardingComplete) return <Navigate to={homeFor(user)} replace />;
 
   const addTag = (field, inputField) => (val) => {
     if (!menteeForm[field].includes(val))
@@ -194,6 +201,7 @@ export default function SelectRole() {
       }
       const updated = await selectRole(selected, extraData);
       toast.success('Welcome aboard!');
+      completingRef.current = true;
       if (updated.userType === 'developer') {
         navigate('/profile', { replace: true, state: { fromOnboarding: true } });
       } else {
