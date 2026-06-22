@@ -9,6 +9,10 @@ const siteConfigSchema = new mongoose.Schema({
   jdPaidPackSize:    { type: Number, default: 5 },   // analyses per paid pack
   jdPackPricePaise:  { type: Number, default: 49900 }, // ₹499 in paise
   jdFeatureEnabled:  { type: Boolean, default: true },
+
+  // Free premium offer
+  freeOfferEnabled:  { type: Boolean, default: true },
+  freeOfferDueDate:  { type: Date, default: null },
 }, { timestamps: true });
 
 module.exports = mongoose.model('SiteConfig', siteConfigSchema);

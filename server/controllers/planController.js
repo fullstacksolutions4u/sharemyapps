@@ -15,6 +15,7 @@ const SEED_PLANS = [
       'Resume distribution services to companies',
       'Direct referrals to partner companies',
       'Dedicated Placement Officer',
+      'Mock Interviews with Industry Experts',
     ],
   },
 ];

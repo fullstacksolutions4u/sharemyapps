@@ -36,6 +36,7 @@ const freelance = require('../controllers/freelanceOpportunityController');
 const mentorship = require('../controllers/mentorshipOpportunityController');
 const { aiChat } = require('../controllers/aiChatController');
 const { adminGetPlans, adminCreatePlan, adminUpdatePlan, adminDeletePlan } = require('../controllers/planController');
+const { adminGetOffers, adminUpdateOffer, adminGetOfferStats } = require('../controllers/freeOfferController');
 
 router.use(protect, requireAdmin);
 
@@ -101,6 +102,11 @@ router.get('/plans', adminGetPlans);
 router.post('/plans', adminCreatePlan);
 router.put('/plans/:id', adminUpdatePlan);
 router.delete('/plans/:id', adminDeletePlan);
+
+// Free offer applications
+router.get('/offers', adminGetOffers);
+router.get('/offers/stats', adminGetOfferStats);
+router.patch('/offers/:id', adminUpdateOffer);
 
 router.post('/ai-chat', aiChat);
 

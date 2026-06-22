@@ -103,7 +103,7 @@ function AppRoutes() {
       <ScrollToTop />
       <AdminRedirect />
       {!isAdmin && <Navbar />}
-      <main>
+      <main className="flex-1 flex flex-col">
         <Suspense fallback={<PageLoader />}>
           <ErrorBoundary>
           <Routes>

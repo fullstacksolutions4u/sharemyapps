@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
-import PlacementPaymentModal from '../components/PlacementPaymentModal';
 
 const FREE_FEATURES = [
   'Recruiter Direct Hiring',
@@ -18,59 +17,98 @@ const PREMIUM_FEATURES = [
   'Resume Circulation Across Hiring Network',
   'Direct Referrals to Companies via Our Developers Community',
   'Dedicated Placement Officer to guide you',
+  'Mock Interviews with Industry Experts',
   'Standing out against other applicants',
 ];
-
-const PLANS_CACHE_KEY = 'sma_plans_v1';
-const PLANS_CACHE_TTL = 15 * 60 * 1000;
-
-function getCachedPlans() {
-  try {
-    const raw = localStorage.getItem(PLANS_CACHE_KEY);
-    if (!raw) return null;
-    const { data, ts } = JSON.parse(raw);
-    return Date.now() - ts < PLANS_CACHE_TTL ? data : null;
-  } catch { return null; }
-}
-
-function setCachedPlans(data) {
-  try { localStorage.setItem(PLANS_CACHE_KEY, JSON.stringify({ data, ts: Date.now() })); } catch { /* ignore */ }
-}
 
 export default function PaidServices() {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [plans, setPlans] = useState(() => getCachedPlans() ?? []);
-  const [purchases, setPurchases] = useState([]);
-  const [loading, setLoading] = useState(() => !getCachedPlans());
-  const [selectedPlan, setSelectedPlan] = useState(null);
+  const [freeOffer, setFreeOffer] = useState(null);
+  const [offerConfig, setOfferConfig] = useState(null);
+  const [applyLoading, setApplyLoading] = useState(false);
+  const [applyError, setApplyError] = useState('');
 
   useEffect(() => {
-    const cached = getCachedPlans();
-    if (cached) return;
-    api.get('/plans')
-      .then(r => { setPlans(r.data); setCachedPlans(r.data); })
-      .catch(() => {})
-      .finally(() => setLoading(false));
+    api.get('/offers/config').then(r => setOfferConfig(r.data)).catch(() => {});
   }, []);
 
   useEffect(() => {
     if (!user) return;
-    api.get('/payments/placement/my-purchases')
-      .then(r => setPurchases(r.data))
+    api.get('/offers/my-offer')
+      .then(r => setFreeOffer(r.data))
       .catch(() => {});
   }, [user]);
 
-  const premiumPlan = plans.find(p => p.name === 'Premium') ?? null;
-  const isPurchased = premiumPlan && purchases.some(p => p.pack === 'placement_premium');
-
-  const handleGetStarted = () => {
+  const handleApplyFreeOffer = async () => {
     if (!user) { navigate('/login', { state: { from: '/career-services' } }); return; }
-    if (premiumPlan) setSelectedPlan(premiumPlan);
+    setApplyLoading(true);
+    setApplyError('');
+    try {
+      const res = await api.post('/offers/apply');
+      setFreeOffer(res.data);
+    } catch (err) {
+      setApplyError(err.response?.data?.message || 'Failed to apply. Please try again.');
+    } finally {
+      setApplyLoading(false);
+    }
   };
 
-  const refreshPurchases = () => {
-    api.get('/payments/placement/my-purchases').then(r => setPurchases(r.data)).catch(() => {});
+  const renderPremiumButton = () => {
+    if (!offerConfig?.freeOfferEnabled) {
+      return (
+        <button
+          disabled
+          style={{
+            marginTop: '26px', width: '100%', background: '#0c8c8c', color: '#fff',
+            border: 'none', borderRadius: '8px', padding: '14px', fontSize: '13.5px',
+            fontWeight: 700, letterSpacing: '.02em', fontFamily: "'Manrope', sans-serif",
+            cursor: 'default',
+          }}
+        >
+          Get Started
+        </button>
+      );
+    }
+
+    if (freeOffer) {
+      return (
+        <div style={{
+          marginTop: '26px', width: '100%', background: '#dcefed', color: '#0a7373',
+          borderRadius: '8px', padding: '14px', fontSize: '13.5px',
+          fontWeight: 700, textAlign: 'center', letterSpacing: '.02em',
+        }}>
+          ✓ Applied
+          <span style={{ display: 'block', fontSize: '11.5px', fontWeight: 500, marginTop: '4px', color: '#2a8a7a' }}>
+            You're registered for the free offer. Our executive will contact you within 2 days.
+          </span>
+        </div>
+      );
+    }
+
+    const dueDateLabel = offerConfig?.freeOfferDueDate
+      ? new Date(offerConfig.freeOfferDueDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'long' })
+      : 'June 30';
+
+    return (
+      <div style={{ marginTop: '26px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+        <button
+          onClick={handleApplyFreeOffer}
+          disabled={applyLoading}
+          style={{
+            width: '100%', background: '#0c8c8c', color: '#fff', border: 'none',
+            borderRadius: '8px', padding: '14px', fontSize: '13.5px', fontWeight: 700,
+            letterSpacing: '.02em', fontFamily: "'Manrope', sans-serif",
+            cursor: applyLoading ? 'default' : 'pointer', opacity: applyLoading ? 0.6 : 1,
+          }}
+        >
+          {applyLoading ? 'Applying…' : `Apply for Free (Valid till ${dueDateLabel})`}
+        </button>
+        {applyError && (
+          <p style={{ fontSize: '12px', color: '#c0392b', margin: 0, textAlign: 'center' }}>{applyError}</p>
+        )}
+      </div>
+    );
   };
 
   return (
@@ -170,9 +208,7 @@ export default function PaidServices() {
                   color: '#0a7373', background: '#dcefed', borderRadius: '999px', padding: '3px 9px',
                 }}>Popular</span>
               </div>
-              <span style={{ fontFamily: "'Spectral', serif", fontSize: '22px', fontWeight: 600, color: '#0a7373' }}>
-                {loading ? '…' : premiumPlan ? `₹${Number(premiumPlan.price).toLocaleString('en-IN')}` : '₹999'}
-              </span>
+              <span style={{ fontFamily: "'Spectral', serif", fontSize: '22px', fontWeight: 600, color: '#0a7373' }}>₹999</span>
             </div>
             <div style={{ height: '2px', background: '#0c8c8c', margin: '14px 0 18px' }} />
             <div style={{ display: 'flex', flexDirection: 'column', gap: '11px', flex: 1 }}>
@@ -185,61 +221,25 @@ export default function PaidServices() {
                 </div>
               ))}
             </div>
-            {isPurchased ? (
-              <div style={{
-                marginTop: '26px', width: '100%', background: '#dcefed', color: '#0a7373',
-                border: 'none', borderRadius: '8px', padding: '14px', fontSize: '13.5px',
-                fontWeight: 700, textAlign: 'center', letterSpacing: '.02em',
-              }}>
-                ✓ Active
-              </div>
-            ) : (
-              <button
-                onClick={handleGetStarted}
-                disabled={loading}
-                style={{
-                  marginTop: '26px',
-                  width: '100%',
-                  background: '#0c8c8c',
-                  color: '#fff',
-                  border: 'none',
-                  borderRadius: '8px',
-                  padding: '14px',
-                  fontSize: '13.5px',
-                  fontWeight: 700,
-                  letterSpacing: '.02em',
-                  fontFamily: "'Manrope', sans-serif",
-                  cursor: loading ? 'default' : 'pointer',
-                  opacity: loading ? 0.6 : 1,
-                }}
-              >
-                Get Started
-              </button>
-            )}
+            {renderPremiumButton()}
           </div>
         </div>
 
         {/* Footer */}
-        <div style={{
-          textAlign: 'center',
-          padding: '14px 24px',
-          borderTop: '1px solid #eef2f0',
-          fontFamily: "'Spectral', serif",
-          fontStyle: 'italic',
-          fontSize: '13px',
-          color: '#8f9594',
-        }}>
-          ₹999 Premium Plan · Money-back guarantee if not placed within 2 months
-        </div>
+        {(!freeOffer || !offerConfig?.freeOfferEnabled) && (
+          <div style={{
+            textAlign: 'center',
+            padding: '14px 24px',
+            borderTop: '1px solid #eef2f0',
+            fontFamily: "'Spectral', serif",
+            fontStyle: 'italic',
+            fontSize: '13px',
+            color: '#8f9594',
+          }}>
+            ₹999 Premium Plan · Money-back guarantee if not placed within 2 months
+          </div>
+        )}
       </div>
-
-      {selectedPlan && (
-        <PlacementPaymentModal
-          plan={{ ...selectedPlan, features: PREMIUM_FEATURES }}
-          onClose={() => setSelectedPlan(null)}
-          onSuccess={() => { setSelectedPlan(null); refreshPurchases(); }}
-        />
-      )}
     </div>
   );
 }

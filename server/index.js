@@ -23,6 +23,7 @@ const mentorshipRoutes = require('./routes/mentorship');
 const jdAnalysisRoutes = require('./routes/jdAnalysis');
 const paymentRoutes = require('./routes/payments');
 const planRoutes = require('./routes/plans');
+const offerRoutes = require('./routes/offers');
 
 const app = express();
 
@@ -62,6 +63,7 @@ app.use('/api/freelance', generalLimiter, freelanceRoutes);
 app.use('/api/mentorship', generalLimiter, mentorshipRoutes);
 app.use('/api/payments', generalLimiter, paymentRoutes);
 app.use('/api/plans', generalLimiter, planRoutes);
+app.use('/api/offers', generalLimiter, offerRoutes);
 
 app.get('/api/health', (_req, res) => res.json({ status: 'ok' }));
 
