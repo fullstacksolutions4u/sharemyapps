@@ -237,10 +237,6 @@ function FreeOfferCard({ config, onSaved }) {
   );
   const [saving, setSaving] = useState(false);
 
-  const dirty =
-    enabled !== (config?.freeOfferEnabled ?? true) ||
-    dueDate !== (config?.freeOfferDueDate ? new Date(config.freeOfferDueDate).toISOString().slice(0, 10) : '');
-
   const handleSave = async () => {
     setSaving(true);
     try {
@@ -284,7 +280,7 @@ function FreeOfferCard({ config, onSaved }) {
         </div>
         <button
           onClick={handleSave}
-          disabled={!dirty || saving}
+          disabled={saving}
           className="flex items-center gap-2 bg-accent hover:bg-accent-hover disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm font-semibold px-4 py-2 rounded-xl transition-colors shrink-0"
         >
           {saving ? <span className="w-3.5 h-3.5 border-2 border-white/40 border-t-white rounded-full animate-spin" /> : <Save size={14} />}
