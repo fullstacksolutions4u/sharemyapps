@@ -55,7 +55,9 @@ export default function PaidServices() {
   };
 
   const renderPremiumButton = () => {
-    if (!offerConfig?.freeOfferEnabled) {
+    if (offerConfig === null) return null; // still loading
+
+    if (!offerConfig.freeOfferEnabled) {
       return (
         <button
           disabled
