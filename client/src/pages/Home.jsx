@@ -14,50 +14,43 @@ const defaultAvatar = name => {
 };
 
 
+const GRID_COLS = 20;
+const GRID_ROWS = 8;
+
 function FloatingBubbles({ users, currentUserId }) {
-  const COLS = 24;
   const SIZE = 28;
 
-  // Per-element dead zones in the centre column — gaps between elements are left open
-  const DEAD_ZONES = [
-    { l: 18, r: 82, t: 10, b: 50 }, // badge + headline
-    { l: 18, r: 82, t: 55, b: 65 }, // subtitle sentence
-    { l: 18, r: 82, t: 68, b: 82 }, // buttons row
-  ];
-  const inDead = (l, t) => DEAD_ZONES.some(z => l > z.l && l < z.r && t > z.t && t < z.b);
-
   const bubbles = useMemo(() => {
-    const rows = Math.ceil(users.length / COLS);
+    const pool = users.filter(u => u._id !== currentUserId);
+    if (!pool.length) return [];
+
     const result = [];
-    let placed = 0;
-    for (let i = 0; i < users.length; i++) {
-      const u = users[i];
-      if (u._id === currentUserId) continue; // rendered separately as orbit bubble
-      const col = i % COLS;
-      const row = Math.floor(i / COLS);
-      const cellW = 100 / COLS;
-      const cellH = 100 / rows;
-      const jL = ((i * 7 + col * 3) % (cellW * 0.6)) - cellW * 0.3;
-      const jT = ((i * 11 + row * 5) % (cellH * 0.6)) - cellH * 0.3;
-      const lPct = col * cellW + cellW / 2 + jL;
-      const tPct = row * cellH + cellH / 2 + jT;
-      if (inDead(lPct, tPct)) continue;
-      result.push({
-        user: u,
-        left: `${lPct}%`,
-        top:  `${tPct}%`,
-        duration: `${14 + (placed % 8) * 2}s`,
-        delay:    `${-(placed * 0.37) % 20}s`,
-      });
-      placed++;
+    let idx = 0;
+    for (let row = 0; row < GRID_ROWS; row++) {
+      for (let col = 0; col < GRID_COLS; col++) {
+        const jL = ((col * 7 + row * 13) % 5) - 2;
+        const jT = ((row * 11 + col * 7) % 5) - 2;
+        const l = (col / GRID_COLS) * 96 + 2 + jL;
+        const t = (row / GRID_ROWS) * 90 + 5 + jT;
+        const u = pool[idx % pool.length];
+        result.push({
+          user: u,
+          key: `b-${row}-${col}`,
+          left: `${Math.min(97, Math.max(1, l))}%`,
+          top:  `${Math.min(97, Math.max(1, t))}%`,
+          duration: `${14 + (idx % 8) * 2}s`,
+          delay:    `${-(idx * 0.37) % 20}s`,
+        });
+        idx++;
+      }
     }
     return result;
   }, [users, currentUserId]);
 
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none select-none" aria-hidden="false">
-      {bubbles.map(({ user, left, top, duration, delay }, i) => (
-        <BubbleAvatar key={user._id || i} user={user} left={left} top={top} size={SIZE} duration={duration} delay={delay} isMe={user._id === currentUserId} />
+      {bubbles.map(({ user, key, left, top, duration, delay }) => (
+        <BubbleAvatar key={key} user={user} left={left} top={top} size={SIZE} duration={duration} delay={delay} isMe={user._id === currentUserId} />
       ))}
     </div>
   );
