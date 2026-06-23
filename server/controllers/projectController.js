@@ -69,10 +69,16 @@ const ownerLookupStages = [
   },
 ];
 
+const hiddenOwnerIds = async () => {
+  const users = await User.find({ hidden: true }).select('_id').lean();
+  return users.map(u => u._id);
+};
+
 exports.getFeaturedProjects = async (req, res) => {
   try {
+    const hiddenIds = await hiddenOwnerIds();
     const projects = await Project.aggregate([
-      { $match: { featured: true, status: 'approved', hidden: { $ne: true } } },
+      { $match: { featured: true, status: 'approved', hidden: { $ne: true }, owner: { $nin: hiddenIds } } },
       { $sort: { updatedAt: -1 } },
       ...ownerLookupStages,
     ]);
@@ -106,7 +112,8 @@ exports.getProjects = async (req, res) => {
     const type = req.query.type || '';
 
     const safeSearch = search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    const filter = { status: 'approved', hidden: { $ne: true } };
+    const hiddenIds = await hiddenOwnerIds();
+    const filter = { status: 'approved', hidden: { $ne: true }, owner: { $nin: hiddenIds } };
     if (safeSearch) filter.$or = [
       { title: { $regex: safeSearch, $options: 'i' } },
       { description: { $regex: safeSearch, $options: 'i' } },
@@ -162,9 +169,10 @@ exports.getProjects = async (req, res) => {
 exports.getProject = async (req, res) => {
   try {
     const project = await Project.findById(req.params.id)
-      .populate('owner', 'name email avatar phone linkedinUrl githubUrl leetcodeUrl followers badge')
+      .populate('owner', 'name email avatar phone linkedinUrl githubUrl leetcodeUrl followers badge hidden')
       .populate('collaborators', 'name avatar');
     if (!project) return res.status(404).json({ message: 'Project not found' });
+    if (project.owner?.hidden) return res.status(404).json({ message: 'Project not found' });
     res.json(project);
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -173,8 +181,9 @@ exports.getProject = async (req, res) => {
 
 exports.getUserProjects = async (req, res) => {
   try {
-    const user = await User.findById(req.params.userId).select('name avatar linkedinUrl githubUrl leetcodeUrl phone email cvUrl');
+    const user = await User.findById(req.params.userId).select('name avatar linkedinUrl githubUrl leetcodeUrl phone email cvUrl hidden');
     if (!user) return res.status(404).json({ message: 'User not found' });
+    if (user.hidden) return res.status(404).json({ message: 'User not found' });
     const projects = await Project.find({ owner: req.params.userId, status: 'approved', hidden: { $ne: true } })
       .sort({ createdAt: -1 });
     res.json({ user, projects });

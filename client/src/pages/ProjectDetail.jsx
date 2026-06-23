@@ -180,6 +180,13 @@ export default function ProjectDetail() {
       const res = await api.post(`/projects/${id}/like`);
       setI('liked', res.data.liked);
       setI('likeCount', res.data.likes);
+      queryClient.setQueryData(['project', id], (old) => {
+        if (!old) return old;
+        const newLikes = res.data.liked
+          ? [...(old.likes || []), user._id]
+          : (old.likes || []).filter(l => (l._id || l).toString() !== user._id.toString());
+        return { ...old, likes: newLikes };
+      });
     } catch { toast.error('Failed to like'); }
     finally { setLiking(false); }
   };
