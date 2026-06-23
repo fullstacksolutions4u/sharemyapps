@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { MapPin, Briefcase, CreditCard, Users, CheckCircle, ArrowRight, Laptop, Clock } from 'lucide-react';
+import { MapPin, Briefcase, CreditCard, CheckCircle, ArrowRight, Laptop, Clock } from 'lucide-react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
@@ -306,11 +306,6 @@ export default function Vacancies() {
 
                 {/* Footer */}
                 <div className="border-t border-border pt-4 flex items-center justify-between gap-3 mt-auto">
-                  <div className="flex items-center gap-1.5 text-sm text-muted">
-                    <Users size={14} />
-                    <span>{v.interestCount} interested</span>
-                  </div>
-
                   {v.status === 'closed' ? (
                     <span className="text-sm text-gray-400 font-medium px-5 py-2.5">Applications closed</span>
                   ) : !user ? (
