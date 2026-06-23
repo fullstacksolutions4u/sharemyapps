@@ -113,9 +113,10 @@ function AppRoutes() {
             <Route path="/login" element={<GuestRoute><Login /></GuestRoute>} />
             <Route path="/register" element={<GuestRoute><Register /></GuestRoute>} />
             <Route path="/forgot-password" element={<GuestRoute><ForgotPassword /></GuestRoute>} />
-            <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-            <Route path="/dashboard/add" element={<ProtectedRoute><ProjectForm /></ProtectedRoute>} />
-            <Route path="/dashboard/edit/:id" element={<ProtectedRoute><ProjectForm /></ProtectedRoute>} />
+            <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>}>
+              <Route path="add" element={<ProjectForm />} />
+              <Route path="edit/:id" element={<ProjectForm />} />
+            </Route>
             <Route path="/messages" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
             <Route path="/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
             <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />

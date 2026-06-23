@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { ExternalLink, Mail, ArrowLeft, ChevronLeft, ChevronRight, Pencil, Trash2, EyeOff, Heart, Star, Send, Trash, MessageSquare, X, Eye, UserCircle2, Zap, Award, Trophy, Phone } from 'lucide-react';
 
 const BADGE_CFG = {
@@ -128,6 +128,7 @@ export default function ProjectDetail() {
   const [commentsLocal, setCommentsLocal] = useState(null);
   const [iv, setIv] = useState({});
   const setI = (k, v) => setIv(p => ({ ...p, [k]: v }));
+  const queryClient = useQueryClient();
 
   const { data: project, isLoading: loading } = useQuery({
     queryKey: ['project', id],
@@ -203,6 +204,16 @@ export default function ProjectDetail() {
       setI('userRating', res.data.userRating);
       setI('avgRating', res.data.avg);
       setI('ratingCount', res.data.count);
+      // Update cached project so rating persists across navigation
+      queryClient.setQueryData(['project', id], (old) => {
+        if (!old) return old;
+        const uid = user._id;
+        const existing = old.ratings?.findIndex(r => (r.user?._id || r.user) === uid);
+        const updatedRatings = old.ratings ? [...old.ratings] : [];
+        if (existing >= 0) updatedRatings[existing] = { ...updatedRatings[existing], value };
+        else updatedRatings.push({ user: uid, value });
+        return { ...old, ratings: updatedRatings };
+      });
       toast.success('Rating saved!');
     } catch { toast.error('Failed to rate'); }
     finally { setRating(false); }

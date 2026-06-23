@@ -1,14 +1,36 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { Plus, Pencil, Trash2, ExternalLink, Clock, CheckCircle, XCircle, AlertCircle, Share2, Copy, Check, X, Eye, EyeOff, Heart, Star, UserCircle, ChevronRight } from 'lucide-react';
+import { useNavigate, useOutlet } from 'react-router-dom';
+import {
+  LayoutDashboard, FolderOpen, MessageSquare, Bell, Lightbulb,
+  Crown, UserCircle, LogOut, Menu, X, Plus, Share2,
+  Pencil, Trash2, ExternalLink, Clock, CheckCircle, XCircle,
+  AlertCircle, Copy, Check, Eye, EyeOff, Heart, Star, ChevronRight,
+} from 'lucide-react';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
 import { useConfirm } from '../context/ConfirmContext';
 
+import Messages from './Messages';
+import Notifications from './Notifications';
+import Feedback from './Feedback';
+import PaidServices from './PaidServices';
+import Profile from './Profile';
+
+const NAV = [
+  { key: 'profile',       label: 'Profile',           icon: UserCircle },
+  { key: 'projects',      label: 'My Projects',       icon: FolderOpen },
+  { key: 'messages',      label: 'Messages',          icon: MessageSquare },
+  { key: 'notifications', label: 'Notifications',     icon: Bell },
+  { key: 'feedback',      label: 'Feedback',          icon: Lightbulb },
+  { key: 'premium',       label: 'Premium Services',  icon: Crown },
+];
+
 const PLACEHOLDER = 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=400&q=80';
-const getbanner = (bannerImage, liveUrl) => bannerImage || `https://s0.wp.com/mshots/v1/${encodeURIComponent(liveUrl)}?w=400`;
+const getbanner = (bannerImage, liveUrl) =>
+  bannerImage || `https://s0.wp.com/mshots/v1/${encodeURIComponent(liveUrl)}?w=400`;
 
 const statusBadge = {
   pending:  { label: 'Pending review', icon: Clock,        cls: 'bg-yellow-50 text-yellow-700 border-yellow-200' },
@@ -32,29 +54,25 @@ function ShareModal({ userId, onClose }) {
       <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6" onClick={e => e.stopPropagation()}>
         <div className="flex items-start justify-between mb-4">
           <div>
-            <h2 className="text-base font-semibold text-[#1A1A1A]">Share your portfolio</h2>
-            <p className="text-xs text-[#6B7280] mt-0.5">Anyone with this link can view all your approved projects.</p>
+            <h2 className="text-base font-semibold text-text">Share your portfolio</h2>
+            <p className="text-xs text-muted mt-0.5">Anyone with this link can view all your approved projects.</p>
           </div>
-          <button onClick={onClose} className="text-[#6B7280] hover:text-[#1A1A1A] transition-colors p-1 -mr-1 -mt-1">
+          <button onClick={onClose} className="text-muted hover:text-text transition-colors p-1 -mr-1 -mt-1">
             <X size={18} />
           </button>
         </div>
-
-        <div className="flex items-center gap-2 bg-[#F3F0EB] border border-[#E5E1DA] rounded-xl px-3 py-2.5">
-          <span className="flex-1 text-xs text-[#1A1A1A] truncate font-mono select-all">{link}</span>
+        <div className="flex items-center gap-2 bg-bg border border-border rounded-xl px-3 py-2.5">
+          <span className="flex-1 text-xs text-text truncate font-mono select-all">{link}</span>
           <button
             onClick={handleCopy}
             className={`flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg transition-all shrink-0 ${
-              copied
-                ? 'bg-green-100 text-green-700'
-                : 'bg-[#00A693] hover:bg-[#007D6F] text-white'
+              copied ? 'bg-green-100 text-green-700' : 'bg-accent hover:bg-accent-hover text-white'
             }`}
           >
             {copied ? <><Check size={12} /> Copied!</> : <><Copy size={12} /> Copy</>}
           </button>
         </div>
-
-        <p className="text-xs text-[#6B7280] mt-3">
+        <p className="text-xs text-muted mt-3">
           Great for sharing with recruiters — they'll see your live projects without needing an account.
         </p>
       </div>
@@ -78,28 +96,15 @@ function getMissingItems(user) {
   return items;
 }
 
-export default function Dashboard() {
-  const { user } = useAuth();
-  const confirm = useConfirm();
-  const queryClient = useQueryClient();
-  const [showShare, setShowShare] = useState(false);
+function ProjectsSection({ user, confirm, queryClient, showShare, setShowShare }) {
   const [bannerDismissed, setBannerDismissed] = useState(
     () => sessionStorage.getItem('profile_banner_dismissed') === '1'
   );
-
   const showProfileBanner = !bannerDismissed && isProfileIncomplete(user);
-
-  const handleDismissBanner = () => {
-    sessionStorage.setItem('profile_banner_dismissed', '1');
-    setBannerDismissed(true);
-  };
 
   const { data: projects = [], isLoading: loading } = useQuery({
     queryKey: ['myProjects'],
-    queryFn: async () => {
-      const res = await api.get('/projects/my');
-      return res.data;
-    },
+    queryFn: async () => { const res = await api.get('/projects/my'); return res.data; },
     staleTime: 1000 * 60 * 2,
   });
 
@@ -128,34 +133,31 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 py-10">
-      {/* Header */}
+    <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8">
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-[#1A1A1A] tracking-tight">
+          <h1 className="text-2xl font-bold text-text tracking-tight">
             Hey, {user?.name?.split(' ')[0]} 👋
           </h1>
-          <p className="text-sm text-[#6B7280] mt-1">{projects.length} project{projects.length !== 1 ? 's' : ''} listed</p>
+          <p className="text-sm text-muted mt-1">{projects.length} project{projects.length !== 1 ? 's' : ''} listed</p>
         </div>
         <div className="flex items-center gap-2">
           <button
             onClick={() => setShowShare(true)}
             disabled={projects.length === 0}
             title={projects.length === 0 ? 'Add a project first' : ''}
-            className="flex items-center gap-2 border border-[#E5E1DA] px-4 py-2.5 rounded-xl font-medium text-sm transition-colors bg-white disabled:opacity-40 disabled:cursor-not-allowed hover:enabled:border-accent/50 text-muted hover:enabled:text-accent"
+            className="flex items-center gap-2 border border-border px-4 py-2.5 rounded-xl font-medium text-sm transition-colors bg-white disabled:opacity-40 disabled:cursor-not-allowed hover:enabled:border-accent/50 text-muted hover:enabled:text-accent"
           >
-            <Share2 size={15} /> Share all your projects in 1 click
+            <Share2 size={15} /> Share all
           </button>
           <Link
             to="/dashboard/add"
-            className="flex items-center gap-2 bg-[#00A693] hover:bg-[#007D6F] text-white px-4 py-2.5 rounded-xl font-medium text-sm transition-colors"
+            className="flex items-center gap-2 bg-accent hover:bg-accent-hover text-white px-4 py-2.5 rounded-xl font-medium text-sm transition-colors"
           >
             <Plus size={15} /> Add project
           </Link>
         </div>
       </div>
-
-      {showShare && <ShareModal userId={user?._id} onClose={() => setShowShare(false)} />}
 
       {showProfileBanner && (
         <div className="mb-6 bg-amber-50 border border-amber-200 rounded-2xl px-4 py-3.5 flex items-start gap-3">
@@ -167,15 +169,15 @@ export default function Dashboard() {
             <p className="text-xs text-amber-700 mt-0.5">
               Still missing: {getMissingItems(user).join(', ')}. A complete profile helps clients and recruiters find you.
             </p>
-            <Link
-              to="/profile"
+            <button
+              onClick={() => setShowShare(false)}
               className="inline-flex items-center gap-1 text-xs font-semibold text-amber-700 hover:text-amber-900 mt-2 underline underline-offset-2 transition-colors"
             >
               Go to Profile <ChevronRight size={12} />
-            </Link>
+            </button>
           </div>
           <button
-            onClick={handleDismissBanner}
+            onClick={() => { sessionStorage.setItem('profile_banner_dismissed', '1'); setBannerDismissed(true); }}
             className="text-amber-400 hover:text-amber-600 transition-colors shrink-0 mt-0.5"
           >
             <X size={15} />
@@ -186,19 +188,19 @@ export default function Dashboard() {
       {loading ? (
         <div className="space-y-3">
           {Array.from({ length: 3 }).map((_, i) => (
-            <div key={i} className="h-20 bg-white border border-[#E5E1DA] rounded-xl animate-pulse" />
+            <div key={i} className="h-20 bg-white border border-border rounded-xl animate-pulse" />
           ))}
         </div>
       ) : projects.length === 0 ? (
-        <div className="bg-white border border-[#E5E1DA] rounded-2xl p-16 text-center">
-          <div className="w-12 h-12 bg-[#E6F7F5] rounded-2xl flex items-center justify-center mx-auto mb-4">
-            <Plus size={22} className="text-[#00A693]" />
+        <div className="bg-white border border-border rounded-2xl p-16 text-center">
+          <div className="w-12 h-12 bg-accent-light rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <Plus size={22} className="text-accent" />
           </div>
-          <h3 className="font-semibold text-[#1A1A1A] mb-1">No projects yet</h3>
-          <p className="text-sm text-[#6B7280] mb-5">List your first side project and share it with the world.</p>
+          <h3 className="font-semibold text-text mb-1">No projects yet</h3>
+          <p className="text-sm text-muted mb-5">List your first side project and share it with the world.</p>
           <Link
             to="/dashboard/add"
-            className="inline-flex items-center gap-2 bg-[#00A693] hover:bg-[#007D6F] text-white px-5 py-2.5 rounded-xl font-medium text-sm transition-colors"
+            className="inline-flex items-center gap-2 bg-accent hover:bg-accent-hover text-white px-5 py-2.5 rounded-xl font-medium text-sm transition-colors"
           >
             <Plus size={14} /> Add your first project
           </Link>
@@ -206,9 +208,8 @@ export default function Dashboard() {
       ) : (
         <div className="space-y-3">
           {projects.map(project => (
-            <div key={project._id} className="bg-white border border-[#E5E1DA] rounded-xl p-4 flex items-center gap-4 hover:border-[#00A693]/30 transition-colors">
-              {/* Thumbnail */}
-              <div className="w-28 h-20 rounded-lg overflow-hidden bg-[#F3F0EB] shrink-0">
+            <div key={project._id} className="bg-white border border-border rounded-xl p-4 flex items-center gap-4 hover:border-accent/30 transition-colors">
+              <div className="w-28 h-20 rounded-lg overflow-hidden bg-bg shrink-0">
                 <img
                   src={getbanner(project.bannerImage, project.liveUrl)}
                   alt={project.title}
@@ -217,11 +218,9 @@ export default function Dashboard() {
                   onError={e => { e.target.src = PLACEHOLDER; }}
                 />
               </div>
-
-              {/* Info */}
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <h3 className="font-medium text-[#1A1A1A] truncate">{project.title}</h3>
+                  <h3 className="font-medium text-text truncate">{project.title}</h3>
                   {(() => {
                     const s = statusBadge[project.status] || statusBadge.pending;
                     const Icon = s.icon;
@@ -237,10 +236,10 @@ export default function Dashboard() {
                     </span>
                   )}
                 </div>
-                <p className="text-xs text-[#6B7280] truncate mt-0.5">{project.description}</p>
+                <p className="text-xs text-muted truncate mt-0.5">{project.description}</p>
                 {project.collaborators?.length > 0 && (
                   <div className="flex items-center gap-1.5 mt-1">
-                    <span className="text-[10px] text-[#9CA3AF]">with</span>
+                    <span className="text-[10px] text-muted">with</span>
                     <div className="flex -space-x-1">
                       {project.collaborators.slice(0, 4).map(c => (
                         c.avatar
@@ -254,20 +253,16 @@ export default function Dashboard() {
                 {project.techTags?.length > 0 && (
                   <div className="flex gap-1 mt-1.5">
                     {project.techTags.slice(0, 3).map(t => (
-                      <span key={t} className="text-xs bg-[#F3F0EB] text-[#6B7280] px-2 py-0.5 rounded-full">{t}</span>
+                      <span key={t} className="text-xs bg-bg text-muted px-2 py-0.5 rounded-full">{t}</span>
                     ))}
                   </div>
                 )}
                 {project.status === 'approved' && (
                   <div className="flex items-center gap-3 mt-2">
-                    <span className="flex items-center gap-1 text-xs text-[#9CA3AF]">
-                      <Eye size={11} /> {(project.viewCount || 0).toLocaleString()} views
-                    </span>
-                    <span className="flex items-center gap-1 text-xs text-red-400">
-                      <Heart size={11} /> {project.likes?.length || 0} likes
-                    </span>
+                    <span className="flex items-center gap-1 text-xs text-muted"><Eye size={11} /> {(project.viewCount || 0).toLocaleString()} views</span>
+                    <span className="flex items-center gap-1 text-xs text-red-400"><Heart size={11} /> {project.likes?.length || 0} likes</span>
                     {project.ratings?.length > 0 && (
-                      <span className="flex items-center gap-1 text-xs text-[#F59E0B]">
+                      <span className="flex items-center gap-1 text-xs text-amber-500">
                         <Star size={11} /> {(project.ratings.reduce((s, r) => s + r.value, 0) / project.ratings.length).toFixed(1)}
                       </span>
                     )}
@@ -294,48 +289,147 @@ export default function Dashboard() {
                   </Link>
                 )}
               </div>
-
-              {/* Vertical action buttons */}
               <div className="flex flex-col gap-1.5 shrink-0">
-                  <a
-                    href={project.liveUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-8 h-8 flex items-center justify-center rounded-lg bg-accent-light text-accent hover:bg-accent hover:text-white transition-colors"
-                    title="Visit live"
-                  >
-                    <ExternalLink size={13} />
-                  </a>
-                  <Link
-                    to={`/dashboard/edit/${project._id}`}
-                    className="w-8 h-8 flex items-center justify-center rounded-lg bg-blue-50 text-blue-500 hover:bg-blue-500 hover:text-white transition-colors"
-                    title="Edit"
-                  >
-                    <Pencil size={13} />
-                  </Link>
-                  <button
-                    onClick={() => handleToggleHidden(project._id)}
-                    className={`w-8 h-8 flex items-center justify-center rounded-lg transition-colors ${
-                      project.hidden
-                        ? 'bg-gray-100 text-gray-500 hover:bg-gray-200'
-                        : 'bg-gray-50 text-gray-400 hover:bg-gray-200 hover:text-gray-600'
-                    }`}
-                    title={project.hidden ? 'Show in listing' : 'Hide from listing'}
-                  >
-                    {project.hidden ? <Eye size={13} /> : <EyeOff size={13} />}
-                  </button>
-                  <button
-                    onClick={() => handleDelete(project._id, project.title)}
-                    className="w-8 h-8 flex items-center justify-center rounded-lg bg-red-50 text-red-400 hover:bg-red-500 hover:text-white transition-colors"
-                    title="Delete"
-                  >
-                    <Trash2 size={13} />
-                  </button>
+                <a
+                  href={project.liveUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-8 h-8 flex items-center justify-center rounded-lg bg-accent-light text-accent hover:bg-accent hover:text-white transition-colors"
+                  title="Visit live"
+                >
+                  <ExternalLink size={13} />
+                </a>
+                <Link
+                  to={`/dashboard/edit/${project._id}`}
+                  className="w-8 h-8 flex items-center justify-center rounded-lg bg-blue-50 text-blue-500 hover:bg-blue-500 hover:text-white transition-colors"
+                  title="Edit"
+                >
+                  <Pencil size={13} />
+                </Link>
+                <button
+                  onClick={() => handleToggleHidden(project._id)}
+                  className={`w-8 h-8 flex items-center justify-center rounded-lg transition-colors ${
+                    project.hidden
+                      ? 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                      : 'bg-gray-50 text-gray-400 hover:bg-gray-200 hover:text-gray-600'
+                  }`}
+                  title={project.hidden ? 'Show in listing' : 'Hide from listing'}
+                >
+                  {project.hidden ? <Eye size={13} /> : <EyeOff size={13} />}
+                </button>
+                <button
+                  onClick={() => handleDelete(project._id, project.title)}
+                  className="w-8 h-8 flex items-center justify-center rounded-lg bg-red-50 text-red-400 hover:bg-red-500 hover:text-white transition-colors"
+                  title="Delete"
+                >
+                  <Trash2 size={13} />
+                </button>
               </div>
             </div>
           ))}
         </div>
       )}
+    </div>
+  );
+}
+
+export default function Dashboard() {
+  const { user, logout } = useAuth();
+  const confirm = useConfirm();
+  const queryClient = useQueryClient();
+  const nav = useNavigate();
+  const outlet = useOutlet();
+  const [section, setSection] = useState('profile');
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [showShare, setShowShare] = useState(false);
+
+  const handleLogout = async () => {
+    await logout();
+    toast.success('Logged out');
+    nav('/');
+  };
+
+  const navigate = (key) => { setSection(key); setMobileOpen(false); };
+
+  return (
+    <div className="flex overflow-hidden bg-bg" style={{ height: 'calc(100vh - 4rem)' }}>
+      {showShare && <ShareModal userId={user?._id} onClose={() => setShowShare(false)} />}
+
+      {/* Sidebar */}
+      <aside className={`
+        w-56 shrink-0 bg-white border-r border-border flex flex-col
+        absolute inset-y-0 left-0 z-30 transition-transform duration-200
+        lg:static lg:translate-x-0
+        ${mobileOpen ? 'translate-x-0' : '-translate-x-full'}
+      `}>
+        <div className="h-14 flex items-center gap-2.5 px-4 border-b border-border shrink-0">
+          <div className="w-7 h-7 bg-accent-light rounded-lg flex items-center justify-center">
+            <LayoutDashboard size={14} className="text-accent" />
+          </div>
+          <span className="font-semibold text-sm text-text">Dashboard</span>
+        </div>
+
+        <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
+          {NAV.map(({ key, label, icon: Icon }) => (
+            <button
+              key={key}
+              onClick={() => navigate(key)}
+              className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors text-left ${
+                (section === key && !outlet) || (outlet && key === 'projects')
+                  ? 'bg-accent-light text-accent'
+                  : 'text-muted hover:bg-[#F3F0EB] hover:text-text'
+              }`}
+            >
+              <Icon size={15} className={key === 'premium' ? (section === key ? '' : 'text-amber-500') : ''} />
+              {label}
+            </button>
+          ))}
+        </nav>
+
+        <div className="px-3 py-3 border-t border-border shrink-0">
+          <div className="flex items-center gap-2 px-3 py-2.5">
+            <div className="flex items-center gap-2 flex-1 min-w-0">
+              {user?.avatar
+                ? <img src={user.avatar} alt={user.name} className="w-7 h-7 rounded-full object-cover shrink-0" />
+                : <span className="w-7 h-7 rounded-full bg-accent text-white text-xs flex items-center justify-center font-bold shrink-0">{user?.name?.[0]?.toUpperCase()}</span>
+              }
+              <span className="truncate text-sm font-medium text-muted">{user?.name || 'User'}</span>
+            </div>
+            <button
+              onClick={handleLogout}
+              title="Logout"
+              className="shrink-0 p-1.5 rounded-lg text-red-500 hover:bg-red-50 transition-colors"
+            >
+              <LogOut size={15} />
+            </button>
+          </div>
+        </div>
+      </aside>
+
+      {mobileOpen && <div className="fixed inset-0 z-20 bg-black/20 lg:hidden" onClick={() => setMobileOpen(false)} />}
+
+      {/* Main content */}
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+        <div className="lg:hidden h-12 flex items-center gap-3 px-4 bg-white border-b border-border shrink-0">
+          <button onClick={() => setMobileOpen(true)} className="p-1.5 text-muted hover:text-text transition-colors">
+            <Menu size={18} />
+          </button>
+          <span className="text-sm font-semibold text-text">{NAV.find(n => n.key === section)?.label || section}</span>
+        </div>
+
+        <div className="flex-1 overflow-y-auto">
+          {outlet ? outlet : (
+            <>
+              {section === 'projects'      && <ProjectsSection user={user} confirm={confirm} queryClient={queryClient} showShare={showShare} setShowShare={setShowShare} />}
+              {section === 'messages'      && <Messages />}
+              {section === 'notifications' && <Notifications />}
+              {section === 'feedback'      && <Feedback />}
+              {section === 'premium'       && <PaidServices />}
+              {section === 'profile'       && <Profile />}
+            </>
+          )}
+        </div>
+      </div>
     </div>
   );
 }

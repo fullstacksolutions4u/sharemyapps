@@ -1,7 +1,7 @@
 import { useRef, useState, useEffect } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link, useNavigate } from 'react-router-dom';
-import { Menu, X, ChevronDown, LogOut, Plus, ShieldCheck, Bell, CheckCircle, XCircle, Clock, MessageSquare, UserCircle, AlertCircle, Heart, Star, MessageCircle, Briefcase, Lightbulb, Crown } from 'lucide-react';
+import { Menu, X, ChevronDown, LogOut, Plus, ShieldCheck, Bell, CheckCircle, XCircle, Clock, MessageSquare, UserCircle, AlertCircle, Heart, Star, MessageCircle, Briefcase, Lightbulb, Crown, LayoutDashboard } from 'lucide-react';
 
 const GeminiIcon = ({ size = 14 }) => (
   <svg width={size} height={size} viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -241,9 +241,6 @@ export default function Navbar() {
           {!isRecruiter && !isClient && !isMentee && !isMentor && (
             <Link to="/opportunities" className="relative text-base text-muted hover:text-text transition-colors after:absolute after:left-0 after:-bottom-0.5 after:h-[1.5px] after:w-0 after:bg-accent after:transition-[width] after:duration-300 hover:after:w-full">Opportunities</Link>
           )}
-          {isDeveloper && (
-            <Link to="/dashboard" className="relative text-base text-muted hover:text-text transition-colors after:absolute after:left-0 after:-bottom-0.5 after:h-[1.5px] after:w-0 after:bg-accent after:transition-[width] after:duration-300 hover:after:w-full">My Projects</Link>
-          )}
 
           {user ? (
             <div className="flex items-center gap-3">
@@ -273,29 +270,13 @@ export default function Navbar() {
                 </button>
                 {dropOpen && (
                   <div className="absolute right-0 mt-2 w-44 bg-white border border-border rounded-xl shadow-lg py-1 z-50">
-                    <Link
-                      to={profileLink}
-                      onClick={() => setDropOpen(false)}
-                      className="flex items-center gap-2 px-4 py-2 text-sm text-text hover:bg-bg"
-                    >
-                      <UserCircle size={14} /> Profile
-                    </Link>
                     {user.role !== 'admin' && (
                       <Link
-                        to="/feedback"
+                        to="/dashboard"
                         onClick={() => setDropOpen(false)}
-                        className="flex items-center gap-2 px-4 py-2 text-sm text-text hover:bg-bg whitespace-nowrap"
+                        className="flex items-center gap-2 px-4 py-2 text-sm text-text hover:bg-bg"
                       >
-                        <Lightbulb size={14} className="shrink-0" /> Feedback Message
-                      </Link>
-                    )}
-                    {user.role !== 'admin' && (
-                      <Link
-                        to="/career-services"
-                        onClick={() => setDropOpen(false)}
-                        className="flex items-center gap-2 px-4 py-2 text-sm text-accent font-medium hover:bg-bg whitespace-nowrap"
-                      >
-                        <Crown size={14} className="text-amber-500 shrink-0" /> Premium Services
+                        <LayoutDashboard size={14} /> Dashboard
                       </Link>
                     )}
                     {user.role === 'admin' && (
@@ -362,18 +343,12 @@ export default function Navbar() {
           )}
           {user ? (
             <>
-              {isDeveloper && (
-                <Link to="/dashboard" onClick={() => setMenuOpen(false)} className="block text-sm text-muted hover:text-text">My Projects</Link>
+              {user.role !== 'admin' && (
+                <Link to="/dashboard" onClick={() => setMenuOpen(false)} className="block text-sm text-muted hover:text-text font-medium">Dashboard</Link>
               )}
               <Link to="/messages" onClick={() => setMenuOpen(false)} className="block text-sm text-muted hover:text-text">Messages</Link>
               {!isRecruiter && !isClient && !isMentee && !isMentor && (
                 <Link to="/dashboard/add" onClick={() => setMenuOpen(false)} className="block text-sm text-text font-medium">Add Project</Link>
-              )}
-              {user.role !== 'admin' && (
-                <Link to="/feedback" onClick={() => setMenuOpen(false)} className="block text-sm text-muted hover:text-text">Feedback Message</Link>
-              )}
-              {user.role !== 'admin' && (
-                <Link to="/career-services" onClick={() => setMenuOpen(false)} className="flex items-center gap-2 text-sm text-accent font-medium hover:text-accent-hover"><Crown size={14} className="text-amber-500" /> Premium Services</Link>
               )}
               <button onClick={handleLogout} className="block text-sm text-red-500">Logout</button>
             </>

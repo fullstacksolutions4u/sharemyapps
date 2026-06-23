@@ -312,14 +312,7 @@ export default function Profile() {
 
   return (
     <div className="max-w-6xl mx-auto px-2 sm:px-3 pt-2 pb-6">
-      <button
-        onClick={() => navigate(-1)}
-        className="inline-flex items-center gap-1.5 text-sm text-muted hover:text-text mb-4 transition-colors"
-      >
-        <ArrowLeft size={14} /> Back
-      </button>
-
-      <div className="flex flex-col lg:flex-row gap-6 items-start">
+<div className="flex flex-col lg:flex-row gap-6 items-start">
 
         {/* ── Left: sticky profile card ── */}
         <div className="w-full lg:w-72 shrink-0 lg:sticky lg:top-6 space-y-4 lg:mt-20">
