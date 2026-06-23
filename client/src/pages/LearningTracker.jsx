@@ -486,7 +486,7 @@ const LearningTracker = ({ embedded = false }) => {
                       <span className="text-xs font-bold text-orange-400">Streak: <span style={{ color: '#1C1A17' }}>{streakCount} {streakCount === 1 ? 'day' : 'days'}</span></span>
                     </div>
                     <div className="px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-sm" style={{ backgroundColor: '#FFF8E8', border: '1px solid rgba(201,169,110,0.3)' }}>
-                      <AnimatedCoin className="w-4 h-4" textSize="text-[7px]" />
+                      <AnimatedCoin className="w-4 h-4" />
                       <span className="text-xs font-bold text-yellow-400">Points: <span style={{ color: '#1C1A17' }}>{userPoints}</span></span>
                     </div>
                   </div>

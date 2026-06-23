@@ -7,8 +7,9 @@ import {
   Crown, UserCircle, LogOut, Menu, X, Plus, Share2,
   Pencil, Trash2, ExternalLink, Clock, CheckCircle, XCircle,
   AlertCircle, Copy, Check, Eye, EyeOff, Heart, Star, ChevronRight,
-  BookOpen, Coins,
+  BookOpen,
 } from 'lucide-react';
+import CoinIcon from '../components/common/AnimatedCoin';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
@@ -399,7 +400,7 @@ export default function Dashboard() {
                 key === 'tick2test' ? 'text-green-600' : ''
               } />
               {label}
-              {key === 'tick2test' && <Coins size={14} className="text-amber-400" />}
+              {key === 'tick2test' && <CoinIcon className="w-3.5 h-3.5" />}
               {href && <ExternalLink size={11} className="ml-auto opacity-40" />}
             </button>
           ))}

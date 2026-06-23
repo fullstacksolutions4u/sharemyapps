@@ -138,6 +138,7 @@ userSchema.methods.toPublicJSON = function () {
     isDeleted: this.isDeleted || false,
     deletedAt: this.deletedAt ?? null,
     onboardingComplete: this.onboardingComplete || false,
+    points: this.points || 0,
   };
 };
 

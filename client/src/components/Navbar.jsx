@@ -184,19 +184,12 @@ function CoinsRankBadge() {
     enabled: !!user,
   });
 
-  if (!user || !data) return null;
+  if (!user || !data || !data.userRank) return null;
 
   return (
     <Link to="/dashboard?section=tick2test" className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold" style={{ backgroundColor: '#FFF8E8', border: '1px solid rgba(201,169,110,0.4)' }}>
-      <span className="text-amber-500">🪙</span>
-      <span className="text-amber-600">{data?.userPoints ?? 0}</span>
-      {data?.userRank && (
-        <>
-          <span className="text-muted mx-0.5">·</span>
-          <Trophy size={11} className="text-amber-500" />
-          <span className="text-amber-600">#{data.userRank}</span>
-        </>
-      )}
+      <Trophy size={11} className="text-amber-500" />
+      <span className="text-amber-600">#{data.userRank}</span>
     </Link>
   );
 }

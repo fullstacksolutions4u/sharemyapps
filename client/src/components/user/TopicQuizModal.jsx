@@ -133,7 +133,7 @@ const TopicQuizModal = ({
               )}
               {earnedPoints && (
                 <div className="flex items-center gap-2 px-3 py-1 rounded-xl border shadow-lg" style={{ background: 'linear-gradient(135deg, rgba(201,169,110,0.2), rgba(155,125,67,0.2))', borderColor: 'rgba(201,169,110,0.5)' }}>
-                  <AnimatedCoin className="w-6 h-6" textSize="text-xs" />
+                  <AnimatedCoin className="w-6 h-6" />
                   <span className="font-extrabold text-sm whitespace-nowrap" style={{ color: '#9B7D43' }}>+{earnedPoints}</span>
                 </div>
               )}
