@@ -656,7 +656,7 @@ function UserEditPage({ user: initial, onBack, onSaved, allDesignations = [] }) 
             )}
             <div className="flex items-center gap-2 text-xs text-[#6B7280]">
               <Clock size={12} className="shrink-0" />
-              <span>Joined {new Date(initial.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
+              <span>Joined {new Date(initial.createdAt).toLocaleString('en-US', { year: 'numeric', month: 'long', day: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true })}</span>
             </div>
           </div>
         </div>
@@ -1266,7 +1266,7 @@ export default function AdminUsersSection({ initialTab = 'developers' }) {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-[10px] font-semibold text-[#9CA3AF] uppercase tracking-wider mb-1">Joined</p>
-                    <p className="text-xs text-[#6B7280]">{new Date(u.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                    <p className="text-xs text-[#6B7280]">{new Date(u.createdAt).toLocaleString('en-US', { year: 'numeric', month: 'long', day: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true })}</p>
                   </div>
                   <button onClick={() => handleToggleHidden(u._id)} disabled={hideLoading === u._id}
                     className={`inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border font-medium transition-colors disabled:opacity-50 ${u.hidden ? 'bg-red-50 text-red-500 border-red-200 hover:bg-red-100' : 'bg-green-50 text-green-600 border-green-200 hover:bg-green-100'}`}>
