@@ -1062,8 +1062,8 @@ export default function Profile() {
                   </div>
                 </div>
 
-                {/* Joining availability + Preferred locations */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {/* Joining availability + Mode of Job */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-start">
                   <div>
                     <label className="block text-sm font-medium text-text mb-2">
                       <span className="flex items-center gap-1.5"><Clock size={13} className="text-muted" /> Joining Availability</span>
@@ -1083,6 +1083,37 @@ export default function Profile() {
 
                   <div>
                     <label className="flex items-center gap-1.5 text-sm font-medium text-text mb-2">
+                      <Monitor size={13} className="text-muted" /> Mode of Job <span className="text-xs text-muted font-normal">(You can select multiple options)</span>
+                    </label>
+                    <div className="flex flex-wrap gap-2">
+                      {['Remote', 'Hybrid', 'On-site'].map(mode => {
+                        const active = form.jobMode.includes(mode);
+                        return (
+                          <button
+                            key={mode}
+                            type="button"
+                            onClick={() => setForm(f => ({
+                              ...f,
+                              jobMode: active ? f.jobMode.filter(m => m !== mode) : [...f.jobMode, mode],
+                            }))}
+                            className={`px-4 py-2.5 rounded-xl text-sm font-medium border transition-colors ${
+                              active
+                                ? 'bg-accent text-white border-accent'
+                                : 'bg-white text-muted border-border hover:border-accent/40 hover:text-accent'
+                            }`}
+                          >
+                            {mode}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Preferred Locations + Years of Experience */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-start">
+                  <div>
+                    <label className="flex items-center gap-1.5 text-sm font-medium text-text mb-2">
                       <MapPin size={13} className="text-muted" /> Preferred Locations
                     </label>
                     <div className="space-y-2">
@@ -1091,7 +1122,7 @@ export default function Profile() {
                           <input
                             type="text" value={loc}
                             onChange={e => setForm(f => ({ ...f, preferredLocations: f.preferredLocations.map((v, j) => j === i ? e.target.value : v) }))}
-                            placeholder="e.g. Bangalore, Remote"
+                            placeholder="e.g. Kochi"
                             className="flex-1 px-3.5 py-2.5 border border-border rounded-xl text-sm text-text placeholder-muted focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/10 transition bg-white"
                           />
                           {form.preferredLocations.length > 1 && (
@@ -1110,47 +1141,14 @@ export default function Profile() {
                       </button>
                     </div>
                   </div>
-                </div>
-
-                {/* Mode of job + Years of Experience */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="flex items-center gap-1.5 text-sm font-medium text-text mb-1">
-                      <Monitor size={13} className="text-muted" /> Mode of Job
-                    </label>
-                    <p className="text-xs text-muted mb-2">You can select multiple options</p>
-                    <div className="flex flex-wrap gap-2">
-                      {['Remote', 'Hybrid', 'On-site'].map(mode => {
-                        const active = form.jobMode.includes(mode);
-                        return (
-                          <button
-                            key={mode}
-                            type="button"
-                            onClick={() => setForm(f => ({
-                              ...f,
-                              jobMode: active ? f.jobMode.filter(m => m !== mode) : [...f.jobMode, mode],
-                            }))}
-                            className={`px-4 py-2 rounded-xl text-sm font-medium border transition-colors ${
-                              active
-                                ? 'bg-accent text-white border-accent'
-                                : 'bg-white text-muted border-border hover:border-accent/40 hover:text-accent'
-                            }`}
-                          >
-                            {mode}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-                  <div>
-                    <label className="flex items-center gap-1.5 text-sm font-medium text-text mb-1">
+                    <label className="flex items-center gap-1.5 text-sm font-medium text-text mb-2">
                       <Briefcase size={13} className="text-muted" /> Years of Experience
                     </label>
-                    <p className="text-xs text-muted mb-2">Select your total work experience</p>
                     <select
                       value={form.yearsOfExperience}
                       onChange={e => setForm(f => ({ ...f, yearsOfExperience: e.target.value }))}
-                      className="w-full border border-border rounded-xl px-3 py-2 text-sm text-text bg-white focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/20 transition-all"
+                      className="w-full border border-border rounded-xl px-3.5 py-2.5 text-sm text-text bg-white focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/20 transition-all"
                     >
                       <option value="">Select experience</option>
                       <option value="Fresher">Fresher (0 years)</option>
