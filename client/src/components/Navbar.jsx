@@ -40,7 +40,7 @@ function MessagesBadge() {
   const unread = data?.unreadCount || 0;
 
   return (
-    <Link to="/messages" className="relative p-1.5 text-muted hover:text-text transition-colors">
+    <Link to="/dashboard?section=messages" className="relative p-1.5 text-muted hover:text-text transition-colors">
       <MessageSquare size={18} />
       {unread > 0 && (
         <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-accent text-white text-[10px] font-bold flex items-center justify-center rounded-full">
@@ -161,7 +161,7 @@ function NotificationBell() {
 
           <div className="px-4 py-2.5 border-t border-border">
             <Link
-              to="/notifications"
+              to="/dashboard?section=notifications"
               onClick={() => setOpen(false)}
               className="block text-center text-xs text-accent hover:text-accent-hover font-medium transition-colors"
             >
@@ -340,7 +340,7 @@ export default function Navbar() {
               {user.role !== 'admin' && (
                 <Link to="/dashboard" onClick={() => setMenuOpen(false)} className="block text-sm text-muted hover:text-text font-medium">Dashboard</Link>
               )}
-              <Link to="/messages" onClick={() => setMenuOpen(false)} className="block text-sm text-muted hover:text-text">Messages</Link>
+              <Link to="/dashboard?section=messages" onClick={() => setMenuOpen(false)} className="block text-sm text-muted hover:text-text">Messages</Link>
               {!isRecruiter && !isClient && !isMentee && !isMentor && (
                 <Link to="/dashboard/add" onClick={() => setMenuOpen(false)} className="block text-sm text-text font-medium">Add Project</Link>
               )}

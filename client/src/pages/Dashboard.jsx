@@ -1,12 +1,13 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { useNavigate, useOutlet } from 'react-router-dom';
+import { useNavigate, useOutlet, useSearchParams } from 'react-router-dom';
 import {
   LayoutDashboard, FolderOpen, MessageSquare, Bell, Lightbulb,
   Crown, UserCircle, LogOut, Menu, X, Plus, Share2,
   Pencil, Trash2, ExternalLink, Clock, CheckCircle, XCircle,
   AlertCircle, Copy, Check, Eye, EyeOff, Heart, Star, ChevronRight,
+  BookOpen,
 } from 'lucide-react';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
@@ -18,14 +19,16 @@ import Notifications from './Notifications';
 import Feedback from './Feedback';
 import PaidServices from './PaidServices';
 import Profile from './Profile';
+import LearningTracker from './LearningTracker';
 
 const NAV = [
-  { key: 'profile',       label: 'Profile',           icon: UserCircle },
-  { key: 'projects',      label: 'My Projects',       icon: FolderOpen },
-  { key: 'messages',      label: 'Messages',          icon: MessageSquare },
-  { key: 'notifications', label: 'Notifications',     icon: Bell },
-  { key: 'feedback',      label: 'Feedback',          icon: Lightbulb },
-  { key: 'premium',       label: 'Premium Services',  icon: Crown },
+  { key: 'profile',       label: 'Profile',              icon: UserCircle },
+  { key: 'projects',      label: 'My Projects',          icon: FolderOpen },
+  { key: 'messages',      label: 'Messages',             icon: MessageSquare },
+  { key: 'notifications', label: 'Notifications',        icon: Bell },
+  { key: 'feedback',      label: 'Feedback',             icon: Lightbulb },
+  { key: 'premium',       label: 'Premium Services',     icon: Crown },
+  { key: 'tick2test',     label: 'Test your Knowledge',  icon: BookOpen },
 ];
 
 const PLACEHOLDER = 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=400&q=80';
@@ -339,8 +342,14 @@ export default function Dashboard() {
   const queryClient = useQueryClient();
   const nav = useNavigate();
   const outlet = useOutlet();
-  const [section, setSection] = useState('profile');
+  const [searchParams] = useSearchParams();
+  const [section, setSection] = useState(() => searchParams.get('section') || 'profile');
   const [mobileOpen, setMobileOpen] = useState(false);
+
+  useEffect(() => {
+    const s = searchParams.get('section');
+    if (s) setSection(s);
+  }, [searchParams]);
   const [showShare, setShowShare] = useState(false);
 
   const handleLogout = async () => {
@@ -349,7 +358,11 @@ export default function Dashboard() {
     nav('/');
   };
 
-  const navigate = (key) => { setSection(key); setMobileOpen(false); };
+  const navigate = (key, href) => {
+    if (href) { nav(href); return; }
+    setSection(key);
+    setMobileOpen(false);
+  };
 
   return (
     <div className="flex overflow-hidden bg-bg" style={{ height: 'calc(100vh - 4rem)' }}>
@@ -370,18 +383,22 @@ export default function Dashboard() {
         </div>
 
         <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
-          {NAV.map(({ key, label, icon: Icon }) => (
+          {NAV.map(({ key, label, icon: Icon, href }) => (
             <button
               key={key}
-              onClick={() => navigate(key)}
+              onClick={() => navigate(key, href)}
               className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors text-left ${
                 (section === key && !outlet) || (outlet && key === 'projects')
                   ? 'bg-accent-light text-accent'
                   : 'text-muted hover:bg-[#F3F0EB] hover:text-text'
               }`}
             >
-              <Icon size={15} className={key === 'premium' ? (section === key ? '' : 'text-amber-500') : ''} />
+              <Icon size={15} className={
+                key === 'premium' ? (section === key ? '' : 'text-amber-500') :
+                key === 'tick2test' ? 'text-green-600' : ''
+              } />
               {label}
+              {href && <ExternalLink size={11} className="ml-auto opacity-40" />}
             </button>
           ))}
         </nav>
@@ -426,6 +443,7 @@ export default function Dashboard() {
               {section === 'feedback'      && <Feedback />}
               {section === 'premium'       && <PaidServices />}
               {section === 'profile'       && <Profile />}
+              {section === 'tick2test'     && <LearningTracker embedded />}
             </>
           )}
         </div>

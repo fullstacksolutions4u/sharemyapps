@@ -67,6 +67,9 @@ const userSchema = new mongoose.Schema({
     dailyUsed:     { type: Number, default: 0 },
     resetDay:      { type: String, default: '' }, // "YYYY-MM-DD"
   },
+  // Tick2Test learning tracker fields
+  points: { type: Number, default: 0 },
+  badges: [{ type: String }],
 }, { timestamps: true });
 
 userSchema.index({ userType: 1, hidden: 1, isDeleted: 1 });

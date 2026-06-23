@@ -24,6 +24,9 @@ const jdAnalysisRoutes = require('./routes/jdAnalysis');
 const paymentRoutes = require('./routes/payments');
 const planRoutes = require('./routes/plans');
 const offerRoutes = require('./routes/offers');
+const learningModuleRoutes = require('./routes/learningModules');
+const learningProgressRoutes = require('./routes/learningProgress');
+const learningFeedbackRoutes = require('./routes/learningFeedback');
 
 const app = express();
 
@@ -64,6 +67,9 @@ app.use('/api/mentorship', generalLimiter, mentorshipRoutes);
 app.use('/api/payments', generalLimiter, paymentRoutes);
 app.use('/api/plans', generalLimiter, planRoutes);
 app.use('/api/offers', generalLimiter, offerRoutes);
+app.use('/api/learning-modules', generalLimiter, learningModuleRoutes);
+app.use('/api/learning-progress', generalLimiter, learningProgressRoutes);
+app.use('/api/learning-feedback', generalLimiter, learningFeedbackRoutes);
 
 app.get('/api/health', (_req, res) => res.json({ status: 'ok' }));
 
