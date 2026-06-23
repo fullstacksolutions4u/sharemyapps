@@ -1,7 +1,7 @@
 import { useRef, useState, useEffect } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link, useNavigate } from 'react-router-dom';
-import { Menu, X, ChevronDown, LogOut, Plus, ShieldCheck, Bell, CheckCircle, XCircle, Clock, MessageSquare, UserCircle, AlertCircle, Heart, Star, MessageCircle, Briefcase, Lightbulb, Crown, LayoutDashboard } from 'lucide-react';
+import { Menu, X, ChevronDown, LogOut, Plus, ShieldCheck, Bell, CheckCircle, XCircle, Clock, MessageSquare, AlertCircle, Heart, Star, MessageCircle, Briefcase, LayoutDashboard } from 'lucide-react';
 
 const GeminiIcon = ({ size = 14 }) => (
   <svg width={size} height={size} viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -180,16 +180,10 @@ export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [dropOpen, setDropOpen] = useState(false);
 
-  const isDeveloper = user?.userType === 'developer';
   const isRecruiter = user?.userType === 'recruiter';
   const isClient = user?.userType === 'client';
   const isMentee = user?.userType === 'mentee';
   const isMentor = user?.userType === 'mentor';
-  const profileLink = isRecruiter
-    ? (user?.companyName ? '/find-developers' : '/client-profile')
-    : isClient
-      ? '/client-profile'
-      : '/profile';
 
   const handleLogout = async () => {
     await logout();

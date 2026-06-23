@@ -96,7 +96,7 @@ function getMissingItems(user) {
   return items;
 }
 
-function ProjectsSection({ user, confirm, queryClient, showShare, setShowShare }) {
+function ProjectsSection({ user, confirm, queryClient, setShowShare }) {
   const [bannerDismissed, setBannerDismissed] = useState(
     () => sessionStorage.getItem('profile_banner_dismissed') === '1'
   );
@@ -420,7 +420,7 @@ export default function Dashboard() {
         <div className="flex-1 overflow-y-auto">
           {outlet ? outlet : (
             <>
-              {section === 'projects'      && <ProjectsSection user={user} confirm={confirm} queryClient={queryClient} showShare={showShare} setShowShare={setShowShare} />}
+              {section === 'projects'      && <ProjectsSection user={user} confirm={confirm} queryClient={queryClient} setShowShare={setShowShare} />}
               {section === 'messages'      && <Messages />}
               {section === 'notifications' && <Notifications />}
               {section === 'feedback'      && <Feedback />}
