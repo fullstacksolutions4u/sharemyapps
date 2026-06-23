@@ -61,7 +61,7 @@ export default function AdminLearningSection() {
   };
 
   // eslint-disable-next-line react-hooks/set-state-in-effect
-  useEffect(() => { fetchModules(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { fetchModules(); }, []);
 
   /* ── Module CRUD ── */
   const handleCreateModule = async () => {

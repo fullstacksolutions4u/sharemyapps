@@ -23,10 +23,26 @@ const TopicQuizModal = ({
   const [earnedPoints, setEarnedPoints] = useState(null);
   const [showCode, setShowCode] = useState(false);
 
-  const applyAttemptState = (index, attempts) => {
+  useEffect(() => {
+    if (isOpen) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setCurrentQuizIndex(0);
+      // eslint-disable-next-line react-hooks/immutability
+      resetState(0);
+    }
+  }, [isOpen]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/immutability
+    resetState(currentQuizIndex);
+  }, [currentQuizIndex, localAttempts]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const currentQuiz = quizzes && quizzes[currentQuizIndex];
+
+  const resetState = (index) => {
     if (!quizzes || !quizzes[index]) return;
     const quizId = quizzes[index]._id;
-    const attempt = attempts.find(a => a.quizId.toString() === quizId.toString());
+    const attempt = localAttempts.find(a => a.quizId.toString() === quizId.toString());
     if (attempt) {
       setSelectedOption(null);
       setIsCorrect(attempt.isCorrect);
@@ -38,17 +54,6 @@ const TopicQuizModal = ({
       setIsCorrect(false);
     }
   };
-
-  const handleOpen = () => {
-    setCurrentQuizIndex(0);
-    applyAttemptState(0, localAttempts);
-  };
-
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => { if (isOpen) handleOpen(); }, [isOpen]);
-
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => { applyAttemptState(currentQuizIndex, localAttempts); }, [currentQuizIndex, localAttempts]);
 
   if (!isOpen || !currentQuiz) return null;
 

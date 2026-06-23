@@ -710,9 +710,7 @@ const LearningTracker = ({ embedded = false }) => {
           topicId={selectedQuiz.topicId}
           topicTitle={selectedQuiz.topicName}
           userAttempts={userProgress?.attemptedQuizzes || []}
-          onBadgeEarned={(badge) => {
-            setNewBadgeDetails(badge);
-            setShowBadgeModal(true);
+          onBadgeEarned={() => {
             confetti({ particleCount: 200, spread: 100, origin: { y: 0.6 }, colors: ['#FFD700', '#C0C0C0', '#E5E4E2'] });
           }}
           onPointsUpdate={(points) => setUserPoints(prev => prev + points)}
