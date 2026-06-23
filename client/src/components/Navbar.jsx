@@ -179,9 +179,14 @@ function CoinsRankBadge() {
   const { user } = useAuth();
   const { data } = useQuery({
     queryKey: ['leaderboard'],
-    queryFn: async () => { const res = await progressAPI.getLeaderboard(); return res.data; },
+    queryFn: async () => {
+      const res = await progressAPI.getLeaderboard();
+      console.log('[Navbar] leaderboard fetch →', res.data);
+      return res.data;
+    },
     staleTime: 0,
     refetchOnWindowFocus: true,
+    refetchInterval: 60 * 1000,
     enabled: !!user,
   });
 

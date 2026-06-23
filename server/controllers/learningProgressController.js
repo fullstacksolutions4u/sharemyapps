@@ -228,7 +228,9 @@ const getProgressStats = async (req, res) => {
 
 const getLeaderboard = async (req, res) => {
   try {
-    const topUsers = await User.find({ role: { $ne: 'admin' } })
+    const devFilter = { role: { $ne: 'admin' }, userType: 'developer', isDeleted: { $ne: true }, hidden: { $ne: true } };
+
+    const topUsers = await User.find(devFilter)
       .select('name profileImage points')
       .sort({ points: -1, createdAt: 1 })
       .limit(20)
@@ -247,12 +249,10 @@ const getLeaderboard = async (req, res) => {
     if (req.user) {
       const currentUser = await User.findById(req.user._id).select('points createdAt').lean();
       userPoints = currentUser?.points || 0;
-      // Among equal-points users, earlier signup = better rank → newer users rank last
       const usersAbove = await User.countDocuments({
-        role: { $ne: 'admin' },
+        ...devFilter,
         $or: [
           { points: { $gt: userPoints } },
-          // same or no points (null/undefined/0) — use signup date as tiebreaker
           { points: { $not: { $gt: userPoints } }, createdAt: { $lt: currentUser.createdAt } },
         ],
       });

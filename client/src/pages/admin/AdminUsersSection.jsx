@@ -727,7 +727,10 @@ export default function AdminUsersSection({ initialTab = 'developers' }) {
 
   useEffect(() => {
     api.get('/admin/users')
-      .then(res => setUsers(res.data))
+      .then(res => {
+        console.log('[Admin] /admin/users raw sample (first 5) →', res.data.slice(0, 5).map(u => ({ name: u.name, points: u.points, userType: u.userType })));
+        setUsers(res.data);
+      })
       .catch(() => toast.error('Failed to load users'))
       .finally(() => setLoading(false));
   }, []);
@@ -842,6 +845,7 @@ export default function AdminUsersSection({ initialTab = 'developers' }) {
     });
     const map = {};
     sorted.forEach((u, i) => { map[u._id] = i + 1; });
+    console.log('[Admin] devRankMap top 10 →', sorted.slice(0, 10).map((u, i) => ({ rank: i + 1, name: u.name, points: u.points || 0 })));
     return map;
   })();
   const missingCvCount = developers.filter(u => !u.cvUrl).length;

@@ -68,15 +68,19 @@ const TopicQuizModal = ({
     setShowExplanation(true);
     try {
       const response = await progressAPI.submitQuizAttempt({ moduleId, topicId, quizId: currentQuiz._id, isCorrect: correct });
+      console.log('[Quiz] submitQuizAttempt response →', response.data);
       setLocalAttempts(prev => [...prev, { moduleId, topicId, quizId: currentQuiz._id, isCorrect: correct }]);
       if (onQuizAttempt) {
         onQuizAttempt({ moduleId, topicId, quizId: currentQuiz._id, isCorrect: correct, attemptedAt: new Date() });
       }
       if (correct && response.data?.data?.pointsAwarded) {
+        console.log('[Quiz] points awarded →', response.data.data.pointsAwarded, '— invalidating leaderboard cache');
         setEarnedPoints(response.data.data.pointsAwarded);
         if (onPointsUpdate) onPointsUpdate(response.data.data.pointsAwarded);
         setTimeout(() => setEarnedPoints(null), 3000);
         queryClient.invalidateQueries({ queryKey: ['leaderboard'] });
+      } else {
+        console.log('[Quiz] no points awarded (correct=', correct, ', pointsAwarded=', response.data?.data?.pointsAwarded, ')');
       }
       if (response.data?.data?.newBadges?.length > 0 && onBadgeEarned) {
         onBadgeEarned(response.data.data.newBadges[0]);
