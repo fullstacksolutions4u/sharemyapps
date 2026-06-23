@@ -20,7 +20,6 @@ const PRESET_DESIGNATIONS = [
 const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 const DAY_SHORT = { Monday: 'Mon', Tuesday: 'Tue', Wednesday: 'Wed', Thursday: 'Thu', Friday: 'Fri', Saturday: 'Sat', Sunday: 'Sun' };
 import api from '../api/axios';
-import { progressAPI } from '../api/tick2test';
 import CoinIcon from '../components/common/AnimatedCoin';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
@@ -145,7 +144,6 @@ export default function Profile() {
   const [deleting, setDeleting] = useState(false);
   const [avatarUploading, setAvatarUploading] = useState(false);
   const [placementPlan, setPlacementPlan] = useState(null);
-  const [userPoints, setUserPoints] = useState(user?.points || 0);
   const avatarInputRef = useRef(null);
   const techRefs = useRef([]);
   const langRefs = useRef([]);
@@ -221,9 +219,7 @@ export default function Profile() {
   }, []);
 
   useEffect(() => {
-    progressAPI.getProgress()
-      .then(r => { if (r.data?.userStats?.points != null) setUserPoints(r.data.userStats.points); })
-      .catch(() => {});
+    api.get('/auth/me').then(r => setUser(r.data.user)).catch(() => {});
   }, []);
 
   const handle = e => setForm(f => ({ ...f, [e.target.name]: e.target.value }));
@@ -351,9 +347,9 @@ export default function Profile() {
               }}
             >
             <div className="bg-white rounded-[14px] p-5 relative">
-              {userPoints > 0 && (
+              {user && (
                 <span className="absolute top-2 left-3 flex items-center gap-1 text-[10px] font-semibold text-amber-700">
-                  <CoinIcon className="w-3.5 h-3.5" /> {userPoints}
+                  <CoinIcon className="w-3.5 h-3.5" /> {user.points ?? 0}
                 </span>
               )}
               <span className="absolute top-2 right-3 text-[10px] font-semibold" style={{ color: completionColor }}>

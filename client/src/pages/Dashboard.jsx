@@ -28,8 +28,8 @@ const NAV = [
   { key: 'messages',      label: 'Messages',             icon: MessageSquare },
   { key: 'notifications', label: 'Notifications',        icon: Bell },
   { key: 'feedback',      label: 'Feedback',             icon: Lightbulb },
-  { key: 'premium',       label: 'Premium Services',     icon: Crown },
   { key: 'tick2test',     label: 'Quiz Zone',            icon: BookOpen },
+  { key: 'premium',       label: 'Premium Services',     icon: Crown },
 ];
 
 const PLACEHOLDER = 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=400&q=80';
