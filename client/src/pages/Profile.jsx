@@ -20,6 +20,7 @@ const PRESET_DESIGNATIONS = [
 const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 const DAY_SHORT = { Monday: 'Mon', Tuesday: 'Tue', Wednesday: 'Wed', Thursday: 'Thu', Friday: 'Fri', Saturday: 'Sat', Sunday: 'Sun' };
 import api from '../api/axios';
+import { progressAPI } from '../api/tick2test';
 import CoinIcon from '../components/common/AnimatedCoin';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
@@ -104,6 +105,7 @@ export default function Profile() {
 
   const [activeTab, setActiveTab] = useState(0);
   const [completed, setCompleted] = useState(new Set());
+  const [userRank, setUserRank] = useState(null);
 
   const [form, setForm] = useState({
     name: user?.name || '',
@@ -220,6 +222,7 @@ export default function Profile() {
 
   useEffect(() => {
     api.get('/auth/me').then(r => setUser(r.data.user)).catch(() => {});
+    progressAPI.getLeaderboard().then(r => setUserRank(r.data.userRank)).catch(() => {});
   }, []);
 
   const handle = e => setForm(f => ({ ...f, [e.target.name]: e.target.value }));
@@ -348,9 +351,16 @@ export default function Profile() {
             >
             <div className="bg-white rounded-[14px] p-5 relative">
               {user && (
-                <span className="absolute top-2 left-3 flex items-center gap-1 text-[10px] font-semibold text-amber-700">
-                  <CoinIcon className="w-3.5 h-3.5" /> {user.points ?? 0}
-                </span>
+                <div className="absolute top-2 left-3 flex flex-col gap-0.5">
+                  <span className="flex items-center gap-1 text-[10px] font-semibold text-amber-700">
+                    <CoinIcon className="w-3.5 h-3.5" /> {user.points ?? 0} pts
+                  </span>
+                  {userRank && (
+                    <span className="text-[10px] font-semibold text-accent">
+                      #{userRank} rank
+                    </span>
+                  )}
+                </div>
               )}
               <span className="absolute top-2 right-3 text-[10px] font-semibold" style={{ color: completionColor }}>
                 {completionPct}%

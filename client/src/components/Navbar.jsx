@@ -180,7 +180,8 @@ function CoinsRankBadge() {
   const { data } = useQuery({
     queryKey: ['leaderboard'],
     queryFn: async () => { const res = await progressAPI.getLeaderboard(); return res.data; },
-    staleTime: 1000 * 60 * 5,
+    staleTime: 0,
+    refetchOnWindowFocus: true,
     enabled: !!user,
   });
 

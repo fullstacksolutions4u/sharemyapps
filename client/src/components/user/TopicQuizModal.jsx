@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { progressAPI } from '../../api/tick2test';
 import AnimatedCoin from '../common/AnimatedCoin';
 
@@ -14,6 +15,7 @@ const TopicQuizModal = ({
   onPointsUpdate,
   onQuizAttempt
 }) => {
+  const queryClient = useQueryClient();
   const [currentQuizIndex, setCurrentQuizIndex] = useState(0);
   const [selectedOption, setSelectedOption] = useState(null);
   const [showExplanation, setShowExplanation] = useState(false);
@@ -74,6 +76,7 @@ const TopicQuizModal = ({
         setEarnedPoints(response.data.data.pointsAwarded);
         if (onPointsUpdate) onPointsUpdate(response.data.data.pointsAwarded);
         setTimeout(() => setEarnedPoints(null), 3000);
+        queryClient.invalidateQueries({ queryKey: ['leaderboard'] });
       }
       if (response.data?.data?.newBadges?.length > 0 && onBadgeEarned) {
         onBadgeEarned(response.data.data.newBadges[0]);
