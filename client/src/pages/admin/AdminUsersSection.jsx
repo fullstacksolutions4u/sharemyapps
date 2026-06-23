@@ -833,6 +833,17 @@ export default function AdminUsersSection({ initialTab = 'developers' }) {
 
   const activeUsers = users.filter(u => !u.isDeleted);
   const developers = activeUsers.filter(u => u.userType === 'developer');
+
+  const devRankMap = (() => {
+    const sorted = [...developers].sort((a, b) => {
+      const pd = (b.points || 0) - (a.points || 0);
+      if (pd !== 0) return pd;
+      return new Date(a.createdAt) - new Date(b.createdAt);
+    });
+    const map = {};
+    sorted.forEach((u, i) => { map[u._id] = i + 1; });
+    return map;
+  })();
   const missingCvCount = developers.filter(u => !u.cvUrl).length;
   const missingSummaryCount = developers.filter(u => !u.resumeData).length;
   const placeholderCvCount = developers.filter(u => isPlaceholderCv(u.cvUrl)).length;
@@ -951,6 +962,7 @@ export default function AdminUsersSection({ initialTab = 'developers' }) {
             <thead>
               <tr className="border-b border-[#E5E1DA] bg-[#FAF9F6]">
                 <th className="text-left px-4 py-3 text-xs font-semibold text-[#6B7280] uppercase tracking-wider">Developer</th>
+                <th className="text-left px-4 py-3 text-xs font-semibold text-[#6B7280] uppercase tracking-wider hidden sm:table-cell">Ranking</th>
                 <th className="text-left px-4 py-3 text-xs font-semibold text-[#6B7280] uppercase tracking-wider hidden md:table-cell">Designation</th>
                 <th className="text-left px-4 py-3 text-xs font-semibold text-[#6B7280] uppercase tracking-wider hidden lg:table-cell">Resume</th>
                 <th className="text-left px-4 py-3 text-xs font-semibold text-[#6B7280] uppercase tracking-wider hidden xl:table-cell">Notes</th>
@@ -961,6 +973,24 @@ export default function AdminUsersSection({ initialTab = 'developers' }) {
               {paged.map(u => (
                 <tr key={u._id} className="hover:bg-[#FAF9F6] transition-colors">
                   <td className="px-4 py-3"><div className="flex items-center gap-3"><Avatar u={u} /><div className="min-w-0"><p className="font-medium text-[#1A1A1A] truncate">{u.name}</p></div></div></td>
+                  <td className="px-4 py-3 hidden sm:table-cell">
+                    {(() => {
+                      const rank = devRankMap[u._id];
+                      const pts = u.points || 0;
+                      const medal = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : null;
+                      const rankColor = rank === 1 ? 'text-amber-600 bg-amber-50 border-amber-200' : rank === 2 ? 'text-slate-500 bg-slate-50 border-slate-200' : rank === 3 ? 'text-orange-600 bg-orange-50 border-orange-200' : 'text-[#6B7280] bg-[#F3F0EB] border-[#E5E1DA]';
+                      return (
+                        <div className="flex flex-col gap-1">
+                          <span className={`inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full border font-semibold w-fit ${rankColor}`}>
+                            {medal && <span>{medal}</span>}#{rank}
+                          </span>
+                          <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full border border-amber-200 bg-amber-50 text-amber-700 font-medium w-fit">
+                            🪙 {pts} pts
+                          </span>
+                        </div>
+                      );
+                    })()}
+                  </td>
                   <td className="px-4 py-3 hidden md:table-cell">
                     {u.designations?.filter(Boolean).length
                       ? <div className="flex flex-wrap gap-1">{u.designations.filter(Boolean).map((d, i) => <span key={i} className="text-xs px-2 py-0.5 rounded-full bg-[#E6F7F5] text-[#00A693] border border-[#00A693]/20 font-medium">{d}</span>)}</div>
@@ -983,11 +1013,11 @@ export default function AdminUsersSection({ initialTab = 'developers' }) {
                     <NoteCell u={u} editingNote={editingNote} setEditingNote={setEditingNote} noteSaving={noteSaving} handleSaveNote={handleSaveNote} />
                   </td>
                   <td className="px-4 py-3">
-                    <div className="flex items-center justify-end gap-1.5 whitespace-nowrap">
-                      <button onClick={() => setViewingUser(u)} className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-lg border border-[#E5E1DA] text-[#6B7280] hover:border-[#00A693] hover:text-[#00A693] font-medium transition-colors"><Eye size={10} /> View</button>
-                      <button onClick={() => setEditingUser(u)} className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-lg border border-[#E5E1DA] text-[#6B7280] hover:border-[#00A693] hover:text-[#00A693] font-medium transition-colors"><Pencil size={10} /> Edit</button>
-                      <button onClick={() => { setMessagingUser(u); setMessageText(''); }} className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-lg border border-blue-200 text-blue-500 hover:bg-blue-50 font-medium transition-colors"><Mail size={10} /> Message</button>
-                      <button onClick={() => setConfirmDelete(u)} className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-lg border border-red-200 text-red-500 hover:bg-red-50 font-medium transition-colors"><Trash2 size={10} /> Delete</button>
+                    <div className="grid grid-cols-2 gap-1 justify-items-end">
+                      <button onClick={() => setViewingUser(u)} title="View" className="w-7 h-7 flex items-center justify-center rounded-lg border border-[#E5E1DA] text-[#6B7280] hover:border-[#00A693] hover:text-[#00A693] transition-colors"><Eye size={13} /></button>
+                      <button onClick={() => setEditingUser(u)} title="Edit" className="w-7 h-7 flex items-center justify-center rounded-lg border border-[#E5E1DA] text-[#6B7280] hover:border-[#00A693] hover:text-[#00A693] transition-colors"><Pencil size={13} /></button>
+                      <button onClick={() => { setMessagingUser(u); setMessageText(''); }} title="Message" className="w-7 h-7 flex items-center justify-center rounded-lg border border-blue-200 text-blue-500 hover:bg-blue-50 transition-colors"><Mail size={13} /></button>
+                      <button onClick={() => setConfirmDelete(u)} title="Delete" className="w-7 h-7 flex items-center justify-center rounded-lg border border-red-200 text-red-500 hover:bg-red-50 transition-colors"><Trash2 size={13} /></button>
                     </div>
                   </td>
                 </tr>
