@@ -10,7 +10,7 @@ const ROLES = [
     key: 'developer',
     icon: Code2,
     label: 'Developer',
-    desc: 'Showcase your projects, build a portfolio, and get discovered by clients and recruiters.',
+    desc: 'Complete your profile, showcase projects & portfolio, apply for jobs, and get discovered by clients and recruiters.',
     color: 'text-blue-500',
     bg: 'bg-blue-50',
     border: 'border-blue-500',
