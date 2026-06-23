@@ -1,7 +1,8 @@
 import { useRef, useState, useEffect } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link, useNavigate } from 'react-router-dom';
-import { Menu, X, ChevronDown, LogOut, Plus, ShieldCheck, Bell, CheckCircle, XCircle, Clock, MessageSquare, AlertCircle, Heart, Star, MessageCircle, Briefcase, LayoutDashboard } from 'lucide-react';
+import { Menu, X, ChevronDown, LogOut, Plus, ShieldCheck, Bell, CheckCircle, XCircle, Clock, MessageSquare, AlertCircle, Heart, Star, MessageCircle, Briefcase, LayoutDashboard, Trophy } from 'lucide-react';
+import { progressAPI } from '../api/tick2test';
 
 const GeminiIcon = ({ size = 14 }) => (
   <svg width={size} height={size} viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -174,6 +175,32 @@ function NotificationBell() {
   );
 }
 
+function CoinsRankBadge() {
+  const { user } = useAuth();
+  const { data } = useQuery({
+    queryKey: ['leaderboard'],
+    queryFn: async () => { const res = await progressAPI.getLeaderboard(); return res.data; },
+    staleTime: 1000 * 60 * 5,
+    enabled: !!user,
+  });
+
+  if (!user || !data) return null;
+
+  return (
+    <Link to="/dashboard?section=tick2test" className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold" style={{ backgroundColor: '#FFF8E8', border: '1px solid rgba(201,169,110,0.4)' }}>
+      <span className="text-amber-500">🪙</span>
+      <span className="text-amber-600">{data?.userPoints ?? 0}</span>
+      {data?.userRank && (
+        <>
+          <span className="text-muted mx-0.5">·</span>
+          <Trophy size={11} className="text-amber-500" />
+          <span className="text-amber-600">#{data.userRank}</span>
+        </>
+      )}
+    </Link>
+  );
+}
+
 export default function Navbar() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
@@ -233,7 +260,10 @@ export default function Navbar() {
             <Link to="/mentors" className="relative text-base text-muted hover:text-text transition-colors after:absolute after:left-0 after:-bottom-0.5 after:h-[1.5px] after:w-0 after:bg-accent after:transition-[width] after:duration-300 hover:after:w-full">Mentors</Link>
           )}
           {!isRecruiter && !isClient && !isMentee && !isMentor && (
-            <Link to="/opportunities" className="relative text-base text-muted hover:text-text transition-colors after:absolute after:left-0 after:-bottom-0.5 after:h-[1.5px] after:w-0 after:bg-accent after:transition-[width] after:duration-300 hover:after:w-full">Opportunities</Link>
+            <>
+              <Link to="/opportunities" className="relative text-base text-muted hover:text-text transition-colors after:absolute after:left-0 after:-bottom-0.5 after:h-[1.5px] after:w-0 after:bg-accent after:transition-[width] after:duration-300 hover:after:w-full">Opportunities</Link>
+              <Link to="/dashboard?section=tick2test" className="relative text-base text-muted hover:text-text transition-colors after:absolute after:left-0 after:-bottom-0.5 after:h-[1.5px] after:w-0 after:bg-accent after:transition-[width] after:duration-300 hover:after:w-full">Quiz Zone</Link>
+            </>
           )}
 
           {user ? (
@@ -249,6 +279,7 @@ export default function Navbar() {
 
               <MessagesBadge />
               <NotificationBell />
+              <CoinsRankBadge />
 
               <div className="relative">
                 <button
@@ -333,7 +364,10 @@ export default function Navbar() {
             <Link to="/mentors" onClick={() => setMenuOpen(false)} className="block text-sm text-muted hover:text-text">Mentors</Link>
           )}
           {!isRecruiter && !isClient && !isMentee && !isMentor && (
-            <Link to="/opportunities" onClick={() => setMenuOpen(false)} className="block text-sm text-muted hover:text-text">Opportunities</Link>
+            <>
+              <Link to="/opportunities" onClick={() => setMenuOpen(false)} className="block text-sm text-muted hover:text-text">Opportunities</Link>
+              <Link to="/dashboard?section=tick2test" onClick={() => setMenuOpen(false)} className="block text-sm text-muted hover:text-text">Quiz Zone</Link>
+            </>
           )}
           {user ? (
             <>

@@ -239,7 +239,7 @@ export default function AdminLearningSection() {
             <BookOpen size={15} className="text-accent" />
           </div>
           <div>
-            <h2 className="text-base font-semibold text-text">Test your Knowledge</h2>
+            <h2 className="text-base font-semibold text-text">Quiz Zone</h2>
             <p className="text-xs text-muted">{modules.length} module{modules.length !== 1 ? 's' : ''}</p>
           </div>
         </div>

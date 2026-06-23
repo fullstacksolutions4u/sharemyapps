@@ -11,6 +11,7 @@ export const progressAPI = {
   toggleTopic: (moduleId, topicId) => api.post('/learning-progress/topic', { moduleId, topicId }),
   submitQuizAttempt: (data) => api.post('/learning-progress/quiz', data),
   getStats: () => api.get('/learning-progress/stats'),
+  getLeaderboard: () => api.get('/learning-progress/leaderboard'),
 };
 
 export const feedbackAPI = {

@@ -332,124 +332,6 @@ const LearningTracker = ({ embedded = false }) => {
   return (
     <div className="min-h-screen" style={{ paddingTop: embedded ? '24px' : '100px', paddingBottom: '48px', backgroundColor: '#F5F0E8' }}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header Stats Panel */}
-        <div className="mb-8 rounded-2xl p-6 backdrop-blur-sm" style={{ backgroundColor: '#FAF7F2', border: '1px solid #E0D8CC', boxShadow: '0 4px 12px rgba(28,26,23,0.06)' }}>
-          <div className="flex flex-col lg:flex-row gap-8">
-            <div className="flex-1">
-              <div className="text-center mb-4">
-                <h2 className="text-xl md:text-2xl font-bold inline-flex items-center gap-2" style={{ color: '#1C1A17', fontFamily: "'Playfair Display', Georgia, serif" }}>
-                  Test Your Knowledge With A Tick
-                  <span className="bg-green-500/20 text-green-400 p-1 rounded-full border border-green-500/50 shadow-sm">
-                    <svg className="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
-                    </svg>
-                  </span>
-                </h2>
-                <div className="flex flex-col items-center justify-center gap-3 mt-4">
-                  <div className="flex items-center gap-4">
-                    <div className="px-4 py-1.5 rounded-full flex items-center gap-2 shadow-sm" style={{ backgroundColor: '#FFF8F0', border: '1px solid rgba(192,122,58,0.3)' }}>
-                      <span className="text-lg animate-pulse">🔥</span>
-                      <span className="text-sm font-bold text-orange-400">Streak: <span style={{ color: '#1C1A17' }}>{streakCount} {streakCount === 1 ? 'day' : 'days'}</span></span>
-                    </div>
-                    <div className="px-4 py-1.5 rounded-full flex items-center gap-2 shadow-sm" style={{ backgroundColor: '#FFF8E8', border: '1px solid rgba(201,169,110,0.3)' }}>
-                      <AnimatedCoin className="w-5 h-5" textSize="text-[8px]" />
-                      <span className="text-sm font-bold text-yellow-400">Points: <span style={{ color: '#1C1A17' }}>{userPoints}</span></span>
-                    </div>
-                    <div className="flex items-center gap-2 rounded-full px-3 py-1.5" style={{ backgroundColor: '#F0E8DC', border: '1px solid #D4B896' }}>
-                      <span className="text-xs font-semibold uppercase tracking-wider hidden sm:inline" style={{ color: '#5A5550' }}>DAILY TARGET</span>
-                      <div className="flex items-center gap-1">
-                        <button onClick={() => setDailyTarget(Math.max(1, dailyTarget - 1))} className="w-5 h-5 rounded flex items-center justify-center text-xs" style={{ backgroundColor: '#9B7D43', color: '#FAF7F2' }}>-</button>
-                        <span className="font-bold w-5 text-center text-sm" style={{ color: '#1C1A17' }}>{dailyTarget}</span>
-                        <button onClick={() => setDailyTarget(Math.min(20, dailyTarget + 1))} disabled={dailyTarget >= 20} className="w-5 h-5 rounded flex items-center justify-center text-xs disabled:opacity-50" style={{ backgroundColor: '#FAF7F2', color: '#1C1A17', border: '1px solid #D4B896' }}>+</button>
-                      </div>
-                      <span className="text-xs font-semibold uppercase tracking-wider hidden sm:inline" style={{ color: '#5A5550' }}>TOPICS</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              {/* Weekly Progress */}
-              <div className="relative px-10">
-                <button onClick={() => setWeekOffset(prev => prev - 1)} className="absolute left-0 top-1/2 -translate-y-1/2 z-10 rounded-full p-2 shadow-sm" style={{ backgroundColor: '#FAF7F2', border: '1px solid #D4B896' }}>
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: '#1C1A17' }}><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
-                </button>
-                <div className="flex items-center justify-between gap-1 overflow-x-auto pb-2">
-                  {weeklyProgress.map((day, idx) => {
-                    const progress = Math.min(100, (day.completedCount / dailyTarget) * 100);
-                    const isCompleted = day.completedCount >= dailyTarget;
-                    const circumference = 2 * Math.PI * 15;
-                    return (
-                      <div key={idx} className="flex flex-col items-center gap-1 min-w-[40px]">
-                        <div className="relative w-9 h-9 flex items-center justify-center">
-                          <svg className="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
-                            <circle cx="18" cy="18" r="15" fill="transparent" stroke="#E0D8CC" strokeWidth="3" />
-                            <circle cx="18" cy="18" r="15" fill="transparent" stroke={isCompleted ? '#22c55e' : '#f97316'} strokeWidth="3" strokeDasharray={circumference} strokeDashoffset={circumference * (1 - progress / 100)} strokeLinecap="round" className="transition-all duration-500" />
-                          </svg>
-                          <div className="absolute inset-0 m-1 rounded-full flex items-center justify-center" style={{ backgroundColor: day.isToday ? 'rgba(155,125,67,0.15)' : 'transparent' }}>
-                            <span className="text-xs font-bold" style={{ color: day.isToday ? '#9B7D43' : '#5A5550' }}>{day.date}</span>
-                          </div>
-                          {isCompleted && (
-                            <div className="absolute -right-1 -top-1 bg-green-500 rounded-full p-0.5 shadow-lg border border-white">
-                              <svg className="w-2 h-2 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
-                            </div>
-                          )}
-                        </div>
-                        <span className="text-xs font-bold uppercase tracking-wider" style={{ color: day.isToday ? '#9B7D43' : '#5A5550' }}>{day.dayName}</span>
-                      </div>
-                    );
-                  })}
-                </div>
-                <button onClick={() => setWeekOffset(prev => prev + 1)} className="absolute right-0 top-1/2 -translate-y-1/2 z-10 rounded-full p-2 shadow-sm" style={{ backgroundColor: '#FAF7F2', border: '1px solid #D4B896' }}>
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: '#1C1A17' }}><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
-                </button>
-              </div>
-            </div>
-            {/* Calendar */}
-            <div className="w-full lg:w-64 rounded-xl p-3 flex flex-col relative group" style={{ backgroundColor: '#F0E8DC', border: '1px solid #D4B896' }}>
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="text-xs font-bold" style={{ color: '#1C1A17' }}>{calendarDate.toLocaleString('default', { month: 'long', year: 'numeric' })}</h3>
-                <div className="flex gap-1.5 text-xs font-medium" style={{ color: '#5A5550' }}>
-                  <div className="flex items-center gap-1"><div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: '#E8DDD0' }}></div><span>0</span></div>
-                  <div className="flex items-center gap-1"><div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: '#D4B896' }}></div><span>&gt;0</span></div>
-                  <div className="flex items-center gap-1"><div className="w-1.5 h-1.5 rounded-full bg-green-500"></div><span>Goal</span></div>
-                </div>
-              </div>
-              <div className="grid grid-cols-7 gap-1 text-center mb-1">
-                {['S','M','T','W','T','F','S'].map((d, i) => <div key={i} className="text-xs font-bold" style={{ color: '#5A5550' }}>{d}</div>)}
-              </div>
-              <div className="grid grid-cols-7 gap-1 flex-1 content-start">
-                {(() => {
-                  const year = calendarDate.getFullYear();
-                  const month = calendarDate.getMonth();
-                  const daysInMonth = new Date(year, month + 1, 0).getDate();
-                  const firstDay = new Date(year, month, 1).getDay();
-                  const actualToday = new Date();
-                  const days = [];
-                  for (let i = 0; i < firstDay; i++) days.push(<div key={`e-${i}`} className="aspect-square"></div>);
-                  for (let i = 1; i <= daysInMonth; i++) {
-                    const dateStr = getLocalDateString(new Date(year, month, i));
-                    const count = dailyProgressMap[dateStr] || 0;
-                    let bgClass = 'text-[#5A5550]';
-                    let bgStyle = { backgroundColor: '#E8DDD0' };
-                    if (count >= dailyTarget) { bgClass = 'text-white shadow-md'; bgStyle = { backgroundColor: '#9B7D43' }; }
-                    else if (count > 0) { bgClass = 'text-[#6B4F2A]'; bgStyle = { backgroundColor: '#D4B896' }; }
-                    const isToday = i === actualToday.getDate() && month === actualToday.getMonth() && year === actualToday.getFullYear();
-                    days.push(
-                      <div key={i} className={`aspect-square rounded-md flex items-center justify-center text-xs font-semibold ${bgClass} ${isToday ? 'ring-2 ring-[#9B7D43] ring-offset-1 ring-offset-[#F0E8DC] z-10' : ''}`} style={bgStyle} title={`${count} topics completed`}>{i}</div>
-                    );
-                  }
-                  return days;
-                })()}
-              </div>
-              <button onClick={() => setCalendarDate(new Date(calendarDate.getFullYear(), calendarDate.getMonth() - 1, 1))} className="absolute -left-3 top-1/2 -translate-y-1/2 z-10 rounded-full p-1.5 shadow-sm" style={{ backgroundColor: '#FAF7F2', border: '1px solid #D4B896' }}>
-                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: '#1C1A17' }}><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
-              </button>
-              <button onClick={() => setCalendarDate(new Date(calendarDate.getFullYear(), calendarDate.getMonth() + 1, 1))} className="absolute -right-3 top-1/2 -translate-y-1/2 z-10 rounded-full p-1.5 shadow-sm" style={{ backgroundColor: '#FAF7F2', border: '1px solid #D4B896' }}>
-                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: '#1C1A17' }}><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
-              </button>
-            </div>
-          </div>
-        </div>
-
         {modules.length === 0 ? (
           <div className="rounded-xl shadow-md p-12 text-center" style={{ backgroundColor: '#FAF7F2', border: '1px solid #E0D8CC' }}>
             <p className="text-lg font-semibold" style={{ color: '#1C1A17' }}>No modules available</p>
@@ -457,6 +339,24 @@ const LearningTracker = ({ embedded = false }) => {
           </div>
         ) : (
           <>
+            {/* Module navigation */}
+            <div className="mb-6">
+              <div className="flex flex-wrap items-center justify-center gap-2 w-full px-2">
+                {modules.map((module, index) => (
+                  <button
+                    key={index}
+                    onClick={() => goToSlide(index)}
+                    className="transition-all duration-300 rounded-lg px-3 py-1.5 text-xs font-semibold"
+                    style={index === currentIndex
+                      ? { backgroundColor: '#9B7D43', color: '#FAF7F2', boxShadow: '0 2px 8px rgba(155,125,67,0.4)', border: '1px solid #C9A96E' }
+                      : { backgroundColor: '#FAF7F2', color: '#5A5550', border: '1px solid #D4B896' }}
+                  >
+                    {module.title.replace(/^Module\s+\d+\s*[:\s-]+\s*/i, '')}
+                  </button>
+                ))}
+              </div>
+            </div>
+
             <div className="flex flex-col lg:flex-row gap-6 items-stretch justify-center mb-8">
               <div className="flex-shrink-0 w-full lg:w-[700px]">
                 <div className="flex-1 relative w-full">
@@ -492,7 +392,7 @@ const LearningTracker = ({ embedded = false }) => {
                               <div className="mb-6 flex-shrink-0">
                                 <div className="rounded-xl p-4 shadow-sm" style={{ backgroundColor: '#F0E8DC', border: '1px solid #D4B896' }}>
                                   <h3 className="text-xl font-bold text-center" style={{ color: '#1C1A17', fontFamily: "'Playfair Display', Georgia, serif" }}>
-                                    <span style={{ color: '#9B7D43' }}>Module {index + 1} :</span> {module.title.replace(/^Module\s+\d+\s*[:\s-]+\s*/i, '')}
+                                    {module.title.replace(/^Module\s+\d+\s*[:\s-]+\s*/i, '')}
                                   </h3>
                                   {module.category && <p className="text-xs text-center mt-1 uppercase tracking-wider font-semibold" style={{ color: '#5A5550' }}>{module.category}</p>}
                                 </div>
@@ -517,6 +417,7 @@ const LearningTracker = ({ embedded = false }) => {
                                     {regularTopics.map((topic, topicIndex) => {
                                       const uniqueAttempted = new Set((userProgress?.attemptedQuizzes || []).filter(a => String(a.topicId) === String(topic._id)).map(a => String(a.quizId)));
                                       const isQuizCompleted = topic.quizCount > 0 && uniqueAttempted.size >= topic.quizCount;
+                                      const isPartial = uniqueAttempted.size > 0 && !isQuizCompleted;
                                       return (
                                         <div key={topic._id || topicIndex} className="flex items-center gap-3 p-3 rounded-xl transition-all duration-200 border group" style={{ backgroundColor: topic.completed ? '#EFF8EF' : isQuizCompleted ? '#F0ECFA' : '#F5F0E8', borderColor: topic.completed ? '#86efac' : isQuizCompleted ? '#C4B5FD' : '#D4B896' }}>
                                           <button onClick={() => handleToggleTopic(module._id, topic._id, topic.completed, index)} className={`flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center transition-all duration-200 hover:scale-110 ${topic.completed ? 'bg-green-500 hover:bg-green-600 shadow-lg' : ''}`} style={!topic.completed ? { backgroundColor: '#FAF7F2', border: '1.5px solid #D4B896' } : {}} title={topic.completed ? 'Mark as incomplete' : 'Mark as complete'}>
@@ -547,12 +448,12 @@ const LearningTracker = ({ embedded = false }) => {
                                               }}
                                               disabled={!topic.completed || loadingQuizTopicId === topic._id}
                                               className="ml-2 px-2 py-1 text-xs font-semibold rounded-md transition-colors"
-                                              style={isQuizCompleted ? { backgroundColor: '#22c55e', color: '#fff' } : topic.completed ? { backgroundColor: '#9B7D43', color: '#FAF7F2' } : { backgroundColor: '#E0D8CC', color: '#5A5550', opacity: 0.7, cursor: 'not-allowed' }}
-                                              title={isQuizCompleted ? 'All questions attempted' : (topic.completed ? 'Take a quiz on this topic' : 'Complete the topic to unlock quiz')}
+                                              style={isQuizCompleted ? { backgroundColor: '#22c55e', color: '#fff' } : isPartial ? { backgroundColor: '#f97316', color: '#fff' } : topic.completed ? { backgroundColor: '#9B7D43', color: '#FAF7F2' } : { backgroundColor: '#E0D8CC', color: '#5A5550', opacity: 0.7, cursor: 'not-allowed' }}
+                                              title={isQuizCompleted ? 'All questions attempted' : isPartial ? `${uniqueAttempted.size}/${topic.quizCount} questions done — continue` : (topic.completed ? 'Take a quiz on this topic' : 'Complete the topic to unlock quiz')}
                                             >
                                               {loadingQuizTopicId === topic._id ? (
                                                 <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-                                              ) : 'Start Quiz'}
+                                              ) : isQuizCompleted ? 'Completed' : isPartial ? 'Continue' : 'Start Quiz'}
                                             </button>
                                           )}
                                         </div>
@@ -597,15 +498,110 @@ const LearningTracker = ({ embedded = false }) => {
               </div>
               {/* Progress Panel */}
               <div className="flex-shrink-0 w-full lg:w-[400px] lg:sticky lg:top-32">
-                <div className="rounded-2xl shadow-xl p-6 flex flex-col" style={{ height: '800px', backgroundColor: '#FAF7F2', border: '2px solid #E0D8CC' }}>
-                  <h3 className="text-lg font-bold mb-4 text-center" style={{ color: '#1C1A17', fontFamily: "'Playfair Display', Georgia, serif" }}>Module Progress</h3>
-                  <div className="flex flex-col items-center justify-center flex-1">
-                    <PieChart percentage={overallProgress.percentage} size={200} strokeWidth={20} color="#9B7D43" backgroundColor="#E0D8CC" showPercentage={true}>
-                      <span className="text-sm mt-2 font-medium text-center" style={{ color: '#5A5550' }}>{overallProgress.completedModules} / {overallProgress.totalModules} Modules</span>
-                    </PieChart>
-                    <p className="text-xs mt-4 text-center max-w-[200px]" style={{ color: '#5A5550' }}>Complete all topics in a module to mark it as finished</p>
-                    <div className="mt-4 pt-4 w-full" style={{ borderTop: '1px solid #E0D8CC' }}>
-                      <div className="text-center">
+                <div className="rounded-2xl shadow-xl p-5 flex flex-col overflow-y-auto custom-scrollbar" style={{ maxHeight: '800px', backgroundColor: '#FAF7F2', border: '2px solid #E0D8CC' }}>
+                  {/* Streak / Points */}
+                  <div className="flex flex-wrap items-center justify-center gap-2 mb-4">
+                    <div className="px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-sm" style={{ backgroundColor: '#FFF8F0', border: '1px solid rgba(192,122,58,0.3)' }}>
+                      <span className="text-base animate-pulse">🔥</span>
+                      <span className="text-xs font-bold text-orange-400">Streak: <span style={{ color: '#1C1A17' }}>{streakCount} {streakCount === 1 ? 'day' : 'days'}</span></span>
+                    </div>
+                    <div className="px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-sm" style={{ backgroundColor: '#FFF8E8', border: '1px solid rgba(201,169,110,0.3)' }}>
+                      <AnimatedCoin className="w-4 h-4" textSize="text-[7px]" />
+                      <span className="text-xs font-bold text-yellow-400">Points: <span style={{ color: '#1C1A17' }}>{userPoints}</span></span>
+                    </div>
+                  </div>
+
+                  {/* Weekly Progress */}
+                  <div className="relative px-8 mb-4">
+                    <button onClick={() => setWeekOffset(prev => prev - 1)} className="absolute left-0 top-1/2 -translate-y-1/2 z-10 rounded-full p-1.5 shadow-sm" style={{ backgroundColor: '#FAF7F2', border: '1px solid #D4B896' }}>
+                      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: '#1C1A17' }}><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
+                    </button>
+                    <div className="flex items-center justify-between gap-1 pb-1">
+                      {weeklyProgress.map((day, idx) => {
+                        const progress = Math.min(100, (day.completedCount / dailyTarget) * 100);
+                        const isCompleted = day.completedCount >= dailyTarget;
+                        const circumference = 2 * Math.PI * 15;
+                        return (
+                          <div key={idx} className="flex flex-col items-center gap-1">
+                            <div className="relative w-8 h-8 flex items-center justify-center">
+                              <svg className="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
+                                <circle cx="18" cy="18" r="15" fill="transparent" stroke="#E0D8CC" strokeWidth="3" />
+                                <circle cx="18" cy="18" r="15" fill="transparent" stroke={isCompleted ? '#22c55e' : '#f97316'} strokeWidth="3" strokeDasharray={circumference} strokeDashoffset={circumference * (1 - progress / 100)} strokeLinecap="round" className="transition-all duration-500" />
+                              </svg>
+                              <div className="absolute inset-0 m-1 rounded-full flex items-center justify-center" style={{ backgroundColor: day.isToday ? 'rgba(155,125,67,0.15)' : 'transparent' }}>
+                                <span className="text-xs font-bold" style={{ color: day.isToday ? '#9B7D43' : '#5A5550' }}>{day.date}</span>
+                              </div>
+                              {isCompleted && (
+                                <div className="absolute -right-1 -top-1 bg-green-500 rounded-full p-0.5 shadow-lg border border-white">
+                                  <svg className="w-2 h-2 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
+                                </div>
+                              )}
+                            </div>
+                            <span className="text-xs font-bold uppercase tracking-wider" style={{ color: day.isToday ? '#9B7D43' : '#5A5550' }}>{day.dayName}</span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                    <button onClick={() => setWeekOffset(prev => prev + 1)} className="absolute right-0 top-1/2 -translate-y-1/2 z-10 rounded-full p-1.5 shadow-sm" style={{ backgroundColor: '#FAF7F2', border: '1px solid #D4B896' }}>
+                      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: '#1C1A17' }}><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+                    </button>
+                  </div>
+
+                  {/* Calendar */}
+                  <div className="rounded-xl p-3 mb-4" style={{ backgroundColor: '#F0E8DC', border: '1px solid #D4B896' }}>
+                    <div className="flex items-center justify-between mb-2">
+                      <h4 className="text-xs font-bold" style={{ color: '#1C1A17' }}>{calendarDate.toLocaleString('default', { month: 'long', year: 'numeric' })}</h4>
+                      <div className="flex gap-1.5 text-xs font-medium" style={{ color: '#5A5550' }}>
+                        <div className="flex items-center gap-1"><div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: '#E8DDD0' }}></div><span>0</span></div>
+                        <div className="flex items-center gap-1"><div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: '#D4B896' }}></div><span>&gt;0</span></div>
+                        <div className="flex items-center gap-1"><div className="w-1.5 h-1.5 rounded-full bg-green-500"></div><span>Goal</span></div>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-7 gap-1 text-center mb-1">
+                      {['S','M','T','W','T','F','S'].map((d, i) => <div key={i} className="text-xs font-bold" style={{ color: '#5A5550' }}>{d}</div>)}
+                    </div>
+                    <div className="grid grid-cols-7 gap-1">
+                      {(() => {
+                        const year = calendarDate.getFullYear();
+                        const month = calendarDate.getMonth();
+                        const daysInMonth = new Date(year, month + 1, 0).getDate();
+                        const firstDay = new Date(year, month, 1).getDay();
+                        const actualToday = new Date();
+                        const days = [];
+                        for (let i = 0; i < firstDay; i++) days.push(<div key={`e-${i}`} className="aspect-square"></div>);
+                        for (let i = 1; i <= daysInMonth; i++) {
+                          const dateStr = getLocalDateString(new Date(year, month, i));
+                          const count = dailyProgressMap[dateStr] || 0;
+                          let bgClass = 'text-[#5A5550]';
+                          let bgStyle = { backgroundColor: '#E8DDD0' };
+                          if (count >= dailyTarget) { bgClass = 'text-white shadow-md'; bgStyle = { backgroundColor: '#9B7D43' }; }
+                          else if (count > 0) { bgClass = 'text-[#6B4F2A]'; bgStyle = { backgroundColor: '#D4B896' }; }
+                          const isToday = i === actualToday.getDate() && month === actualToday.getMonth() && year === actualToday.getFullYear();
+                          days.push(
+                            <div key={i} className={`aspect-square rounded-md flex items-center justify-center text-xs font-semibold ${bgClass} ${isToday ? 'ring-2 ring-[#9B7D43] ring-offset-1 ring-offset-[#F0E8DC] z-10' : ''}`} style={bgStyle} title={`${count} topics completed`}>{i}</div>
+                          );
+                        }
+                        return days;
+                      })()}
+                    </div>
+                    <div className="flex justify-between mt-2">
+                      <button onClick={() => setCalendarDate(new Date(calendarDate.getFullYear(), calendarDate.getMonth() - 1, 1))} className="rounded-full p-1.5 shadow-sm" style={{ backgroundColor: '#FAF7F2', border: '1px solid #D4B896' }}>
+                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: '#1C1A17' }}><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
+                      </button>
+                      <button onClick={() => setCalendarDate(new Date(calendarDate.getFullYear(), calendarDate.getMonth() + 1, 1))} className="rounded-full p-1.5 shadow-sm" style={{ backgroundColor: '#FAF7F2', border: '1px solid #D4B896' }}>
+                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: '#1C1A17' }}><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Pie Chart + Totals */}
+                  <div className="pt-4" style={{ borderTop: '1px solid #E0D8CC' }}>
+                    <div className="flex flex-col items-center justify-center">
+                      <PieChart percentage={overallProgress.percentage} size={160} strokeWidth={18} color="#9B7D43" backgroundColor="#E0D8CC" showPercentage={true}>
+                        <span className="text-xs mt-1 font-medium text-center" style={{ color: '#5A5550' }}>{overallProgress.completedModules} / {overallProgress.totalModules} Modules</span>
+                      </PieChart>
+                      <p className="text-xs mt-3 text-center max-w-[180px]" style={{ color: '#5A5550' }}>Complete all topics in a module to mark it as finished</p>
+                      <div className="mt-3 pt-3 w-full text-center" style={{ borderTop: '1px solid #E0D8CC' }}>
                         <p className="text-sm mb-1 font-medium" style={{ color: '#5A5550' }}>Total Topics Completed</p>
                         <p className="text-2xl font-bold" style={{ color: '#9B7D43' }}>
                           {modules.reduce((total, m) => total + (m.topics?.filter(t => t.completed).length || 0), 0)}
@@ -622,55 +618,6 @@ const LearningTracker = ({ embedded = false }) => {
           </>
         )}
 
-        {/* Module navigation dots */}
-        {modules.length > 0 && (
-          <>
-            <div className="mt-8">
-              <div className="flex flex-wrap items-center justify-center gap-1.5 w-full px-2">
-                {modules.map((_, index) => (
-                  <button key={index} onClick={() => goToSlide(index)} className="flex-shrink-0 transition-all duration-300 rounded-full flex items-center justify-center font-bold text-xs w-7 h-7"
-                    style={index === currentIndex ? { backgroundColor: '#9B7D43', color: '#FAF7F2', boxShadow: '0 2px 8px rgba(155,125,67,0.4)', border: '1px solid #C9A96E' } : { backgroundColor: '#FAF7F2', color: '#5A5550', border: '1px solid #D4B896' }}
-                    aria-label={`Go to module ${index + 1}`}
-                  >
-                    {index + 1}
-                  </button>
-                ))}
-              </div>
-              <div className="text-center mt-4 font-semibold" style={{ color: '#5A5550' }}>Module {currentIndex + 1} of {modules.length}</div>
-            </div>
-
-            {/* Feedback */}
-            <div className="max-w-4xl mx-auto mt-12 mb-8 px-4">
-              <div className="rounded-xl p-4" style={{ backgroundColor: '#FAF7F2', border: '1px solid #E0D8CC' }}>
-                <div className="flex flex-col md:flex-row items-center gap-4 justify-between">
-                  <div className="flex items-center gap-2 font-medium whitespace-nowrap" style={{ color: '#5A5550' }}>
-                    <span className="text-lg">💬</span>
-                    <span>Let us know feedback and missing topics to add</span>
-                  </div>
-                  {feedbackSuccess ? (
-                    <div className="flex-1 text-center text-green-600 text-sm font-semibold">Thank you! Feedback received. ✅</div>
-                  ) : (
-                    <div className="flex-1 w-full flex items-center gap-3">
-                      <input
-                        type="text"
-                        value={feedbackText}
-                        onChange={e => setFeedbackText(e.target.value)}
-                        placeholder="Share your thoughts..."
-                        className="flex-1 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#9B7D43] transition-colors placeholder-[#9A8A7A]"
-                        style={{ backgroundColor: '#F0E8DC', border: '1px solid #D4B896', color: '#1C1A17' }}
-                        disabled={isSubmittingFeedback || !isAuthenticated}
-                        onKeyDown={e => e.key === 'Enter' && handleFeedbackSubmit()}
-                      />
-                      <button onClick={handleFeedbackSubmit} disabled={!feedbackText.trim() || isSubmittingFeedback || !isAuthenticated} className="px-6 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap" style={{ backgroundColor: '#9B7D43', color: '#FAF7F2' }}>
-                        {isSubmittingFeedback ? '...' : 'Submit'}
-                      </button>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          </>
-        )}
       </div>
 
       <style>{`

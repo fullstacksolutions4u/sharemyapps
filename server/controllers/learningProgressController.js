@@ -82,6 +82,25 @@ const toggleTopicCompletion = async (req, res) => {
       progressDoc.completedTopics.push({ moduleId, topicId, completedAt: new Date() });
       isCompleted = true;
     } else {
+      // Deduct points earned from quizzes for this topic
+      const topicAttempts = (progressDoc.attemptedQuizzes || []).filter(
+        q => q.moduleId.toString() === moduleId && q.topicId === topicId
+      );
+      const correctCount = topicAttempts.filter(q => q.isCorrect).length;
+      if (correctCount > 0 && user) {
+        const order = module.order || 0;
+        const pointsPerCorrect = order <= 10 ? 1 : order <= 20 ? 2 : 3;
+        user.points = Math.max(0, (user.points || 0) - correctCount * pointsPerCorrect);
+        await user.save();
+      }
+
+      // Remove quiz attempts for this topic
+      if (progressDoc.attemptedQuizzes) {
+        progressDoc.attemptedQuizzes = progressDoc.attemptedQuizzes.filter(
+          q => !(q.moduleId.toString() === moduleId && q.topicId === topicId)
+        );
+      }
+
       progressDoc.completedTopics.splice(topicIndex, 1);
       isCompleted = false;
     }
@@ -111,7 +130,7 @@ const toggleTopicCompletion = async (req, res) => {
         completedTopics: progressDoc.completedTopics,
         completedModules: progressDoc.completedModules
       },
-      userStats: user ? { points: user.points || 0, badges: user.badges || [], newBadges: [], streakBonus: 0 } : null
+      userStats: user ? { points: user.points || 0, badges: user.badges || [], newBadges: [] } : null
     });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message || 'Error updating progress' });
@@ -207,4 +226,35 @@ const getProgressStats = async (req, res) => {
   }
 };
 
-module.exports = { getProgress, toggleTopicCompletion, submitQuizAttempt, getProgressStats };
+const getLeaderboard = async (req, res) => {
+  try {
+    const topUsers = await User.find({ role: { $ne: 'admin' } })
+      .select('name profileImage points')
+      .sort({ points: -1, createdAt: 1 })
+      .limit(20)
+      .lean();
+
+    const leaderboard = topUsers.map((u, i) => ({
+      rank: i + 1,
+      name: u.name,
+      profileImage: u.profileImage,
+      points: u.points || 0,
+      userId: u._id,
+    }));
+
+    let userRank = null;
+    let userPoints = 0;
+    if (req.user) {
+      const currentUser = await User.findById(req.user._id).select('points').lean();
+      userPoints = currentUser?.points || 0;
+      const usersAbove = await User.countDocuments({ points: { $gt: userPoints }, role: { $ne: 'admin' } });
+      userRank = usersAbove + 1;
+    }
+
+    res.status(200).json({ success: true, leaderboard, userRank, userPoints });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+module.exports = { getProgress, toggleTopicCompletion, submitQuizAttempt, getProgressStats, getLeaderboard };

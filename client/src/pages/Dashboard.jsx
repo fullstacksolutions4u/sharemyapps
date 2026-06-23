@@ -7,7 +7,7 @@ import {
   Crown, UserCircle, LogOut, Menu, X, Plus, Share2,
   Pencil, Trash2, ExternalLink, Clock, CheckCircle, XCircle,
   AlertCircle, Copy, Check, Eye, EyeOff, Heart, Star, ChevronRight,
-  BookOpen,
+  BookOpen, Coins,
 } from 'lucide-react';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
@@ -28,7 +28,7 @@ const NAV = [
   { key: 'notifications', label: 'Notifications',        icon: Bell },
   { key: 'feedback',      label: 'Feedback',             icon: Lightbulb },
   { key: 'premium',       label: 'Premium Services',     icon: Crown },
-  { key: 'tick2test',     label: 'Test your Knowledge',  icon: BookOpen },
+  { key: 'tick2test',     label: 'Quiz Zone',            icon: BookOpen },
 ];
 
 const PLACEHOLDER = 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=400&q=80';
@@ -399,6 +399,7 @@ export default function Dashboard() {
                 key === 'tick2test' ? 'text-green-600' : ''
               } />
               {label}
+              {key === 'tick2test' && <Coins size={14} className="text-amber-400" />}
               {href && <ExternalLink size={11} className="ml-auto opacity-40" />}
             </button>
           ))}
