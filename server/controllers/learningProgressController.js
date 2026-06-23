@@ -245,9 +245,17 @@ const getLeaderboard = async (req, res) => {
     let userRank = null;
     let userPoints = 0;
     if (req.user) {
-      const currentUser = await User.findById(req.user._id).select('points').lean();
+      const currentUser = await User.findById(req.user._id).select('points createdAt').lean();
       userPoints = currentUser?.points || 0;
-      const usersAbove = await User.countDocuments({ points: { $gt: userPoints }, role: { $ne: 'admin' } });
+      // Among equal-points users, earlier signup = better rank → newer users rank last
+      const usersAbove = await User.countDocuments({
+        role: { $ne: 'admin' },
+        $or: [
+          { points: { $gt: userPoints } },
+          // same or no points (null/undefined/0) — use signup date as tiebreaker
+          { points: { $not: { $gt: userPoints } }, createdAt: { $lt: currentUser.createdAt } },
+        ],
+      });
       userRank = usersAbove + 1;
     }
 

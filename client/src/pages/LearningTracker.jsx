@@ -184,19 +184,6 @@ const LearningTracker = ({ embedded = false }) => {
                 confetti({ particleCount: 200, spread: 100, origin: { y: 0.6 }, colors: ['#FFD700', '#C0C0C0', '#E5E4E2'] });
               }
             }
-            if (data.firstTopicMessage) {
-              const toast = document.createElement('div');
-              toast.className = 'fixed top-24 left-1/2 -translate-x-1/2 bg-gradient-to-r from-orange-500 to-amber-600 text-white px-6 py-4 rounded-xl shadow-2xl z-50 animate-bounce border-2 border-orange-300';
-              toast.style.maxWidth = '90%';
-              toast.style.width = 'fit-content';
-              toast.innerHTML = `<div class="flex items-center gap-3"><span class="text-2xl">🎯</span><div><p class="font-bold text-sm">${data.firstTopicMessage}</p></div></div>`;
-              document.body.appendChild(toast);
-              setTimeout(() => {
-                toast.style.transition = 'opacity 0.5s';
-                toast.style.opacity = '0';
-                setTimeout(() => toast.remove(), 500);
-              }, 15000);
-            }
           } else {
             setModules(prevModules =>
               prevModules.map(module => {
@@ -389,10 +376,7 @@ const LearningTracker = ({ embedded = false }) => {
                                     </div>
                                   </div>
                                 </div>
-                                <div className="relative bg-gradient-to-r from-amber-500/10 via-yellow-500/10 to-amber-500/10 border-2 border-amber-400 rounded-lg p-2.5 mb-4 flex items-center gap-2 flex-shrink-0 shadow-xl">
-                                  <p className="text-amber-800 font-bold text-sm tracking-wide flex-1">✓ Tick each topic once you learn it thoroughly. Attend quiz to test your knowledge.</p>
-                                </div>
-                                <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
+<div className="flex-1 flex flex-col min-h-0 overflow-hidden">
                                   <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar space-y-3">
                                     {regularTopics.map((topic, topicIndex) => {
                                       const uniqueAttempted = new Set((userProgress?.attemptedQuizzes || []).filter(a => String(a.topicId) === String(topic._id)).map(a => String(a.quizId)));
