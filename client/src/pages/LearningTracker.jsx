@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { moduleAPI, progressAPI, feedbackAPI } from '../api/tick2test';
+import { moduleAPI, progressAPI } from '../api/tick2test';
 import { useAuth } from '../context/AuthContext';
 import AnimatedCoin from '../components/common/AnimatedCoin';
 import PieChart from '../components/common/PieChart';
@@ -24,28 +24,8 @@ const LearningTracker = ({ embedded = false }) => {
   const [dailyLimitMessage, setDailyLimitMessage] = useState('');
   const [selectedQuiz, setSelectedQuiz] = useState(null);
   const [loadingQuizTopicId, setLoadingQuizTopicId] = useState(null);
-  const [feedbackText, setFeedbackText] = useState('');
-  const [isSubmittingFeedback, setIsSubmittingFeedback] = useState(false);
-  const [feedbackSuccess, setFeedbackSuccess] = useState(false);
-
-  const handleFeedbackSubmit = async () => {
-    if (!feedbackText.trim()) return;
-    setIsSubmittingFeedback(true);
-    try {
-      await feedbackAPI.create({ message: feedbackText });
-      setFeedbackSuccess(true);
-      setFeedbackText('');
-      setTimeout(() => setFeedbackSuccess(false), 3000);
-    } catch (err) {
-      console.error('Failed to submit feedback:', err);
-      alert('Failed to submit feedback. Please try again.');
-    } finally {
-      setIsSubmittingFeedback(false);
-    }
-  };
-
   const sliderRef = useRef(null);
-  const [dailyTarget, setDailyTarget] = useState(() => {
+  const [dailyTarget] = useState(() => {
     const saved = localStorage.getItem('dailyTarget');
     return saved ? parseInt(saved, 10) : 10;
   });
