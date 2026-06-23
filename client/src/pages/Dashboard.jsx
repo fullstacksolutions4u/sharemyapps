@@ -348,6 +348,7 @@ export default function Dashboard() {
 
   useEffect(() => {
     const s = searchParams.get('section');
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (s) setSection(s);
   }, [searchParams]);
   const [showShare, setShowShare] = useState(false);

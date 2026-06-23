@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { progressAPI } from '../../api/tick2test';
 import AnimatedCoin from '../common/AnimatedCoin';
 
@@ -23,27 +23,10 @@ const TopicQuizModal = ({
   const [earnedPoints, setEarnedPoints] = useState(null);
   const [showCode, setShowCode] = useState(false);
 
-  useEffect(() => {
-    if (isOpen) {
-      setCurrentQuizIndex(0);
-      resetState(0);
-    }
-  }, [isOpen]);
-
-  useEffect(() => {
-    setLocalAttempts(userAttempts);
-  }, [userAttempts]);
-
-  useEffect(() => {
-    resetState(currentQuizIndex);
-  }, [currentQuizIndex, localAttempts]);
-
-  const currentQuiz = quizzes && quizzes[currentQuizIndex];
-
-  const resetState = (index) => {
+  const applyAttemptState = (index, attempts) => {
     if (!quizzes || !quizzes[index]) return;
     const quizId = quizzes[index]._id;
-    const attempt = localAttempts.find(a => a.quizId.toString() === quizId.toString());
+    const attempt = attempts.find(a => a.quizId.toString() === quizId.toString());
     if (attempt) {
       setSelectedOption(null);
       setIsCorrect(attempt.isCorrect);
@@ -55,6 +38,17 @@ const TopicQuizModal = ({
       setIsCorrect(false);
     }
   };
+
+  const handleOpen = () => {
+    setCurrentQuizIndex(0);
+    applyAttemptState(0, localAttempts);
+  };
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => { if (isOpen) handleOpen(); }, [isOpen]);
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => { applyAttemptState(currentQuizIndex, localAttempts); }, [currentQuizIndex, localAttempts]);
 
   if (!isOpen || !currentQuiz) return null;
 

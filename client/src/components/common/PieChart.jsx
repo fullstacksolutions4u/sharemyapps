@@ -1,5 +1,3 @@
-import React from 'react';
-
 const PieChart = ({ percentage, size = 200, strokeWidth = 20, color = '#3b82f6', backgroundColor = '#BC8F8F', showPercentage = true, label = '', children }) => {
   const radius = (size - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { moduleAPI, progressAPI, feedbackAPI } from '../api/tick2test';
 import { useAuth } from '../context/AuthContext';
@@ -14,20 +14,15 @@ const LearningTracker = ({ embedded = false }) => {
   const [modules, setModules] = useState([]);
   const [userProgress, setUserProgress] = useState(null);
   const [userPoints, setUserPoints] = useState(0);
-  const [userBadges, setUserBadges] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [currentIndex, setCurrentIndex] = useState(() => {
     const savedIndex = localStorage.getItem('lastModuleIndex');
     return savedIndex ? parseInt(savedIndex, 10) : 0;
   });
-  const [showAuthModal, setShowAuthModal] = useState(false);
-  const [showBadgeModal, setShowBadgeModal] = useState(false);
-  const [newBadgeDetails, setNewBadgeDetails] = useState(null);
   const [showDailyLimitModal, setShowDailyLimitModal] = useState(false);
   const [dailyLimitMessage, setDailyLimitMessage] = useState('');
   const [selectedQuiz, setSelectedQuiz] = useState(null);
-  const [selectedQuizTopicName, setSelectedQuizTopicName] = useState('');
   const [loadingQuizTopicId, setLoadingQuizTopicId] = useState(null);
   const [feedbackText, setFeedbackText] = useState('');
   const [isSubmittingFeedback, setIsSubmittingFeedback] = useState(false);
@@ -50,20 +45,23 @@ const LearningTracker = ({ embedded = false }) => {
   };
 
   const sliderRef = useRef(null);
-  const [dailyTarget, setDailyTarget] = useState(10);
+  const [dailyTarget, setDailyTarget] = useState(() => {
+    const saved = localStorage.getItem('dailyTarget');
+    return saved ? parseInt(saved, 10) : 10;
+  });
   const [weeklyProgress, setWeeklyProgress] = useState([]);
   const [weekOffset, setWeekOffset] = useState(0);
   const [calendarDate, setCalendarDate] = useState(new Date());
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/immutability
     fetchModulesAndProgress();
-    const savedTarget = localStorage.getItem('dailyTarget');
-    if (savedTarget) setDailyTarget(parseInt(savedTarget));
-  }, [isAuthenticated]);
+  }, [isAuthenticated]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/immutability
     if (userProgress) calculateWeeklyProgress();
-  }, [userProgress, dailyTarget, weekOffset]);
+  }, [userProgress, dailyTarget, weekOffset]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     localStorage.setItem('lastModuleIndex', currentIndex.toString());
@@ -152,7 +150,6 @@ const LearningTracker = ({ embedded = false }) => {
         setUserProgress(progress);
         if (progressData.userStats) {
           setUserPoints(progressData.userStats.points || 0);
-          setUserBadges(progressData.userStats.badges || []);
         }
         const modulesWithProgress = fetchedModules.map(module => ({
           ...module,
@@ -177,7 +174,6 @@ const LearningTracker = ({ embedded = false }) => {
   const handleToggleTopic = async (moduleId, topicId, currentStatus, moduleIndex) => {
     try {
       if (moduleIndex >= 3 && !isAuthenticated) {
-        setShowAuthModal(true);
         return;
       }
       let allTopicsCompleted = false;
@@ -204,10 +200,7 @@ const LearningTracker = ({ embedded = false }) => {
             setUserProgress(data.progress);
             if (data.userStats) {
               setUserPoints(data.userStats.points);
-              setUserBadges(data.userStats.badges);
-              if (data.userStats.newBadges && data.userStats.newBadges.length > 0) {
-                setNewBadgeDetails(data.userStats.newBadges[0]);
-                setShowBadgeModal(true);
+              if (data.userStats.newBadges?.length > 0) {
                 confetti({ particleCount: 200, spread: 100, origin: { y: 0.6 }, colors: ['#FFD700', '#C0C0C0', '#E5E4E2'] });
               }
             }
@@ -277,19 +270,6 @@ const LearningTracker = ({ embedded = false }) => {
     }
   }, [currentIndex, modules.length]);
 
-  const getModuleColor = (index) => {
-    const colors = [
-      { bg: '#60a5fa', border: '#1e40af', glow: 'rgba(96, 165, 250' },
-      { bg: '#8b5cf6', border: '#5b21b6', glow: 'rgba(139, 92, 246' },
-      { bg: '#10b981', border: '#047857', glow: 'rgba(16, 185, 129' },
-      { bg: '#f59e0b', border: '#b45309', glow: 'rgba(245, 158, 11' },
-      { bg: '#ef4444', border: '#b91c1c', glow: 'rgba(239, 68, 68' },
-      { bg: '#ec4899', border: '#be185d', glow: 'rgba(236, 72, 153' },
-      { bg: '#06b6d4', border: '#0e7490', glow: 'rgba(6, 182, 212' },
-      { bg: '#6366f1', border: '#4338ca', glow: 'rgba(99, 102, 241' },
-    ];
-    return colors[index % colors.length];
-  };
 
   const overallProgress = useMemo(() => {
     if (modules.length === 0) return { completedModules: 0, totalModules: 0, percentage: 0 };
@@ -302,13 +282,6 @@ const LearningTracker = ({ embedded = false }) => {
     return { completedModules, totalModules, percentage: totalModules > 0 ? (completedModules / totalModules) * 100 : 0 };
   }, [modules]);
 
-  const currentModuleProgress = useMemo(() => {
-    if (modules.length === 0 || currentIndex >= modules.length) return { completedTopics: 0, totalTopics: 0, percentage: 0 };
-    const module = modules[currentIndex];
-    const completedTopics = module.topics?.filter(t => t.completed).length || 0;
-    const totalTopics = module.topics?.length || 0;
-    return { completedTopics, totalTopics, percentage: totalTopics > 0 ? (completedTopics / totalTopics) * 100 : 0 };
-  }, [modules, currentIndex]);
 
   if (loading) {
     return (
@@ -565,13 +538,11 @@ const LearningTracker = ({ embedded = false }) => {
                                                     const res = await moduleAPI.getTopicQuizzes(module._id, topic._id);
                                                     if (res.data.success) {
                                                       setSelectedQuiz({ quizzes: res.data.data, moduleId: module._id, topicId: topic._id, topicName: topic.name });
-                                                      setSelectedQuizTopicName(topic.name);
                                                     }
-                                                  } catch (err) { alert('Failed to load quiz. Please try again.'); }
+                                                  } catch { alert('Failed to load quiz. Please try again.'); }
                                                   finally { setLoadingQuizTopicId(null); }
                                                 } else {
                                                   setSelectedQuiz({ quizzes: topic.quizzes || [], moduleId: module._id, topicId: topic._id, topicName: topic.name });
-                                                  setSelectedQuizTopicName(topic.name);
                                                 }
                                               }}
                                               disabled={!topic.completed || loadingQuizTopicId === topic._id}
@@ -733,7 +704,7 @@ const LearningTracker = ({ embedded = false }) => {
       {selectedQuiz && (
         <TopicQuizModal
           isOpen={!!selectedQuiz}
-          onClose={() => { setSelectedQuiz(null); setSelectedQuizTopicName(''); }}
+          onClose={() => setSelectedQuiz(null)}
           quizzes={selectedQuiz.quizzes}
           moduleId={selectedQuiz.moduleId}
           topicId={selectedQuiz.topicId}

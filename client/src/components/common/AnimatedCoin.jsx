@@ -1,5 +1,3 @@
-import React from 'react';
-
 const AnimatedCoin = ({
   className = "w-6 h-6",
   textSize = "text-xs",
