@@ -568,7 +568,21 @@ router.post('/find-developers', protect, jdQuota, aiLimit, async (req, res) => {
         // Profile completeness tie-breaker (max +1.5)
         finalScore += completenessBonus(dev);
 
-        return { ...dev, matchScore: finalScore, rawScore, projectCount: projectMap[pid]?.count || 0 };
+        // JD match breakdown
+        const allDevSkills = new Set([
+          ...techTags, ...resumeSkills, ...resumeStack,
+          ...resumeProjectTech, ...mentorTech, ...resumeCerts,
+        ]);
+        const matchedSkills = skills.filter(s => allDevSkills.has(s));
+        const missingSkills = skills.filter(s => !allDevSkills.has(s));
+        const matchPercent  = skills.length > 0 ? Math.round((matchedSkills.length / skills.length) * 100) : 0;
+
+        return {
+          ...dev,
+          matchScore, rawScore,
+          projectCount: projectMap[pid]?.count || 0,
+          jdMatch: { matchedSkills, missingSkills, matchPercent },
+        };
       })
       .filter(d => d.rawScore > 0)
       .sort((a, b) => b.matchScore - a.matchScore || b.createdAt - a.createdAt)

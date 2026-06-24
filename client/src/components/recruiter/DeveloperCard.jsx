@@ -40,8 +40,23 @@ function ResumePdfIcon({ url }) {
   );
 }
 
+function MatchBadge({ jdMatch }) {
+  if (!jdMatch || jdMatch.matchPercent == null) return null;
+  const pct = jdMatch.matchPercent;
+  const color = pct >= 70 ? 'bg-green-50 text-green-700 border-green-200'
+              : pct >= 40 ? 'bg-amber-50 text-amber-700 border-amber-200'
+              :             'bg-red-50 text-red-600 border-red-200';
+  return (
+    <span className={`inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full border ${color}`}>
+      {pct}% match
+    </span>
+  );
+}
+
 export default function DeveloperCard({ dev, stagger }) {
   const role = dev.designations?.[0] || dev.resumeData?.experience?.[0]?.role || null;
+  const jdMatch = dev.jdMatch || null;
+  const matchedSet = new Set((jdMatch?.matchedSkills || []).map(s => s.toLowerCase()));
 
   const skills = [
     ...(Array.isArray(dev.mentorshipTech) ? dev.mentorshipTech : []),
@@ -65,13 +80,14 @@ export default function DeveloperCard({ dev, stagger }) {
       <div className="flex items-start gap-3">
         <Avatar dev={dev} />
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-1.5 min-w-0">
+          <div className="flex items-center gap-1.5 min-w-0 flex-wrap">
             <p className="font-bold text-sm text-text truncate">{dev.name}</p>
             {role && (
               <span className="inline-block shrink-0 text-[10px] font-semibold px-2 py-0.5 rounded-md bg-accent/10 text-accent border border-accent/20">
                 {role}
               </span>
             )}
+            <MatchBadge jdMatch={jdMatch} />
           </div>
           <Link
             to={`/portfolio/${dev._id}`}
@@ -105,18 +121,40 @@ export default function DeveloperCard({ dev, stagger }) {
       {/* Skills */}
       {visibleSkills.length > 0 && (
         <div className="flex flex-wrap gap-1.5">
-          {visibleSkills.map(skill => (
-            <span
-              key={skill}
-              className="text-[10px] font-medium px-2 py-0.5 rounded-md bg-bg border border-border text-muted"
-            >
-              {skill}
-            </span>
-          ))}
+          {visibleSkills.map(skill => {
+            const matched = matchedSet.has(skill.toLowerCase());
+            return (
+              <span
+                key={skill}
+                className={`text-[10px] font-medium px-2 py-0.5 rounded-md border ${
+                  matched
+                    ? 'bg-green-50 border-green-200 text-green-700'
+                    : 'bg-bg border-border text-muted'
+                }`}
+              >
+                {skill}
+              </span>
+            );
+          })}
           {extraCount > 0 && (
             <span className="text-[10px] font-medium px-2 py-0.5 rounded-md bg-bg border border-border text-muted">
               +{extraCount}
             </span>
+          )}
+        </div>
+      )}
+
+      {/* Missing skills from JD */}
+      {jdMatch?.missingSkills?.length > 0 && (
+        <div className="flex flex-wrap gap-1.5">
+          <span className="text-[10px] text-muted font-semibold self-center">Missing:</span>
+          {jdMatch.missingSkills.slice(0, 4).map(skill => (
+            <span key={skill} className="text-[10px] font-medium px-2 py-0.5 rounded-md bg-red-50 border border-red-200 text-red-500">
+              {skill}
+            </span>
+          ))}
+          {jdMatch.missingSkills.length > 4 && (
+            <span className="text-[10px] text-muted">+{jdMatch.missingSkills.length - 4} more</span>
           )}
         </div>
       )}

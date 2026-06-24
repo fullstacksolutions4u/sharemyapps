@@ -355,11 +355,6 @@ export default function Profile() {
                   <span className="flex items-center gap-1 text-[10px] font-semibold text-amber-700">
                     <CoinIcon className="w-3.5 h-3.5" /> {user.points ?? 0} pts
                   </span>
-                  {userRank && (
-                    <span className="text-[10px] font-semibold text-accent">
-                      #{userRank} rank
-                    </span>
-                  )}
                 </div>
               )}
               <span className="absolute top-2 right-3 text-[10px] font-semibold" style={{ color: completionColor }}>
