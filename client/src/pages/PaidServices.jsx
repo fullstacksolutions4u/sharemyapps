@@ -8,6 +8,7 @@ const FREE_FEATURES = [
   'Apply to Jobs',
   'Freelance Opportunities',
   'Mentoring Opportunities',
+  'Networking Opportunities with Developers',
 ];
 
 const PREMIUM_FEATURES = [
@@ -30,7 +31,11 @@ export default function PaidServices() {
   const [applyError, setApplyError] = useState('');
 
   useEffect(() => {
-    api.get('/offers/config').then(r => setOfferConfig(r.data)).catch(() => {});
+    const fetchConfig = () => api.get('/offers/config').then(r => setOfferConfig(r.data)).catch(() => {});
+    fetchConfig();
+    const onFocus = () => fetchConfig();
+    window.addEventListener('focus', onFocus);
+    return () => window.removeEventListener('focus', onFocus);
   }, []);
 
   useEffect(() => {
@@ -89,7 +94,7 @@ export default function PaidServices() {
     }
 
     const dueDateLabel = offerConfig?.freeOfferDueDate
-      ? new Date(offerConfig.freeOfferDueDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'long' })
+      ? new Date(offerConfig.freeOfferDueDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', timeZone: 'UTC' })
       : 'June 30';
 
     return (
@@ -228,7 +233,7 @@ export default function PaidServices() {
         </div>
 
         {/* Footer */}
-        {(!freeOffer || !offerConfig?.freeOfferEnabled) && (
+        {!freeOffer && (
           <div style={{
             textAlign: 'center',
             padding: '14px 24px',

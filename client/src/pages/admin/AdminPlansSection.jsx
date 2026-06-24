@@ -237,6 +237,12 @@ function FreeOfferCard({ config, onSaved }) {
   );
   const [saving, setSaving] = useState(false);
 
+  useEffect(() => {
+    if (config == null) return;
+    setEnabled(config.freeOfferEnabled ?? true);
+    setDueDate(config.freeOfferDueDate ? new Date(config.freeOfferDueDate).toISOString().slice(0, 10) : '');
+  }, [config]);
+
   const handleSave = async () => {
     setSaving(true);
     try {

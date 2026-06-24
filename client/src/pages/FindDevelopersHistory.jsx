@@ -1,13 +1,13 @@
 import { useState, useEffect, useMemo } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import {
-  Users, Search, X, FileText, GitBranch, Globe, Link2, MapPin, ChevronDown,
+  Users, Search, X, MapPin, ChevronDown,
   ChevronLeft, ChevronRight,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import api from '../api/axios';
 import toast from 'react-hot-toast';
-import { toAbs } from '../components/recruiter/developerUtils';
+import DeveloperCard from '../components/recruiter/DeveloperCard';
 
 const PAGE_SIZE = 20;
 
@@ -50,17 +50,6 @@ function getYears(dev) {
     } catch { /* ignore */ }
   }
   return months > 0 ? months / 12 : exp.length * 1.5;
-}
-
-function Avatar({ dev }) {
-  const initials = dev.name?.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) || '?';
-  return dev.avatar ? (
-    <img src={dev.avatar} alt={dev.name} className="w-8 h-8 rounded-full object-cover shrink-0" />
-  ) : (
-    <span className="w-8 h-8 rounded-full bg-accent text-white text-xs font-bold flex items-center justify-center shrink-0">
-      {initials}
-    </span>
-  );
 }
 
 export default function Candidates() {
@@ -267,133 +256,15 @@ export default function Candidates() {
           )}
         </div>
       ) : (
-        <div className="bg-white border border-border rounded-xl overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-border bg-bg">
-                  {[
-                    { label: '#', cls: 'w-10' },
-                    { label: 'Developer', cls: 'w-44' },
-                    { label: 'Designation', cls: 'w-36' },
-                    { label: 'Skills', cls: 'w-48 hidden md:table-cell' },
-                    { label: 'State', cls: 'w-32 hidden lg:table-cell' },
-                    { label: 'Links', cls: 'w-40' },
-                    { label: 'Resume', cls: 'w-24' },
-                  ].map(({ label, cls }) => (
-                    <th
-                      key={label}
-                      className={`text-left px-4 py-3 text-[11px] font-semibold text-muted uppercase tracking-wide whitespace-nowrap ${cls}`}
-                    >
-                      {label}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-[#F3F0EB]">
-                {paginated.map((dev, idx) => {
-                  const globalIdx = (page - 1) * PAGE_SIZE + idx + 1;
-                  const role = (designation
-                    ? dev.designations?.find(des => des.toLowerCase() === designation.toLowerCase())
-                    : null) ?? dev.designations?.[0] ?? dev.resumeData?.experience?.[0]?.role ?? null;
-                  const skills = Array.isArray(dev.resumeData?.skills) ? dev.resumeData.skills.slice(0, 4) : [];
-                  const locations = (dev.preferredLocations || []).slice(0, 2);
-
-                  return (
-                    <tr key={dev._id} className="hover:bg-[#FAFAF9] transition-colors">
-                      <td className="px-4 py-3 text-xs font-bold text-muted">{globalIdx}</td>
-
-                      <td className="px-4 py-3">
-                        <div className="flex items-center gap-2.5">
-                          <Avatar dev={dev} />
-                          <div className="min-w-0">
-                            <p className="font-semibold text-text text-xs truncate">{dev.name}</p>
-                            <Link
-                              to={`/portfolio/${dev._id}`}
-                              className="inline-block mt-0.5 text-[10px] font-medium px-1.5 py-0.5 rounded-md bg-accent/10 text-accent border border-accent/20 hover:bg-accent hover:text-white transition-colors"
-                            >
-                              {dev.projectCount} project{dev.projectCount !== 1 ? 's' : ''}
-                            </Link>
-                          </div>
-                        </div>
-                      </td>
-
-                      <td className="px-4 py-3">
-                        <span className="text-xs text-text">
-                          {role ?? <span className="text-muted">—</span>}
-                        </span>
-                      </td>
-
-                      <td className="px-4 py-3 hidden md:table-cell">
-                        <div className="flex flex-wrap gap-1">
-                          {skills.length > 0 ? skills.map(s => (
-                            <span key={s} className="text-[10px] px-1.5 py-0.5 rounded-full bg-bg border border-border text-muted font-medium">
-                              {s}
-                            </span>
-                          )) : <span className="text-xs text-muted">—</span>}
-                        </div>
-                      </td>
-
-                      <td className="px-4 py-3 hidden lg:table-cell">
-                        {locations.length > 0 ? (
-                          <div className="space-y-0.5">
-                            {locations.map(l => (
-                              <p key={l} className="text-xs text-text flex items-center gap-1">
-                                <MapPin size={9} className="text-muted shrink-0" /> {l}
-                              </p>
-                            ))}
-                          </div>
-                        ) : (
-                          <span className="text-xs text-muted">—</span>
-                        )}
-                      </td>
-
-                      <td className="px-4 py-3">
-                        <div className="flex items-center gap-1 flex-wrap">
-                          <Link
-                            to={`/portfolio/${dev._id}`}
-                            className="inline-flex items-center gap-0.5 text-[10px] font-medium px-2 py-0.5 rounded-md bg-gray-100 text-gray-600 border border-gray-200 hover:bg-gray-200 transition-colors"
-                          >
-                            <Globe size={9} /> Portfolio
-                          </Link>
-                          {dev.linkedinUrl && (
-                            <a
-                              href={toAbs(dev.linkedinUrl)}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="inline-flex items-center gap-0.5 text-[10px] font-medium px-2 py-0.5 rounded-md bg-[#EEF4FF] text-[#0A66C2] border border-[#0A66C2]/20 hover:bg-[#0A66C2] hover:text-white transition-colors"
-                            >
-                              <Link2 size={9} /> LinkedIn
-                            </a>
-                          )}
-                          {dev.githubUrl && (
-                            <a
-                              href={toAbs(dev.githubUrl)}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="inline-flex items-center gap-0.5 text-[10px] font-medium px-2 py-0.5 rounded-md bg-gray-900 text-white border border-gray-900 hover:bg-gray-700 transition-colors"
-                            >
-                              <GitBranch size={9} /> GitHub
-                            </a>
-                          )}
-                        </div>
-                      </td>
-
-                      <td className="px-4 py-3">
-                        <a
-                          href={toAbs(dev.cvUrl)}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1 text-[10px] font-semibold px-2.5 py-1 rounded-md bg-accent/10 text-accent border border-accent/20 hover:bg-accent hover:text-white transition-colors"
-                        >
-                          <FileText size={10} /> Resume
-                        </a>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+        <div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {paginated.map((dev, idx) => (
+              <DeveloperCard
+                key={dev._id}
+                dev={dev}
+                stagger={{ ready: true, delay: idx * 70 }}
+              />
+            ))}
           </div>
 
           {/* Pagination footer */}
@@ -405,7 +276,7 @@ export default function Candidates() {
             const hasNextBatch = batchEnd < totalPages;
 
             return (
-              <div className="px-4 py-4 border-t border-border flex justify-center">
+              <div className="py-6 flex justify-center">
                 <div className="flex items-center gap-1">
                   {hasPrevBatch && (
                     <button
