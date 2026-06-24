@@ -334,7 +334,7 @@ exports.sendJobApplicationEmail = async ({ to, name, vacancy }) => {
             You've successfully applied for the <strong>${vacancy.title}</strong> position. The recruiter will directly contact you if your profile matches their requirements.
           </p>
           <p style="color:#6B7280;font-size:13px;margin:0 0 20px;line-height:1.7;">
-            There are some vacancies that are not listed and you don't need to apply — recruiters will directly contact you based on your skills and projects you've added. So make sure your profile is always up to date. Add your latest resume, showcase your projects, and keep your skills current to increase your chances of getting noticed. Also, practice and sharpen your skills using <strong>Quiz Zone</strong>.
+            There are some vacancies that are not listed and you don't need to apply — recruiters will directly contact you based on your skills and projects you've added. So make sure your profile is always up to date. Add your latest resume, showcase your projects, and keep your skills current to increase your chances of getting noticed. Also, practice and sharpen your skills using Quiz Zone.
           </p>
           <table style="width:100%;border-collapse:collapse;margin-top:8px;">
             <tr>

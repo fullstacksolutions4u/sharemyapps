@@ -118,7 +118,7 @@ exports.updateProfile = async (req, res) => {
     const user = await User.findById(req.user._id);
     if (!user) return res.status(404).json({ message: 'User not found' });
 
-    if (name?.trim()) user.name = name.trim();
+    if (name?.trim()) user.name = name.trim().replace(/\b\w+/g, w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase());
     if (phone !== undefined) user.phone = phone.trim();
     if (linkedinUrl !== undefined) user.linkedinUrl = linkedinUrl.trim();
     if (githubUrl !== undefined) user.githubUrl = githubUrl.trim();

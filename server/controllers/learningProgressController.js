@@ -253,7 +253,7 @@ const getLeaderboard = async (req, res) => {
         ...devFilter,
         $or: [
           { points: { $gt: userPoints } },
-          { points: { $not: { $gt: userPoints } }, createdAt: { $lt: currentUser.createdAt } },
+          { points: userPoints, createdAt: { $lt: currentUser.createdAt } },
         ],
       });
       userRank = usersAbove + 1;

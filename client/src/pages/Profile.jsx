@@ -501,7 +501,7 @@ export default function Profile() {
                     name="name"
                     value={form.name}
                     onChange={handle}
-                    placeholder="Your full name"
+                    placeholder="e.g. John Smith"
                   />
                   <Field
                     icon={<Mail size={15} />}
