@@ -505,7 +505,7 @@ export default function AdminProjectsSection({ stats }) {
                   <th className="text-left px-4 py-3 text-xs font-bold text-[#00A693] uppercase tracking-wider">Project</th>
                   <th className="text-left px-4 py-3 text-xs font-bold text-indigo-500 uppercase tracking-wider">Developer</th>
                   <th className="text-left px-4 py-3 text-xs font-bold text-emerald-600 uppercase tracking-wider">Sale Price</th>
-                  <th className="text-left px-4 py-3 text-xs font-bold text-violet-500 uppercase tracking-wider">Status</th>
+                  <th className="text-left px-4 py-3 text-xs font-bold text-violet-500 uppercase tracking-wider">Category</th>
                   <th className="text-right px-4 py-3 text-xs font-bold text-amber-500 uppercase tracking-wider">Actions</th>
                 </tr>
               </thead>
@@ -532,42 +532,25 @@ export default function AdminProjectsSection({ stats }) {
                       }
                     </td>
                     <td className="px-4 py-3">
-                      <div className="flex flex-col gap-1">
-                        <span className={`w-fit text-xs px-2.5 py-0.5 rounded-full border font-semibold capitalize ${statusStyle[project.status]}`}>{project.status}</span>
-                        {project.featured && (
-                          <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-amber-50 text-amber-600 border border-amber-200 font-medium w-fit">
-                            <Sparkles size={10} /> Featured
-                          </span>
-                        )}
-                        {project.hidden && (
-                          <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-gray-100 text-gray-500 border border-gray-200 font-medium w-fit">
-                            <EyeOff size={10} /> Hidden
-                          </span>
-                        )}
-                      </div>
+                      {project.category
+                        ? <span className="text-xs text-violet-700 bg-violet-50 px-2.5 py-1 rounded-full border border-violet-100 font-medium">{project.category}</span>
+                        : <span className="text-xs text-[#9CA3AF]">—</span>
+                      }
                     </td>
                     <td className="px-4 py-3">
-                      <div className="flex items-center justify-end gap-1.5">
-                        {tab === 'approved' && (
-                          <button onClick={e => toggleFeatured(e, project._id)}
-                            title={project.featured ? 'Remove from featured' : 'Feature this project'}
-                            className={`flex items-center gap-1 text-xs px-2.5 py-1.5 rounded-lg border font-medium transition-colors ${project.featured ? 'bg-amber-50 text-amber-600 border-amber-200 hover:bg-amber-100' : 'bg-amber-50/50 text-amber-500 border-amber-200 hover:bg-amber-100'}`}>
-                            <Sparkles size={11} /> {project.featured ? 'Unfeature' : 'Feature'}
-                          </button>
-                        )}
+                      <div className="flex items-center justify-end gap-1">
                         <button onClick={e => toggleHidden(e, project._id)}
                           title={project.hidden ? 'Show in listing' : 'Hide from listing'}
-                          className={`flex items-center gap-1 text-xs px-2.5 py-1.5 rounded-lg border font-medium transition-colors ${project.hidden ? 'bg-gray-100 text-gray-600 border-gray-300 hover:bg-gray-200' : 'bg-gray-50 text-gray-500 border-gray-200 hover:bg-gray-100'}`}>
-                          {project.hidden ? <Eye size={11} /> : <EyeOff size={11} />}
-                          {project.hidden ? 'Show' : 'Hide'}
+                          className={`w-8 h-8 flex items-center justify-center rounded-lg border transition-colors ${project.hidden ? 'bg-gray-100 text-gray-600 border-gray-300 hover:bg-gray-200' : 'bg-gray-50 text-gray-500 border-gray-200 hover:bg-gray-100'}`}>
+                          {project.hidden ? <Eye size={14} /> : <EyeOff size={14} />}
                         </button>
-                        <button onClick={() => setSelected(project)}
-                          className="flex items-center gap-1 text-xs px-2.5 py-1.5 rounded-lg border bg-[#00A693]/10 text-[#00A693] border-[#00A693]/30 hover:bg-[#00A693] hover:text-white font-medium transition-colors">
-                          <ChevronRight size={11} /> Review
+                        <button onClick={() => setSelected(project)} title="Review"
+                          className="w-8 h-8 flex items-center justify-center rounded-lg border bg-[#00A693]/10 text-[#00A693] border-[#00A693]/30 hover:bg-[#00A693] hover:text-white transition-colors">
+                          <ChevronRight size={14} />
                         </button>
-                        <button onClick={e => deleteProject(e, project._id)}
-                          className="flex items-center gap-1 text-xs px-2.5 py-1.5 rounded-lg border bg-red-50 text-red-500 border-red-200 hover:bg-red-500 hover:text-white font-medium transition-colors">
-                          <Trash2 size={11} /> Delete
+                        <button onClick={e => deleteProject(e, project._id)} title="Delete"
+                          className="w-8 h-8 flex items-center justify-center rounded-lg border bg-red-50 text-red-500 border-red-200 hover:bg-red-500 hover:text-white transition-colors">
+                          <Trash2 size={14} />
                         </button>
                       </div>
                     </td>
