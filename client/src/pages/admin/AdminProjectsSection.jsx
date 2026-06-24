@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import {
   ExternalLink, Check, X, Plus, Save, ArrowLeft, Tag, Link as LinkIcon,
-  Mail, Phone, ChevronRight, RefreshCw, Search, Sparkles, EyeOff, Eye, Trash2, ShoppingBag,
+  Mail, Phone, ChevronRight, RefreshCw, Search, EyeOff, Eye, Trash2, ShoppingBag,
 } from 'lucide-react';
 import api from '../../api/axios';
 import toast from 'react-hot-toast';
@@ -383,15 +383,6 @@ export default function AdminProjectsSection({ stats }) {
       toast.success(`Project ${status}`);
     } catch { toast.error('Failed to update status'); }
     finally { setUpdating(null); }
-  };
-
-  const toggleFeatured = async (e, id) => {
-    e.stopPropagation();
-    try {
-      const res = await api.patch(`/admin/projects/${id}/featured`);
-      setProjects(p => p.map(x => x._id === id ? { ...x, featured: res.data.featured } : x));
-      toast.success(res.data.featured ? 'Project featured!' : 'Removed from featured');
-    } catch (err) { toast.error(err.response?.data?.message || 'Failed to update featured status'); }
   };
 
   const toggleHidden = async (e, id) => {
