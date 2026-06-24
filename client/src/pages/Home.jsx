@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, LayoutGrid, Users, MessageCircle, Star, ShoppingBag, Hammer, Share2, CircleDollarSign } from 'lucide-react';
+import { ArrowRight, LayoutGrid, Users, MessageCircle, Brain, ShoppingBag, Hammer, Share2, CircleDollarSign } from 'lucide-react';
 import api from '../api/axios';
 import ProjectCard from '../components/ProjectCard';
 import ProjectSkeleton from '../components/ProjectSkeleton';
@@ -247,9 +247,9 @@ export default function Home() {
               { step: '02', icon: Users,           title: 'Get discovered',          desc: 'Recruiters, clients, and mentors browse your projects and portfolio and reach out directly.' },
               { step: '03', icon: ShoppingBag,     title: 'Sell your apps',          desc: 'Monetize your side projects by listing them for sale directly on the platform.' },
               { step: '04', icon: MessageCircle,   title: 'Connect with devs',       desc: 'Meet fellow developers, share ideas, and grow your network.' },
-              { step: '05', icon: Star,            title: 'Explore & give feedback', desc: 'Discover inspiring projects and leave ratings to help creators improve.' },
+              { step: '05', icon: Brain,           title: 'Quiz Zone',               desc: 'Test your skills with topic-based quizzes, climb the leaderboard, and prove your expertise to recruiters.' },
             ].map(({ step, icon: Icon, title, desc }) => (
-              <div key={step} className="relative flex flex-col gap-4 p-5 rounded-2xl border border-border hover:border-accent/40 hover:shadow-sm transition-all bg-[#FAFAF8]">
+              <div key={step} className="relative flex flex-col items-center text-center gap-4 p-5 rounded-2xl border border-border hover:border-accent/40 hover:shadow-sm transition-all bg-[#FAFAF8]">
                 <div className="w-10 h-10 bg-accent-light rounded-xl flex items-center justify-center">
                   <Icon size={19} className="text-accent" />
                 </div>
