@@ -336,9 +336,33 @@ exports.sendJobApplicationEmail = async ({ to, name, vacancy }) => {
           <p style="color:#6B7280;font-size:13px;margin:0 0 20px;line-height:1.7;">
             There are some vacancies that are not listed and you don't need to apply — recruiters will directly contact you based on your skills and projects you've added. So make sure your profile is always up to date. Add your latest resume, showcase your projects, and keep your skills current to increase your chances of getting noticed. Also, practice and sharpen your skills using <strong>Quiz Zone</strong>.
           </p>
-          <a href="${vacanciesUrl}" style="display:inline-block;background:#00A693;color:#fff;text-decoration:none;padding:12px 24px;border-radius:8px;font-weight:600;font-size:14px;">
-            Browse more opportunities →
-          </a>
+          <table style="width:100%;border-collapse:collapse;margin-top:8px;">
+            <tr>
+              <td style="padding:0 6px 0 0;">
+                <a href="${BASE_URL}/profile" style="display:block;text-align:center;background:#00A693;color:#fff;text-decoration:none;padding:11px 10px;border-radius:8px;font-weight:600;font-size:13px;">
+                  Complete Profile
+                </a>
+              </td>
+              <td style="padding:0 6px;">
+                <a href="${BASE_URL}/vacancies" style="display:block;text-align:center;background:#1D4ED8;color:#fff;text-decoration:none;padding:11px 10px;border-radius:8px;font-weight:600;font-size:13px;">
+                  More Opportunities
+                </a>
+              </td>
+              <td style="padding:0 0 0 6px;">
+                <a href="${BASE_URL}/dashboard?section=tick2test" style="display:block;text-align:center;background:#7C3AED;color:#fff;text-decoration:none;padding:11px 10px;border-radius:8px;font-weight:600;font-size:13px;">
+                  Quiz Zone
+                </a>
+              </td>
+            </tr>
+            <tr><td colspan="3" style="height:10px;"></td></tr>
+            <tr>
+              <td colspan="3">
+                <a href="${BASE_URL}/dashboard?section=premium" style="display:block;text-align:center;background:linear-gradient(135deg,#F59E0B 0%,#D97706 100%);color:#fff;text-decoration:none;padding:12px 10px;border-radius:8px;font-weight:700;font-size:13px;">
+                  ✨ Explore Premium Services
+                </a>
+              </td>
+            </tr>
+          </table>
         </div>
         ${FOOTER('You received this email because you applied for a job on ShareMyApps.')}
       </div>
