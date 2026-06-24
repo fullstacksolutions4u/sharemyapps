@@ -4,6 +4,7 @@ import api from '../../api/axios';
 export default function AdminOffersSection() {
   const [offers, setOffers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [deletingId, setDeletingId] = useState(null);
 
   useEffect(() => {
     api.get('/admin/offers?page=1')
@@ -11,6 +12,19 @@ export default function AdminOffersSection() {
       .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
+
+  async function handleDelete(id) {
+    if (!window.confirm('Delete this application?')) return;
+    setDeletingId(id);
+    try {
+      await api.delete(`/admin/offers/${id}`);
+      setOffers(prev => prev.filter(o => o._id !== id));
+    } catch {
+      alert('Failed to delete. Please try again.');
+    } finally {
+      setDeletingId(null);
+    }
+  }
 
   return (
     <div>
@@ -44,6 +58,17 @@ export default function AdminOffersSection() {
               <div style={{ fontSize: '12px', color: '#aaa', flexShrink: 0 }}>
                 {new Date(o.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
               </div>
+              <button
+                onClick={() => handleDelete(o._id)}
+                disabled={deletingId === o._id}
+                style={{
+                  marginLeft: '8px', flexShrink: 0, border: 'none', background: 'none',
+                  cursor: deletingId === o._id ? 'not-allowed' : 'pointer',
+                  color: '#e53e3e', fontSize: '16px', lineHeight: 1, padding: '4px 6px',
+                  borderRadius: '6px', opacity: deletingId === o._id ? 0.5 : 1,
+                }}
+                title="Delete application"
+              >✕</button>
             </div>
           ))}
         </div>

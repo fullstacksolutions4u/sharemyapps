@@ -67,6 +67,16 @@ async function adminUpdateOffer(req, res) {
   }
 }
 
+async function adminDeleteOffer(req, res) {
+  try {
+    const offer = await FreeOffer.findByIdAndDelete(req.params.id);
+    if (!offer) return res.status(404).json({ message: 'Not found' });
+    res.json({ message: 'Deleted' });
+  } catch {
+    res.status(500).json({ message: 'Server error' });
+  }
+}
+
 async function adminGetOfferStats(req, res) {
   try {
     const [pending, approved, rejected] = await Promise.all([
@@ -80,4 +90,4 @@ async function adminGetOfferStats(req, res) {
   }
 }
 
-module.exports = { applyForFreeOffer, getMyOffer, adminGetOffers, adminUpdateOffer, adminGetOfferStats };
+module.exports = { applyForFreeOffer, getMyOffer, adminGetOffers, adminUpdateOffer, adminDeleteOffer, adminGetOfferStats };
