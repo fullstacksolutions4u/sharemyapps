@@ -233,7 +233,7 @@ export default function PaidServices() {
         </div>
 
         {/* Footer */}
-        {!freeOffer && (
+        {offerConfig !== null && !offerConfig.freeOfferEnabled && (
           <div style={{
             textAlign: 'center',
             padding: '14px 24px',
