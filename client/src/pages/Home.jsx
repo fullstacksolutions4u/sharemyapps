@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, LayoutGrid, Users, MessageCircle, Star, ShoppingBag, Hammer, Share2, CircleDollarSign } from 'lucide-react';
 import api from '../api/axios';
-import { useAuth } from '../context/AuthContext';
 import ProjectCard from '../components/ProjectCard';
 import ProjectSkeleton from '../components/ProjectSkeleton';
 
@@ -13,8 +12,8 @@ const defaultAvatar = name => {
   return `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Ccircle cx='20' cy='20' r='20' fill='${bg}'/%3E%3Ccircle cx='20' cy='15' r='7' fill='%231a1a1a' opacity='.85'/%3E%3Cellipse cx='20' cy='35' rx='12' ry='9' fill='%231a1a1a' opacity='.85'/%3E%3C/svg%3E`;
 };
 
-const COLS = 28;
-const ROWS = 13;
+const COLS = 34;
+const ROWS = 17;
 
 function buildNodes(users) {
   const nodes = [];
@@ -38,7 +37,7 @@ function buildNodes(users) {
   return nodes;
 }
 
-function buildEdges(nodes) {
+function buildEdges() {
   const edges = [];
   for (let row = 0; row < ROWS; row++) {
     for (let col = 0; col < COLS; col++) {
@@ -60,7 +59,7 @@ function NetworkGraph({ users }) {
   if (!pool.length) return null;
 
   const nodes = buildNodes(pool);
-  const edges = buildEdges(nodes);
+  const edges = buildEdges();
 
   return (
     <div className="absolute inset-0 overflow-hidden select-none" aria-hidden="true">
@@ -73,8 +72,10 @@ function NetworkGraph({ users }) {
             key={i}
             x1={`${nodes[a].x}%`} y1={`${nodes[a].y}%`}
             x2={`${nodes[b].x}%`} y2={`${nodes[b].y}%`}
-            stroke="rgba(0,130,115,0.22)"
-            strokeWidth="0.9"
+            stroke="rgba(100,180,220,0.75)"
+            strokeWidth="2"
+            strokeDasharray="1 6"
+            strokeLinecap="round"
           />
         ))}
       </svg>
@@ -146,7 +147,6 @@ function NetworkNode({ user, x, y }) {
 }
 
 export default function Home() {
-  const { user: currentUser } = useAuth();
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const [networkUsers, setNetworkUsers] = useState([]);
@@ -156,7 +156,7 @@ export default function Home() {
       .then(res => setProjects(res.data.projects.slice(0, 6)))
       .catch(() => {})
       .finally(() => setLoading(false));
-    api.get('/users/recent?limit=600')
+    api.get('/users/recent?limit=700')
       .then(res => setNetworkUsers(res.data))
       .catch(() => {});
   }, []);
