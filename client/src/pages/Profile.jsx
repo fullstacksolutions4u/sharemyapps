@@ -105,7 +105,6 @@ export default function Profile() {
 
   const [activeTab, setActiveTab] = useState(0);
   const [completed, setCompleted] = useState(new Set());
-  const [userRank, setUserRank] = useState(null);
 
   const [form, setForm] = useState({
     name: user?.name || '',
@@ -222,7 +221,6 @@ export default function Profile() {
 
   useEffect(() => {
     api.get('/auth/me').then(r => setUser(r.data.user)).catch(() => {});
-    progressAPI.getLeaderboard().then(r => setUserRank(r.data.userRank)).catch(() => {});
   }, []);
 
   const handle = e => setForm(f => ({ ...f, [e.target.name]: e.target.value }));
