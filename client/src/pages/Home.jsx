@@ -15,6 +15,13 @@ const defaultAvatar = name => {
 const COLS = 34;
 const ROWS = 17;
 
+const LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+const PLACEHOLDER_USERS = Array.from({ length: COLS * ROWS }, (_, i) => ({
+  _id: `ph-${i}`,
+  name: LETTERS[i % LETTERS.length],
+  avatar: null,
+}));
+
 function buildNodes(users) {
   const nodes = [];
   let idx = 0;
@@ -149,7 +156,7 @@ function NetworkNode({ user, x, y }) {
 export default function Home() {
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [networkUsers, setNetworkUsers] = useState([]);
+  const [networkUsers, setNetworkUsers] = useState(PLACEHOLDER_USERS);
 
   useEffect(() => {
     api.get('/projects?page=1')
@@ -168,7 +175,7 @@ export default function Home() {
         className="relative overflow-hidden"
         style={{ minHeight: 600, background: '#e0fafa' }}
       >
-        {networkUsers.length > 0 && <NetworkGraph users={networkUsers} />}
+        <NetworkGraph users={networkUsers} />
 
         <section className="max-w-6xl mx-auto px-4 sm:px-6 pt-20 pb-16 text-center relative z-10 pointer-events-none">
           {/* frosted backdrop behind text */}
