@@ -20,7 +20,6 @@ const PRESET_DESIGNATIONS = [
 const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 const DAY_SHORT = { Monday: 'Mon', Tuesday: 'Tue', Wednesday: 'Wed', Thursday: 'Thu', Friday: 'Fri', Saturday: 'Sat', Sunday: 'Sun' };
 import api from '../api/axios';
-import { progressAPI } from '../api/tick2test';
 import CoinIcon from '../components/common/AnimatedCoin';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
