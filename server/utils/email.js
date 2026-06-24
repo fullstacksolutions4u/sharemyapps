@@ -315,6 +315,37 @@ exports.sendMarketingCampaignEmail = async ({ to, name }) => {
   });
 };
 
+exports.sendJobApplicationEmail = async ({ to, name, vacancy }) => {
+  const vacanciesUrl = `${BASE_URL}/vacancies`;
+
+  await api.sendTransacEmail({
+    sender: FROM,
+    to: [{ email: to, name }],
+    subject: `Application submitted – ${vacancy.title}`,
+    htmlContent: `
+      <div style="font-family:Inter,Arial,sans-serif;max-width:560px;margin:0 auto;background:#fff;border-radius:12px;overflow:hidden;border:1px solid #E5E1DA;">
+        <div style="background:#00A693;padding:24px 32px;text-align:center;">
+          <img src="${LOGO_URL}" alt="ShareMyApps" style="height:80px;object-fit:contain;" />
+        </div>
+        <div style="padding:32px;">
+          <h2 style="margin:0 0 8px;font-size:18px;color:#1A1A1A;">Application Received!</h2>
+          <p style="color:#374151;margin:0 0 16px;">Hi ${name},</p>
+          <p style="color:#374151;margin:0 0 16px;">
+            You've successfully applied for the <strong>${vacancy.title}</strong> position. The recruiter will directly contact you if your profile matches their requirements.
+          </p>
+          <p style="color:#6B7280;font-size:13px;margin:0 0 20px;line-height:1.7;">
+            There are some vacancies that are not listed and you don't need to apply — recruiters will directly contact you based on your skills and projects you've added. So make sure your profile is always up to date. Add your latest resume, showcase your projects, and keep your skills current to increase your chances of getting noticed. Also, practice and sharpen your skills using <strong>Quiz Zone</strong>.
+          </p>
+          <a href="${vacanciesUrl}" style="display:inline-block;background:#00A693;color:#fff;text-decoration:none;padding:12px 24px;border-radius:8px;font-weight:600;font-size:14px;">
+            Browse more opportunities →
+          </a>
+        </div>
+        ${FOOTER('You received this email because you applied for a job on ShareMyApps.')}
+      </div>
+    `,
+  });
+};
+
 exports.sendProjectRejectedEmail = async ({ to, name, projectTitle, projectId, adminNote }) => {
   const editUrl = `${BASE_URL}/dashboard`;
 

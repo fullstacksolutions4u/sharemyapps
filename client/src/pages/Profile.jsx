@@ -9,8 +9,8 @@ import {
 
 const PRESET_DESIGNATIONS = [
   'MERN Stack Developer', 'MEAN Stack Developer', 'MEVN Stack Developer', 'PERN Stack Developer',
-  'Python Full Stack Developer', 'Backend Developer',
-  'React Developer', 'Next.js Developer', 'Vue.js Developer', 'Angular Developer',
+  'Python Full Stack Developer',
+  'Next.js Developer',
   'PHP Developer', 'Laravel Developer',
   'Flutter Developer', 'React Native Developer', 'Android Developer', 'iOS Developer',
   'Data Scientist', 'Machine Learning Engineer', 'DevOps Engineer', 'UI/UX Developer',

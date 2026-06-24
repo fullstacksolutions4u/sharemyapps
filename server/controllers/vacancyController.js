@@ -1,5 +1,6 @@
 const Vacancy = require('../models/Vacancy');
 const Notification = require('../models/Notification');
+const { sendJobApplicationEmail } = require('../utils/email');
 
 const parseSkills = (skills) =>
   Array.isArray(skills)
@@ -33,6 +34,12 @@ exports.showInterest = async (req, res) => {
     vacancy.interests.push(userId);
     await vacancy.save();
     res.json({ interested: true, interestCount: vacancy.interests.length });
+
+    sendJobApplicationEmail({
+      to: req.user.email,
+      name: req.user.name,
+      vacancy,
+    }).catch(() => {});
   } catch (err) { res.status(500).json({ message: err.message }); }
 };
 
