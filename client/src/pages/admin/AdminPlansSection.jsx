@@ -237,12 +237,6 @@ function FreeOfferCard({ config, onSaved }) {
   );
   const [saving, setSaving] = useState(false);
 
-  useEffect(() => {
-    if (config == null) return;
-    setEnabled(config.freeOfferEnabled ?? true);
-    setDueDate(config.freeOfferDueDate ? new Date(config.freeOfferDueDate).toISOString().slice(0, 10) : '');
-  }, [config]);
-
   const handleSave = async () => {
     setSaving(true);
     try {
@@ -360,7 +354,7 @@ function ServicesList({ config, onSelect, onConfigSaved }) {
           );
         })}
 
-        <FreeOfferCard config={config} onSaved={onConfigSaved} />
+        <FreeOfferCard key={config?._id ?? 'loading'} config={config} onSaved={onConfigSaved} />
 
         <div className="bg-white border border-dashed border-border rounded-2xl px-5 py-4 flex items-center gap-4 opacity-50">
           <div className="w-10 h-10 rounded-xl bg-bg flex items-center justify-center shrink-0">
