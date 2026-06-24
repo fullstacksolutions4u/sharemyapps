@@ -61,7 +61,7 @@ function buildEdges() {
   return edges;
 }
 
-function NetworkGraph({ users }) {
+function NetworkGraph({ users, networkLoading }) {
   const pool = users.length ? users : [];
   if (!pool.length) return null;
 
@@ -87,13 +87,13 @@ function NetworkGraph({ users }) {
         ))}
       </svg>
       {nodes.map(node => (
-        <NetworkNode key={node.id} user={node.user} x={node.x} y={node.y} />
+        <NetworkNode key={node.id} user={node.user} x={node.x} y={node.y} loading={networkLoading} />
       ))}
     </div>
   );
 }
 
-function NetworkNode({ user, x, y }) {
+function NetworkNode({ user, x, y, loading }) {
   const [failed, setFailed] = useState(false);
   const [hovered, setHovered] = useState(false);
   const src = (!user.avatar || failed) ? defaultAvatar(user.name) : user.avatar;
@@ -106,48 +106,62 @@ function NetworkNode({ user, x, y }) {
         top: `${y}%`,
         transform: 'translate(-50%, -50%)',
         zIndex: hovered ? 20 : 2,
-        pointerEvents: 'auto',
+        pointerEvents: loading ? 'none' : 'auto',
         cursor: 'default',
       }}
-      onMouseEnter={() => setHovered(true)}
+      onMouseEnter={() => !loading && setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
-      <img
-        src={src}
-        alt={user.name}
-        style={{
+      {loading ? (
+        <div style={{
           width: 26,
           height: 26,
           borderRadius: '50%',
-          objectFit: 'cover',
-          display: 'block',
-          border: '2px solid rgba(255,255,255,0.85)',
-          boxShadow: hovered ? '0 3px 14px rgba(0,100,90,0.35)' : '0 1px 4px rgba(0,0,0,0.1)',
-          filter: hovered ? 'none' : 'blur(0.7px)',
-          opacity: hovered ? 1 : 0.72,
-          transition: 'filter 0.18s, opacity 0.18s, box-shadow 0.18s',
-        }}
-        onError={() => setFailed(true)}
-      />
-      {hovered && (
-        <div style={{
-          position: 'absolute',
-          bottom: 'calc(100% + 5px)',
-          left: '50%',
-          transform: 'translateX(-50%)',
-          background: 'rgba(15,35,33,0.88)',
-          color: '#fff',
-          fontSize: '10px',
-          fontWeight: 600,
-          padding: '3px 8px',
-          borderRadius: '5px',
-          whiteSpace: 'nowrap',
-          pointerEvents: 'none',
-          fontFamily: "'Manrope', sans-serif",
-          letterSpacing: '0.01em',
-        }}>
-          {user.name}
-        </div>
+          border: '2px solid rgba(255,255,255,0.5)',
+          borderTop: '2px solid rgba(0,150,130,0.7)',
+          background: 'rgba(255,255,255,0.25)',
+          animation: 'networkSpin 0.9s linear infinite',
+        }} />
+      ) : (
+        <>
+          <img
+            src={src}
+            alt={user.name}
+            style={{
+              width: 26,
+              height: 26,
+              borderRadius: '50%',
+              objectFit: 'cover',
+              display: 'block',
+              border: '2px solid rgba(255,255,255,0.85)',
+              boxShadow: hovered ? '0 3px 14px rgba(0,100,90,0.35)' : '0 1px 4px rgba(0,0,0,0.1)',
+              filter: hovered ? 'none' : 'blur(0.7px)',
+              opacity: hovered ? 1 : 0.72,
+              transition: 'filter 0.18s, opacity 0.18s, box-shadow 0.18s',
+            }}
+            onError={() => setFailed(true)}
+          />
+          {hovered && (
+            <div style={{
+              position: 'absolute',
+              bottom: 'calc(100% + 5px)',
+              left: '50%',
+              transform: 'translateX(-50%)',
+              background: 'rgba(15,35,33,0.88)',
+              color: '#fff',
+              fontSize: '10px',
+              fontWeight: 600,
+              padding: '3px 8px',
+              borderRadius: '5px',
+              whiteSpace: 'nowrap',
+              pointerEvents: 'none',
+              fontFamily: "'Manrope', sans-serif",
+              letterSpacing: '0.01em',
+            }}>
+              {user.name}
+            </div>
+          )}
+        </>
       )}
     </div>
   );
@@ -157,6 +171,7 @@ export default function Home() {
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const [networkUsers, setNetworkUsers] = useState(PLACEHOLDER_USERS);
+  const [networkLoading, setNetworkLoading] = useState(true);
 
   useEffect(() => {
     api.get('/projects?page=1')
@@ -165,7 +180,8 @@ export default function Home() {
       .finally(() => setLoading(false));
     api.get('/users/recent?limit=700')
       .then(res => setNetworkUsers(res.data))
-      .catch(() => {});
+      .catch(() => {})
+      .finally(() => setNetworkLoading(false));
   }, []);
 
   return (
@@ -175,7 +191,8 @@ export default function Home() {
         className="relative overflow-hidden"
         style={{ minHeight: 600, background: '#e0fafa' }}
       >
-        <NetworkGraph users={networkUsers} />
+        <style>{`@keyframes networkSpin { to { transform: rotate(360deg); } }`}</style>
+        <NetworkGraph users={networkUsers} networkLoading={networkLoading} />
 
         <section className="max-w-6xl mx-auto px-4 sm:px-6 pt-20 pb-16 text-center relative z-10 pointer-events-none">
           {/* frosted backdrop behind text */}
