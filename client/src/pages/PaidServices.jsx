@@ -87,7 +87,8 @@ export default function PaidServices() {
         }}>
           ✓ Applied
           <span style={{ display: 'block', fontSize: '11.5px', fontWeight: 500, marginTop: '4px', color: '#2a8a7a' }}>
-            You're registered for the free offer. Our executive will contact you within 2 days.
+            You're registered for the free offer. Our executive will contact you within 2 days.{' '}
+            Meanwhile, explore the platform for opportunities.
           </span>
         </div>
       );
@@ -123,6 +124,7 @@ export default function PaidServices() {
       minHeight: 'calc(100vh - 64px)',
       background: '#e9e6df',
       display: 'flex',
+      flexDirection: 'column',
       alignItems: 'center',
       justifyContent: 'center',
       padding: '48px 24px',
@@ -130,7 +132,7 @@ export default function PaidServices() {
     }}>
       <div style={{
         width: '100%',
-        maxWidth: '780px',
+        maxWidth: '980px',
         background: '#fbfcfb',
         border: '1px solid #e8edeb',
         borderRadius: '22px',
@@ -215,7 +217,10 @@ export default function PaidServices() {
                   color: '#0a7373', background: '#dcefed', borderRadius: '999px', padding: '3px 9px',
                 }}>Popular</span>
               </div>
-              <span style={{ fontFamily: "'Spectral', serif", fontSize: '22px', fontWeight: 600, color: '#0a7373' }}>₹999</span>
+              <span style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
+                <span style={{ fontFamily: "'Spectral', serif", fontSize: '18px', fontWeight: 600, color: '#9aa6a4', textDecoration: 'line-through' }}>₹999</span>
+                <span style={{ fontFamily: "'Spectral', serif", fontSize: '22px', fontWeight: 700, color: '#0a7373' }}>₹0</span>
+              </span>
             </div>
             <div style={{ height: '2px', background: '#0c8c8c', margin: '14px 0 18px' }} />
             <div style={{ display: 'flex', flexDirection: 'column', gap: '11px', flex: 1 }}>

@@ -282,11 +282,11 @@ export default function Profile() {
     setCompleted(prev => new Set(prev).add(activeTab));
     setSaving(true);
     try {
+      const isNewUser = !user?.designations?.length && !user?.cvUrl;
       const res = await api.put('/auth/profile', form);
       setUser(res.data.user);
       toast.success('Profile updated!');
-      const isOnboarding = location.state?.fromOnboarding || searchParams.get('fromOnboarding') === 'true';
-      navigate(isOnboarding ? '/career-services' : '/dashboard');
+      navigate(isNewUser ? '/career-services' : '/opportunities');
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to update profile');
     } finally {

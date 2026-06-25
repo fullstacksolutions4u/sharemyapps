@@ -238,8 +238,14 @@ export default function DeveloperCard({ dev, stagger, hideContact = false }) {
           </a>
         ))}
         {(() => {
-          const loc = (dev.preferredLocations || [])
-            .find(l => !/^remote$/i.test(l.trim()));
+          let loc = '';
+          if (dev.place || dev.district) {
+            loc = [dev.place, dev.district].filter(Boolean).join(', ');
+          } else if (dev.state) {
+            loc = dev.state;
+          } else if (dev.country) {
+            loc = dev.country;
+          }
           return loc ? (
             <span className="inline-flex items-center gap-1 text-[10px] font-medium px-2.5 py-1 rounded-lg bg-bg border border-border text-muted ml-auto">
               <MapPin size={9} className="shrink-0" /> {loc}
