@@ -69,7 +69,45 @@ function buildEdges(nodes) {
   return edges;
 }
 
+// Fixed pseudo-random positions for loading spinners
+const SPINNER_POSITIONS = [
+  { x:  8, y: 12, size: 90  },
+  { x: 28, y:  6, size: 70  },
+  { x: 52, y: 10, size: 110 },
+  { x: 75, y:  5, size: 80  },
+  { x: 92, y: 14, size: 95  },
+  { x:  5, y: 45, size: 75  },
+  { x: 20, y: 60, size: 100 },
+  { x: 42, y: 55, size: 85  },
+  { x: 65, y: 50, size: 105 },
+  { x: 88, y: 48, size: 78  },
+  { x: 12, y: 82, size: 95  },
+  { x: 35, y: 88, size: 70  },
+  { x: 58, y: 80, size: 90  },
+  { x: 80, y: 85, size: 80  },
+  { x: 95, y: 75, size: 100 },
+];
+
 function NetworkGraph({ users, networkLoading }) {
+  if (networkLoading) {
+    return (
+      <div className="absolute inset-0 overflow-hidden select-none" aria-hidden="true">
+        {SPINNER_POSITIONS.map((pos, i) => (
+          <div key={i} style={{
+            position: 'absolute',
+            left: `${pos.x}%`,
+            top: `${pos.y}%`,
+            transform: 'translate(-50%, -50%)',
+            opacity: 0.55,
+            pointerEvents: 'none',
+          }}>
+            <Lottie animationData={spinnerData} loop style={{ width: pos.size, height: pos.size }} />
+          </div>
+        ))}
+      </div>
+    );
+  }
+
   if (!users.length) return null;
 
   const { nodes } = buildLayout(users);
@@ -94,13 +132,13 @@ function NetworkGraph({ users, networkLoading }) {
         ))}
       </svg>
       {nodes.map(node => (
-        <NetworkNode key={node.id} user={node.user} x={node.x} y={node.y} loading={networkLoading} />
+        <NetworkNode key={node.id} user={node.user} x={node.x} y={node.y} />
       ))}
     </div>
   );
 }
 
-function NetworkNode({ user, x, y, loading }) {
+function NetworkNode({ user, x, y }) {
   const [failed, setFailed] = useState(false);
   const [hovered, setHovered] = useState(false);
   const src = (!user.avatar || failed) ? defaultAvatar(user.name) : user.avatar;
@@ -113,14 +151,12 @@ function NetworkNode({ user, x, y, loading }) {
         top: `${y}%`,
         transform: 'translate(-50%, -50%)',
         zIndex: hovered ? 20 : 2,
-        pointerEvents: loading ? 'none' : 'auto',
         cursor: 'default',
       }}
-      onMouseEnter={() => !loading && setHovered(true)}
+      onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
-      {!loading && (
-        <>
+      <>
           <img
             src={src}
             alt={user.name}
@@ -158,8 +194,7 @@ function NetworkNode({ user, x, y, loading }) {
               {user.name}
             </div>
           )}
-        </>
-      )}
+      </>
     </div>
   );
 }
@@ -199,11 +234,6 @@ export default function Home() {
         style={{ minHeight: 600, background: '#e0fafa' }}
       >
         <NetworkGraph users={graphUsers} networkLoading={networkLoading} />
-        {networkLoading && (
-          <div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none">
-            <Lottie animationData={spinnerData} loop style={{ width: 220, height: 220, opacity: 0.85 }} />
-          </div>
-        )}
 
         <section className="max-w-6xl mx-auto px-4 sm:px-6 pt-20 pb-16 text-center relative z-10 pointer-events-none">
           {/* frosted backdrop behind text */}
