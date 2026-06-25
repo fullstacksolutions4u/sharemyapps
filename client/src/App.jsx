@@ -6,6 +6,7 @@ import { ConfirmProvider } from './context/ConfirmContext';
 import Navbar from './components/Navbar';
 import ProtectedRoute from './components/ProtectedRoute';
 import AdminRoute from './components/AdminRoute';
+import AppSpinner from './components/AppSpinner';
 
 const Home               = lazy(() => import('./pages/Home'));
 const Explore            = lazy(() => import('./pages/Explore'));
@@ -59,7 +60,7 @@ class ErrorBoundary extends Component {
 function PageLoader() {
   return (
     <div className="min-h-[60vh] flex items-center justify-center">
-      <div className="w-6 h-6 border-2 border-accent border-t-transparent rounded-full animate-spin" />
+      <AppSpinner />
     </div>
   );
 }
