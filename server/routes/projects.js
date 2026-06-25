@@ -27,6 +27,22 @@ router.get('/', getProjects);
 router.get('/featured', getFeaturedProjects);
 router.get('/my', protect, getMyProjects);
 router.get('/user/:userId', getUserProjects);
+router.get('/showcase', async (req, res) => {
+  try {
+    const Project = require('../models/Project');
+    const skip = Math.max(parseInt(req.query.skip) || 99, 0);
+    const limit = Math.min(parseInt(req.query.limit) || 4, 10);
+    const projects = await Project.find({ status: 'approved', hidden: { $ne: true } })
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit)
+      .populate('owner', 'name avatar')
+      .lean();
+    res.json(projects);
+  } catch {
+    res.status(500).json({ message: 'Server error' });
+  }
+});
 router.get('/:id', getProject);
 router.post('/', protect, projectUpload, createProject);
 router.put('/:id', protect, projectUpload, updateProject);

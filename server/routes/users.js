@@ -50,13 +50,62 @@ router.get('/search', async (req, res) => {
 // GET /api/users/recent — last N registered users (for social proof on homepage)
 router.get('/recent', async (req, res) => {
   try {
-    const limit = Math.min(parseInt(req.query.limit) || 5, 600);
+    const limit = Math.min(parseInt(req.query.limit) || 5, 200);
     const skip = Math.max(parseInt(req.query.skip) || 0, 0);
     const users = await require('../models/User').find(
       { role: { $ne: 'admin' }, isDeleted: { $ne: true }, userType: 'developer', avatar: { $exists: true, $ne: '' } },
       { name: 1, avatar: 1, userType: 1 }
     ).sort({ createdAt: -1 }).skip(skip).limit(limit).lean();
     res.json(users);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// GET /api/users/showcase-devs — devs with photo + approved projects, at a registration offset
+router.get('/showcase-devs', async (req, res) => {
+  try {
+    const User = require('../models/User');
+    const Project = require('../models/Project');
+    const skip = Math.max(parseInt(req.query.skip) || 0, 0);
+    const limit = Math.min(parseInt(req.query.limit) || 3, 10);
+
+    // Only developers who have a profile photo
+    const allDevs = await User.find(
+      {
+        role: { $ne: 'admin' },
+        isDeleted: { $ne: true },
+        userType: 'developer',
+        avatar: { $exists: true, $ne: '' },
+      },
+      { password: 0, googleId: 0, adminNote: 0 }
+    ).sort({ createdAt: -1 }).lean();
+
+    // Get approved project counts for all these devs
+    const allIds = allDevs.map(d => d._id);
+    const projects = await Project.find(
+      { owner: { $in: allIds }, status: 'approved' },
+      { owner: 1, title: 1 }
+    ).lean();
+
+    const projectMap = {};
+    for (const p of projects) {
+      const key = p.owner.toString();
+      if (!projectMap[key]) projectMap[key] = [];
+      projectMap[key].push(p.title);
+    }
+
+    // Filter to only devs with at least 1 approved project, then apply skip/limit
+    const result = allDevs
+      .map(d => ({
+        ...d,
+        projectNames: projectMap[d._id.toString()] || [],
+        projectCount: (projectMap[d._id.toString()] || []).length,
+      }))
+      .filter(d => d.projectCount > 0)
+      .slice(skip, skip + limit);
+
+    res.json(result);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -452,8 +501,15 @@ router.post('/find-developers', protect, jdQuota, aiLimit, async (req, res) => {
     // 1. Extract requirements from JD using OpenAI
     const extracted = await extractJDRequirements(jd.trim());
     const skills     = (extracted.skills     || []).map(s => s.toLowerCase());
-    const roles      = (extracted.roles      || []).map(r => r.toLowerCase());
+    const baseRoles  = (extracted.roles      || []).map(r => r.toLowerCase());
     const niceToHave = (extracted.niceToHave || []).map(s => s.toLowerCase());
+
+    // Expand roles: React → also match MERN; Angular → also match MEAN
+    const roleExpansions = [];
+    const rolesStr = baseRoles.join(' ');
+    if (/\breact\b/.test(rolesStr)) roleExpansions.push('mern stack developer', 'mern stack');
+    if (/\bangular\b/.test(rolesStr)) roleExpansions.push('mean stack developer', 'mean stack');
+    const roles = [...new Set([...baseRoles, ...roleExpansions])];
     const jdLevel    = (extracted.level      || 'any').toLowerCase();
     const minYears   = typeof extracted.minYears === 'number' ? extracted.minYears : null;
     const locationType  = (extracted.locationType  || 'any').toLowerCase();

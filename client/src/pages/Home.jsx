@@ -1,9 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, LayoutGrid, Users, MessageCircle, Brain, ShoppingBag, Hammer, Share2, CircleDollarSign } from 'lucide-react';
 import api from '../api/axios';
 import ProjectCard from '../components/ProjectCard';
-import ProjectSkeleton from '../components/ProjectSkeleton';
+import DeveloperCard from '../components/recruiter/DeveloperCard';
+import { useAuth } from '../context/AuthContext';
 
 const AVATAR_PALETTE = ['#F87171','#FB923C','#FBBF24','#34D399','#38BDF8','#818CF8','#E879F9','#F472B6','#00A693'];
 const avatarBg = name => AVATAR_PALETTE[(name?.charCodeAt(0) ?? 0) % AVATAR_PALETTE.length];
@@ -12,61 +13,64 @@ const defaultAvatar = name => {
   return `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Ccircle cx='20' cy='20' r='20' fill='${bg}'/%3E%3Ccircle cx='20' cy='15' r='7' fill='%231a1a1a' opacity='.85'/%3E%3Cellipse cx='20' cy='35' rx='12' ry='9' fill='%231a1a1a' opacity='.85'/%3E%3C/svg%3E`;
 };
 
-const COLS = 34;
-const ROWS = 17;
-
 const LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-const PLACEHOLDER_USERS = Array.from({ length: COLS * ROWS }, (_, i) => ({
+const PLACEHOLDER_USERS = Array.from({ length: 200 }, (_, i) => ({
   _id: `ph-${i}`,
   name: LETTERS[i % LETTERS.length],
   avatar: null,
 }));
 
-function buildNodes(users) {
-  const nodes = [];
-  let idx = 0;
-  for (let row = 0; row < ROWS; row++) {
-    for (let col = 0; col < COLS; col++) {
-      // small deterministic jitter so it doesn't look like a rigid grid
-      const jX = ((col * 7 + row * 13) % 9) - 4;
-      const jY = ((row * 11 + col * 7) % 9) - 4;
-      const x = (col / (COLS - 1)) * 94 + 3 + jX * 0.25;
-      const y = (row / (ROWS - 1)) * 88 + 6 + jY * 0.25;
-      nodes.push({
-        id: idx,
-        user: users[idx % users.length],
-        x: Math.min(97, Math.max(2, x)),
-        y: Math.min(96, Math.max(3, y)),
-      });
-      idx++;
-    }
-  }
-  return nodes;
+// Seeded PRNG — same seed → same positions every render, no grid shape
+function mulberry32(seed) {
+  return function () {
+    seed |= 0; seed = (seed + 0x6D2B79F5) | 0;
+    let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
 }
 
-function buildEdges() {
+function buildLayout(users) {
+  const n = users.length;
+  if (!n) return { nodes: [] };
+  const rand = mulberry32(0xA3F1C2);
+  const placed = [];
+  for (let i = 0; i < n; i++) {
+    let x, y, tries = 0;
+    do {
+      x = rand() * 98 + 1;   // 1–99% horizontal
+      y = rand() * 96 + 2;   // 2–98% vertical
+      tries++;
+      // min distance check: scale y by 0.5 because banner is ~2× wider than tall
+    } while (tries < 50 && placed.some(p => {
+      const dx = p.x - x;
+      const dy = (p.y - y) * 0.5;
+      return dx * dx + dy * dy < 14; // ~3.7% min spacing
+    }));
+    placed.push({ id: i, user: users[i], x, y });
+  }
+  return { nodes: placed };
+}
+
+// Connect nearby nodes sparsely — produces organic web, not a grid
+function buildEdges(nodes) {
   const edges = [];
-  for (let row = 0; row < ROWS; row++) {
-    for (let col = 0; col < COLS; col++) {
-      // only wire up every ~3rd node so lines are sparse
-      if ((row + col) % 3 !== 0) continue;
-      const curr = row * COLS + col;
-      if (col < COLS - 1) edges.push([curr, curr + 1]);
-      if (row < ROWS - 1) edges.push([curr, curr + COLS]);
-      if (col < COLS - 1 && row < ROWS - 1 && (row * col) % 7 === 0) {
-        edges.push([curr, curr + COLS + 1]);
-      }
+  for (let i = 0; i < nodes.length; i++) {
+    for (let j = i + 1; j < nodes.length; j++) {
+      const dx = nodes[i].x - nodes[j].x;
+      const dy = nodes[i].y - nodes[j].y;
+      const d2 = dx * dx + dy * dy;
+      if (d2 < 110 && (i * 7 + j * 3) % 5 === 0) edges.push([i, j]);
     }
   }
   return edges;
 }
 
 function NetworkGraph({ users, networkLoading }) {
-  const pool = users.length ? users : [];
-  if (!pool.length) return null;
+  if (!users.length) return null;
 
-  const nodes = buildNodes(pool);
-  const edges = buildEdges();
+  const { nodes } = buildLayout(users);
+  const edges = buildEdges(nodes);
 
   return (
     <div className="absolute inset-0 overflow-hidden select-none" aria-hidden="true">
@@ -168,21 +172,31 @@ function NetworkNode({ user, x, y, loading }) {
 }
 
 export default function Home() {
-  const [projects, setProjects] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { user: authUser } = useAuth();
   const [networkUsers, setNetworkUsers] = useState(PLACEHOLDER_USERS);
   const [networkLoading, setNetworkLoading] = useState(true);
+  const [showcaseProjects, setShowcaseProjects] = useState([]);
+  const [showcaseDevs, setShowcaseDevs] = useState([]);
 
   useEffect(() => {
-    api.get('/projects?page=1')
-      .then(res => setProjects(res.data.projects.slice(0, 6)))
-      .catch(() => {})
-      .finally(() => setLoading(false));
-    api.get('/users/recent?limit=700')
+    api.get('/users/recent?limit=200')
       .then(res => setNetworkUsers(res.data))
       .catch(() => {})
       .finally(() => setNetworkLoading(false));
+    api.get('/projects/showcase?skip=99&limit=3')
+      .then(res => setShowcaseProjects(res.data.slice(0, 3)))
+      .catch(() => {});
+    api.get('/users/showcase-devs?skip=0&limit=3')
+      .then(res => setShowcaseDevs(res.data.slice(0, 3)))
+      .catch(() => {});
   }, []);
+
+  const graphUsers = useMemo(() => {
+    if (!authUser || networkLoading) return networkUsers;
+    const alreadyIn = networkUsers.some(u => u._id === authUser._id);
+    if (alreadyIn) return networkUsers;
+    return [{ _id: authUser._id, name: authUser.name, avatar: authUser.avatar || null }, ...networkUsers];
+  }, [authUser, networkUsers, networkLoading]);
 
   return (
     <div className="min-h-screen">
@@ -192,7 +206,7 @@ export default function Home() {
         style={{ minHeight: 600, background: '#e0fafa' }}
       >
         <style>{`@keyframes networkSpin { to { transform: rotate(360deg); } }`}</style>
-        <NetworkGraph users={networkUsers} networkLoading={networkLoading} />
+        <NetworkGraph users={graphUsers} networkLoading={networkLoading} />
 
         <section className="max-w-6xl mx-auto px-4 sm:px-6 pt-20 pb-16 text-center relative z-10 pointer-events-none">
           {/* frosted backdrop behind text */}
@@ -263,27 +277,37 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Featured Projects */}
-      <section className="max-w-6xl mx-auto px-4 sm:px-6 py-16">
-        <div className="flex items-center justify-between mb-8">
-          <h2 className="text-2xl font-bold text-text tracking-tight">Latest projects</h2>
-          <Link to="/explore" className="text-sm text-accent hover:text-accent-hover flex items-center gap-1 font-medium">
-            View all <ArrowRight size={14} />
-          </Link>
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-          {loading
-            ? Array.from({ length: 6 }).map((_, i) => <ProjectSkeleton key={i} />)
-            : projects.length > 0
-              ? projects.map(p => <ProjectCard key={p._id} project={p} />)
-              : (
-                <div className="col-span-3 text-center py-16 text-muted">
-                  <p className="text-sm">No projects yet. <Link to="/register" className="text-accent hover:underline">Be the first to list one!</Link></p>
-                </div>
-              )
-          }
-        </div>
-      </section>
+      {/* Showcase: projects #100–103 */}
+      {showcaseProjects.length > 0 && (
+        <section className="max-w-6xl mx-auto px-4 sm:px-6 pb-16">
+          <div className="flex items-center justify-between mb-8">
+            <h2 className="text-2xl font-bold text-text tracking-tight">Projects</h2>
+            <Link to="/explore" className="text-sm text-accent hover:text-accent-hover flex items-center gap-1 font-medium">
+              View all <ArrowRight size={14} />
+            </Link>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            {showcaseProjects.map(p => <ProjectCard key={p._id} project={p} />)}
+          </div>
+        </section>
+      )}
+
+      {/* Showcase: developers #100–103 */}
+      {showcaseDevs.length > 0 && (
+        <section className="max-w-6xl mx-auto px-4 sm:px-6 pb-16">
+          <div className="flex items-center justify-between mb-8">
+            <h2 className="text-2xl font-bold text-text tracking-tight">Registered Developers</h2>
+            <Link to="/portfolios" className="text-sm text-accent hover:text-accent-hover flex items-center gap-1 font-medium">
+              View all <ArrowRight size={14} />
+            </Link>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            {showcaseDevs.map((dev, idx) => (
+              <DeveloperCard key={dev._id} dev={dev} stagger={{ ready: true, delay: idx * 70 }} />
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* CTA */}
       <section className="max-w-6xl mx-auto px-4 sm:px-6 pb-20">

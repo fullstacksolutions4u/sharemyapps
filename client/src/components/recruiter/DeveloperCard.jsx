@@ -1,4 +1,3 @@
-import { Link } from 'react-router-dom';
 import { GitBranch, Globe, Link2, Mail, MapPin, Phone } from 'lucide-react';
 
 const toAbs = (url) =>
@@ -89,12 +88,9 @@ export default function DeveloperCard({ dev, stagger }) {
             )}
             <MatchBadge jdMatch={jdMatch} />
           </div>
-          <Link
-            to={`/portfolio/${dev._id}`}
-            className="inline-block mt-1 text-[10px] font-semibold px-2 py-0.5 rounded-md bg-bg border border-border text-muted hover:text-accent hover:border-accent/30 transition-colors"
-          >
+          <span className="inline-block mt-1 text-[10px] font-semibold px-2 py-0.5 rounded-md bg-bg border border-border text-muted">
             {dev.projectCount} project{dev.projectCount !== 1 ? 's' : ''}
-          </Link>
+          </span>
         </div>
         {(dev.expectedSalary || dev.joiningAvailability || dev.yearsOfExperience) && (
           <div className="flex flex-col items-end gap-0.5 shrink-0 self-end mb-1 mr-1">
@@ -193,12 +189,9 @@ export default function DeveloperCard({ dev, stagger }) {
 
       {/* Action buttons */}
       <div className="flex items-center gap-1.5 flex-wrap pt-0.5 border-t border-border mt-auto">
-        <Link
-          to={`/portfolio/${dev._id}`}
-          className="inline-flex items-center gap-1 text-[10px] font-semibold px-2.5 py-1 rounded-lg bg-gray-100 text-gray-600 border border-gray-200 hover:bg-gray-200 transition-colors"
-        >
+        <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2.5 py-1 rounded-lg bg-gray-100 text-gray-600 border border-gray-200">
           <Globe size={9} /> Portfolio
-        </Link>
+        </span>
         {dev.linkedinUrl && (
           <a
             href={toAbs(dev.linkedinUrl)}
