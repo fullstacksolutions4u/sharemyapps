@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { COUNTRIES, STATES_BY_COUNTRY, DISTRICTS_BY_STATE } from '../data/locationData';
-import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import {
   ArrowLeft, ArrowRight, User, Mail, Phone, Link2, GitBranch,
   Globe, Save, Trash2, AlertTriangle, Camera, Loader2, FileText, Check, Plus, X as XIcon,
@@ -99,8 +99,6 @@ function DeleteModal({ onConfirm, onClose, deleting }) {
 export default function Profile() {
   const { user, setUser } = useAuth();
   const navigate = useNavigate();
-  const location = useLocation();
-  const [searchParams] = useSearchParams();
 
   const [activeTab, setActiveTab] = useState(0);
   const [completed, setCompleted] = useState(new Set());
