@@ -303,7 +303,7 @@ export default function Home() {
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {showcaseDevs.map((dev, idx) => (
-              <DeveloperCard key={dev._id} dev={dev} stagger={{ ready: true, delay: idx * 70 }} />
+              <DeveloperCard key={dev._id} dev={dev} stagger={{ ready: true, delay: idx * 70 }} hideContact />
             ))}
           </div>
         </section>

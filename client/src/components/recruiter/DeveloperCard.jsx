@@ -1,5 +1,22 @@
 import { GitBranch, Globe, Link2, Mail, MapPin, Phone } from 'lucide-react';
 
+const SKILL_PALETTES = [
+  { bg: '#EFF6FF', border: '#BFDBFE', text: '#1D4ED8' }, // blue
+  { bg: '#F0FDF4', border: '#BBF7D0', text: '#15803D' }, // green
+  { bg: '#FEF9C3', border: '#FDE68A', text: '#92400E' }, // yellow
+  { bg: '#FDF4FF', border: '#E9D5FF', text: '#7E22CE' }, // purple
+  { bg: '#FFF7ED', border: '#FED7AA', text: '#C2410C' }, // orange
+  { bg: '#F0F9FF', border: '#BAE6FD', text: '#0369A1' }, // sky
+  { bg: '#FDF2F8', border: '#FBCFE8', text: '#BE185D' }, // pink
+  { bg: '#F0FDFA', border: '#99F6E4', text: '#0F766E' }, // teal
+  { bg: '#FFF1F2', border: '#FECDD3', text: '#BE123C' }, // rose
+  { bg: '#ECFDF5', border: '#A7F3D0', text: '#065F46' }, // emerald
+];
+
+const skillColor = skill => SKILL_PALETTES[
+  Math.abs(skill.split('').reduce((acc, c) => acc * 31 + c.charCodeAt(0), 0)) % SKILL_PALETTES.length
+];
+
 const toAbs = (url) =>
   !url ? '' : /^https?:\/\//i.test(url) ? url : `https://${url}`;
 
@@ -52,7 +69,7 @@ function MatchBadge({ jdMatch }) {
   );
 }
 
-export default function DeveloperCard({ dev, stagger }) {
+export default function DeveloperCard({ dev, stagger, hideContact = false }) {
   const role = dev.designations?.[0] || dev.resumeData?.experience?.[0]?.role || null;
   const jdMatch = dev.jdMatch || null;
   const matchedSet = new Set((jdMatch?.matchedSkills || []).map(s => s.toLowerCase()));
@@ -92,7 +109,7 @@ export default function DeveloperCard({ dev, stagger }) {
             {dev.projectCount} project{dev.projectCount !== 1 ? 's' : ''}
           </span>
         </div>
-        {(dev.expectedSalary || dev.joiningAvailability || dev.yearsOfExperience) && (
+        {!hideContact && (dev.expectedSalary || dev.joiningAvailability || dev.yearsOfExperience) && (
           <div className="flex flex-col items-end gap-0.5 shrink-0 self-end mb-1 mr-1">
             {dev.expectedSalary && (
               <span className="text-[10px] text-muted/70 leading-tight">
@@ -111,7 +128,7 @@ export default function DeveloperCard({ dev, stagger }) {
             )}
           </div>
         )}
-        <ResumePdfIcon url={dev.cvUrl} />
+        {!hideContact && <ResumePdfIcon url={dev.cvUrl} />}
       </div>
 
       {/* Skills */}
@@ -119,14 +136,14 @@ export default function DeveloperCard({ dev, stagger }) {
         <div className="flex flex-wrap gap-1.5">
           {visibleSkills.map(skill => {
             const matched = matchedSet.has(skill.toLowerCase());
+            const c = skillColor(skill);
             return (
               <span
                 key={skill}
-                className={`text-[10px] font-medium px-2 py-0.5 rounded-md border ${
-                  matched
-                    ? 'bg-green-50 border-green-200 text-green-700'
-                    : 'bg-bg border-border text-muted'
-                }`}
+                className="text-[10px] font-medium px-2 py-0.5 rounded-md border"
+                style={matched
+                  ? { background: '#F0FDF4', borderColor: '#BBF7D0', color: '#15803D' }
+                  : { background: c.bg, borderColor: c.border, color: c.text }}
               >
                 {skill}
               </span>
@@ -156,7 +173,7 @@ export default function DeveloperCard({ dev, stagger }) {
       )}
 
       {/* Email + Phone/WhatsApp on same row */}
-      <div className="flex items-center gap-2 min-w-0">
+      {!hideContact && <div className="flex items-center gap-2 min-w-0">
         {dev.email && (
           <div className="flex items-center gap-1.5 text-[11px] text-muted flex-1 min-w-0">
             <Mail size={10} className="shrink-0" />
@@ -185,14 +202,18 @@ export default function DeveloperCard({ dev, stagger }) {
             </a>
           </div>
         )}
-      </div>
+      </div>}
 
       {/* Action buttons */}
       <div className="flex items-center gap-1.5 flex-wrap pt-0.5 border-t border-border mt-auto">
         <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2.5 py-1 rounded-lg bg-gray-100 text-gray-600 border border-gray-200">
           <Globe size={9} /> Portfolio
         </span>
-        {dev.linkedinUrl && (
+        {dev.linkedinUrl && (hideContact ? (
+          <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2.5 py-1 rounded-lg bg-[#EEF4FF] text-[#0A66C2] border border-[#0A66C2]/20">
+            <Link2 size={9} /> LinkedIn
+          </span>
+        ) : (
           <a
             href={toAbs(dev.linkedinUrl)}
             target="_blank"
@@ -201,8 +222,12 @@ export default function DeveloperCard({ dev, stagger }) {
           >
             <Link2 size={9} /> LinkedIn
           </a>
-        )}
-        {dev.githubUrl && (
+        ))}
+        {dev.githubUrl && (hideContact ? (
+          <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2.5 py-1 rounded-lg bg-gray-900 text-white border border-gray-900">
+            <GitBranch size={9} /> GitHub
+          </span>
+        ) : (
           <a
             href={toAbs(dev.githubUrl)}
             target="_blank"
@@ -211,7 +236,7 @@ export default function DeveloperCard({ dev, stagger }) {
           >
             <GitBranch size={9} /> GitHub
           </a>
-        )}
+        ))}
         {(() => {
           const loc = (dev.preferredLocations || [])
             .find(l => !/^remote$/i.test(l.trim()));
