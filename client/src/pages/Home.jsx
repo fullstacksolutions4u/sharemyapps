@@ -215,6 +215,17 @@ export default function Home() {
             background: 'radial-gradient(ellipse 70% 80% at 50% 50%, rgba(224,250,250,0.82) 40%, transparent 100%)',
             pointerEvents: 'none', zIndex: -1,
           }} />
+          {authUser && (
+            <div className="flex flex-col items-center mb-3 pointer-events-auto">
+              {authUser.avatar ? (
+                <img src={authUser.avatar} alt={authUser.name} className="w-12 h-12 rounded-full object-cover border-2 border-white shadow-md" />
+              ) : (
+                <div className="w-12 h-12 rounded-full bg-accent text-white font-bold flex items-center justify-center text-base border-2 border-white shadow-md">
+                  {authUser.name?.charAt(0).toUpperCase()}
+                </div>
+              )}
+            </div>
+          )}
           <div className="inline-flex items-center gap-5 bg-white/60 backdrop-blur-sm text-accent text-sm font-semibold px-5 py-2 rounded-full mb-6 pointer-events-auto">
             <span className="flex items-center gap-1.5"><Hammer size={15} className="text-violet-500" /> Build</span>
             <span className="text-accent/40">•</span>
@@ -222,30 +233,26 @@ export default function Home() {
             <span className="text-accent/40">•</span>
             <span className="flex items-center gap-1.5"><CircleDollarSign size={15} className="text-amber-500" /> Earn</span>
           </div>
-          <h1 className="text-5xl sm:text-6xl font-bold text-text tracking-tight leading-tight mb-6">
-            Turning side projects into<br />
-            <span className="text-accent">opportunities and connections</span>
-          </h1>
-          <p className="text-lg text-[#3d6b64] max-w-2xl mx-auto leading-relaxed mb-10" style={{ fontFamily: "'Caveat', cursive", fontSize: "1.35rem" }}>
+          <h1 className="text-5xl sm:text-6xl font-bold text-text tracking-tight leading-tight mb-10" style={{ fontFamily: "'Caveat', cursive" }}>
             Be part of the developers community to unlock{" "}
-            <span className="text-accent font-semibold">hiring</span>,{" "}
-            <span className="text-[#6366F1] font-semibold">freelance</span>{" "}
+            <span className="text-accent">hiring</span>,{" "}
+            <span className="text-[#6366F1]">freelance</span>{" "}
             and{" "}
-            <span className="text-[#F59E0B] font-semibold">mentorship</span>{" "}
+            <span className="text-[#F59E0B]">mentorship</span>{" "}
             opportunities
-          </p>
+          </h1>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pointer-events-auto">
             <Link
               to="/explore"
               className="flex items-center gap-2 bg-accent hover:bg-accent-hover text-white px-6 py-3 rounded-xl font-medium transition-colors text-sm"
             >
-              Explore registered projects <ArrowRight size={16} />
+              Explore all projects <ArrowRight size={16} />
             </Link>
             <Link
-              to="/register"
+              to="/find-developers"
               className="flex items-center gap-2 bg-yellow-400 hover:bg-yellow-500 text-white px-6 py-3 rounded-xl font-medium transition-colors text-sm"
             >
-              List your projects for opportunities
+              Browse our developers <ArrowRight size={16} />
             </Link>
           </div>
         </section>
@@ -309,21 +316,6 @@ export default function Home() {
         </section>
       )}
 
-      {/* CTA */}
-      <section className="max-w-6xl mx-auto px-4 sm:px-6 pb-20">
-        <div className="bg-white border border-gray-200 rounded-2xl p-10 text-center shadow-sm">
-          <h2 className="text-2xl font-bold text-gray-900 mb-3">Built something cool?</h2>
-          <p className="text-gray-500 text-sm mb-6 max-w-md mx-auto">
-            List your side project for free and let the world discover it.
-          </p>
-          <Link
-            to="/register"
-            className="inline-flex items-center gap-2 bg-accent hover:bg-accent-hover text-white px-6 py-3 rounded-xl font-medium transition-colors text-sm"
-          >
-            Get started — it's free <ArrowRight size={16} />
-          </Link>
-        </div>
-      </section>
     </div>
   );
 }
