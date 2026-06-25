@@ -1,6 +1,9 @@
 import { useEffect, useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, LayoutGrid, Users, MessageCircle, Brain, ShoppingBag, Hammer, Share2, CircleDollarSign } from 'lucide-react';
+import _Lottie from 'lottie-react';
+const Lottie = _Lottie.default ?? _Lottie;
+import spinnerData from '../assets/spinner.json';
 import api from '../api/axios';
 import ProjectCard from '../components/ProjectCard';
 import DeveloperCard from '../components/recruiter/DeveloperCard';
@@ -116,17 +119,7 @@ function NetworkNode({ user, x, y, loading }) {
       onMouseEnter={() => !loading && setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
-      {loading ? (
-        <div style={{
-          width: 26,
-          height: 26,
-          borderRadius: '50%',
-          border: '2px solid rgba(255,255,255,0.5)',
-          borderTop: '2px solid rgba(0,150,130,0.7)',
-          background: 'rgba(255,255,255,0.25)',
-          animation: 'networkSpin 0.9s linear infinite',
-        }} />
-      ) : (
+      {!loading && (
         <>
           <img
             src={src}
@@ -205,8 +198,12 @@ export default function Home() {
         className="relative overflow-hidden"
         style={{ minHeight: 600, background: '#e0fafa' }}
       >
-        <style>{`@keyframes networkSpin { to { transform: rotate(360deg); } }`}</style>
         <NetworkGraph users={graphUsers} networkLoading={networkLoading} />
+        {networkLoading && (
+          <div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none">
+            <Lottie animationData={spinnerData} loop style={{ width: 220, height: 220, opacity: 0.85 }} />
+          </div>
+        )}
 
         <section className="max-w-6xl mx-auto px-4 sm:px-6 pt-20 pb-16 text-center relative z-10 pointer-events-none">
           {/* frosted backdrop behind text */}
