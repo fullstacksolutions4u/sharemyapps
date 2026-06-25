@@ -31,15 +31,19 @@ exports.showInterest = async (req, res) => {
     if (vacancy.interests.some(id => id.toString() === userId.toString())) {
       return res.status(400).json({ message: 'Already interested' });
     }
+    const isFirstTime = !vacancy.everApplied.some(id => id.toString() === userId.toString());
     vacancy.interests.push(userId);
+    if (isFirstTime) vacancy.everApplied.push(userId);
     await vacancy.save();
     res.json({ interested: true, interestCount: vacancy.interests.length });
 
-    sendJobApplicationEmail({
-      to: req.user.email,
-      name: req.user.name,
-      vacancy,
-    }).catch(() => {});
+    if (isFirstTime) {
+      sendJobApplicationEmail({
+        to: req.user.email,
+        name: req.user.name,
+        vacancy,
+      }).catch(() => {});
+    }
   } catch (err) { res.status(500).json({ message: err.message }); }
 };
 

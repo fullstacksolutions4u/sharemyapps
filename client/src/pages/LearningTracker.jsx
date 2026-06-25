@@ -356,18 +356,10 @@ const LearningTracker = ({ embedded = false }) => {
                                   </div>
                                 </div>
                               )}
-                              <div className="mb-6 flex-shrink-0">
-                                <div className="rounded-xl p-4 shadow-sm" style={{ backgroundColor: '#F0E8DC', border: '1px solid #D4B896' }}>
-                                  <h3 className="text-xl font-bold text-center" style={{ color: '#1C1A17', fontFamily: "'Playfair Display', Georgia, serif" }}>
-                                    {module.title.replace(/^Module\s+\d+\s*[:\s-]+\s*/i, '')}
-                                  </h3>
-                                  {module.category && <p className="text-xs text-center mt-1 uppercase tracking-wider font-semibold" style={{ color: '#5A5550' }}>{module.category}</p>}
-                                </div>
-                              </div>
                               <div className="flex-1 flex flex-col min-h-0">
                                 <div className="mb-4 flex-shrink-0">
                                   <div className="flex items-center justify-between text-sm mb-3" style={{ color: '#5A5550' }}>
-                                    <span className="font-semibold">Topics Progress</span>
+                                    <span className="font-semibold">{module.title.replace(/^Module\s+\d+\s*[:\s-]+\s*/i, '')}</span>
                                     <span className="font-bold">{completedTopics} / {totalTopics} topics</span>
                                   </div>
                                   <div className="w-full rounded-full h-3 overflow-hidden" style={{ backgroundColor: '#E0D8CC' }}>
@@ -383,7 +375,7 @@ const LearningTracker = ({ embedded = false }) => {
                                       const isQuizCompleted = topic.quizCount > 0 && uniqueAttempted.size >= topic.quizCount;
                                       const isPartial = uniqueAttempted.size > 0 && !isQuizCompleted;
                                       return (
-                                        <div key={topic._id || topicIndex} className="flex items-center gap-3 p-3 rounded-xl transition-all duration-200 border group" style={{ backgroundColor: topic.completed ? '#EFF8EF' : isQuizCompleted ? '#F0ECFA' : '#F5F0E8', borderColor: topic.completed ? '#86efac' : isQuizCompleted ? '#C4B5FD' : '#D4B896' }}>
+                                        <div key={topic._id || topicIndex} className="flex items-center gap-3 p-3 rounded-xl transition-all duration-200 border group" style={{ backgroundColor: topic.completed ? '#EFF8EF' : isQuizCompleted ? '#F0ECFA' : '#F5F0E8', borderColor: topic.completed ? '#86efac' : isQuizCompleted ? '#C4B5FD' : '#00A693' }}>
                                           <button onClick={() => handleToggleTopic(module._id, topic._id, topic.completed, index)} className={`flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center transition-all duration-200 hover:scale-110 ${topic.completed ? 'bg-green-500 hover:bg-green-600 shadow-lg' : ''}`} style={!topic.completed ? { backgroundColor: '#FAF7F2', border: '1.5px solid #D4B896' } : {}} title={topic.completed ? 'Mark as incomplete' : 'Mark as complete'}>
                                             {topic.completed ? (
                                               <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
@@ -564,16 +556,6 @@ const LearningTracker = ({ embedded = false }) => {
                       <PieChart percentage={overallProgress.percentage} size={160} strokeWidth={18} color="#9B7D43" backgroundColor="#E0D8CC" showPercentage={true}>
                         <span className="text-xs mt-1 font-medium text-center" style={{ color: '#5A5550' }}>{overallProgress.completedModules} / {overallProgress.totalModules} Modules</span>
                       </PieChart>
-                      <p className="text-xs mt-3 text-center max-w-[180px]" style={{ color: '#5A5550' }}>Complete all topics in a module to mark it as finished</p>
-                      <div className="mt-3 pt-3 w-full text-center" style={{ borderTop: '1px solid #E0D8CC' }}>
-                        <p className="text-sm mb-1 font-medium" style={{ color: '#5A5550' }}>Total Topics Completed</p>
-                        <p className="text-2xl font-bold" style={{ color: '#9B7D43' }}>
-                          {modules.reduce((total, m) => total + (m.topics?.filter(t => t.completed).length || 0), 0)}
-                          <span className="text-lg" style={{ color: '#5A5550' }}> / </span>
-                          {modules.reduce((total, m) => total + (m.topics?.length || 0), 0)}
-                        </p>
-                        <p className="text-xs mt-1 font-medium" style={{ color: '#5A5550' }}>topics in all modules</p>
-                      </div>
                     </div>
                   </div>
                 </div>
