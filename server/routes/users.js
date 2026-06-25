@@ -123,6 +123,10 @@ router.get('/developers', async (req, res) => {
     const matchStage = { userType: 'developer', role: { $ne: 'admin' }, hidden: { $ne: true }, isDeleted: { $ne: true } };
     if (safeSearch) matchStage.name = { $regex: safeSearch, $options: 'i' };
     if (req.query.freelance === 'true') matchStage.freelanceAvailable = true;
+    if (req.query.designation?.trim()) {
+      const safeDesig = req.query.designation.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      matchStage.designations = { $elemMatch: { $regex: safeDesig, $options: 'i' } };
+    }
 
     // Projects owned by this developer (for the card display)
     const ownProjectsLookup = {

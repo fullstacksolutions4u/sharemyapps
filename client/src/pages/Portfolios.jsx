@@ -223,9 +223,19 @@ function SkeletonCard() {
   );
 }
 
+const DESIGNATIONS = [
+  'MERN Stack Developer', 'MEAN Stack Developer', 'MEVN Stack Developer', 'PERN Stack Developer',
+  'Python Full Stack Developer', 'Next.js Developer',
+  'PHP Developer', 'Laravel Developer',
+  'Flutter Developer', 'React Native Developer', 'Android Developer', 'iOS Developer',
+  'Data Scientist', 'Machine Learning Engineer', 'DevOps Engineer', 'UI/UX Developer',
+  'Java Full Stack Developer', '.NET Developer', 'Spring Boot Developer',
+];
+
 export default function Portfolios() {
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
+  const [designation, setDesignation] = useState('');
   const [page, setPage] = useState(1);
 
   useEffect(() => {
@@ -234,10 +244,11 @@ export default function Portfolios() {
   }, [search]);
 
   const { data, isFetching: loading } = useQuery({
-    queryKey: ['developers', page, debouncedSearch],
+    queryKey: ['developers', page, debouncedSearch, designation],
     queryFn: async () => {
       const params = new URLSearchParams({ page });
       if (debouncedSearch) params.set('search', debouncedSearch);
+      if (designation) params.set('designation', designation);
       const res = await api.get(`/users/developers?${params}`);
       return res.data;
     },
@@ -263,29 +274,39 @@ export default function Portfolios() {
 
       {/* Hero banner */}
       <div className="relative border-b border-border overflow-hidden">
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 py-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
-          <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-accent flex items-center justify-center shadow-md shrink-0">
-              <Users size={18} className="text-white" />
-            </div>
-            <h1 className="text-3xl font-extrabold text-text tracking-tight">Portfolios</h1>
-          </div>
-
-          <p className="text-sm text-muted items-center gap-1.5 hidden sm:flex">
-            <Sparkles size={13} className="text-accent shrink-0" />
-            Connect with our developers for hiring, freelance, and mentorship
-          </p>
-
-          {/* Search */}
-          <div className="relative w-full sm:w-72">
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 py-5 flex flex-col sm:flex-row sm:items-center gap-4">
+          {/* Search — left */}
+          <div className="relative w-full sm:w-80">
             <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted" />
             <input
               type="text"
               placeholder="Search by name…"
               value={search}
-              onChange={e => setSearch(e.target.value)}
+              onChange={e => { setSearch(e.target.value); setPage(1); }}
               className="w-full pl-10 pr-4 py-2.5 text-sm border border-border rounded-xl bg-white/80 backdrop-blur-sm focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/20 transition-all shadow-sm"
             />
+          </div>
+
+          <p className="text-sm text-muted items-center gap-1.5 hidden sm:flex flex-1 justify-center">
+            <Sparkles size={13} className="text-accent shrink-0" />
+            Connect with our developers for hiring, freelance, and mentorship
+          </p>
+
+          {/* Designation filter — right */}
+          <div className="relative w-full sm:w-64">
+            <select
+              value={designation}
+              onChange={e => { setDesignation(e.target.value); setPage(1); }}
+              className="w-full px-3 py-2.5 text-sm border border-border rounded-xl bg-white/80 backdrop-blur-sm focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/20 transition-all shadow-sm text-text appearance-none"
+            >
+              <option value="">All designations</option>
+              {DESIGNATIONS.map(d => (
+                <option key={d} value={d}>{d}</option>
+              ))}
+            </select>
+            <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-muted">
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor"><path d="M6 8L1 3h10z"/></svg>
+            </div>
           </div>
         </div>
       </div>
