@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { MapPin, Briefcase, CreditCard, CheckCircle, ArrowRight, Laptop, Clock } from 'lucide-react';
+import { MapPin, Briefcase, CreditCard, CheckCircle, ArrowRight, Laptop, Clock, Crown } from 'lucide-react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
@@ -179,11 +179,10 @@ export default function Vacancies() {
   return (
     <div className="min-h-screen bg-linear-to-br from-accent/10 via-white to-violet-50 relative">
       <div className="absolute inset-0 opacity-20 pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle, #00A693 1px, transparent 1px)', backgroundSize: '28px 28px' }} />
-
       {/* Tabs header */}
       <div className="relative border-b border-border overflow-hidden">
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6">
-          <div className="flex gap-1 justify-center">
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between">
+          <div className="flex gap-1 flex-1 justify-center">
             {TABS.map(({ key, label, icon: Icon }) => (
               <button
                 key={key}
@@ -199,10 +198,13 @@ export default function Vacancies() {
               </button>
             ))}
           </div>
+          <a href="/career-services" className="flex items-center gap-1.5 bg-amber-50 border border-amber-200 hover:bg-amber-100 text-amber-600 text-xs font-semibold px-3 py-1.5 rounded-full transition-colors shrink-0 mb-1">
+            <Crown size={12} /> Premium Services
+          </a>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 pb-16">
       {TAB_CONFIG[activeTab].loading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
           {Array.from({ length: 4 }).map((_, i) => <SkeletonCard key={i} />)}

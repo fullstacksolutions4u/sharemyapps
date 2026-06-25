@@ -12,7 +12,7 @@ const FREE_FEATURES = [
 ];
 
 const PREMIUM_FEATURES = [
-  'ATS Compatible Resume Optimization',
+  'ATS Compatible Resume & Cover letter Optimization',
   'Job Portal Profile Optimization',
   'LinkedIn Profile Branding & Optimization',
   'Resume Circulation Across Hiring Network',
