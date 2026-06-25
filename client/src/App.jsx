@@ -19,7 +19,6 @@ const NotFound           = lazy(() => import('./pages/NotFound'));
 const AdminPanel         = lazy(() => import('./pages/AdminPanel'));
 const Messages           = lazy(() => import('./pages/Messages'));
 const Notifications      = lazy(() => import('./pages/Notifications'));
-const Profile            = lazy(() => import('./pages/Profile'));
 const PublicPortfolio    = lazy(() => import('./pages/PublicPortfolio'));
 const ClientProfile      = lazy(() => import('./pages/ClientProfile'));
 const ChatAdmin          = lazy(() => import('./pages/ChatAdmin'));
@@ -121,7 +120,7 @@ function AppRoutes() {
             </Route>
             <Route path="/messages" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
             <Route path="/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
-            <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+            <Route path="/profile" element={<ProtectedRoute><Navigate to="/dashboard?section=profile" replace /></ProtectedRoute>} />
             <Route path="/client-profile" element={<ProtectedRoute><ClientProfile /></ProtectedRoute>} />
             <Route path="/chat-admin" element={<ProtectedRoute><ChatAdmin /></ProtectedRoute>} />
             <Route path="/feedback" element={<ProtectedRoute><Feedback /></ProtectedRoute>} />

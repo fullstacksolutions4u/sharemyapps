@@ -161,14 +161,17 @@ export default function Vacancies() {
     const { queryKey, route } = TAB_CONFIG[activeTab];
     setBusy(item._id);
     try {
-      const res = await api.post(`${route}/${item._id}/interest`);
+      const isWithdraw = item.interested;
+      const res = isWithdraw
+        ? await api.delete(`${route}/${item._id}/interest`)
+        : await api.post(`${route}/${item._id}/interest`);
       queryClient.setQueryData([queryKey], prev =>
         prev.map(v => v._id === item._id
-          ? { ...v, interested: res.data.interested, interestCount: res.data.interestCount }
+          ? { ...v, interested: res.data.interested ?? !isWithdraw, interestCount: res.data.interestCount ?? (v.interestCount + (isWithdraw ? -1 : 1)) }
           : v
         )
       );
-      toast.success(res.data.interested ? 'Interest recorded!' : 'Interest withdrawn');
+      toast.success(isWithdraw ? 'Application withdrawn.' : "Applied successfully. Recruiter will directly contact you if you're shortlisted.", { duration: 7000 });
     } catch (err) {
       toast.error(err.response?.data?.message || 'Something went wrong');
     } finally {
@@ -307,7 +310,7 @@ export default function Vacancies() {
                 )}
 
                 {/* Footer */}
-                <div className="border-t border-border pt-4 flex items-center justify-between gap-3 mt-auto">
+                <div className="border-t border-border pt-4 flex items-center justify-center gap-3 mt-auto">
                   {v.status === 'closed' ? (
                     <span className="text-sm text-gray-400 font-medium px-5 py-2.5">Applications closed</span>
                   ) : !user ? (
@@ -321,16 +324,20 @@ export default function Vacancies() {
                     <button
                       onClick={() => handleInterest(v)}
                       disabled={busy === v._id}
-                      className={`flex items-center gap-2 text-sm font-semibold px-5 py-2.5 rounded-xl transition-colors disabled:opacity-60 disabled:cursor-not-allowed ${
+                      className={`group flex items-center gap-2 text-sm font-semibold px-5 py-2.5 rounded-xl transition-colors disabled:opacity-60 disabled:cursor-not-allowed ${
                         v.interested
                           ? 'bg-accent-light text-accent border border-accent/30 hover:bg-red-50 hover:text-red-500 hover:border-red-200'
-                          : 'bg-accent hover:bg-accent-hover text-white'
+                          : 'bg-white text-accent border border-accent hover:bg-accent hover:text-white'
                       }`}
                     >
                       {busy === v._id ? (
                         <span className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
                       ) : v.interested ? (
-                        <><CheckCircle size={15} /> Interested</>
+                        <>
+                          <CheckCircle size={15} className="group-hover:hidden" />
+                          <span className="group-hover:hidden">Applied</span>
+                          <span className="hidden group-hover:inline">Withdraw</span>
+                        </>
                       ) : (
                         <>Show Interest <ArrowRight size={15} /></>
                       )}
