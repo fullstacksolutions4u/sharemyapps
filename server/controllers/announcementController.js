@@ -1,46 +1,27 @@
 const Announcement = require('../models/Announcement');
 const Notification = require('../models/Notification');
-const Project = require('../models/Project');
 
 exports.getFeed = async (req, res) => {
   try {
-    const [announcements, activity, recentProjects] = await Promise.all([
+    const [announcements, activity] = await Promise.all([
       Announcement.find({ active: true }).sort({ createdAt: -1 }).lean(),
       Notification.find({ type: { $in: ['like', 'rated', 'commented'] } })
         .sort({ createdAt: -1 })
-        .limit(20)
+        .limit(10)
         .populate({ path: 'project', select: 'title owner', populate: { path: 'owner', select: 'name' } })
-        .lean(),
-      Project.find({ status: 'approved' })
-        .sort({ updatedAt: -1 })
-        .limit(5)
-        .populate('owner', 'name')
-        .select('title owner')
         .lean(),
     ]);
 
-    // Group by project, collect unique action types per project
-    const byProject = new Map();
-    for (const n of activity) {
-      if (!n.project?.title || !n.project?.owner?.name) continue;
-      const pid = n.project._id.toString();
-      if (!byProject.has(pid)) {
-        byProject.set(pid, { project: n.project, types: new Set(), id: n._id.toString() });
-      }
-      byProject.get(pid).types.add(n.type);
-    }
+    const actionLabel = { like: 'a new like', rated: 'a rating', commented: 'a new comment' };
 
-    const actionLabel = { like: 'a new like', rated: 'a rating', commented: 'a comment' };
-
-    const activityItems = [...byProject.values()].slice(0, 3).map(({ project, types, id }) => {
-      const title = project.title;
-      const owner = project.owner.name.split(' ')[0];
-      const parts = [...types].map(t => actionLabel[t]).filter(Boolean);
-      const joined = parts.length === 1
-        ? parts[0]
-        : parts.slice(0, -1).join(', ') + ' & ' + parts[parts.length - 1];
-      return { _id: id + '_a', text: `${title} by ${owner} got ${joined}`, kind: 'activity', types: [...types] };
-    });
+    const activityItems = activity
+      .filter(n => n.project?.title && n.project?.owner?.name)
+      .map(n => ({
+        _id: n._id.toString() + '_a',
+        text: `${n.project.title} by ${n.project.owner.name.split(' ')[0]} received ${actionLabel[n.type] || n.type}`,
+        kind: 'activity',
+        types: [n.type],
+      }));
 
     const announcementItems = announcements.map(a => ({
       _id: a._id,
@@ -48,22 +29,18 @@ exports.getFeed = async (req, res) => {
       kind: 'announcement',
     }));
 
-    const newProjectItems = recentProjects
-      .filter(p => p.owner?.name)
-      .map(p => ({
-        _id: p._id + '_np',
-        text: `${p.title} by ${p.owner.name.split(' ')[0]} was just added — explore it and give your feedback!`,
-        kind: 'new_project',
-      }));
-
-    // interleave: announcement, activity, new_project, …
+    // pattern: 3 activity items, then 1 announcement, repeat
     const feed = [];
-    const max = Math.max(announcementItems.length, activityItems.length, newProjectItems.length);
-    for (let i = 0; i < max; i++) {
-      if (i < announcementItems.length) feed.push(announcementItems[i]);
-      if (i < activityItems.length)     feed.push(activityItems[i]);
-      if (i < newProjectItems.length)   feed.push(newProjectItems[i]);
+    let ai = 0; // announcement index
+    for (let i = 0; i < activityItems.length; i++) {
+      feed.push(activityItems[i]);
+      if ((i + 1) % 3 === 0 && announcementItems.length > 0) {
+        feed.push(announcementItems[ai % announcementItems.length]);
+        ai++;
+      }
     }
+    // if no activity at all, just show announcements
+    if (activityItems.length === 0) feed.push(...announcementItems);
 
     res.json(feed);
   } catch (err) { res.status(500).json({ message: err.message }); }

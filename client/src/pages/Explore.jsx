@@ -148,9 +148,7 @@ export default function Explore() {
 
               <span
                 className={`animate-ticker-up text-sm truncate block ${
-                  announcements[tickerIdx]?.kind === 'activity'    ? 'text-violet-500' :
-                  announcements[tickerIdx]?.kind === 'new_project' ? 'text-amber-500'  :
-                  'text-accent'
+                  announcements[tickerIdx]?.kind === 'activity' ? 'text-violet-500' : 'text-accent'
                 }`}
               >
                 {announcements[tickerIdx]?.text}

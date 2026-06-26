@@ -7,7 +7,7 @@ import {
   Crown, UserCircle, LogOut, Menu, X, Plus, Share2,
   Pencil, Trash2, ExternalLink, Clock, CheckCircle, XCircle,
   AlertCircle, Copy, Check, Eye, EyeOff, Heart, Star, ChevronRight,
-  BookOpen,
+  Gamepad2,
 } from 'lucide-react';
 import CoinIcon from '../components/common/AnimatedCoin';
 import api from '../api/axios';
@@ -28,7 +28,7 @@ const NAV = [
   { key: 'messages',      label: 'Messages',             icon: MessageSquare },
   { key: 'notifications', label: 'Notifications',        icon: Bell },
   { key: 'feedback',      label: 'Feedback',             icon: Lightbulb },
-  { key: 'tick2test',     label: 'Quiz Zone',            icon: BookOpen },
+  { key: 'tick2test',     label: 'Quiz Zone',            icon: Gamepad2 },
   { key: 'premium',       label: 'Premium Services',     icon: Crown },
 ];
 
@@ -384,7 +384,7 @@ export default function Dashboard() {
           <span className="font-semibold text-sm text-text">Dashboard</span>
         </div>
 
-        <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
+        <nav className="flex-1 px-3 py-4 space-y-1.5 overflow-y-auto">
           {NAV.map(({ key, label, icon: Icon, href }) => (
             <button
               key={key}

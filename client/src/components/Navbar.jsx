@@ -260,7 +260,7 @@ export default function Navbar() {
           )}
           {!isRecruiter && !isClient && !isMentee && !isMentor && (
             <>
-              <Link to="/opportunities" className="relative text-base text-muted hover:text-text transition-colors after:absolute after:left-0 after:-bottom-0.5 after:h-[1.5px] after:w-0 after:bg-accent after:transition-[width] after:duration-300 hover:after:w-full">Opportunities</Link>
+              <Link to="/opportunities" className="relative text-base text-muted hover:text-text transition-colors after:absolute after:left-0 after:-bottom-0.5 after:h-[1.5px] after:w-0 after:bg-accent after:transition-[width] after:duration-300 hover:after:w-full">Job Opportunities</Link>
               <Link to="/dashboard?section=tick2test" className="relative text-base text-muted hover:text-text transition-colors after:absolute after:left-0 after:-bottom-0.5 after:h-[1.5px] after:w-0 after:bg-accent after:transition-[width] after:duration-300 hover:after:w-full">Quiz Zone</Link>
             </>
           )}
@@ -364,7 +364,7 @@ export default function Navbar() {
           )}
           {!isRecruiter && !isClient && !isMentee && !isMentor && (
             <>
-              <Link to="/opportunities" onClick={() => setMenuOpen(false)} className="block text-sm text-muted hover:text-text">Opportunities</Link>
+              <Link to="/opportunities" onClick={() => setMenuOpen(false)} className="block text-sm text-muted hover:text-text">Job Opportunities</Link>
               <Link to="/dashboard?section=tick2test" onClick={() => setMenuOpen(false)} className="block text-sm text-muted hover:text-text">Quiz Zone</Link>
             </>
           )}

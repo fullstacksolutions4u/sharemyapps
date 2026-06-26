@@ -7,6 +7,49 @@ import {
   Briefcase, BookOpen, IndianRupee, Code2, Languages, Clock, MapPin, Monitor, Calendar, Crown,
 } from 'lucide-react';
 
+const COUNTRY_CODES = [
+  { code: '+91',  flag: '🇮🇳', name: 'India' },
+  { code: '+971', flag: '🇦🇪', name: 'UAE' },
+  { code: '+1',   flag: '🇺🇸', name: 'USA / Canada' },
+  { code: '+44',  flag: '🇬🇧', name: 'UK' },
+  { code: '+61',  flag: '🇦🇺', name: 'Australia' },
+  { code: '+966', flag: '🇸🇦', name: 'Saudi Arabia' },
+  { code: '+974', flag: '🇶🇦', name: 'Qatar' },
+  { code: '+965', flag: '🇰🇼', name: 'Kuwait' },
+  { code: '+968', flag: '🇴🇲', name: 'Oman' },
+  { code: '+973', flag: '🇧🇭', name: 'Bahrain' },
+  { code: '+60',  flag: '🇲🇾', name: 'Malaysia' },
+  { code: '+65',  flag: '🇸🇬', name: 'Singapore' },
+  { code: '+49',  flag: '🇩🇪', name: 'Germany' },
+  { code: '+33',  flag: '🇫🇷', name: 'France' },
+  { code: '+39',  flag: '🇮🇹', name: 'Italy' },
+  { code: '+34',  flag: '🇪🇸', name: 'Spain' },
+  { code: '+31',  flag: '🇳🇱', name: 'Netherlands' },
+  { code: '+46',  flag: '🇸🇪', name: 'Sweden' },
+  { code: '+47',  flag: '🇳🇴', name: 'Norway' },
+  { code: '+81',  flag: '🇯🇵', name: 'Japan' },
+  { code: '+82',  flag: '🇰🇷', name: 'South Korea' },
+  { code: '+86',  flag: '🇨🇳', name: 'China' },
+  { code: '+92',  flag: '🇵🇰', name: 'Pakistan' },
+  { code: '+94',  flag: '🇱🇰', name: 'Sri Lanka' },
+  { code: '+880', flag: '🇧🇩', name: 'Bangladesh' },
+  { code: '+977', flag: '🇳🇵', name: 'Nepal' },
+  { code: '+27',  flag: '🇿🇦', name: 'South Africa' },
+  { code: '+55',  flag: '🇧🇷', name: 'Brazil' },
+  { code: '+52',  flag: '🇲🇽', name: 'Mexico' },
+  { code: '+7',   flag: '🇷🇺', name: 'Russia' },
+];
+
+function parseStoredPhone(phone = '') {
+  if (!phone) return { code: '+91', local: '' };
+  const sorted = [...COUNTRY_CODES].sort((a, b) => b.code.length - a.code.length);
+  for (const c of sorted) {
+    if (phone.startsWith(c.code)) return { code: c.code, local: phone.slice(c.code.length) };
+  }
+  if (phone.startsWith('+')) return { code: '+91', local: phone.slice(1) };
+  return { code: '+91', local: phone };
+}
+
 const PRESET_DESIGNATIONS = [
   'MERN Stack Developer', 'MEAN Stack Developer', 'MEVN Stack Developer', 'PERN Stack Developer',
   'Python Full Stack Developer',
@@ -33,11 +76,11 @@ const LeetCodeIcon = () => (
 const TABS = [
   { id: 'basic', label: 'Basic Info', icon: User },
   { id: 'links', label: 'Developer Links', icon: Link2 },
-  { id: 'opportunities', label: 'Opportunities', icon: Briefcase },
+  { id: 'opportunities', label: 'Job Opportunities', icon: Briefcase },
   { id: 'resume', label: 'Resume / CV', icon: FileText },
 ];
 
-function Field({ icon, label, name, value, onChange, placeholder, type = 'text', readOnly = false, hint }) {
+function Field({ icon, label, name, value, onChange, onBlur, placeholder, type = 'text', readOnly = false, hint }) {
   return (
     <div>
       <label className="block text-sm font-medium text-text mb-2">{label}</label>
@@ -49,6 +92,7 @@ function Field({ icon, label, name, value, onChange, placeholder, type = 'text',
           name={name}
           value={value}
           onChange={onChange}
+          onBlur={onBlur}
           placeholder={placeholder}
           readOnly={readOnly}
           className={`w-full pl-10 pr-4 py-2.5 border border-border rounded-xl text-sm text-text placeholder-[#9CA3AF] focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/10 transition ${readOnly ? 'bg-[#F9F8F6] cursor-not-allowed text-[#9CA3AF]' : 'bg-white'}`}
@@ -103,9 +147,12 @@ export default function Profile() {
   const [activeTab, setActiveTab] = useState(0);
   const [completed, setCompleted] = useState(new Set());
 
+  const parsedPhone = parseStoredPhone(user?.phone);
+  const [countryCode, setCountryCode] = useState(parsedPhone.code);
+
   const [form, setForm] = useState({
     name: user?.name || '',
-    phone: user?.phone || '',
+    phone: parsedPhone.local,
     linkedinUrl: user?.linkedinUrl || '',
     githubUrl: user?.githubUrl || '',
     leetcodeUrl: user?.leetcodeUrl || '',
@@ -222,6 +269,13 @@ export default function Profile() {
 
   const handle = e => setForm(f => ({ ...f, [e.target.name]: e.target.value }));
 
+  const handlePhoneBlur = () => {
+    setForm(f => {
+      const digits = f.phone.replace(/\D/g, '');
+      return { ...f, phone: digits };
+    });
+  };
+
   const handleDeleteAvatar = async () => {
     try {
       const res = await api.delete('/auth/avatar');
@@ -281,7 +335,8 @@ export default function Profile() {
     setSaving(true);
     try {
       const isNewUser = !user?.designations?.length && !user?.cvUrl;
-      const res = await api.put('/auth/profile', form);
+      const payload = { ...form, phone: form.phone ? countryCode + form.phone : '' };
+      const res = await api.put('/auth/profile', payload);
       setUser(res.data.user);
       toast.success('Profile updated!');
       navigate(isNewUser ? '/career-services' : '/opportunities');
@@ -305,7 +360,7 @@ export default function Profile() {
     { label: 'GitHub',           done: !!form.githubUrl },
     { label: 'Portfolio URL',    done: !!form.portfolioUrl },
     { label: 'CV / Resume',        done: !!form.cvUrl },
-    { label: 'Opportunities',      done: form.freelanceAvailable || form.mentorshipAvailable || !!form.joiningAvailability },
+    { label: 'Job Opportunities',      done: form.freelanceAvailable || form.mentorshipAvailable || !!form.joiningAvailability },
     { label: 'Mode of Job',        done: form.jobMode.length > 0 },
     { label: 'Years of Experience', done: !!form.yearsOfExperience },
   ];
@@ -505,15 +560,34 @@ export default function Profile() {
 
                 {/* Row 2: Mobile + Gender */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <Field
-                    icon={<Phone size={15} />}
-                    label="Mobile"
-                    name="phone"
-                    value={form.phone}
-                    onChange={handle}
-                    placeholder="9847012345"
-                    type="tel"
-                  />
+                  <div>
+                    <label className="block text-sm font-medium text-text mb-2">Mobile</label>
+                    <div className="flex rounded-xl border border-border focus-within:border-accent focus-within:ring-2 focus-within:ring-accent/10 transition overflow-hidden bg-white">
+                      <select
+                        value={countryCode}
+                        onChange={e => setCountryCode(e.target.value)}
+                        className="shrink-0 bg-[#F9F8F6] border-r border-border text-sm text-text px-2 py-2.5 focus:outline-none cursor-pointer"
+                      >
+                        {COUNTRY_CODES.map(c => (
+                          <option key={c.code} value={c.code}>
+                            {c.flag} {c.code}
+                          </option>
+                        ))}
+                      </select>
+                      <div className="relative flex-1">
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#9CA3AF]"><Phone size={15} /></span>
+                        <input
+                          type="tel"
+                          name="phone"
+                          value={form.phone}
+                          onChange={handle}
+                          onBlur={handlePhoneBlur}
+                          placeholder="9847012345"
+                          className="w-full pl-9 pr-4 py-2.5 text-sm text-text placeholder-[#9CA3AF] focus:outline-none bg-transparent"
+                        />
+                      </div>
+                    </div>
+                  </div>
                   <div>
                     <label className="block text-sm font-medium text-text mb-2">Gender</label>
                     <div className="flex gap-2">
