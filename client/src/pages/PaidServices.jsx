@@ -108,7 +108,7 @@ export default function PaidServices() {
             cursor: applyLoading ? 'default' : 'pointer', opacity: applyLoading ? 0.6 : 1,
           }}
         >
-          {applyLoading ? 'Applying…' : `Apply for Free (Valid till ${dueDateLabel})`}
+          {applyLoading ? 'Applying…' : `Reserve Your Free Spot Before ${dueDateLabel}`}
         </button>
         {applyError && (
           <p style={{ fontSize: '12px', color: '#c0392b', margin: 0, textAlign: 'center' }}>{applyError}</p>
