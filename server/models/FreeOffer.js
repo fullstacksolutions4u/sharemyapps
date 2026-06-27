@@ -9,6 +9,9 @@ const freeOfferSchema = new mongoose.Schema({
   whatsappContactedAt: { type: Date, default: null },
   enrolled: { type: Boolean, default: false },
   enrolledAt: { type: Date, default: null },
+  aiSummary: { type: mongoose.Schema.Types.Mixed, default: null },
+  aiSummaryAt: { type: Date, default: null },
+  summaryComment: { type: String, default: '' },
 }, { timestamps: true });
 
 freeOfferSchema.index({ status: 1, createdAt: -1 });

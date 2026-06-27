@@ -620,33 +620,14 @@ export default function ProjectDetail() {
                 <span className="text-xs text-[#9CA3AF]">{followersCount === 1 ? 'follower' : 'followers'}</span>
               </div>
 
-              {/* Social links */}
-              <div className="space-y-2 border-t border-[#F3F0EB] pt-4">
+              {/* Portfolio link */}
+              <div className="border-t border-[#F3F0EB] pt-4">
                 <a
-                  href={`mailto:${owner.email}`}
-                  className="flex items-center gap-2.5 w-full text-[#374151] hover:text-[#00A693] px-3 py-2 rounded-xl hover:bg-[#E6F7F5] text-sm transition-colors"
+                  href={`/portfolio/${owner._id}`}
+                  className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl text-sm font-semibold border border-accent text-accent hover:bg-accent-light transition-colors"
                 >
-                  <Mail size={14} className="shrink-0 text-[#9CA3AF]" />
-                  <span className="truncate">{owner.email}</span>
+                  Visit Portfolio
                 </a>
-                {owner.linkedinUrl && (
-                  <a href={toAbsUrl(owner.linkedinUrl)} target="_blank" rel="noopener noreferrer"
-                    className="flex items-center gap-2.5 w-full text-[#374151] hover:text-[#0A66C2] px-3 py-2 rounded-xl hover:bg-blue-50 text-sm transition-colors">
-                    <LinkedInIcon /> LinkedIn Profile
-                  </a>
-                )}
-                {owner.githubUrl && (
-                  <a href={toAbsUrl(owner.githubUrl)} target="_blank" rel="noopener noreferrer"
-                    className="flex items-center gap-2.5 w-full text-[#374151] hover:text-[#1A1A1A] px-3 py-2 rounded-xl hover:bg-[#F3F0EB] text-sm transition-colors">
-                    <GithubIcon size={14} /> GitHub Profile
-                  </a>
-                )}
-                {owner.leetcodeUrl && (
-                  <a href={toAbsUrl(owner.leetcodeUrl)} target="_blank" rel="noopener noreferrer"
-                    className="flex items-center gap-2.5 w-full text-[#374151] hover:text-[#F89F1B] px-3 py-2 rounded-xl hover:bg-yellow-50 text-sm transition-colors">
-                    <LeetCodeIcon /> LeetCode Profile
-                  </a>
-                )}
               </div>
 
               {/* Message button — only available after following */}

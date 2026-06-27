@@ -105,9 +105,6 @@ const { user, setUser, logout } = useAuth();
               {key === 'messages' && unreadMessages > 0 && (
                 <span className="ml-auto bg-accent text-white text-xs w-5 h-5 flex items-center justify-center rounded-full leading-none shrink-0">{unreadMessages > 9 ? '9+' : unreadMessages}</span>
               )}
-              {key === 'offers' && pendingOffers > 0 && (
-                <span className="ml-auto bg-yellow-500 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full leading-none shrink-0">{pendingOffers > 9 ? '9+' : pendingOffers}</span>
-              )}
             </button>
           ))}
         </nav>
