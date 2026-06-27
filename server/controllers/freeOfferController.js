@@ -35,7 +35,7 @@ async function adminGetOffers(req, res) {
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit)
-        .populate('user', 'name email avatar')
+        .populate('user', 'name email avatar phone designations')
         .lean(),
       FreeOffer.countDocuments(filter),
     ]);
@@ -90,4 +90,54 @@ async function adminGetOfferStats(req, res) {
   }
 }
 
-module.exports = { applyForFreeOffer, getMyOffer, adminGetOffers, adminUpdateOffer, adminDeleteOffer, adminGetOfferStats };
+async function adminToggleEnroll(req, res) {
+  try {
+    const offer = await FreeOffer.findById(req.params.id).lean();
+    if (!offer) return res.status(404).json({ message: 'Not found' });
+    const newEnrolled = !offer.enrolled;
+    const updated = await FreeOffer.findByIdAndUpdate(
+      req.params.id,
+      { $set: { enrolled: newEnrolled, enrolledAt: newEnrolled ? new Date() : null } },
+      { new: true }
+    ).populate('user', 'name email avatar phone designations');
+    res.json(updated);
+
+  } catch {
+    res.status(500).json({ message: 'Server error' });
+  }
+}
+
+async function adminMarkWhatsappContacted(req, res) {
+  try {
+    const offer = await FreeOffer.findByIdAndUpdate(
+      req.params.id,
+      { $set: { whatsappContacted: true, whatsappContactedAt: new Date() } },
+      { new: true }
+    ).populate('user', 'name email avatar phone designations');
+    if (!offer) return res.status(404).json({ message: 'Not found' });
+    res.json(offer);
+  } catch {
+    res.status(500).json({ message: 'Server error' });
+  }
+}
+
+async function adminGetOfferPortfolio(req, res) {
+  try {
+    const offer = await FreeOffer.findById(req.params.id)
+      .populate('user', 'name email avatar bio phone linkedinUrl githubUrl leetcodeUrl portfolioUrl cvUrl familiarTech designations yearsOfExperience joiningAvailability currentSalary expectedSalary preferredLocations jobMode place district state country regNumber badge userType createdAt')
+      .lean();
+    if (!offer) return res.status(404).json({ message: 'Not found' });
+
+    const ProjectModel = require('../models/Project');
+    const projects = await ProjectModel.find({ owner: offer.user._id })
+      .select('title description liveUrl techTags bannerImage status category appType createdAt')
+      .sort({ createdAt: -1 })
+      .lean();
+
+    res.json({ offer, projects });
+  } catch {
+    res.status(500).json({ message: 'Server error' });
+  }
+}
+
+module.exports = { applyForFreeOffer, getMyOffer, adminGetOffers, adminUpdateOffer, adminDeleteOffer, adminGetOfferStats, adminGetOfferPortfolio, adminMarkWhatsappContacted, adminToggleEnroll };

@@ -36,7 +36,7 @@ const freelance = require('../controllers/freelanceOpportunityController');
 const mentorship = require('../controllers/mentorshipOpportunityController');
 const { aiChat } = require('../controllers/aiChatController');
 const { adminGetPlans, adminCreatePlan, adminUpdatePlan, adminDeletePlan } = require('../controllers/planController');
-const { adminGetOffers, adminUpdateOffer, adminDeleteOffer, adminGetOfferStats } = require('../controllers/freeOfferController');
+const { adminGetOffers, adminUpdateOffer, adminDeleteOffer, adminGetOfferStats, adminGetOfferPortfolio, adminMarkWhatsappContacted, adminToggleEnroll } = require('../controllers/freeOfferController');
 
 router.use(protect, requireAdmin);
 
@@ -106,6 +106,9 @@ router.delete('/plans/:id', adminDeletePlan);
 // Free offer applications
 router.get('/offers', adminGetOffers);
 router.get('/offers/stats', adminGetOfferStats);
+router.get('/offers/:id/portfolio', adminGetOfferPortfolio);
+router.patch('/offers/:id/whatsapp-contacted', adminMarkWhatsappContacted);
+router.patch('/offers/:id/enroll', adminToggleEnroll);
 router.patch('/offers/:id', adminUpdateOffer);
 router.delete('/offers/:id', adminDeleteOffer);
 
