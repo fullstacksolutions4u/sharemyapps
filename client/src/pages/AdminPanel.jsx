@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import {
   LayoutDashboard, FolderOpen, ShieldCheck, Menu, LogOut,
-  Users, Briefcase, FileText, Megaphone, MessageSquare, Camera, Sparkles, IndianRupee, Settings, Gift, BookOpen,
+  Users, Briefcase, FileText, Megaphone, MessageSquare, Camera, IndianRupee, Settings, Crown, BookOpen,
 } from 'lucide-react';
 import api from '../api/axios';
 import AdminOverview from './admin/AdminOverview';
@@ -13,7 +13,6 @@ import AdminAnnouncementsSection from './admin/AdminAnnouncementsSection';
 import AdminMessagesSection from './admin/AdminMessagesSection';
 import AdminOpportunitiesSection from './admin/AdminOpportunitiesSection';
 import AdminResumesSection from './admin/AdminResumesSection';
-import AdminAISection from './admin/AdminAISection';
 import AdminPaymentsSection from './admin/AdminPaymentsSection';
 import AdminPlansSection from './admin/AdminPlansSection';
 import AdminVacanciesSection from './admin/AdminVacanciesSection';
@@ -28,11 +27,10 @@ const NAV = [
   { key: 'resumes',        label: 'Resumes',          icon: FileText },
   { key: 'announcements',  label: 'Announcements',    icon: Megaphone },
   { key: 'messages',       label: 'Messages',         icon: MessageSquare },
-  { key: 'ai',             label: 'AI Assistant',     icon: Sparkles },
   { key: 'payments',       label: 'Payments',         icon: IndianRupee },
   { key: 'plans',          label: 'Plans & Pricing',  icon: Settings },
-  { key: 'offers',         label: 'Free Offers',      icon: Gift },
-  { key: 'learning',       label: 'Test Your Knowledge', icon: BookOpen },
+  { key: 'offers',         label: 'Premium Services',  icon: Crown },
+  { key: 'learning',       label: 'Quiz Zone',           icon: BookOpen },
 ];
 
 export default function AdminPanel() {
@@ -158,7 +156,6 @@ const { user, setUser, logout } = useAuth();
           {section === 'resumes'          && <AdminResumesSection />}
           {section === 'announcements'    && <AdminAnnouncementsSection />}
           {section === 'messages'         && <AdminMessagesSection onUnreadChange={setUnreadMessages} />}
-          {section === 'ai'               && <AdminAISection />}
           {section === 'payments'         && <AdminPaymentsSection />}
           {section === 'plans'            && <AdminPlansSection />}
           {section === 'offers'           && <AdminOffersSection />}

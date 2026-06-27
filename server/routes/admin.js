@@ -107,8 +107,54 @@ router.delete('/plans/:id', adminDeletePlan);
 router.get('/offers', adminGetOffers);
 router.get('/offers/stats', adminGetOfferStats);
 router.get('/offers/:id/portfolio', adminGetOfferPortfolio);
+router.get('/offers/:id/timeline', async (req, res) => {
+  try {
+    const FreeOffer = require('../models/FreeOffer');
+    const offer = await FreeOffer.findById(req.params.id).populate('user', 'name createdAt').lean();
+    if (!offer) return res.status(404).json({ message: 'Not found' });
+
+    const events = [];
+    if (offer.user?.createdAt) {
+      events.push({ id: 'signup', eventType: 'signup', label: 'Signed Up', note: '', at: offer.user.createdAt });
+    }
+    events.push({ id: 'applied', eventType: 'applied', label: 'Applied for Premium Service', note: '', at: offer.createdAt });
+    if (offer.whatsappContacted && offer.whatsappContactedAt) {
+      events.push({ id: 'whatsapp', eventType: 'whatsapp', label: 'WhatsApp Contacted', note: '', at: offer.whatsappContactedAt });
+    }
+    if (offer.enrolled && offer.enrolledAt) {
+      events.push({ id: 'enrolled', eventType: 'enrolled', label: 'Enrolled in Program', note: '', at: offer.enrolledAt });
+    }
+    for (const a of (offer.activities || [])) {
+      if (a.type === 'meeting' && a.scheduledAt) {
+        events.push({ id: String(a._id) + '_log', eventType: 'meeting_logged', note: a.note, scheduledAt: a.scheduledAt, at: a.createdAt });
+        events.push({ id: String(a._id) + '_meet', eventType: 'meeting_attend', note: a.note, scheduledAt: a.scheduledAt, at: a.scheduledAt });
+      } else {
+        events.push({ id: String(a._id), eventType: a.type, note: a.note, scheduledAt: a.scheduledAt, at: a.createdAt });
+      }
+    }
+    events.sort((a, b) => new Date(b.at) - new Date(a.at));
+    res.json({ events });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
 router.patch('/offers/:id/whatsapp-contacted', adminMarkWhatsappContacted);
 router.patch('/offers/:id/enroll', adminToggleEnroll);
+router.post('/offers/:id/activity', async (req, res) => {
+  try {
+    const FreeOffer = require('../models/FreeOffer');
+    const { type, note, scheduledAt } = req.body;
+    const offer = await FreeOffer.findByIdAndUpdate(
+      req.params.id,
+      { $push: { activities: { type: type || 'note', note: note || '', scheduledAt: scheduledAt || null, createdAt: new Date() } } },
+      { new: true }
+    );
+    if (!offer) return res.status(404).json({ message: 'Not found' });
+    res.json({ activities: offer.activities });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
 router.patch('/offers/:id/summary-comment', async (req, res) => {
   try {
     const FreeOffer = require('../models/FreeOffer');
@@ -218,8 +264,21 @@ ${u.resumeData ? JSON.stringify(u.resumeData, null, 2) : 'null'}
 ## Form Response
 ${formResponse ? JSON.stringify(formResponse, null, 2) : 'null'}
 
-## Admin Comment (use as additional context and instructions only — do NOT rephrase, quote, or echo this text in any output field)
-${offer.summaryComment ? offer.summaryComment : 'null'}`;
+## Admin Notes (use as additional context and instructions only — do NOT rephrase, quote, or echo this text in any output field)
+${(() => {
+  if (!offer.summaryComment) return 'null';
+  try {
+    const n = JSON.parse(offer.summaryComment);
+    if (n && typeof n === 'object') {
+      const lines = [];
+      if (n.wellness) lines.push(`Wellness:\n${n.wellness.split('\n').filter(Boolean).map(l => `• ${l}`).join('\n')}`);
+      if (n.strength) lines.push(`Strength:\n${n.strength.split('\n').filter(Boolean).map(l => `• ${l}`).join('\n')}`);
+      if (n.advice)   lines.push(`Advice:\n${n.advice.split('\n').filter(Boolean).map(l => `• ${l}`).join('\n')}`);
+      return lines.length ? lines.join('\n\n') : 'null';
+    }
+  } catch { /* ignore */ }
+  return offer.summaryComment;
+})()}`;
 
     const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
     const completion = await openai.chat.completions.create({

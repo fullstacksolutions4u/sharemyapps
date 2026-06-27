@@ -13,11 +13,9 @@ const FREE_FEATURES = [
 
 const PREMIUM_FEATURES = [
   'ATS Compatible Resume & Cover letter Optimization',
-  'Job Portal Profile Optimization',
-  'LinkedIn Profile Branding & Optimization',
-  'Resume Circulation Across Hiring Network',
-  'Direct Referrals to Companies via Our Developers Community',
-  'Dedicated Placement Officer to guide you',
+  'LinkedIn & Job Portal Profile Optimization',
+  '1:1 Session with Placement Specialist for Job Hunting Guidance',
+  'Dedicated Placement Officer Support Until You Get Hired',
   'Mock Interviews with Industry Experts',
   'Standing out against other applicants',
 ];

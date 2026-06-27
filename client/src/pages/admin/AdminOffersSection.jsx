@@ -311,16 +311,39 @@ function SRow({ label, value }) {
   );
 }
 
+function parseNotes(raw) {
+  if (!raw) return { wellness: '', strength: '', advice: '' };
+  try {
+    const p = JSON.parse(raw);
+    if (p && typeof p === 'object' && ('wellness' in p || 'strength' in p || 'advice' in p)) {
+      return { wellness: p.wellness || '', strength: p.strength || '', advice: p.advice || '' };
+    }
+  } catch { /* ignore */ }
+  return { wellness: '', strength: '', advice: raw };
+}
+
 function SummaryModal({ offer, onClose, onSummaryUpdate, onCommentUpdate }) {
   const [summary, setSummary]     = useState(offer.aiSummary   || null);
   const [summaryAt, setSummaryAt] = useState(offer.aiSummaryAt || null);
   const [loading, setLoading]     = useState(false);
   const [error, setError]         = useState('');
-  const [comment, setComment]     = useState(offer.summaryComment || '');
+  const parsed = parseNotes(offer.summaryComment);
+  const [wellness, setWellness]   = useState(parsed.wellness);
+  const [strength, setStrength]   = useState(parsed.strength);
+  const [advice, setAdvice]       = useState(parsed.advice);
   const [commentSaving, setCommentSaving]   = useState(false);
   const [commentSaved, setCommentSaved]     = useState(false);
   const [commentError, setCommentError]     = useState('');
   const [fixingSpelling, setFixingSpelling] = useState(false);
+
+  const [activeTab, setActiveTab]           = useState('summary');
+  const [timeline, setTimeline]             = useState(null);
+  const [timelineLoading, setTimelineLoading] = useState(false);
+  const [showActivityForm, setShowActivityForm] = useState(false);
+  const [actType, setActType]               = useState('meeting');
+  const [actNote, setActNote]               = useState('');
+  const [actScheduledAt, setActScheduledAt] = useState('');
+  const [addingActivity, setAddingActivity] = useState(false);
 
   useEffect(() => { if (!summary) generate(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -340,11 +363,17 @@ function SummaryModal({ offer, onClose, onSummaryUpdate, onCommentUpdate }) {
   }
 
   async function fixSpelling() {
-    if (!comment.trim()) return;
+    if (!wellness.trim() && !strength.trim() && !advice.trim()) return;
     setFixingSpelling(true);
     try {
-      const res = await api.post('/admin/fix-spelling', { text: comment });
-      setComment(res.data.text);
+      const [wRes, sRes, aRes] = await Promise.all([
+        wellness.trim() ? api.post('/admin/fix-spelling', { text: wellness }) : Promise.resolve(null),
+        strength.trim() ? api.post('/admin/fix-spelling', { text: strength }) : Promise.resolve(null),
+        advice.trim()   ? api.post('/admin/fix-spelling', { text: advice })   : Promise.resolve(null),
+      ]);
+      if (wRes) setWellness(wRes.data.text);
+      if (sRes) setStrength(sRes.data.text);
+      if (aRes) setAdvice(aRes.data.text);
       setCommentSaved(false);
     } catch { /* ignore */ } finally {
       setFixingSpelling(false);
@@ -356,6 +385,7 @@ function SummaryModal({ offer, onClose, onSummaryUpdate, onCommentUpdate }) {
     setCommentSaved(false);
     setCommentError('');
     try {
+      const comment = JSON.stringify({ wellness, strength, advice });
       await api.patch(`/admin/offers/${offer._id}/summary-comment`, { comment });
       setCommentSaved(true);
       onCommentUpdate(offer._id, comment);
@@ -367,6 +397,64 @@ function SummaryModal({ offer, onClose, onSummaryUpdate, onCommentUpdate }) {
     }
   }
 
+  async function loadTimeline() {
+    setTimelineLoading(true);
+    try {
+      const res = await api.get(`/admin/offers/${offer._id}/timeline`);
+      setTimeline(res.data.events);
+    } catch { /* ignore */ } finally {
+      setTimelineLoading(false);
+    }
+  }
+
+  function switchTab(tab) {
+    setActiveTab(tab);
+    if (tab === 'timeline' && !timeline) loadTimeline();
+  }
+
+  async function addActivity() {
+    if (!actNote.trim()) return;
+    setAddingActivity(true);
+    try {
+      await api.post(`/admin/offers/${offer._id}/activity`, {
+        type: actType, note: actNote, scheduledAt: actScheduledAt || null,
+      });
+      setActNote('');
+      setActScheduledAt('');
+      setShowActivityForm(false);
+      setTimeline(null);
+      await loadTimeline();
+    } catch { /* ignore */ } finally {
+      setAddingActivity(false);
+    }
+  }
+
+  const ACT_CONFIG = {
+    meeting_logged: { label: 'Meeting Scheduled', tag: '#1a1a1a' },
+    meeting_attend: { label: 'Attend Meeting',    tag: '#1a1a1a' },
+    meeting:        { label: 'Meeting Scheduled', tag: '#1a1a1a' },
+    call:           { label: 'Call / Doubt Session', tag: '#1a1a1a' },
+    note:           { label: 'General Note',      tag: '#1a1a1a' },
+    other:          { label: 'Stop Services',      tag: '#1a1a1a' },
+    signup:         { label: 'Signed Up',         tag: '#1a1a1a' },
+    applied:        { label: 'Applied for Premium Service', tag: '#1a1a1a' },
+    whatsapp:       { label: 'WhatsApp Contacted', tag: '#1a1a1a' },
+    enrolled:       { label: 'Enrolled in Program', tag: '#1a1a1a' },
+  };
+
+  const TL_ICONS = {
+    meeting_logged: <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>,
+    meeting_attend: <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>,
+    meeting:        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>,
+    call:           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.4 2 2 0 0 1 3.6 1.22h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.75a16 16 0 0 0 6 6l.95-.95a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21.73 16a2 2 0 0 1 .27.92z"/></svg>,
+    note:           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>,
+    other:          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>,
+    signup:         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>,
+    applied:        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>,
+    whatsapp:       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>,
+    enrolled:       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>,
+  };
+
   const s = summary;
 
   return (
@@ -374,24 +462,133 @@ function SummaryModal({ offer, onClose, onSummaryUpdate, onCommentUpdate }) {
       <div onClick={e => e.stopPropagation()} style={{ background: '#fff', borderRadius: 16, width: '100%', maxWidth: 1280, maxHeight: '90vh', display: 'flex', flexDirection: 'column' }}>
 
         {/* Header */}
-        <div style={{ padding: '16px 20px 14px', borderBottom: '1px solid #f0f0f0', display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0 }}>
-          {offer.user?.avatar
-            ? <img src={offer.user.avatar} alt="" style={{ width: 38, height: 38, borderRadius: '50%', objectFit: 'cover' }} />
-            : <span style={{ width: 38, height: 38, borderRadius: '50%', background: '#dcefed', color: '#0a7373', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 15 }}>{offer.user?.name?.[0]?.toUpperCase()}</span>
-          }
-          <div style={{ flex: 1 }}>
-            <div style={{ fontWeight: 700, fontSize: 15, color: '#1a1a1a' }}>{offer.user?.name}{summary?.headline ? ` — ${summary.headline}` : ''}</div>
-            {summaryAt && <div style={{ fontSize: 11, color: '#aaa', marginTop: 1 }}>Generated {new Date(summaryAt).toLocaleString()}</div>}
+        <div style={{ flexShrink: 0, borderBottom: '1px solid #f0f0f0' }}>
+          <div style={{ padding: '16px 20px 12px', display: 'flex', alignItems: 'center', gap: 12 }}>
+            {offer.user?.avatar
+              ? <img src={offer.user.avatar} alt="" style={{ width: 38, height: 38, borderRadius: '50%', objectFit: 'cover' }} />
+              : <span style={{ width: 38, height: 38, borderRadius: '50%', background: '#dcefed', color: '#0a7373', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 15 }}>{offer.user?.name?.[0]?.toUpperCase()}</span>
+            }
+            <div style={{ flex: 1 }}>
+              <div style={{ fontWeight: 700, fontSize: 15, color: '#1a1a1a' }}>{offer.user?.name}{summary?.headline ? ` — ${summary.headline}` : ''}</div>
+            </div>
+            <button
+              onClick={() => setShowActivityForm(v => !v)}
+              style={{ border: '1px solid #e67e22', borderRadius: 8, padding: '6px 14px', fontSize: 13, background: showActivityForm ? '#fff8f0' : '#fff', cursor: 'pointer', color: '#e67e22', fontWeight: 600 }}
+            >
+              + Log Activity
+            </button>
+            <button onClick={generate} disabled={loading} style={{ border: '1px solid #e5e7eb', borderRadius: 8, padding: '6px 14px', fontSize: 13, background: '#fff', cursor: loading ? 'not-allowed' : 'pointer', color: '#555', opacity: loading ? 0.6 : 1 }}>
+              {loading ? 'Generating…' : '↺ Refresh'}
+            </button>
+            <button onClick={onClose} style={{ border: 'none', background: '#f5f5f5', borderRadius: 8, width: 32, height: 32, cursor: 'pointer', fontSize: 16, color: '#666' }}>✕</button>
           </div>
-          <button onClick={generate} disabled={loading} style={{ border: '1px solid #e5e7eb', borderRadius: 8, padding: '6px 14px', fontSize: 13, background: '#fff', cursor: loading ? 'not-allowed' : 'pointer', color: '#555', opacity: loading ? 0.6 : 1 }}>
-            {loading ? 'Generating…' : '↺ Refresh'}
-          </button>
-          <button onClick={onClose} style={{ border: 'none', background: '#f5f5f5', borderRadius: 8, width: 32, height: 32, cursor: 'pointer', fontSize: 16, color: '#666' }}>✕</button>
+
+          {/* Activity form */}
+          {showActivityForm && (
+            <div style={{ margin: '0 20px 12px', border: '1px solid #f0c080', borderRadius: 10, padding: '12px 14px', background: '#fffbf5' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '160px 1fr 200px auto', gap: 8, alignItems: 'flex-start' }}>
+                <select
+                  value={actType}
+                  onChange={e => setActType(e.target.value)}
+                  style={{ border: '1px solid #e5e7eb', borderRadius: 8, padding: '7px 10px', fontSize: 13, outline: 'none', background: '#fff', color: '#333' }}
+                >
+                  <option value="meeting">📅 Meeting Scheduled</option>
+                  <option value="call">📞 Call / Doubt Session</option>
+                  <option value="note">📝 General Note</option>
+                  <option value="other">Stop Services</option>
+                </select>
+                <textarea
+                  value={actNote}
+                  onChange={e => setActNote(e.target.value)}
+                  placeholder="Add details about this activity…"
+                  rows={2}
+                  style={{ border: '1px solid #e5e7eb', borderRadius: 8, padding: '7px 10px', fontSize: 13, resize: 'none', outline: 'none', fontFamily: 'inherit', lineHeight: 1.5 }}
+                />
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                  <label style={{ fontSize: 10, color: '#aaa', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Scheduled Date/Time</label>
+                  <input
+                    type="datetime-local"
+                    value={actScheduledAt}
+                    onChange={e => setActScheduledAt(e.target.value)}
+                    style={{ border: '1px solid #e5e7eb', borderRadius: 8, padding: '7px 10px', fontSize: 12, outline: 'none' }}
+                  />
+                </div>
+                <button
+                  onClick={addActivity}
+                  disabled={addingActivity || !actNote.trim()}
+                  style={{ border: 'none', background: addingActivity || !actNote.trim() ? '#ccc' : '#e67e22', color: '#fff', borderRadius: 8, padding: '7px 16px', fontSize: 13, fontWeight: 600, cursor: addingActivity || !actNote.trim() ? 'not-allowed' : 'pointer', alignSelf: 'flex-end' }}
+                >
+                  {addingActivity ? 'Adding…' : 'Add'}
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Tabs */}
+          <div style={{ display: 'flex', gap: 0, padding: '0 20px' }}>
+            {[['summary', 'AI Summary'], ['timeline', 'Timeline']].map(([key, label]) => (
+              <button
+                key={key}
+                onClick={() => switchTab(key)}
+                style={{
+                  border: 'none', background: 'none', padding: '8px 18px', fontSize: 13, fontWeight: 600,
+                  color: activeTab === key ? '#1a1a1a' : '#aaa',
+                  borderBottom: activeTab === key ? '2px solid #1a1a1a' : '2px solid transparent',
+                  cursor: 'pointer', transition: 'color 0.15s',
+                }}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* Body */}
         <div style={{ flex: 1, overflowY: 'auto', padding: 20 }}>
-          {loading && !s ? (
+
+          {/* Timeline tab */}
+          {activeTab === 'timeline' && (
+            <div>
+              {timelineLoading ? (
+                <div style={{ textAlign: 'center', padding: 48, color: '#aaa', fontSize: 14 }}>Loading timeline…</div>
+              ) : !timeline || timeline.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: 48, color: '#aaa', fontSize: 14 }}>No events yet.</div>
+              ) : (
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                  {timeline.map(ev => {
+                    const cfg = ACT_CONFIG[ev.eventType] || ACT_CONFIG.other;
+                    const icon = TL_ICONS[ev.eventType] || TL_ICONS.other;
+                    const date = new Date(ev.at);
+                    return (
+                      <div key={ev.id} style={{ display: 'flex', alignItems: 'center', gap: 12, background: '#fafafa', border: '1px solid #f0f0f0', borderRadius: 10, padding: '12px 14px' }}>
+                        <div style={{
+                          width: 32, height: 32, borderRadius: '50%', flexShrink: 0,
+                          background: '#fff', border: '1.5px solid #d1d5db',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          color: '#374151', boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
+                        }}>
+                          {icon}
+                        </div>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ fontSize: 13, fontWeight: 600, color: '#111827', letterSpacing: '-0.01em', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                            {cfg.label}
+                          </div>
+                          <div style={{ fontSize: 11, color: '#9ca3af', marginTop: 2 }}>
+                            {date.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                            {' · '}
+                            {date.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Summary tab */}
+          {activeTab === 'summary' && (loading && !s ? (
             <div style={{ textAlign: 'center', padding: 48, color: '#aaa' }}>
               <div style={{ fontSize: 14, marginBottom: 6 }}>Analysing profile, resume & form data…</div>
               <div style={{ fontSize: 12, color: '#ccc' }}>This may take a few seconds</div>
@@ -476,35 +673,50 @@ function SummaryModal({ offer, onClose, onSummaryUpdate, onCommentUpdate }) {
               )}
 
             </div>
-          ) : null}
+          ) : null)}
 
-          {/* Admin comment — always visible */}
+          {/* Admin Notes — 3 sections, visible only in Summary tab */}
+          {activeTab === 'summary' && (
           <div style={{ marginTop: 16, borderTop: '1px solid #f0f0f0', paddingTop: 14 }}>
-            <div style={{ fontSize: 10, fontWeight: 700, color: '#aaa', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 }}>
-              Admin Comment <span style={{ fontWeight: 400, textTransform: 'none', fontSize: 10, color: '#bbb' }}>(used by AI on next refresh)</span>
+            <div style={{ fontSize: 10, fontWeight: 700, color: '#aaa', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 10 }}>
+              Admin Notes <span style={{ fontWeight: 400, textTransform: 'none', fontSize: 10, color: '#bbb' }}>(used by AI on next refresh)</span>
             </div>
-            <textarea
-              value={comment}
-              onChange={e => { setComment(e.target.value); setCommentSaved(false); }}
-              placeholder="Add notes about this candidate — the AI will incorporate these on next refresh…"
-              rows={3}
-              spellCheck={true}
-              style={{
-                width: '100%', boxSizing: 'border-box', border: '1px solid #e5e7eb',
-                borderRadius: 8, padding: '8px 12px', fontSize: 13, resize: 'vertical',
-                outline: 'none', color: '#333', lineHeight: 1.6, fontFamily: 'inherit',
-              }}
-            />
-            <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 8, marginTop: 6 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10 }}>
+              {[
+                { label: 'Wellness', color: '#0a7373', bg: '#f0faf9', val: wellness, set: v => { setWellness(v); setCommentSaved(false); }, placeholder: 'e.g. Communicates well, positive attitude…' },
+                { label: 'Strength', color: '#3b5bdb', bg: '#f0f4ff', val: strength, set: v => { setStrength(v); setCommentSaved(false); }, placeholder: 'e.g. Strong React skills, 3 yrs experience…' },
+                { label: 'Advice',   color: '#c05621', bg: '#fff8f0', val: advice,   set: v => { setAdvice(v);   setCommentSaved(false); }, placeholder: 'e.g. Needs to improve DSA, update resume…' },
+              ].map(({ label, color, bg, val, set, placeholder }) => (
+                <div key={label} style={{ border: `1px solid ${color}33`, borderRadius: 8, overflow: 'hidden' }}>
+                  <div style={{ background: bg, padding: '5px 10px', fontSize: 10, fontWeight: 700, color, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                    • {label}
+                  </div>
+                  <textarea
+                    value={val}
+                    onChange={e => set(e.target.value)}
+                    placeholder={placeholder}
+                    rows={4}
+                    spellCheck={true}
+                    style={{
+                      width: '100%', boxSizing: 'border-box', border: 'none',
+                      borderTop: `1px solid ${color}22`, padding: '8px 10px',
+                      fontSize: 12, resize: 'vertical', outline: 'none',
+                      color: '#333', lineHeight: 1.7, fontFamily: 'inherit', background: '#fff',
+                    }}
+                  />
+                </div>
+              ))}
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 8, marginTop: 8 }}>
               {commentError && <span style={{ fontSize: 12, color: '#e53e3e' }}>{commentError}</span>}
               <button
                 onClick={fixSpelling}
-                disabled={fixingSpelling || !comment.trim()}
+                disabled={fixingSpelling || (!wellness.trim() && !strength.trim() && !advice.trim())}
                 style={{
                   border: '1px solid #e5e7eb', background: '#fff', color: '#555',
                   borderRadius: 8, padding: '6px 14px', fontSize: 12, fontWeight: 600,
-                  cursor: fixingSpelling || !comment.trim() ? 'not-allowed' : 'pointer',
-                  opacity: fixingSpelling || !comment.trim() ? 0.5 : 1,
+                  cursor: fixingSpelling || (!wellness.trim() && !strength.trim() && !advice.trim()) ? 'not-allowed' : 'pointer',
+                  opacity: fixingSpelling || (!wellness.trim() && !strength.trim() && !advice.trim()) ? 0.5 : 1,
                 }}
               >
                 {fixingSpelling ? 'Fixing…' : '✦ Fix Spelling'}
@@ -519,10 +731,11 @@ function SummaryModal({ offer, onClose, onSummaryUpdate, onCommentUpdate }) {
                   opacity: commentSaving ? 0.7 : 1, transition: 'background 0.2s',
                 }}
               >
-                {commentSaving ? 'Saving…' : commentSaved ? '✓ Saved' : 'Save Comment'}
+                {commentSaving ? 'Saving…' : commentSaved ? '✓ Saved' : 'Save Notes'}
               </button>
             </div>
           </div>
+          )}
         </div>
       </div>
     </div>
@@ -631,6 +844,9 @@ export default function AdminOffersSection() {
               {/* Name */}
               <div style={{ minWidth: 0 }}>
                 <div style={{ fontWeight: 600, fontSize: '14px', color: '#1a1a1a', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{o.user?.name || '—'}</div>
+                {o.activities?.some(a => a.type === 'other') && (
+                  <div style={{ fontSize: 11, color: '#dc2626', fontWeight: 600, marginTop: 2 }}>Stop Services</div>
+                )}
               </div>
 
               {/* Designation */}
