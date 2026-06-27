@@ -324,7 +324,6 @@ function parseNotes(raw) {
 
 function SummaryModal({ offer, onClose, onSummaryUpdate, onCommentUpdate }) {
   const [summary, setSummary]     = useState(offer.aiSummary   || null);
-  const [summaryAt, setSummaryAt] = useState(offer.aiSummaryAt || null);
   const [loading, setLoading]     = useState(false);
   const [error, setError]         = useState('');
   const parsed = parseNotes(offer.summaryComment);
@@ -353,7 +352,6 @@ function SummaryModal({ offer, onClose, onSummaryUpdate, onCommentUpdate }) {
     try {
       const res = await api.post(`/admin/offers/${offer._id}/ai-summary`);
       setSummary(res.data.aiSummary);
-      setSummaryAt(res.data.aiSummaryAt);
       onSummaryUpdate(offer._id, res.data.aiSummary, res.data.aiSummaryAt);
     } catch {
       setError('Failed to generate. Check OpenAI API key.');
