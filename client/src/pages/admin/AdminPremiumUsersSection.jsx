@@ -254,7 +254,7 @@ export default function AdminPremiumUsersSection() {
     }
   }, []);
 
-  useEffect(() => { load(); }, [load]);
+  useEffect(() => { load(); }, [load]); // eslint-disable-line react-hooks/set-state-in-effect
 
   // Update cached summary in local state after generation
   function handleSummaryUpdate(offerId, aiSummary, aiSummaryAt) {

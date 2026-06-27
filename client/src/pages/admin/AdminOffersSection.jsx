@@ -23,7 +23,7 @@ function FormResponsesModal({ onClose }) {
     }
   }, []);
 
-  useEffect(() => { loadData(); }, [loadData]);
+  useEffect(() => { loadData(); }, [loadData]); // eslint-disable-line react-hooks/set-state-in-effect
 
   const nameKey = headers.find(h => h.toLowerCase().includes('name')) || headers[1] || headers[0];
   const timestampKey = headers.find(h => h.toLowerCase().includes('timestamp')) || headers[0];
@@ -300,19 +300,6 @@ function PortfolioModal({ offerId, onClose }) {
   );
 }
 
-function ScoreBadge({ score }) {
-  const color = score >= 8 ? '#0a7373' : score >= 6 ? '#b8860b' : '#c0392b';
-  const bg    = score >= 8 ? '#e6f7f0' : score >= 6 ? '#fff8e1' : '#fdecea';
-  const label = score >= 8 ? 'Strong'  : score >= 6 ? 'Good'    : 'Needs Work';
-  return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-      <span style={{ fontSize: 26, fontWeight: 800, color, lineHeight: 1 }}>
-        {score}<span style={{ fontSize: 13, fontWeight: 600 }}>/10</span>
-      </span>
-      <span style={{ fontSize: 12, fontWeight: 600, background: bg, color, borderRadius: 6, padding: '3px 10px' }}>{label}</span>
-    </div>
-  );
-}
 
 function SRow({ label, value }) {
   if (!value && value !== 0) return null;
@@ -545,7 +532,6 @@ function SummaryModal({ offer, onClose, onSummaryUpdate, onCommentUpdate }) {
 export default function AdminOffersSection() {
   const [offers, setOffers] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [deletingId, setDeletingId] = useState(null);
   const [selectedOfferId, setSelectedOfferId] = useState(null);
   const [showFormResponses, setShowFormResponses] = useState(false);
   const [summaryOffer, setSummaryOffer] = useState(null);
@@ -563,7 +549,7 @@ export default function AdminOffersSection() {
       try {
         const res = await api.patch(`/admin/offers/${offer._id}/whatsapp-contacted`);
         setOffers(prev => prev.map(o => o._id === offer._id ? { ...o, whatsappContacted: true, whatsappContactedAt: res.data.whatsappContactedAt } : o));
-      } catch {}
+      } catch { /* ignore */ }
     }
   }
 
@@ -579,21 +565,7 @@ export default function AdminOffersSection() {
     try {
       const res = await api.patch(`/admin/offers/${offer._id}/enroll`);
       setOffers(prev => prev.map(o => o._id === offer._id ? { ...o, enrolled: res.data.enrolled, enrolledAt: res.data.enrolledAt } : o));
-    } catch {}
-  }
-
-  async function handleDelete(e, id) {
-    e.stopPropagation();
-    if (!window.confirm('Delete this application?')) return;
-    setDeletingId(id);
-    try {
-      await api.delete(`/admin/offers/${id}`);
-      setOffers(prev => prev.filter(o => o._id !== id));
-    } catch {
-      alert('Failed to delete. Please try again.');
-    } finally {
-      setDeletingId(null);
-    }
+    } catch { /* ignore */ }
   }
 
   function handleSummaryUpdate(offerId, aiSummary, aiSummaryAt) {

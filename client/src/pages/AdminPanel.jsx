@@ -40,7 +40,6 @@ export default function AdminPanel() {
   const [stats, setStats] = useState(null);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [unreadMessages, setUnreadMessages] = useState(0);
-  const [pendingOffers, setPendingOffers] = useState(0);
 const { user, setUser, logout } = useAuth();
   const nav = useNavigate();
   const avatarInputRef = useRef(null);
@@ -63,7 +62,6 @@ const { user, setUser, logout } = useAuth();
   useEffect(() => {
     api.get('/admin/stats').then(res => setStats(res.data)).catch(() => {});
     api.get('/messages').then(res => setUnreadMessages(res.data.unreadCount)).catch(() => {});
-    api.get('/admin/offers/stats').then(res => setPendingOffers(res.data.pending)).catch(() => {});
   }, []);
 
   const navigate = (key) => { setSection(key); setMobileOpen(false); };
