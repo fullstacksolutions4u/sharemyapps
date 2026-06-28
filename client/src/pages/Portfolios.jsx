@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Search, Phone, GitBranch, Link2, Code2,
-  Globe, Layers, ChevronLeft, ChevronRight, Users, Sparkles, Monitor, Smartphone,
+  Globe, Layers, ChevronLeft, ChevronRight, Users, Sparkles, Monitor, Smartphone, Crown,
 } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import api from '../api/axios';
@@ -95,9 +95,18 @@ function DeveloperCard({ dev, idx }) {
           </div>
         )}
         <div className="flex flex-col items-end gap-1">
-          <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full border ${badge.cls}`}>
-            {badge.label}
-          </span>
+          {dev.premiumServices?.length > 0 ? (
+            <Link to="/dashboard?section=premium"
+              className="flex items-center gap-1 text-[10px] font-bold px-2.5 py-1 rounded-full border-0 transition-opacity hover:opacity-80"
+              style={{ background: 'linear-gradient(135deg, #f59e0b, #d97706)', color: '#fff', boxShadow: '0 1px 6px rgba(217,119,6,0.35)' }}>
+              <Crown size={10} />
+              Premium
+            </Link>
+          ) : (
+            <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full border ${badge.cls}`}>
+              {badge.label}
+            </span>
+          )}
           <span className="text-[10px] text-muted">{dev.projects.length} project{dev.projects.length !== 1 ? 's' : ''}</span>
         </div>
       </div>

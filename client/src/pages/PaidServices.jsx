@@ -14,12 +14,12 @@ const FREE_FEATURES = [
 ];
 
 const PREMIUM_FEATURES = [
+  '1:1 Session with Placement Specialist for Job Hunting Guidance',
   'ATS Compatible Resume & Cover letter Optimization',
   'LinkedIn & Job Portal Profile Optimization',
-  '1:1 Session with Placement Specialist for Job Hunting Guidance',
   'Dedicated Placement Officer Support Until You Get Hired',
-  'Mock Interviews with Industry Experts',
-  'Standing out against other applicants',
+  'Mock Interviews with Industry Experts from our community',
+  'Standing out job applications',
 ];
 
 export default function PaidServices() {
