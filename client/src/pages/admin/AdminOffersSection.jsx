@@ -1,114 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import api from '../../api/axios';
 
-function FormResponsesModal({ onClose }) {
-  const [headers, setHeaders] = useState([]);
-  const [rows, setRows] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-  const [search, setSearch] = useState('');
-  const [selected, setSelected] = useState(null);
-
-  const loadData = useCallback(async () => {
-    setLoading(true);
-    setError('');
-    try {
-      const res = await api.get('/admin/form-responses');
-      setHeaders(res.data.headers);
-      setRows(res.data.rows);
-    } catch {
-      setError('Failed to load. Make sure the Google Sheet is set to public viewer.');
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => { loadData(); }, [loadData]); // eslint-disable-line react-hooks/set-state-in-effect
-
-  const nameKey = headers.find(h => h.toLowerCase().includes('name')) || headers[1] || headers[0];
-  const timestampKey = headers.find(h => h.toLowerCase().includes('timestamp')) || headers[0];
-  const filtered = rows.filter(row =>
-    Object.values(row).some(v => v?.toLowerCase?.().includes(search.toLowerCase()))
-  );
-
-  return (
-    <div onClick={onClose} style={{
-      position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)',
-      zIndex: 1001, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16
-    }}>
-      <div onClick={e => e.stopPropagation()} style={{
-        background: '#fff', borderRadius: 16, width: '100%', maxWidth: 1100,
-        maxHeight: '90vh', display: 'flex', flexDirection: 'column', position: 'relative'
-      }}>
-        {/* Modal Header */}
-        <div style={{ padding: '20px 24px 16px', borderBottom: '1px solid #f0f0f0', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexShrink: 0 }}>
-          <div>
-            <div style={{ fontWeight: 700, fontSize: 18, color: '#1a1a1a' }}>Form Responses</div>
-            <div style={{ fontSize: 13, color: '#888', marginTop: 2 }}>{rows.length} total submissions</div>
-          </div>
-          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-            <input
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              placeholder="Search..."
-              style={{ border: '1px solid #e5e7eb', borderRadius: 8, padding: '6px 12px', fontSize: 13, outline: 'none', width: 180 }}
-            />
-            <button onClick={loadData} style={{ border: '1px solid #e5e7eb', borderRadius: 8, padding: '6px 12px', fontSize: 13, background: '#fff', cursor: 'pointer' }}>
-              Refresh
-            </button>
-            <button onClick={onClose} style={{ border: 'none', background: '#f5f5f5', borderRadius: 8, width: 32, height: 32, cursor: 'pointer', fontSize: 16, color: '#666' }}>✕</button>
-          </div>
-        </div>
-
-        {/* Modal Body */}
-        <div style={{ overflowY: 'auto', flex: 1, padding: '12px 16px' }}>
-          {loading ? (
-            <div style={{ textAlign: 'center', padding: 48, color: '#aaa' }}>Loading responses…</div>
-          ) : error ? (
-            <div style={{ textAlign: 'center', padding: 48, color: '#e53e3e', fontSize: 14 }}>{error}</div>
-          ) : filtered.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: 48, color: '#aaa' }}>No responses found.</div>
-          ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 1, background: '#f0f0f0', borderRadius: 10, overflow: 'hidden' }}>
-              {filtered.map((row, i) => (
-                <div key={i} style={{ background: selected === i ? '#f0f8ff' : '#fff', cursor: 'pointer' }}
-                  onClick={() => setSelected(selected === i ? null : i)}
-                  onMouseEnter={e => { if (selected !== i) e.currentTarget.style.background = '#f9f9f9'; }}
-                  onMouseLeave={e => { if (selected !== i) e.currentTarget.style.background = '#fff'; }}
-                >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px' }}>
-                    <span style={{ width: 22, textAlign: 'right', fontSize: 12, color: '#aaa', flexShrink: 0 }}>{i + 1}</span>
-                    <span style={{ width: 30, height: 30, borderRadius: '50%', background: '#dcefed', color: '#0a7373', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 12, flexShrink: 0 }}>
-                      {row[nameKey]?.[0]?.toUpperCase() || '?'}
-                    </span>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontWeight: 600, fontSize: 13, color: '#1a1a1a' }}>{row[nameKey] || '—'}</div>
-                      <div style={{ fontSize: 11, color: '#aaa' }}>{row[timestampKey]}</div>
-                    </div>
-                    <span style={{ fontSize: 11, color: '#0a7373', fontWeight: 500 }}>{selected === i ? 'Hide ▲' : 'View ▼'}</span>
-                  </div>
-                  {selected === i && (
-                    <div style={{ padding: '0 16px 16px 60px', background: '#fafcff' }}>
-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px 32px' }}>
-                        {headers.filter(h => h !== nameKey && h !== timestampKey).map(h => row[h] ? (
-                          <div key={h} style={{ gridColumn: row[h].length > 60 ? '1/-1' : undefined }}>
-                            <div style={{ fontSize: 10, color: '#aaa', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 2 }}>{h}</div>
-                            <div style={{ fontSize: 13, color: '#333', lineHeight: 1.5 }}>{row[h]}</div>
-                          </div>
-                        ) : null)}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-}
-
 function PortfolioModal({ offerId, onClose }) {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -752,35 +644,19 @@ export default function AdminOffersSection() {
   const [selectedOfferId, setSelectedOfferId] = useState(null);
   const [summaryOffer, setSummaryOffer] = useState(null);
 
-  const whatsappMsg = (name) => encodeURIComponent(
-    `Hello ${name}!\n\nI'm Kevin from ShareMyApps Portal. Thank you for applying to Job Hunting Assistance Service!\n\nPlease fill out this quick form to get started the service:\nhttps://forms.gle/DKCift4Pigj48jGP6`
-  );
-
-  async function handleWhatsapp(e, offer) {
-    e.stopPropagation();
-    const phone = offer.user?.phone?.replace(/\D/g, '');
-    if (!phone) return;
-    window.open(`https://wa.me/${phone}?text=${whatsappMsg(offer.user?.name)}`, '_blank');
-    if (!offer.whatsappContacted) {
-      try {
-        const res = await api.patch(`/admin/offers/${offer._id}/whatsapp-contacted`);
-        setOffers(prev => prev.map(o => o._id === offer._id ? { ...o, whatsappContacted: true, whatsappContactedAt: res.data.whatsappContactedAt } : o));
-      } catch { /* ignore */ }
-    }
-  }
-
-  useEffect(() => {
+  const fetchOffers = useCallback(async () => {
     setLoading(true);
     const statusParam = tab === 'approved' ? '&status=approved' : tab === 'rejected' ? '&status=rejected' : '';
-    api.get(`/admin/offers?page=${page}${statusParam}`)
-      .then(r => {
-        setOffers(r.data.offers);
-        setTotalPages(r.data.pages);
-        setTotal(r.data.total);
-      })
-      .catch(() => {})
-      .finally(() => setLoading(false));
+    try {
+      const r = await api.get(`/admin/offers?page=${page}${statusParam}`);
+      setOffers(r.data.offers);
+      setTotalPages(r.data.pages);
+      setTotal(r.data.total);
+    } catch { /* ignore */ }
+    finally { setLoading(false); }
   }, [page, tab]);
+
+  useEffect(() => { fetchOffers(); }, [fetchOffers]);
 
   function handleTabChange(newTab) {
     setTab(newTab);

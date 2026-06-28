@@ -114,7 +114,6 @@ function RequestForm({ serviceKey, onRequested }) {
   const [date, setDate] = useState('');
   const [timeFrom, setTimeFrom] = useState('');
   const [timeTo, setTimeTo] = useState('');
-  const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -139,7 +138,6 @@ function RequestForm({ serviceKey, onRequested }) {
       const res = await api.post(`/premium-services/${serviceKey}/session-request`, {
         availabilityFrom,
         availabilityTo,
-        message,
       });
       onRequested(res.data.session);
     } catch (err) {
