@@ -10,13 +10,16 @@ export default function PlacementSession() {
   const [status, setStatus] = useState(null); // null=loading, false=locked, object=unlocked entry
 
   useEffect(() => {
-    if (!user) { setStatus(false); return; }
-    api.get('/premium-services/my-services')
-      .then(r => {
+    (async () => {
+      if (!user) { setStatus(false); return; }
+      try {
+        const r = await api.get('/premium-services/my-services');
         const match = (r.data.services || []).find(s => s.key === SERVICE_KEY);
         setStatus(match || false);
-      })
-      .catch(() => setStatus(false));
+      } catch {
+        setStatus(false);
+      }
+    })();
   }, [user]);
 
   const loading = status === null;

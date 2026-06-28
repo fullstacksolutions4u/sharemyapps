@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
-import { Lock, Unlock, X } from 'lucide-react';
+import { X } from 'lucide-react';
 import api from '../../api/axios';
 
 function FormResponsesModal({ onClose }) {

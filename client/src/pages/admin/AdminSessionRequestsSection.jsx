@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Video, Clock, X } from 'lucide-react';
 import api from '../../api/axios';
 import toast from 'react-hot-toast';
@@ -155,16 +155,16 @@ export default function AdminSessionRequestsSection() {
   const [filterStatus, setFilterStatus] = useState('all');
   const [scheduling, setScheduling] = useState(null);
 
-  const load = useCallback(async () => {
-    setLoading(true);
-    try {
-      const res = await api.get('/admin/session-requests');
-      setSessions(res.data.sessions || []);
-    } catch { toast.error('Failed to load session requests'); }
-    finally { setLoading(false); }
+  useEffect(() => {
+    (async () => {
+      setLoading(true);
+      try {
+        const res = await api.get('/admin/session-requests');
+        setSessions(res.data.sessions || []);
+      } catch { toast.error('Failed to load session requests'); }
+      finally { setLoading(false); }
+    })();
   }, []);
-
-  useEffect(() => { load(); }, [load]);
 
   const handleSaved = (updated) => {
     setSessions(prev => prev.map(s => s._id === updated._id ? updated : s));
