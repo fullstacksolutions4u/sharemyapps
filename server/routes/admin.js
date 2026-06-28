@@ -1,5 +1,6 @@
 const router = require('express').Router();
 const { protect, requireAdmin } = require('../middleware/auth');
+const User = require('../models/User');
 const {
   getPendingProjects,
   getAllProjects,
@@ -429,6 +430,144 @@ router.get('/premium-users', async (req, res) => {
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
+});
+
+// ── Premium service catalog (admin CRUD) ─────────────────────────────────────
+
+router.get('/premium-services/catalog', async (_req, res) => {
+  try {
+    const PremiumService = require('../models/PremiumService');
+    const services = await PremiumService.find().sort({ number: 1 }).lean();
+    res.json({ services });
+  } catch (err) { res.status(500).json({ message: err.message }); }
+});
+
+router.post('/premium-services/catalog', async (req, res) => {
+  try {
+    const PremiumService = require('../models/PremiumService');
+    const { label, description, bullets, unlockedMessage, active } = req.body;
+    if (!label?.trim()) return res.status(400).json({ message: 'Label is required' });
+    const key = label.trim().toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '');
+    const count = await PremiumService.countDocuments();
+    const service = await PremiumService.create({
+      key,
+      number: count + 1,
+      label: label.trim(),
+      description: description?.trim() || '',
+      bullets: (bullets || []).map(b => b.trim()).filter(Boolean),
+      unlockedMessage: unlockedMessage?.trim() || '',
+      active: active !== false,
+    });
+    res.status(201).json({ service });
+  } catch (err) {
+    if (err.code === 11000) return res.status(409).json({ message: 'A service with this key already exists' });
+    res.status(500).json({ message: err.message });
+  }
+});
+
+router.put('/premium-services/catalog/:id', async (req, res) => {
+  try {
+    const PremiumService = require('../models/PremiumService');
+    const { label, description, bullets, unlockedMessage, active } = req.body;
+    const update = {};
+    if (label !== undefined)            update.label = label.trim();
+    if (description !== undefined)      update.description = description.trim();
+    if (bullets !== undefined)          update.bullets = bullets.map(b => b.trim()).filter(Boolean);
+    if (unlockedMessage !== undefined)  update.unlockedMessage = unlockedMessage.trim();
+    if (active !== undefined)           update.active = active;
+    const service = await PremiumService.findByIdAndUpdate(req.params.id, update, { new: true });
+    if (!service) return res.status(404).json({ message: 'Service not found' });
+    res.json({ service });
+  } catch (err) { res.status(500).json({ message: err.message }); }
+});
+
+router.delete('/premium-services/catalog/:id', async (req, res) => {
+  try {
+    const PremiumService = require('../models/PremiumService');
+    const service = await PremiumService.findByIdAndDelete(req.params.id);
+    if (!service) return res.status(404).json({ message: 'Service not found' });
+    res.json({ message: 'Deleted' });
+  } catch (err) { res.status(500).json({ message: err.message }); }
+});
+
+// ── Per-user premium service unlock / revoke ──────────────────────────────────
+
+router.get('/premium-services/users', async (_req, res) => {
+  try {
+    const FreeOffer = require('../models/FreeOffer');
+    const offers = await FreeOffer.find()
+      .populate('user', 'name email avatar regNumber designations premiumServices isDeleted')
+      .sort({ createdAt: -1 })
+      .lean();
+    const users = offers
+      .filter(o => o.user && !o.user.isDeleted)
+      .map(o => ({ ...o.user, appliedAt: o.createdAt, enrolled: o.enrolled }));
+    res.json({ users });
+  } catch (err) { res.status(500).json({ message: err.message }); }
+});
+
+router.get('/premium-services/:userId/services', async (req, res) => {
+  try {
+    const user = await User.findById(req.params.userId).select('premiumServices').lean();
+    if (!user) return res.status(404).json({ message: 'User not found' });
+    res.json({ premiumServices: user.premiumServices || [] });
+  } catch (err) { res.status(500).json({ message: err.message }); }
+});
+
+router.post('/premium-services/:userId/unlock', async (req, res) => {
+  try {
+    const { key, notes } = req.body;
+    if (!key) return res.status(400).json({ message: 'Service key is required' });
+    const user = await User.findById(req.params.userId);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+    const already = user.premiumServices.find(s => s.key === key);
+    if (already) return res.status(409).json({ message: 'Service already unlocked for this user' });
+    user.premiumServices.push({ key, notes: notes || '', unlockedBy: req.user._id });
+    await user.save();
+    res.json({ premiumServices: user.premiumServices });
+  } catch (err) { res.status(500).json({ message: err.message }); }
+});
+
+router.delete('/premium-services/:userId/revoke/:key', async (req, res) => {
+  try {
+    const user = await User.findById(req.params.userId);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+    const before = user.premiumServices.length;
+    user.premiumServices = user.premiumServices.filter(s => s.key !== req.params.key);
+    if (user.premiumServices.length === before) return res.status(404).json({ message: 'Service not found on this user' });
+    await user.save();
+    res.json({ premiumServices: user.premiumServices });
+  } catch (err) { res.status(500).json({ message: err.message }); }
+});
+
+// ── Session Requests ─────────────────────────────────────────────────────────
+
+router.get('/session-requests', async (_req, res) => {
+  try {
+    const SessionRequest = require('../models/SessionRequest');
+    const sessions = await SessionRequest.find()
+      .populate('user', 'name email avatar')
+      .sort({ createdAt: -1 })
+      .lean();
+    res.json({ sessions });
+  } catch (err) { res.status(500).json({ message: err.message }); }
+});
+
+router.put('/session-requests/:id', async (req, res) => {
+  try {
+    const SessionRequest = require('../models/SessionRequest');
+    const { meetLink, scheduledAt, status, adminNotes, instructions, completionFeedback } = req.body;
+    const update = {};
+    if (meetLink !== undefined)            update.meetLink = meetLink.trim();
+    if (scheduledAt !== undefined)         update.scheduledAt = scheduledAt ? new Date(scheduledAt) : null;
+    if (status !== undefined)              update.status = status;
+    if (adminNotes !== undefined)          update.adminNotes = adminNotes.trim();
+    if (instructions !== undefined)        update.instructions = instructions.trim();
+    if (completionFeedback !== undefined)  update.completionFeedback = completionFeedback.trim();
+    const session = await SessionRequest.findByIdAndUpdate(req.params.id, update, { new: true }).populate('user', 'name email avatar');
+    if (!session) return res.status(404).json({ message: 'Session request not found' });
+    res.json({ session });
+  } catch (err) { res.status(500).json({ message: err.message }); }
 });
 
 // Google Form responses (public sheet CSV export)

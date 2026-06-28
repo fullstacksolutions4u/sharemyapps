@@ -7,7 +7,7 @@ import {
   Crown, UserCircle, LogOut, Menu, X, Plus, Share2,
   Pencil, Trash2, ExternalLink, Clock, CheckCircle, XCircle,
   AlertCircle, Copy, Check, Eye, EyeOff, Heart, Star, ChevronRight,
-  Gamepad2,
+  Gamepad2, Lock,
 } from 'lucide-react';
 import CoinIcon from '../components/common/AnimatedCoin';
 import api from '../api/axios';
@@ -21,15 +21,17 @@ import Feedback from './Feedback';
 import PaidServices from './PaidServices';
 import Profile from './Profile';
 import LearningTracker from './LearningTracker';
+import Services from './Services';
 
 const NAV = [
-  { key: 'profile',       label: 'Profile',              icon: UserCircle },
-  { key: 'projects',      label: 'My Projects',          icon: FolderOpen },
-  { key: 'messages',      label: 'Messages',             icon: MessageSquare },
-  { key: 'notifications', label: 'Notifications',        icon: Bell },
-  { key: 'feedback',      label: 'Feedback',             icon: Lightbulb },
-  { key: 'tick2test',     label: 'Quiz Zone',            icon: Gamepad2 },
-  { key: 'premium',       label: 'Premium Services',     icon: Crown },
+  { key: 'profile',            label: 'Profile',               icon: UserCircle },
+  { key: 'projects',           label: 'My Projects',           icon: FolderOpen },
+  { key: 'messages',           label: 'Messages',              icon: MessageSquare },
+  { key: 'notifications',      label: 'Notifications',         icon: Bell },
+  { key: 'feedback',           label: 'Feedback',              icon: Lightbulb },
+  { key: 'tick2test',          label: 'Quiz Zone',             icon: Gamepad2 },
+  { key: 'premium',   label: 'Premium Services', icon: Crown },
+  { key: 'services',  label: 'Services',         icon: Lock, isPremiumService: true },
 ];
 
 const PLACEHOLDER = 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=400&q=80';
@@ -396,7 +398,7 @@ export default function Dashboard() {
               }`}
             >
               <Icon size={15} className={
-                key === 'premium' ? (section === key ? '' : 'text-amber-500') :
+                key === 'premium' || key === 'services' ? (section === key ? '' : 'text-amber-500') :
                 key === 'tick2test' ? 'text-green-600' : ''
               } />
               {label}
@@ -443,9 +445,10 @@ export default function Dashboard() {
               {section === 'projects'      && <ProjectsSection user={user} confirm={confirm} queryClient={queryClient} setShowShare={setShowShare} />}
               {section === 'messages'      && <Messages />}
               {section === 'notifications' && <Notifications />}
-              {section === 'feedback'      && <Feedback />}
-              {section === 'premium'       && <PaidServices />}
-              {section === 'profile'       && <Profile />}
+              {section === 'feedback'           && <Feedback />}
+              {section === 'premium'   && <PaidServices />}
+              {section === 'services'  && <Services />}
+              {section === 'profile'            && <Profile />}
               {section === 'tick2test'     && <LearningTracker embedded />}
             </>
           )}

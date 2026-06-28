@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 
+const FREE_OFFER_DEADLINE = new Date('2026-06-30T23:59:59');
+
 const FREE_FEATURES = [
   'Recruiter Direct Hiring',
   'Apply to Jobs',
@@ -24,23 +26,14 @@ export default function PaidServices() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [freeOffer, setFreeOffer] = useState(null);
-  const [offerConfig, setOfferConfig] = useState(null);
   const [applyLoading, setApplyLoading] = useState(false);
   const [applyError, setApplyError] = useState('');
 
-  useEffect(() => {
-    const fetchConfig = () => api.get('/offers/config').then(r => setOfferConfig(r.data)).catch(() => {});
-    fetchConfig();
-    const onFocus = () => fetchConfig();
-    window.addEventListener('focus', onFocus);
-    return () => window.removeEventListener('focus', onFocus);
-  }, []);
+  const freeOfferActive = new Date() <= FREE_OFFER_DEADLINE;
 
   useEffect(() => {
     if (!user) return;
-    api.get('/offers/my-offer')
-      .then(r => setFreeOffer(r.data))
-      .catch(() => {});
+    api.get('/offers/my-offer').then(r => setFreeOffer(r.data)).catch(() => {});
   }, [user]);
 
   const handleApplyFreeOffer = async () => {
@@ -58,24 +51,6 @@ export default function PaidServices() {
   };
 
   const renderPremiumButton = () => {
-    if (offerConfig === null) return null; // still loading
-
-    if (!offerConfig.freeOfferEnabled) {
-      return (
-        <button
-          disabled
-          style={{
-            marginTop: '26px', width: '100%', background: '#0c8c8c', color: '#fff',
-            border: 'none', borderRadius: '8px', padding: '14px', fontSize: '13.5px',
-            fontWeight: 700, letterSpacing: '.02em', fontFamily: "'Manrope', sans-serif",
-            cursor: 'default',
-          }}
-        >
-          Get Started
-        </button>
-      );
-    }
-
     if (freeOffer) {
       return (
         <div style={{
@@ -92,28 +67,39 @@ export default function PaidServices() {
       );
     }
 
-    const dueDateLabel = offerConfig?.freeOfferDueDate
-      ? new Date(offerConfig.freeOfferDueDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', timeZone: 'UTC' })
-      : 'June 30';
+    if (freeOfferActive) {
+      return (
+        <div style={{ marginTop: '26px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          <button
+            onClick={handleApplyFreeOffer}
+            disabled={applyLoading}
+            style={{
+              width: '100%', background: '#0c8c8c', color: '#fff', border: 'none',
+              borderRadius: '8px', padding: '14px', fontSize: '13.5px', fontWeight: 700,
+              letterSpacing: '.02em', fontFamily: "'Manrope', sans-serif",
+              cursor: applyLoading ? 'default' : 'pointer', opacity: applyLoading ? 0.6 : 1,
+            }}
+          >
+            {applyLoading ? 'Applying…' : 'Reserve Your Free Spot Before June 30'}
+          </button>
+          {applyError && (
+            <p style={{ fontSize: '12px', color: '#c0392b', margin: 0, textAlign: 'center' }}>{applyError}</p>
+          )}
+        </div>
+      );
+    }
 
     return (
-      <div style={{ marginTop: '26px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-        <button
-          onClick={handleApplyFreeOffer}
-          disabled={applyLoading}
-          style={{
-            width: '100%', background: '#0c8c8c', color: '#fff', border: 'none',
-            borderRadius: '8px', padding: '14px', fontSize: '13.5px', fontWeight: 700,
-            letterSpacing: '.02em', fontFamily: "'Manrope', sans-serif",
-            cursor: applyLoading ? 'default' : 'pointer', opacity: applyLoading ? 0.6 : 1,
-          }}
-        >
-          {applyLoading ? 'Applying…' : `Reserve Your Free Spot Before ${dueDateLabel}`}
-        </button>
-        {applyError && (
-          <p style={{ fontSize: '12px', color: '#c0392b', margin: 0, textAlign: 'center' }}>{applyError}</p>
-        )}
-      </div>
+      <button
+        onClick={() => navigate(user ? '/dashboard' : '/register')}
+        style={{
+          marginTop: '26px', width: '100%', background: '#0c8c8c', color: '#fff',
+          border: 'none', borderRadius: '8px', padding: '14px', fontSize: '13.5px',
+          fontWeight: 700, letterSpacing: '.02em', fontFamily: "'Manrope', sans-serif", cursor: 'pointer',
+        }}
+      >
+        Get Started — ₹999
+      </button>
     );
   };
 
@@ -140,16 +126,9 @@ export default function PaidServices() {
 
         {/* Banner */}
         <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: '6px',
-          background: '#f0f6f5',
-          borderBottom: '1px solid #e2ecea',
-          padding: '12px 24px',
-          fontSize: '13.5px',
-          color: '#4a6663',
-          flexWrap: 'wrap',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
+          background: '#f0f6f5', borderBottom: '1px solid #e2ecea',
+          padding: '12px 24px', fontSize: '13.5px', color: '#4a6663', flexWrap: 'wrap',
         }}>
           <span>Secure a high-paying job and get hired ⚡</span>
           <span style={{ fontWeight: 800, color: '#0a7373' }}>4x faster</span>
@@ -160,12 +139,7 @@ export default function PaidServices() {
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.15fr' }}>
 
           {/* Free */}
-          <div style={{
-            padding: '32px 30px',
-            display: 'flex',
-            flexDirection: 'column',
-            borderRight: '1px solid #eef2f0',
-          }}>
+          <div style={{ padding: '32px 30px', display: 'flex', flexDirection: 'column', borderRight: '1px solid #eef2f0' }}>
             <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: '4px' }}>
               <span style={{ fontFamily: "'Spectral', serif", fontSize: '25px', fontWeight: 600, color: '#243433' }}>Free</span>
               <span style={{ fontFamily: "'Spectral', serif", fontSize: '18px', fontWeight: 600, color: '#9aa6a4' }}>₹0</span>
@@ -182,18 +156,9 @@ export default function PaidServices() {
             <button
               onClick={() => navigate(user ? '/dashboard' : '/register')}
               style={{
-                marginTop: '26px',
-                width: '100%',
-                background: '#243433',
-                color: '#fff',
-                border: 'none',
-                borderRadius: '8px',
-                padding: '14px',
-                fontSize: '13.5px',
-                fontWeight: 700,
-                letterSpacing: '.02em',
-                fontFamily: "'Manrope', sans-serif",
-                cursor: 'pointer',
+                marginTop: '26px', width: '100%', background: '#243433', color: '#fff',
+                border: 'none', borderRadius: '8px', padding: '14px', fontSize: '13.5px',
+                fontWeight: 700, letterSpacing: '.02em', fontFamily: "'Manrope', sans-serif", cursor: 'pointer',
               }}
             >
               Get Started for Free
@@ -201,23 +166,26 @@ export default function PaidServices() {
           </div>
 
           {/* Premium */}
-          <div style={{
-            padding: '32px 30px',
-            display: 'flex',
-            flexDirection: 'column',
-            background: '#f5faf9',
-          }}>
+          <div style={{ padding: '32px 30px', display: 'flex', flexDirection: 'column', background: '#f5faf9' }}>
             <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: '4px' }}>
               <div style={{ display: 'flex', alignItems: 'baseline', gap: '10px' }}>
                 <span style={{ fontFamily: "'Spectral', serif", fontSize: '25px', fontWeight: 600, color: '#243433' }}>Premium</span>
                 <span style={{
                   fontSize: '10px', fontWeight: 800, letterSpacing: '.1em', textTransform: 'uppercase',
                   color: '#0a7373', background: '#dcefed', borderRadius: '999px', padding: '3px 9px',
-                }}>Popular</span>
+                }}>
+                  Popular
+                </span>
               </div>
               <span style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
-                <span style={{ fontFamily: "'Spectral', serif", fontSize: '18px', fontWeight: 600, color: '#9aa6a4', textDecoration: 'line-through' }}>₹999</span>
-                <span style={{ fontFamily: "'Spectral', serif", fontSize: '22px', fontWeight: 700, color: '#0a7373' }}>₹0</span>
+                {freeOfferActive && (
+                  <span style={{ fontFamily: "'Spectral', serif", fontSize: '18px', fontWeight: 600, color: '#9aa6a4', textDecoration: 'line-through' }}>
+                    ₹999
+                  </span>
+                )}
+                <span style={{ fontFamily: "'Spectral', serif", fontSize: '22px', fontWeight: 700, color: freeOfferActive ? '#0a7373' : '#243433' }}>
+                  {freeOfferActive ? '₹0' : '₹999'}
+                </span>
               </span>
             </div>
             <div style={{ height: '2px', background: '#0c8c8c', margin: '14px 0 18px' }} />
@@ -235,16 +203,10 @@ export default function PaidServices() {
           </div>
         </div>
 
-        {/* Footer */}
-        {offerConfig !== null && !offerConfig.freeOfferEnabled && (
+        {!freeOfferActive && (
           <div style={{
-            textAlign: 'center',
-            padding: '14px 24px',
-            borderTop: '1px solid #eef2f0',
-            fontFamily: "'Spectral', serif",
-            fontStyle: 'italic',
-            fontSize: '13px',
-            color: '#8f9594',
+            textAlign: 'center', padding: '14px 24px', borderTop: '1px solid #eef2f0',
+            fontFamily: "'Spectral', serif", fontStyle: 'italic', fontSize: '13px', color: '#8f9594',
           }}>
             ₹999 Premium Plan · Money-back guarantee if not placed within 2 months
           </div>

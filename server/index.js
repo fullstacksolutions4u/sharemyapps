@@ -27,6 +27,7 @@ const offerRoutes = require('./routes/offers');
 const learningModuleRoutes = require('./routes/learningModules');
 const learningProgressRoutes = require('./routes/learningProgress');
 const learningFeedbackRoutes = require('./routes/learningFeedback');
+const premiumServicesRoutes = require('./routes/premiumServices');
 
 const app = express();
 
@@ -70,6 +71,7 @@ app.use('/api/offers', generalLimiter, offerRoutes);
 app.use('/api/learning-modules', generalLimiter, learningModuleRoutes);
 app.use('/api/learning-progress', generalLimiter, learningProgressRoutes);
 app.use('/api/learning-feedback', generalLimiter, learningFeedbackRoutes);
+app.use('/api/premium-services', generalLimiter, premiumServicesRoutes);
 
 app.get('/api/health', (_req, res) => res.json({ status: 'ok' }));
 

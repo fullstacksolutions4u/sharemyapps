@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import {
   LayoutDashboard, FolderOpen, ShieldCheck, Menu, LogOut,
-  Users, Briefcase, FileText, Megaphone, MessageSquare, Camera, IndianRupee, Settings, Crown, BookOpen,
+  Users, Briefcase, FileText, Megaphone, MessageSquare, Camera, IndianRupee, Crown, BookOpen, Unlock,
 } from 'lucide-react';
 import api from '../api/axios';
 import AdminOverview from './admin/AdminOverview';
@@ -14,23 +14,22 @@ import AdminMessagesSection from './admin/AdminMessagesSection';
 import AdminOpportunitiesSection from './admin/AdminOpportunitiesSection';
 import AdminResumesSection from './admin/AdminResumesSection';
 import AdminPaymentsSection from './admin/AdminPaymentsSection';
-import AdminPlansSection from './admin/AdminPlansSection';
 import AdminVacanciesSection from './admin/AdminVacanciesSection';
 import AdminOffersSection from './admin/AdminOffersSection';
 import AdminLearningSection from './admin/AdminLearningSection';
+import AdminPremiumServicesSection from './admin/AdminPremiumServicesSection';
 
 const NAV = [
   { key: 'overview',       label: 'Overview',        icon: LayoutDashboard },
   { key: 'projects',       label: 'Projects',         icon: FolderOpen },
   { key: 'users',          label: 'Users',            icon: Users },
   { key: 'opportunities',  label: 'Opportunities',    icon: Briefcase },
-  { key: 'resumes',        label: 'Resumes',          icon: FileText },
   { key: 'announcements',  label: 'Announcements',    icon: Megaphone },
+  { key: 'learning',       label: 'Quiz Zone',        icon: BookOpen },
   { key: 'messages',       label: 'Messages',         icon: MessageSquare },
   { key: 'payments',       label: 'Payments',         icon: IndianRupee },
-  { key: 'plans',          label: 'Plans & Pricing',  icon: Settings },
-  { key: 'offers',         label: 'Premium Services',  icon: Crown },
-  { key: 'learning',       label: 'Quiz Zone',           icon: BookOpen },
+{ key: 'offers',          label: 'Summary',        icon: Crown },
+  { key: 'service_access', label: 'Service Access', icon: Unlock },
 ];
 
 export default function AdminPanel() {
@@ -157,8 +156,8 @@ const { user, setUser, logout } = useAuth();
           {section === 'announcements'    && <AdminAnnouncementsSection />}
           {section === 'messages'         && <AdminMessagesSection onUnreadChange={setUnreadMessages} />}
           {section === 'payments'         && <AdminPaymentsSection />}
-          {section === 'plans'            && <AdminPlansSection />}
           {section === 'offers'           && <AdminOffersSection />}
+          {section === 'service_access'   && <AdminPremiumServicesSection />}
           {section === 'learning'         && <AdminLearningSection />}
         </div>
       </div>

@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
+import { Lock, Unlock, X } from 'lucide-react';
 import api from '../../api/axios';
 
 function FormResponsesModal({ onClose }) {
@@ -740,6 +741,8 @@ function SummaryModal({ offer, onClose, onSummaryUpdate, onCommentUpdate }) {
   );
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+
 export default function AdminOffersSection() {
   const [offers, setOffers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -800,7 +803,6 @@ export default function AdminOffersSection() {
       {summaryOffer && (
         <SummaryModal offer={summaryOffer} onClose={() => setSummaryOffer(null)} onSummaryUpdate={handleSummaryUpdate} onCommentUpdate={handleCommentUpdate} />
       )}
-
       {/* Top bar */}
       <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginBottom: 16 }}>
         <button
@@ -823,7 +825,7 @@ export default function AdminOffersSection() {
               style={{
                 background: '#fff', padding: '14px 18px',
                 display: 'grid',
-                gridTemplateColumns: '28px 34px 1fr 1fr 120px 90px 110px 100px 36px',
+                gridTemplateColumns: '28px 34px 1fr 1fr 120px 90px 80px 110px 100px 36px',
                 alignItems: 'center', gap: '12px',
                 cursor: 'pointer', transition: 'background 0.15s',
               }}

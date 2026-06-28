@@ -70,6 +70,13 @@ const userSchema = new mongoose.Schema({
   // Tick2Test learning tracker fields
   points: { type: Number, default: 0 },
   badges: [{ type: String }],
+  // Premium services unlocked per user by admin
+  premiumServices: [{
+    key:        { type: String, required: true },
+    unlockedAt: { type: Date, default: Date.now },
+    unlockedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    notes:      { type: String, default: '' },
+  }],
 }, { timestamps: true });
 
 userSchema.index({ userType: 1, hidden: 1, isDeleted: 1 });

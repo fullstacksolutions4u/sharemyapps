@@ -52,14 +52,18 @@ function PlacementPlansEditor({ onBack }) {
   }, []);
 
   const openEdit = (plan) => {
-    setForm({ name: plan.name, price: plan.price, active: plan.active });
+    setForm({ name: plan.name, price: plan.price, active: plan.active, features: plan.features || [] });
     setEditing(plan._id);
   };
 
   const openNew = () => {
-    setForm({ name: '', price: '', active: true });
+    setForm({ name: '', price: '', active: true, features: [] });
     setEditing('new');
   };
+
+  const addFeature = () => setForm(p => ({ ...p, features: [...(p.features || []), ''] }));
+  const updateFeature = (i, val) => setForm(p => ({ ...p, features: p.features.map((f, idx) => idx === i ? val : f) }));
+  const removeFeature = (i) => setForm(p => ({ ...p, features: p.features.filter((_, idx) => idx !== i) }));
 
   const handleSave = async () => {
     if (!form.name.trim() || form.price === '') return toast.error('Name and price are required');
@@ -164,6 +168,37 @@ function PlacementPlansEditor({ onBack }) {
             <button onClick={() => setForm(p => ({ ...p, active: !p.active }))} className="text-accent">
               {form.active ? <ToggleRight size={32} /> : <ToggleLeft size={32} className="text-muted" />}
             </button>
+          </div>
+
+          {/* Features */}
+          <div className="bg-white border border-border rounded-2xl px-5 py-4">
+            <div className="flex items-center justify-between mb-3">
+              <div>
+                <p className="text-sm font-semibold text-text">Features</p>
+                <p className="text-xs text-muted mt-0.5">Bullet points shown on the pricing card</p>
+              </div>
+              <button onClick={addFeature} className="flex items-center gap-1.5 text-xs font-semibold text-accent hover:text-accent-hover transition-colors">
+                <Plus size={13} /> Add
+              </button>
+            </div>
+            <div className="space-y-2">
+              {(form.features || []).map((f, i) => (
+                <div key={i} className="flex items-center gap-2">
+                  <input
+                    value={f}
+                    onChange={e => updateFeature(i, e.target.value)}
+                    placeholder="Feature description…"
+                    className="flex-1 border border-border rounded-xl px-3 py-2 text-sm text-text focus:outline-none focus:border-accent"
+                  />
+                  <button onClick={() => removeFeature(i)} className="w-7 h-7 flex items-center justify-center rounded-lg border border-border text-muted hover:text-red-500 hover:border-red-300 transition-colors shrink-0">
+                    <Trash2 size={12} />
+                  </button>
+                </div>
+              ))}
+              {(form.features || []).length === 0 && (
+                <p className="text-xs text-muted italic py-1">No features yet. Click Add to create one.</p>
+              )}
+            </div>
           </div>
         </div>
       </div>
