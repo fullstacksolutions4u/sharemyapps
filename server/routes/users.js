@@ -259,7 +259,16 @@ router.get('/candidates', protect, async (req, res) => {
           role: { $ne: 'admin' },
           hidden: { $ne: true },
           isDeleted: { $ne: true },
-          cvUrl: { $exists: true, $nin: ['', null] },
+          $and: [
+            { cvUrl: { $exists: true, $nin: ['', null] } },
+            { cvUrl: { $not: /^(https?:\/\/)?drive\.google\.com\/?$/i } },
+            { $nor: [{
+              'resumeData.summary': 'empty',
+              'resumeData.skills.0': { $exists: false },
+              'resumeData.techStack.0': { $exists: false },
+              'resumeData.experience.0': { $exists: false },
+            }] },
+          ],
         },
       },
       {
@@ -553,7 +562,15 @@ router.post('/find-developers', protect, jdQuota, aiLimit, async (req, res) => {
         }
       : () => true;
 
+    const isEmptySummaryPlaceholder = dev =>
+      dev.resumeData &&
+      dev.resumeData.summary === 'empty' &&
+      !dev.resumeData.skills?.length &&
+      !dev.resumeData.techStack?.length &&
+      !dev.resumeData.experience?.length;
+
     const hasValidResume = dev => {
+      if (isEmptySummaryPlaceholder(dev)) return false;
       const cv = (dev.cvUrl || '').trim();
       const hasUploadedCv = cv.length > 0 && !cv.includes('drive.google.com');
       const hasJsonResume = dev.resumeData && (
@@ -568,7 +585,7 @@ router.post('/find-developers', protect, jdQuota, aiLimit, async (req, res) => {
       projectMap[dev._id.toString()]?.count > 0 || hasValidResume(dev);
 
     const scored = developers
-      .filter(dev => hasProfileData(dev) && locationFilter(dev) && hasValidResume(dev))
+      .filter(dev => !isEmptySummaryPlaceholder(dev) && hasProfileData(dev) && locationFilter(dev) && hasValidResume(dev))
       .map(dev => {
         const pid = dev._id.toString();
         const toArr = v => Array.isArray(v) ? v : (v && typeof v === 'object' ? Object.values(v).flat() : []);
