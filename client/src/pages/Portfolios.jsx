@@ -96,7 +96,7 @@ function DeveloperCard({ dev, idx }) {
         )}
         <div className="flex flex-col items-end gap-1">
           {dev.premiumServices?.length > 0 ? (
-            <Link to="/dashboard?section=premium"
+            <Link to="/dashboard/premium"
               className="flex items-center gap-1 text-[10px] font-bold px-2.5 py-1 rounded-full border-0 transition-opacity hover:opacity-80"
               style={{ background: 'linear-gradient(135deg, #f59e0b, #d97706)', color: '#fff', boxShadow: '0 1px 6px rgba(217,119,6,0.35)' }}>
               <Crown size={10} />

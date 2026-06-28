@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { useNavigate, useOutlet, useSearchParams } from 'react-router-dom';
+import { useNavigate, useOutlet, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard, FolderOpen, MessageSquare, Bell, Lightbulb,
   Crown, UserCircle, LogOut, Menu, X, Plus, Share2,
@@ -14,14 +14,6 @@ import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
 import { useConfirm } from '../context/ConfirmContext';
-
-import Messages from './Messages';
-import Notifications from './Notifications';
-import Feedback from './Feedback';
-import PaidServices from './PaidServices';
-import Profile from './Profile';
-import LearningTracker from './LearningTracker';
-import Services from './Services';
 
 const NAV = [
   { key: 'profile',            label: 'Profile',               icon: UserCircle },
@@ -345,16 +337,10 @@ export default function Dashboard() {
   const queryClient = useQueryClient();
   const nav = useNavigate();
   const outlet = useOutlet();
-  const [searchParams] = useSearchParams();
-  const [section, setSection] = useState(() => searchParams.get('section') || 'profile');
+  const location = useLocation();
+  const activeSection = location.pathname.split('/').filter(Boolean)[1] || 'projects';
   const [mobileOpen, setMobileOpen] = useState(false);
   const [offerApproved, setOfferApproved] = useState(false);
-
-  useEffect(() => {
-    const s = searchParams.get('section');
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    if (s) setSection(s);
-  }, [searchParams]);
 
   useEffect(() => {
     if (!user) return;
@@ -371,9 +357,8 @@ export default function Dashboard() {
     nav('/');
   };
 
-  const navigate = (key, href) => {
-    if (href) { nav(href); return; }
-    setSection(key);
+  const handleNav = (key) => {
+    nav(key === 'projects' ? '/dashboard' : `/dashboard/${key}`);
     setMobileOpen(false);
   };
 
@@ -396,23 +381,22 @@ export default function Dashboard() {
         </div>
 
         <nav className="flex-1 px-3 py-4 space-y-1.5 overflow-y-auto">
-          {NAV.filter(item => !item.isPremiumService || offerApproved).map(({ key, label, icon: Icon, href }) => (
+          {NAV.filter(item => !item.isPremiumService || offerApproved).map(({ key, label, icon: Icon }) => (
             <button
               key={key}
-              onClick={() => navigate(key, href)}
+              onClick={() => handleNav(key)}
               className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors text-left ${
-                (section === key && !outlet) || (outlet && key === 'projects')
+                activeSection === key
                   ? 'bg-accent-light text-accent'
                   : 'text-muted hover:bg-[#F3F0EB] hover:text-text'
               }`}
             >
               <Icon size={15} className={
-                key === 'premium' || key === 'services' ? (section === key ? '' : 'text-amber-500') :
+                key === 'premium' || key === 'services' ? (activeSection === key ? '' : 'text-amber-500') :
                 key === 'tick2test' ? 'text-green-600' : ''
               } />
               {label}
               {key === 'tick2test' && <CoinIcon className="w-3.5 h-3.5" />}
-              {href && <ExternalLink size={11} className="ml-auto opacity-40" />}
             </button>
           ))}
         </nav>
@@ -445,22 +429,11 @@ export default function Dashboard() {
           <button onClick={() => setMobileOpen(true)} className="p-1.5 text-muted hover:text-text transition-colors">
             <Menu size={18} />
           </button>
-          <span className="text-sm font-semibold text-text">{NAV.find(n => n.key === section)?.label || section}</span>
+          <span className="text-sm font-semibold text-text">{NAV.find(n => n.key === activeSection)?.label || activeSection}</span>
         </div>
 
         <div className="flex-1 overflow-y-auto">
-          {outlet ? outlet : (
-            <>
-              {section === 'projects'      && <ProjectsSection user={user} confirm={confirm} queryClient={queryClient} setShowShare={setShowShare} />}
-              {section === 'messages'      && <Messages />}
-              {section === 'notifications' && <Notifications />}
-              {section === 'feedback'           && <Feedback />}
-              {section === 'premium'   && <PaidServices />}
-              {section === 'services'  && <Services />}
-              {section === 'profile'            && <Profile />}
-              {section === 'tick2test'     && <LearningTracker embedded />}
-            </>
-          )}
+          {outlet || <ProjectsSection user={user} confirm={confirm} queryClient={queryClient} setShowShare={setShowShare} />}
         </div>
       </div>
     </div>

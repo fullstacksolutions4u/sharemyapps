@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
+import toast from 'react-hot-toast';
 
 const FREE_OFFER_DEADLINE = new Date('2026-06-30T23:59:59');
 
@@ -43,8 +44,11 @@ export default function PaidServices() {
     try {
       const res = await api.post('/offers/apply');
       setFreeOffer(res.data);
+      toast.success('You\'re registered! Our executive will contact you within 2 days.');
     } catch (err) {
-      setApplyError(err.response?.data?.message || 'Failed to apply. Please try again.');
+      const msg = err.response?.data?.message || 'Failed to apply. Please try again.';
+      setApplyError(msg);
+      toast.error(msg);
     } finally {
       setApplyLoading(false);
     }
@@ -111,7 +115,7 @@ export default function PaidServices() {
       flexDirection: 'column',
       alignItems: 'center',
       justifyContent: 'center',
-      padding: '48px 24px',
+      padding: '0 24px 24px',
       fontFamily: "'Manrope', system-ui, sans-serif",
     }}>
       <div style={{

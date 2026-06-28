@@ -349,7 +349,7 @@ exports.sendJobApplicationEmail = async ({ to, name, vacancy }) => {
                 </a>
               </td>
               <td style="padding:0 0 0 6px;">
-                <a href="${BASE_URL}/dashboard?section=tick2test" style="display:block;text-align:center;background:#7C3AED;color:#fff;text-decoration:none;padding:11px 10px;border-radius:8px;font-weight:600;font-size:13px;">
+                <a href="${BASE_URL}/dashboard/tick2test" style="display:block;text-align:center;background:#7C3AED;color:#fff;text-decoration:none;padding:11px 10px;border-radius:8px;font-weight:600;font-size:13px;">
                   Quiz Zone
                 </a>
               </td>
@@ -357,7 +357,7 @@ exports.sendJobApplicationEmail = async ({ to, name, vacancy }) => {
             <tr><td colspan="3" style="height:10px;"></td></tr>
             <tr>
               <td colspan="3">
-                <a href="${BASE_URL}/dashboard?section=premium" style="display:block;text-align:center;background:linear-gradient(135deg,#F59E0B 0%,#D97706 100%);color:#fff;text-decoration:none;padding:12px 10px;border-radius:8px;font-weight:700;font-size:13px;">
+                <a href="${BASE_URL}/dashboard/premium" style="display:block;text-align:center;background:linear-gradient(135deg,#F59E0B 0%,#D97706 100%);color:#fff;text-decoration:none;padding:12px 10px;border-radius:8px;font-weight:700;font-size:13px;">
                   ✨ Explore Premium Services
                 </a>
               </td>

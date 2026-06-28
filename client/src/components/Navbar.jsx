@@ -41,7 +41,7 @@ function MessagesBadge() {
   const unread = data?.unreadCount || 0;
 
   return (
-    <Link to="/dashboard?section=messages" className="relative p-1.5 text-muted hover:text-text transition-colors">
+    <Link to="/dashboard/messages" className="relative p-1.5 text-muted hover:text-text transition-colors">
       <MessageSquare size={18} />
       {unread > 0 && (
         <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-accent text-white text-[10px] font-bold flex items-center justify-center rounded-full">
@@ -162,7 +162,7 @@ function NotificationBell() {
 
           <div className="px-4 py-2.5 border-t border-border">
             <Link
-              to="/dashboard?section=notifications"
+              to="/dashboard/notifications"
               onClick={() => setOpen(false)}
               className="block text-center text-xs text-accent hover:text-accent-hover font-medium transition-colors"
             >
@@ -193,7 +193,7 @@ function CoinsRankBadge() {
   if (!user || !data || !data.userRank) return null;
 
   return (
-    <Link to="/dashboard?section=tick2test" className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold" style={{ backgroundColor: '#FFF8E8', border: '1px solid rgba(201,169,110,0.4)' }}>
+    <Link to="/dashboard/tick2test" className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold" style={{ backgroundColor: '#FFF8E8', border: '1px solid rgba(201,169,110,0.4)' }}>
       <Trophy size={11} className="text-amber-500" />
       <span className="text-amber-600">#{data.userRank}</span>
     </Link>
@@ -261,7 +261,7 @@ export default function Navbar() {
           {!isRecruiter && !isClient && !isMentee && !isMentor && (
             <>
               <Link to="/opportunities" className="relative text-base text-muted hover:text-text transition-colors after:absolute after:left-0 after:-bottom-0.5 after:h-[1.5px] after:w-0 after:bg-accent after:transition-[width] after:duration-300 hover:after:w-full">Job Opportunities</Link>
-              <Link to="/dashboard?section=tick2test" className="relative text-base text-muted hover:text-text transition-colors after:absolute after:left-0 after:-bottom-0.5 after:h-[1.5px] after:w-0 after:bg-accent after:transition-[width] after:duration-300 hover:after:w-full">Quiz Zone</Link>
+              <Link to="/dashboard/tick2test" className="relative text-base text-muted hover:text-text transition-colors after:absolute after:left-0 after:-bottom-0.5 after:h-[1.5px] after:w-0 after:bg-accent after:transition-[width] after:duration-300 hover:after:w-full">Quiz Zone</Link>
             </>
           )}
 
@@ -365,7 +365,7 @@ export default function Navbar() {
           {!isRecruiter && !isClient && !isMentee && !isMentor && (
             <>
               <Link to="/opportunities" onClick={() => setMenuOpen(false)} className="block text-sm text-muted hover:text-text">Job Opportunities</Link>
-              <Link to="/dashboard?section=tick2test" onClick={() => setMenuOpen(false)} className="block text-sm text-muted hover:text-text">Quiz Zone</Link>
+              <Link to="/dashboard/tick2test" onClick={() => setMenuOpen(false)} className="block text-sm text-muted hover:text-text">Quiz Zone</Link>
             </>
           )}
           {user ? (
@@ -373,7 +373,7 @@ export default function Navbar() {
               {user.role !== 'admin' && (
                 <Link to="/dashboard" onClick={() => setMenuOpen(false)} className="block text-sm text-muted hover:text-text font-medium">Dashboard</Link>
               )}
-              <Link to="/dashboard?section=messages" onClick={() => setMenuOpen(false)} className="block text-sm text-muted hover:text-text">Messages</Link>
+              <Link to="/dashboard/messages" onClick={() => setMenuOpen(false)} className="block text-sm text-muted hover:text-text">Messages</Link>
               {!isRecruiter && !isClient && !isMentee && !isMentor && (
                 <Link to="/dashboard/add" onClick={() => setMenuOpen(false)} className="block text-sm text-text font-medium">Add Project</Link>
               )}

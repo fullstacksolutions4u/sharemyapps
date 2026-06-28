@@ -34,6 +34,8 @@ const ForgotPassword     = lazy(() => import('./pages/ForgotPassword'));
 const PaidServices       = lazy(() => import('./pages/PaidServices'));
 const AddVacancy         = lazy(() => import('./pages/AddVacancy'));
 const LearningTracker    = lazy(() => import('./pages/LearningTracker'));
+const Profile            = lazy(() => import('./pages/Profile'));
+const Services           = lazy(() => import('./pages/Services'));
 
 class ErrorBoundary extends Component {
   state = { error: null };
@@ -117,10 +119,17 @@ function AppRoutes() {
             <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>}>
               <Route path="add" element={<ProjectForm />} />
               <Route path="edit/:id" element={<ProjectForm />} />
+              <Route path="profile" element={<Profile />} />
+              <Route path="messages" element={<Messages />} />
+              <Route path="notifications" element={<Notifications />} />
+              <Route path="feedback" element={<Feedback />} />
+              <Route path="premium" element={<PaidServices />} />
+              <Route path="services" element={<Services />} />
+              <Route path="tick2test" element={<LearningTracker embedded />} />
             </Route>
             <Route path="/messages" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
             <Route path="/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
-            <Route path="/profile" element={<ProtectedRoute><Navigate to="/dashboard?section=profile" replace /></ProtectedRoute>} />
+            <Route path="/profile" element={<ProtectedRoute><Navigate to="/dashboard/profile" replace /></ProtectedRoute>} />
             <Route path="/client-profile" element={<ProtectedRoute><ClientProfile /></ProtectedRoute>} />
             <Route path="/chat-admin" element={<ProtectedRoute><ChatAdmin /></ProtectedRoute>} />
             <Route path="/feedback" element={<ProtectedRoute><Feedback /></ProtectedRoute>} />
@@ -134,7 +143,7 @@ function AppRoutes() {
             <Route path="/post-vacancy" element={<ProtectedRoute><AddVacancy /></ProtectedRoute>} />
             <Route path="/mentors" element={<ProtectedRoute><Mentors /></ProtectedRoute>} />
             <Route path="/freelance-developers" element={<FreelanceDevelopers />} />
-            <Route path="/career-services" element={<PaidServices />} />
+            <Route path="/career-services" element={<Navigate to="/dashboard/premium" replace />} />
             <Route path="/tick2test" element={<LearningTracker />} />
             <Route path="/portfolio/:userId" element={<PublicPortfolio />} />
             <Route path="/admin" element={<AdminRoute><AdminPanel /></AdminRoute>} />
