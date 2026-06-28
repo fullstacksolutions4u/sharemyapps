@@ -348,12 +348,21 @@ export default function Dashboard() {
   const [searchParams] = useSearchParams();
   const [section, setSection] = useState(() => searchParams.get('section') || 'profile');
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [offerApproved, setOfferApproved] = useState(false);
 
   useEffect(() => {
     const s = searchParams.get('section');
     // eslint-disable-next-line react-hooks/set-state-in-effect
     if (s) setSection(s);
   }, [searchParams]);
+
+  useEffect(() => {
+    if (!user) return;
+    api.get('/offers/my-offer')
+      .then(r => setOfferApproved(r.data?.status === 'approved'))
+      .catch(() => {});
+  }, [user]);
+
   const [showShare, setShowShare] = useState(false);
 
   const handleLogout = async () => {
@@ -387,7 +396,7 @@ export default function Dashboard() {
         </div>
 
         <nav className="flex-1 px-3 py-4 space-y-1.5 overflow-y-auto">
-          {NAV.map(({ key, label, icon: Icon, href }) => (
+          {NAV.filter(item => !item.isPremiumService || offerApproved).map(({ key, label, icon: Icon, href }) => (
             <button
               key={key}
               onClick={() => navigate(key, href)}

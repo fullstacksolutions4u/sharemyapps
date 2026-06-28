@@ -1,4 +1,5 @@
 const FreeOffer = require('../models/FreeOffer');
+const User = require('../models/User');
 
 async function applyForFreeOffer(req, res) {
   try {
@@ -58,9 +59,19 @@ async function adminUpdateOffer(req, res) {
       req.params.id,
       { $set: update },
       { new: true }
-    ).populate('user', 'name email avatar');
+    ).populate('user', 'name email avatar _id');
 
     if (!offer) return res.status(404).json({ message: 'Not found' });
+
+    // Auto-unlock placement_session service when approving
+    if (status === 'approved') {
+      const user = await User.findById(offer.user._id);
+      if (user && !user.premiumServices.find(s => s.key === 'placement_session')) {
+        user.premiumServices.push({ key: 'placement_session', notes: 'Auto-unlocked on offer approval', unlockedBy: req.user._id });
+        await user.save();
+      }
+    }
+
     res.json(offer);
   } catch {
     res.status(500).json({ message: 'Server error' });

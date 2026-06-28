@@ -781,6 +781,15 @@ export default function AdminOffersSection() {
     } catch { /* ignore */ }
   }
 
+  async function handleApprove(e, offer) {
+    e.stopPropagation();
+    const newStatus = offer.status === 'approved' ? 'pending' : 'approved';
+    try {
+      const res = await api.patch(`/admin/offers/${offer._id}`, { status: newStatus });
+      setOffers(prev => prev.map(o => o._id === offer._id ? { ...o, status: res.data.status } : o));
+    } catch { /* ignore */ }
+  }
+
   function handleSummaryUpdate(offerId, aiSummary, aiSummaryAt) {
     setOffers(prev => prev.map(o => o._id === offerId ? { ...o, aiSummary, aiSummaryAt } : o));
     setSummaryOffer(prev => prev && prev._id === offerId ? { ...prev, aiSummary, aiSummaryAt } : prev);
@@ -824,7 +833,7 @@ export default function AdminOffersSection() {
               style={{
                 background: '#fff', padding: '14px 18px',
                 display: 'grid',
-                gridTemplateColumns: '28px 34px 1fr 1fr 120px 90px 80px 110px 100px 36px',
+                gridTemplateColumns: '28px 34px 1fr 1fr 120px 90px 80px 110px 96px 100px 36px',
                 alignItems: 'center', gap: '12px',
                 cursor: 'pointer', transition: 'background 0.15s',
               }}
@@ -896,6 +905,21 @@ export default function AdminOffersSection() {
               ) : (
                 <span style={{ fontSize: 11, color: '#ccc' }}>No phone</span>
               )}
+
+              {/* Approve / Revoke button */}
+              <button
+                onClick={(e) => handleApprove(e, o)}
+                title={o.status === 'approved' ? 'Revoke approval' : 'Approve — unlocks Services tab for user'}
+                style={{
+                  border: 'none', borderRadius: 8, padding: '4px 10px',
+                  fontSize: 11, fontWeight: 700, cursor: 'pointer',
+                  background: o.status === 'approved' ? '#dcfce7' : '#fef3c7',
+                  color: o.status === 'approved' ? '#166534' : '#92400e',
+                  transition: 'all 0.2s', whiteSpace: 'nowrap',
+                }}
+              >
+                {o.status === 'approved' ? '✓ Approved' : o.status === 'rejected' ? '✕ Rejected' : '○ Pending'}
+              </button>
 
               {/* Enroll tick button */}
               <button
