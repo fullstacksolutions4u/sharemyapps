@@ -656,7 +656,7 @@ export default function AdminOffersSection() {
     finally { setLoading(false); }
   }, [page, tab]);
 
-  useEffect(() => { fetchOffers(); }, [fetchOffers]);
+  useEffect(() => { fetchOffers(); }, [fetchOffers]); // eslint-disable-line react-hooks/set-state-in-effect
 
   function handleTabChange(newTab) {
     setTab(newTab);
