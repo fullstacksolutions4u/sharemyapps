@@ -111,17 +111,24 @@ const fieldLabel = {
 };
 
 function RequestForm({ serviceKey, onRequested }) {
-  const [availabilityFrom, setAvailabilityFrom] = useState('');
-  const [availabilityTo, setAvailabilityTo] = useState('');
+  const [date, setDate] = useState('');
+  const [timeFrom, setTimeFrom] = useState('');
+  const [timeTo, setTimeTo] = useState('');
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
   const handleSubmit = async () => {
-    if (!availabilityFrom || !availabilityTo) {
-      setError('Please select both a start and end date/time for your availability.');
+    if (!date || !timeFrom || !timeTo) {
+      setError('Please select a date and both from/to times.');
       return;
     }
+    if (timeFrom < '09:00' || timeFrom > '20:00' || timeTo < '09:00' || timeTo > '20:00') {
+      setError('Times must be between 9:00 AM and 8:00 PM.');
+      return;
+    }
+    const availabilityFrom = `${date}T${timeFrom}`;
+    const availabilityTo   = `${date}T${timeTo}`;
     if (new Date(availabilityTo) <= new Date(availabilityFrom)) {
       setError('End time must be after start time.');
       return;
@@ -144,49 +151,66 @@ function RequestForm({ serviceKey, onRequested }) {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr 1fr auto', gap: 10, alignItems: 'flex-end' }}>
         <div>
-          <label style={fieldLabel}>Available From *</label>
+          <label style={fieldLabel}>Preferred Date *</label>
           <input
-            type="datetime-local"
-            value={availabilityFrom}
-            onChange={e => setAvailabilityFrom(e.target.value)}
+            type="date"
+            value={date}
+            min={new Date().toISOString().split('T')[0]}
+            onChange={e => setDate(e.target.value)}
             style={fieldStyle}
           />
         </div>
         <div>
-          <label style={fieldLabel}>Available To *</label>
+          <label style={fieldLabel}>From *</label>
           <input
-            type="datetime-local"
-            value={availabilityTo}
-            onChange={e => setAvailabilityTo(e.target.value)}
+            type="time"
+            value={timeFrom}
+            min="09:00"
+            max="20:00"
+            onChange={e => {
+              const v = e.target.value;
+              if (v && v < '09:00') setTimeFrom('09:00');
+              else if (v && v > '20:00') setTimeFrom('20:00');
+              else setTimeFrom(v);
+            }}
             style={fieldStyle}
           />
         </div>
+        <div>
+          <label style={fieldLabel}>To *</label>
+          <input
+            type="time"
+            value={timeTo}
+            min="09:00"
+            max="20:00"
+            onChange={e => {
+              const v = e.target.value;
+              if (v && v < '09:00') setTimeTo('09:00');
+              else if (v && v > '20:00') setTimeTo('20:00');
+              else setTimeTo(v);
+            }}
+            style={fieldStyle}
+          />
+        </div>
+        <button
+          onClick={handleSubmit}
+          disabled={loading}
+          style={{
+            background: '#0a7373', color: '#fff',
+            border: 'none', borderRadius: 8, padding: '9px 18px',
+            fontSize: 13, fontWeight: 700, cursor: loading ? 'default' : 'pointer',
+            opacity: loading ? 0.7 : 1, fontFamily: 'inherit', whiteSpace: 'nowrap',
+          }}
+        >
+          {loading ? 'Requesting…' : 'Submit Request'}
+        </button>
       </div>
-      <div>
-        <label style={fieldLabel}>Notes (optional)</label>
-        <textarea
-          value={message}
-          onChange={e => setMessage(e.target.value)}
-          rows={2}
-          placeholder="Any additional notes for the session…"
-          style={{ ...fieldStyle, resize: 'vertical' }}
-        />
-      </div>
+      <p style={{ margin: 0, fontSize: 11, color: '#9aaca9' }}>
+        Available time slots: <strong>9:00 AM – 8:00 PM</strong>
+      </p>
       {error && <p style={{ margin: 0, fontSize: 12, color: '#c0392b' }}>{error}</p>}
-      <button
-        onClick={handleSubmit}
-        disabled={loading}
-        style={{
-          alignSelf: 'flex-end', background: '#0a7373', color: '#fff',
-          border: 'none', borderRadius: 8, padding: '10px 22px',
-          fontSize: 13, fontWeight: 700, cursor: loading ? 'default' : 'pointer',
-          opacity: loading ? 0.7 : 1, fontFamily: 'inherit',
-        }}
-      >
-        {loading ? 'Requesting…' : 'Submit Request'}
-      </button>
     </div>
   );
 }

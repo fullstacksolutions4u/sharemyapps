@@ -26,7 +26,7 @@ async function getMyOffer(req, res) {
 async function adminGetOffers(req, res) {
   try {
     const page = Math.max(1, parseInt(req.query.page) || 1);
-    const limit = 20;
+    const limit = 10;
     const skip = (page - 1) * limit;
     const status = req.query.status;
 

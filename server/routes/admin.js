@@ -556,16 +556,24 @@ router.get('/session-requests', async (_req, res) => {
 router.put('/session-requests/:id', async (req, res) => {
   try {
     const SessionRequest = require('../models/SessionRequest');
-    const { meetLink, scheduledAt, status, adminNotes, instructions, completionFeedback } = req.body;
-    const update = {};
-    if (meetLink !== undefined)            update.meetLink = meetLink.trim();
-    if (scheduledAt !== undefined)         update.scheduledAt = scheduledAt ? new Date(scheduledAt) : null;
-    if (status !== undefined)              update.status = status;
-    if (adminNotes !== undefined)          update.adminNotes = adminNotes.trim();
-    if (instructions !== undefined)        update.instructions = instructions.trim();
-    if (completionFeedback !== undefined)  update.completionFeedback = completionFeedback.trim();
+    const { sendSessionScheduledEmail } = require('../utils/email');
+    const { meetLink, scheduledAt } = req.body;
+    const update = { status: 'scheduled' };
+    if (meetLink !== undefined)    update.meetLink = meetLink.trim();
+    if (scheduledAt !== undefined) update.scheduledAt = scheduledAt ? new Date(scheduledAt) : null;
     const session = await SessionRequest.findByIdAndUpdate(req.params.id, update, { new: true }).populate('user', 'name email avatar');
     if (!session) return res.status(404).json({ message: 'Session request not found' });
+
+    if (session.user?.email && meetLink?.trim()) {
+      sendSessionScheduledEmail({
+        to: session.user.email,
+        name: session.user.name || 'there',
+        serviceLabel: session.serviceLabel,
+        meetLink: meetLink.trim(),
+        scheduledAt: update.scheduledAt,
+      }).catch(() => {});
+    }
+
     res.json({ session });
   } catch (err) { res.status(500).json({ message: err.message }); }
 });

@@ -407,3 +407,43 @@ exports.sendProjectRejectedEmail = async ({ to, name, projectTitle, projectId, a
     `,
   });
 };
+
+exports.sendSessionScheduledEmail = async ({ to, name, serviceLabel, meetLink, scheduledAt }) => {
+  const scheduledStr = scheduledAt
+    ? new Date(scheduledAt).toLocaleString('en-IN', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Kolkata' }) + ' IST'
+    : null;
+
+  await api.sendTransacEmail({
+    sender: FROM,
+    to: [{ email: to, name }],
+    subject: `Your session is scheduled — ${serviceLabel}`,
+    htmlContent: `
+      <div style="font-family:Inter,Arial,sans-serif;max-width:560px;margin:0 auto;background:#fff;border-radius:12px;overflow:hidden;border:1px solid #E5E1DA;">
+        <div style="background:#00A693;padding:24px 32px;text-align:center;">
+          <img src="${LOGO_URL}" alt="ShareMyApps" style="height:80px;object-fit:contain;" />
+        </div>
+        <div style="padding:32px;">
+          <h2 style="margin:0 0 8px;font-size:20px;color:#1A1A1A;">Your session is confirmed!</h2>
+          <p style="color:#374151;margin:0 0 20px;font-size:14px;">Hi ${name},</p>
+          <p style="color:#374151;margin:0 0 20px;font-size:14px;">
+            Your <strong>${serviceLabel}</strong> session has been scheduled. Here are your meeting details:
+          </p>
+          ${scheduledStr ? `
+          <div style="background:#F0FAF9;border:1px solid #A7F3D0;border-radius:10px;padding:16px 20px;margin-bottom:20px;">
+            <p style="margin:0;font-size:13px;color:#0A5F5F;"><strong>Date &amp; Time:</strong> ${scheduledStr}</p>
+          </div>` : ''}
+          <div style="background:#F0FAF9;border:1.5px solid #0C8C8C;border-radius:10px;padding:20px;margin-bottom:24px;text-align:center;">
+            <p style="margin:0 0 14px;font-size:13px;color:#0A5F5F;font-weight:600;">Join via Google Meet</p>
+            <a href="${meetLink}" target="_blank" style="display:inline-block;background:#0A7373;color:#fff;text-decoration:none;padding:12px 28px;border-radius:8px;font-weight:700;font-size:14px;">
+              Join Meeting
+            </a>
+          </div>
+          <p style="color:#6B7280;font-size:13px;margin:0;">
+            Please join on time. If you have any questions, reply to this email.
+          </p>
+        </div>
+        ${FOOTER('You received this email because you requested a premium session on ShareMyApps.')}
+      </div>
+    `,
+  });
+};

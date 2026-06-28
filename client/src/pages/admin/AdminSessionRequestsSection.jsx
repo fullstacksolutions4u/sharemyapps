@@ -21,17 +21,14 @@ function ScheduleModal({ session, onClose, onSaved }) {
   const [scheduledAt, setScheduledAt] = useState(
     session.scheduledAt ? new Date(session.scheduledAt).toISOString().slice(0, 16) : ''
   );
-  const [adminNotes, setAdminNotes] = useState(session.adminNotes || '');
-  const [instructions, setInstructions] = useState(session.instructions || '');
-  const [completionFeedback, setCompletionFeedback] = useState(session.completionFeedback || '');
-  const [status, setStatus] = useState(session.status);
   const [saving, setSaving] = useState(false);
 
   const handleSave = async () => {
+    if (!meetLink.trim()) { toast.error('Please enter a Google Meet link'); return; }
     setSaving(true);
     try {
-      const res = await api.put(`/admin/session-requests/${session._id}`, { meetLink, scheduledAt, adminNotes, instructions, completionFeedback, status });
-      toast.success('Session updated');
+      const res = await api.put(`/admin/session-requests/${session._id}`, { meetLink, scheduledAt });
+      toast.success('Session scheduled & email sent to user');
       onSaved(res.data.session);
       onClose();
     } catch (err) {
@@ -69,16 +66,7 @@ function ScheduleModal({ session, onClose, onSaved }) {
           )}
 
           <div>
-            <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#555', marginBottom: 5 }}>Status</label>
-            <select value={status} onChange={e => setStatus(e.target.value)} style={inputStyle}>
-              <option value="pending">Pending</option>
-              <option value="scheduled">Scheduled</option>
-              <option value="completed">Completed</option>
-            </select>
-          </div>
-
-          <div>
-            <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#555', marginBottom: 5 }}>Google Meet Link</label>
+            <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#555', marginBottom: 5 }}>Google Meet Link *</label>
             <input
               value={meetLink}
               onChange={e => setMeetLink(e.target.value)}
@@ -96,42 +84,6 @@ function ScheduleModal({ session, onClose, onSaved }) {
               style={inputStyle}
             />
           </div>
-
-          <div>
-            <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#555', marginBottom: 5 }}>Note to User (optional)</label>
-            <textarea
-              value={adminNotes}
-              onChange={e => setAdminNotes(e.target.value)}
-              rows={2}
-              placeholder="Any additional info for the user…"
-              style={{ ...inputStyle, resize: 'vertical' }}
-            />
-          </div>
-
-          {status === 'completed' && (
-            <>
-              <div>
-                <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#555', marginBottom: 5 }}>Instructions</label>
-                <textarea
-                  value={instructions}
-                  onChange={e => setInstructions(e.target.value)}
-                  rows={3}
-                  placeholder="Next steps, resources, or action items for the user…"
-                  style={{ ...inputStyle, resize: 'vertical' }}
-                />
-              </div>
-              <div>
-                <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#555', marginBottom: 5 }}>Feedback for User</label>
-                <textarea
-                  value={completionFeedback}
-                  onChange={e => setCompletionFeedback(e.target.value)}
-                  rows={3}
-                  placeholder="Share feedback about the session with the user…"
-                  style={{ ...inputStyle, resize: 'vertical' }}
-                />
-              </div>
-            </>
-          )}
 
           <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', marginTop: 4 }}>
             <button onClick={onClose} style={{ border: '1px solid #e5e7eb', borderRadius: 8, padding: '8px 16px', fontSize: 13, background: '#fff', cursor: 'pointer', color: '#555' }}>Cancel</button>

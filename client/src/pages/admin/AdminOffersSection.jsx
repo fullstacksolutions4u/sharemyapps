@@ -745,8 +745,11 @@ function SummaryModal({ offer, onClose, onSummaryUpdate, onCommentUpdate }) {
 export default function AdminOffersSection() {
   const [offers, setOffers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [tab, setTab] = useState('all');
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [total, setTotal] = useState(0);
   const [selectedOfferId, setSelectedOfferId] = useState(null);
-  const [showFormResponses, setShowFormResponses] = useState(false);
   const [summaryOffer, setSummaryOffer] = useState(null);
 
   const whatsappMsg = (name) => encodeURIComponent(
@@ -767,17 +770,38 @@ export default function AdminOffersSection() {
   }
 
   useEffect(() => {
-    api.get('/admin/offers?page=1')
-      .then(r => setOffers(r.data.offers))
+    setLoading(true);
+    const statusParam = tab === 'approved' ? '&status=approved' : tab === 'rejected' ? '&status=rejected' : '';
+    api.get(`/admin/offers?page=${page}${statusParam}`)
+      .then(r => {
+        setOffers(r.data.offers);
+        setTotalPages(r.data.pages);
+        setTotal(r.data.total);
+      })
       .catch(() => {})
       .finally(() => setLoading(false));
-  }, []);
+  }, [page, tab]);
+
+  function handleTabChange(newTab) {
+    setTab(newTab);
+    setPage(1);
+  }
 
   async function handleEnroll(e, offer) {
     e.stopPropagation();
     try {
       const res = await api.patch(`/admin/offers/${offer._id}/enroll`);
       setOffers(prev => prev.map(o => o._id === offer._id ? { ...o, enrolled: res.data.enrolled, enrolledAt: res.data.enrolledAt } : o));
+    } catch { /* ignore */ }
+  }
+
+  async function handleDelete(e, offerId) {
+    e.stopPropagation();
+    if (!window.confirm('Delete this application? This cannot be undone.')) return;
+    try {
+      await api.delete(`/admin/offers/${offerId}`);
+      setOffers(prev => prev.filter(o => o._id !== offerId));
+      setTotal(prev => prev - 1);
     } catch { /* ignore */ }
   }
 
@@ -800,40 +824,57 @@ export default function AdminOffersSection() {
     setSummaryOffer(prev => prev && prev._id === offerId ? { ...prev, summaryComment } : prev);
   }
 
+  const TABS = [
+    { key: 'all',      label: 'All' },
+    { key: 'approved', label: 'Accepted' },
+    { key: 'rejected', label: 'Rejected' },
+  ];
+
   return (
     <div>
       {selectedOfferId && (
         <PortfolioModal offerId={selectedOfferId} onClose={() => setSelectedOfferId(null)} />
       )}
-      {showFormResponses && (
-        <FormResponsesModal onClose={() => setShowFormResponses(false)} />
-      )}
       {summaryOffer && (
         <SummaryModal offer={summaryOffer} onClose={() => setSummaryOffer(null)} onSummaryUpdate={handleSummaryUpdate} onCommentUpdate={handleCommentUpdate} />
       )}
-      {/* Top bar */}
-      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginBottom: 16 }}>
-        <button
-          onClick={() => setShowFormResponses(true)}
-          style={{ border: '1.5px solid #0a7373', background: '#fff', color: '#0a7373', borderRadius: 8, padding: '7px 16px', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}
-        >
-          View Form Responses
-        </button>
-      </div>
 
+      {/* Tabs */}
+      <div style={{ display: 'flex', gap: 4, marginBottom: 18, borderBottom: '1.5px solid #e5e7eb', paddingBottom: 0 }}>
+        {TABS.map(t => (
+          <button
+            key={t.key}
+            onClick={() => handleTabChange(t.key)}
+            style={{
+              border: 'none', background: 'none', cursor: 'pointer',
+              padding: '8px 18px', fontSize: 13, fontWeight: 700,
+              color: tab === t.key ? '#0a7373' : '#888',
+              borderBottom: tab === t.key ? '2.5px solid #0a7373' : '2.5px solid transparent',
+              marginBottom: -1.5, transition: 'all 0.15s',
+            }}
+          >
+            {t.label}
+            {tab === t.key && total > 0 && (
+              <span style={{ marginLeft: 6, fontSize: 11, background: '#dcefed', color: '#0a7373', borderRadius: 999, padding: '1px 7px' }}>
+                {total}
+              </span>
+            )}
+          </button>
+        ))}
+      </div>
       {loading ? (
         <div style={{ textAlign: 'center', padding: '48px', color: '#aaa' }}>Loading…</div>
       ) : offers.length === 0 ? (
         <div style={{ textAlign: 'center', padding: '48px', color: '#aaa' }}>No applications yet</div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1px', background: '#f0f0f0', borderRadius: '12px', overflow: 'hidden' }}>
-          {[...offers].sort((a, b) => (b.enrolled ? 1 : 0) - (a.enrolled ? 1 : 0)).map((o, i) => (
+          {[...offers].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).map((o, i) => (
             <div key={o._id}
               onClick={() => setSelectedOfferId(o._id)}
               style={{
                 background: '#fff', padding: '14px 18px',
                 display: 'grid',
-                gridTemplateColumns: '28px 34px 1fr 1fr 120px 90px 80px 110px 96px 100px 36px',
+                gridTemplateColumns: '28px 34px 1fr 1fr 120px 90px 80px 96px 100px 36px 36px',
                 alignItems: 'center', gap: '12px',
                 cursor: 'pointer', transition: 'background 0.15s',
               }}
@@ -841,7 +882,7 @@ export default function AdminOffersSection() {
               onMouseLeave={e => e.currentTarget.style.background = '#fff'}
             >
               {/* # */}
-              <span style={{ fontSize: '13px', color: '#aaa', textAlign: 'right' }}>{i + 1}</span>
+              <span style={{ fontSize: '13px', color: '#aaa', textAlign: 'right' }}>{(page - 1) * 10 + i + 1}</span>
 
               {/* Avatar */}
               {o.user?.avatar
@@ -892,19 +933,6 @@ export default function AdminOffersSection() {
               {/* View Portfolio */}
               <div style={{ fontSize: '12px', color: '#0a7373', fontWeight: 500 }}>View Portfolio →</div>
 
-              {/* WhatsApp button */}
-              {o.user?.phone ? (
-                <button
-                  onClick={(e) => handleWhatsapp(e, o)}
-                  style={{
-                    border: 'none', background: '#25D366', color: '#fff',
-                    borderRadius: 8, padding: '5px 12px', fontSize: 12, fontWeight: 600,
-                    cursor: 'pointer',
-                  }}
-                >WhatsApp</button>
-              ) : (
-                <span style={{ fontSize: 11, color: '#ccc' }}>No phone</span>
-              )}
 
               {/* Approve / Revoke button */}
               <button
@@ -935,8 +963,62 @@ export default function AdminOffersSection() {
                 }}
               >✓</button>
 
+              {/* Delete button */}
+              <button
+                onClick={(e) => handleDelete(e, o._id)}
+                title="Delete application"
+                style={{
+                  border: 'none', borderRadius: '50%', width: 30, height: 30,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  cursor: 'pointer', fontSize: 15,
+                  background: '#fef2f2', color: '#dc2626',
+                  transition: 'all 0.2s',
+                }}
+              >✕</button>
+
             </div>
           ))}
+        </div>
+      )}
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginTop: 20 }}>
+          <button
+            onClick={() => setPage(p => Math.max(1, p - 1))}
+            disabled={page === 1}
+            style={{
+              border: '1px solid #e5e7eb', background: '#fff', color: page === 1 ? '#ccc' : '#333',
+              borderRadius: 8, padding: '6px 14px', fontSize: 13, fontWeight: 600,
+              cursor: page === 1 ? 'default' : 'pointer',
+            }}
+          >← Prev</button>
+
+          {Array.from({ length: totalPages }, (_, i) => i + 1).map(p => (
+            <button
+              key={p}
+              onClick={() => setPage(p)}
+              style={{
+                border: p === page ? 'none' : '1px solid #e5e7eb',
+                background: p === page ? '#0a7373' : '#fff',
+                color: p === page ? '#fff' : '#555',
+                borderRadius: 8, width: 36, height: 36, fontSize: 13, fontWeight: 700,
+                cursor: 'pointer',
+              }}
+            >{p}</button>
+          ))}
+
+          <button
+            onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+            disabled={page === totalPages}
+            style={{
+              border: '1px solid #e5e7eb', background: '#fff', color: page === totalPages ? '#ccc' : '#333',
+              borderRadius: 8, padding: '6px 14px', fontSize: 13, fontWeight: 600,
+              cursor: page === totalPages ? 'default' : 'pointer',
+            }}
+          >Next →</button>
+
+          <span style={{ fontSize: 12, color: '#aaa', marginLeft: 8 }}>{total} total</span>
         </div>
       )}
     </div>
