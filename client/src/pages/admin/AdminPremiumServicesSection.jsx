@@ -262,20 +262,29 @@ export default function AdminPremiumServicesSection() {
               {/* Divider */}
               <div style={{ width: 1, height: 36, background: '#f0ece6', flexShrink: 0 }} />
 
-              {/* Service stage chips */}
+              {/* Service stage chips — always render both in SERVICE_ORDER */}
               <div style={{ display: 'flex', alignItems: 'center', flex: 1, flexWrap: 'wrap', gap: 0 }}>
-                {userSessions.map((session, idx) => {
-                  const c = STATUS_COLOR[session.status] || STATUS_COLOR.pending;
-                  const isHovered = hoveredId === session._id;
-                  const canAct = session.status !== 'completed';
+                {SERVICE_ORDER.map((serviceKey, idx) => {
+                  const session = userSessions.find(s => s.serviceKey === serviceKey);
+                  const placementSession = userSessions.find(s => s.serviceKey === 'placement_session');
+                  const isPlacement = serviceKey === 'placement_session';
+
+                  // Blur 1:1 Session if not yet requested; blur ATS if 1:1 not scheduled/completed
+                  const isBlurred = isPlacement
+                    ? !session
+                    : !(placementSession?.status === 'scheduled' || placementSession?.status === 'completed');
+
+                  const c = session ? (STATUS_COLOR[session.status] || STATUS_COLOR.pending) : STATUS_COLOR.pending;
+                  const isHovered = session && hoveredId === session._id;
+                  const canAct = session && session.status !== 'completed';
 
                   return (
-                    <div key={session._id} style={{ display: 'flex', alignItems: 'center' }}>
+                    <div key={serviceKey} style={{ display: 'flex', alignItems: 'center' }}>
                       {idx > 0 && (
                         <span style={{ margin: '0 8px', color: '#d0ccc6', fontSize: 16 }}>→</span>
                       )}
                       <div
-                        onMouseEnter={() => setHoveredId(session._id)}
+                        onMouseEnter={() => session && setHoveredId(session._id)}
                         onMouseLeave={() => setHoveredId(null)}
                         style={{
                           position: 'relative',
@@ -285,6 +294,7 @@ export default function AdminPremiumServicesSection() {
                           background: isHovered ? '#f0faf9' : '#faf8f5',
                           minWidth: 160,
                           transition: 'border-color 0.2s, background 0.2s',
+                          ...(isBlurred ? { filter: 'blur(3px)', opacity: 0.45, pointerEvents: 'none' } : {}),
                         }}
                       >
                         {/* Edit icon — top right for scheduled session-type */}
@@ -304,20 +314,26 @@ export default function AdminPremiumServicesSection() {
                           </button>
                         )}
 
-                        <span style={{ fontSize: 11, fontWeight: 700, color: '#6b7776', whiteSpace: 'nowrap', paddingRight: session.status === 'scheduled' ? 26 : 0 }}>{SHORT_LABEL[session.serviceKey] || session.serviceLabel}</span>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
-                          {session.status !== 'pending' && (
-                            <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 999, background: c.bg, color: c.color, border: `1px solid ${c.border}`, whiteSpace: 'nowrap' }}>
-                              {STATUS_LABEL[session.status]}
-                            </span>
-                          )}
-                          {session.scheduledAt && (
-                            <span style={{ display: 'flex', alignItems: 'center', gap: 3, fontSize: 10, color: '#9aaca9' }}>
-                              <Clock size={10} />
-                              {new Date(session.scheduledAt).toLocaleString('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
-                            </span>
-                          )}
-                        </div>
+                        <span style={{ fontSize: 11, fontWeight: 700, color: '#6b7776', whiteSpace: 'nowrap', paddingRight: session?.status === 'scheduled' ? 26 : 0 }}>
+                          {SHORT_LABEL[serviceKey]}
+                        </span>
+
+                        {session && (
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+                            {session.status !== 'pending' && (
+                              <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 999, background: c.bg, color: c.color, border: `1px solid ${c.border}`, whiteSpace: 'nowrap' }}>
+                                {STATUS_LABEL[session.status]}
+                              </span>
+                            )}
+                            {session.scheduledAt && (
+                              <span style={{ display: 'flex', alignItems: 'center', gap: 3, fontSize: 10, color: '#9aaca9' }}>
+                                <Clock size={10} />
+                                {new Date(session.scheduledAt).toLocaleString('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                              </span>
+                            )}
+                          </div>
+                        )}
+
                         {canAct && session.status !== 'scheduled' && (
                           <div style={{ display: 'flex', gap: 5, alignItems: 'center' }}>
                             {session.serviceType === 'document' ? (

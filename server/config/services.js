@@ -8,7 +8,7 @@ module.exports = [
   },
   {
     key: 'ats_compatible_resume_cover_letter_optimization',
-    label: 'Download Resume & Cover letter',
+    label: 'Download ATS Support Resume & Cover letter',
     shortLabel: 'Resume & CV',
     serviceType: 'document',
     number: 2,
