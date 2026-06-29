@@ -1,7 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
-import { Eye, Trash2, Zap } from 'lucide-react';
+import { Eye, Trash2 } from 'lucide-react';
 import api from '../../api/axios';
-import AdminPremiumUsersSection from './AdminPremiumUsersSection';
 
 function PortfolioModal({ offerId, onClose }) {
   const [data, setData] = useState(null);
@@ -639,7 +638,6 @@ function SummaryModal({ offer, onClose, onSummaryUpdate, onCommentUpdate }) {
 export default function AdminOffersSection() {
   const [offers, setOffers] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [tab, setTab] = useState('all');
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [total, setTotal] = useState(0);
@@ -648,30 +646,16 @@ export default function AdminOffersSection() {
 
   const fetchOffers = useCallback(async () => {
     setLoading(true);
-    const statusParam = tab === 'approved' ? '&status=approved' : tab === 'rejected' ? '&status=rejected' : '';
     try {
-      const r = await api.get(`/admin/offers?page=${page}${statusParam}`);
+      const r = await api.get(`/admin/offers?page=${page}`);
       setOffers(r.data.offers);
       setTotalPages(r.data.pages);
       setTotal(r.data.total);
     } catch { /* ignore */ }
     finally { setLoading(false); }
-  }, [page, tab]);
+  }, [page]);
 
   useEffect(() => { fetchOffers(); }, [fetchOffers]); // eslint-disable-line react-hooks/set-state-in-effect
-
-  function handleTabChange(newTab) {
-    setTab(newTab);
-    setPage(1);
-  }
-
-  async function handleActivate(e, offer) {
-    e.stopPropagation();
-    try {
-      const res = await api.patch(`/admin/offers/${offer._id}/activate`);
-      setOffers(prev => prev.map(o => o._id === offer._id ? { ...o, status: res.data.status, enrolled: res.data.enrolled, enrolledAt: res.data.enrolledAt } : o));
-    } catch { /* ignore */ }
-  }
 
   async function handleDelete(e, offerId) {
     e.stopPropagation();
@@ -680,6 +664,19 @@ export default function AdminOffersSection() {
       await api.delete(`/admin/offers/${offerId}`);
       setOffers(prev => prev.filter(o => o._id !== offerId));
       setTotal(prev => prev - 1);
+    } catch { /* ignore */ }
+  }
+
+  async function handleStatusChange(e, offerId) {
+    const value = e.target.value;
+    try {
+      if (value === 'active') {
+        const res = await api.patch(`/admin/offers/${offerId}/activate`);
+        setOffers(prev => prev.map(o => o._id === offerId ? { ...o, status: res.data.status, enrolled: res.data.enrolled, enrolledAt: res.data.enrolledAt } : o));
+      } else {
+        const res = await api.patch(`/admin/offers/${offerId}`, { status: value });
+        setOffers(prev => prev.map(o => o._id === offerId ? { ...o, status: res.data.status, enrolled: false } : o));
+      }
     } catch { /* ignore */ }
   }
 
@@ -693,13 +690,6 @@ export default function AdminOffersSection() {
     setSummaryOffer(prev => prev && prev._id === offerId ? { ...prev, summaryComment } : prev);
   }
 
-  const TABS = [
-    { key: 'all',      label: 'All' },
-    { key: 'approved', label: 'Accepted' },
-    { key: 'rejected', label: 'Rejected' },
-    { key: 'enrolled', label: 'Enrolled Users' },
-  ];
-
   return (
     <div>
       {selectedOfferId && (
@@ -709,44 +699,33 @@ export default function AdminOffersSection() {
         <SummaryModal offer={summaryOffer} onClose={() => setSummaryOffer(null)} onSummaryUpdate={handleSummaryUpdate} onCommentUpdate={handleCommentUpdate} />
       )}
 
-      {/* Tabs */}
-      <div style={{ display: 'flex', gap: 4, marginBottom: 18, borderBottom: '1.5px solid #e5e7eb', paddingBottom: 0 }}>
-        {TABS.map(t => (
-          <button
-            key={t.key}
-            onClick={() => handleTabChange(t.key)}
-            style={{
-              border: 'none', background: 'none', cursor: 'pointer',
-              padding: '8px 18px', fontSize: 13, fontWeight: 700,
-              color: tab === t.key ? '#0a7373' : '#888',
-              borderBottom: tab === t.key ? '2.5px solid #0a7373' : '2.5px solid transparent',
-              marginBottom: -1.5, transition: 'all 0.15s',
-            }}
-          >
-            {t.label}
-            {tab === t.key && total > 0 && (
-              <span style={{ marginLeft: 6, fontSize: 11, background: '#dcefed', color: '#0a7373', borderRadius: 999, padding: '1px 7px' }}>
-                {total}
-              </span>
-            )}
-          </button>
-        ))}
-      </div>
-      {tab === 'enrolled' ? (
-        <AdminPremiumUsersSection />
-      ) : loading ? (
+      {loading ? (
         <div style={{ textAlign: 'center', padding: '48px', color: '#aaa' }}>Loading…</div>
       ) : offers.length === 0 ? (
         <div style={{ textAlign: 'center', padding: '48px', color: '#aaa' }}>No applications yet</div>
-      ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1px', background: '#f0f0f0', borderRadius: '12px', overflow: 'hidden' }}>
+      ) : (() => {
+        const COLS = '28px 34px 1fr 1fr 120px 150px 36px 100px 110px 36px';
+        const GAP = '12px';
+        const PX = '18px';
+        return (
+        <div style={{ borderRadius: '12px', overflow: 'hidden', border: '1px solid #efefef', display: 'flex', flexDirection: 'column' }}>
+          {/* Header row */}
+          <div style={{
+            background: '#f7f7f5', padding: `10px ${PX}`,
+            display: 'grid', gridTemplateColumns: COLS, alignItems: 'center', gap: GAP,
+            borderBottom: '1px solid #e8e8e8',
+          }}>
+            {['#', '', 'Name', 'Designation', 'Contact', 'Summary', 'View', 'Action', 'Status', 'Delete'].map((h, idx) => (
+              <span key={idx} style={{ fontSize: 10, fontWeight: 700, color: '#aaa', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{h}</span>
+            ))}
+          </div>
+
           {[...offers].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).map((o, i) => (
             <div key={o._id}
               style={{
-                background: '#fff', padding: '14px 18px',
-                display: 'grid',
-                gridTemplateColumns: '28px 34px 1fr 1fr 120px 150px 36px 100px 100px',
-                alignItems: 'center', gap: '12px',
+                background: '#fff', padding: `14px ${PX}`,
+                display: 'grid', gridTemplateColumns: COLS, alignItems: 'center', gap: GAP,
+                borderBottom: '1px solid #f5f5f5',
                 transition: 'background 0.15s',
               }}
               onMouseEnter={e => e.currentTarget.style.background = '#f9f9f9'}
@@ -791,9 +770,9 @@ export default function AdminOffersSection() {
               <button
                 onClick={e => { e.stopPropagation(); setSummaryOffer(o); }}
                 style={{
-                  border: o.aiSummary ? 'none' : '1px solid #e5e7eb',
-                  background: o.aiSummary ? '#1a1a1a' : '#fff',
-                  color: o.aiSummary ? '#fff' : '#555',
+                  border: '1px solid #e5e7eb',
+                  background: '#fff',
+                  color: '#555',
                   borderRadius: 8, padding: '5px 12px', fontSize: 12, fontWeight: 600,
                   cursor: 'pointer', whiteSpace: 'nowrap',
                 }}
@@ -810,47 +789,56 @@ export default function AdminOffersSection() {
                 <Eye size={17} />
               </button>
 
-              {/* Status badge */}
-              <span style={{
-                fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: 999, whiteSpace: 'nowrap',
-                background: o.status === 'approved' ? '#dcfce7' : o.status === 'rejected' ? '#fef2f2' : '#fef3c7',
-                color: o.status === 'approved' ? '#166534' : o.status === 'rejected' ? '#dc2626' : '#92400e',
-              }}>
-                {o.status === 'approved' ? '✓ Approved' : o.status === 'rejected' ? '✕ Rejected' : '○ Pending'}
-              </span>
+              {/* Action dropdown */}
+              <select
+                value=""
+                onChange={e => { e.stopPropagation(); handleStatusChange(e, o._id); }}
+                onClick={e => e.stopPropagation()}
+                style={{
+                  fontSize: 11, fontWeight: 600, borderRadius: 8, padding: '4px 8px',
+                  border: '1px solid #e5e7eb', background: '#fff', color: '#555',
+                  cursor: 'pointer', outline: 'none', width: '100%',
+                }}
+              >
+                <option value="" disabled>Change…</option>
+                <option value="active">⚡ Activate</option>
+                <option value="rejected">✕ Reject</option>
+              </select>
 
-              {/* Actions column */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }} onClick={e => e.stopPropagation()}>
-                {/* Activate toggle */}
-                <button
-                  onClick={e => handleActivate(e, o)}
-                  title={o.status === 'approved' && o.enrolled ? 'Deactivate' : 'Activate — approve & enroll'}
-                  style={{
-                    display: 'inline-flex', alignItems: 'center', gap: 5,
-                    border: 'none', borderRadius: 7, padding: '4px 10px',
-                    fontSize: 11, fontWeight: 700, cursor: 'pointer',
-                    background: o.status === 'approved' && o.enrolled ? '#0a7373' : '#f0f0f0',
-                    color: o.status === 'approved' && o.enrolled ? '#fff' : '#888',
-                    transition: 'all 0.2s',
-                  }}
-                >
-                  <Zap size={12} />
-                  {o.status === 'approved' && o.enrolled ? 'Active' : 'Activate'}
-                </button>
-                {/* Delete */}
-                <button
-                  onClick={e => handleDelete(e, o._id)}
-                  title="Delete application"
-                  style={{ border: 'none', background: 'none', cursor: 'pointer', padding: 4, display: 'flex', alignItems: 'center', color: '#dc2626' }}
-                >
-                  <Trash2 size={16} />
-                </button>
-              </div>
+              {/* Current status badge */}
+              {(() => {
+                const isActive = o.status === 'approved' && o.enrolled;
+                const label = isActive ? '⚡ Active' : o.status === 'approved' ? '✓ Approved' : o.status === 'rejected' ? '✕ Rejected' : '○ Pending';
+                const colors = isActive
+                  ? { bg: '#dcefed', border: '#0c8c8c', color: '#0a5f5f' }
+                  : o.status === 'approved' ? { bg: '#dcfce7', border: '#86efac', color: '#166534' }
+                  : o.status === 'rejected' ? { bg: '#fef2f2', border: '#fca5a5', color: '#dc2626' }
+                  : { bg: '#fef3c7', border: '#fde68a', color: '#92400e' };
+                return (
+                  <span style={{
+                    fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: 999,
+                    background: colors.bg, border: `1px solid ${colors.border}`, color: colors.color,
+                    whiteSpace: 'nowrap',
+                  }}>
+                    {label}
+                  </span>
+                );
+              })()}
+
+              {/* Delete button */}
+              <button
+                onClick={e => handleDelete(e, o._id)}
+                title="Delete application"
+                style={{ border: 'none', background: 'none', cursor: 'pointer', padding: 4, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#dc2626' }}
+              >
+                <Trash2 size={16} />
+              </button>
 
             </div>
           ))}
         </div>
-      )}
+        );
+      })()}
 
       {/* Pagination */}
       {totalPages > 1 && (
