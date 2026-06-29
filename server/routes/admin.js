@@ -37,7 +37,7 @@ const freelance = require('../controllers/freelanceOpportunityController');
 const mentorship = require('../controllers/mentorshipOpportunityController');
 const { aiChat } = require('../controllers/aiChatController');
 const { adminGetPlans, adminCreatePlan, adminUpdatePlan, adminDeletePlan } = require('../controllers/planController');
-const { adminGetOffers, adminUpdateOffer, adminDeleteOffer, adminGetOfferStats, adminGetOfferPortfolio, adminMarkWhatsappContacted, adminToggleEnroll } = require('../controllers/freeOfferController');
+const { adminGetOffers, adminUpdateOffer, adminDeleteOffer, adminGetOfferStats, adminGetOfferPortfolio, adminMarkWhatsappContacted, adminToggleEnroll, adminActivate } = require('../controllers/freeOfferController');
 
 router.use(protect, requireAdmin);
 
@@ -141,6 +141,7 @@ router.get('/offers/:id/timeline', async (req, res) => {
 });
 router.patch('/offers/:id/whatsapp-contacted', adminMarkWhatsappContacted);
 router.patch('/offers/:id/enroll', adminToggleEnroll);
+router.patch('/offers/:id/activate', adminActivate);
 router.post('/offers/:id/activity', async (req, res) => {
   try {
     const FreeOffer = require('../models/FreeOffer');
@@ -445,7 +446,7 @@ router.get('/premium-services/catalog', async (_req, res) => {
 router.post('/premium-services/catalog', async (req, res) => {
   try {
     const PremiumService = require('../models/PremiumService');
-    const { label, description, bullets, unlockedMessage, active } = req.body;
+    const { label, description, bullets, unlockedMessage, active, serviceType } = req.body;
     if (!label?.trim()) return res.status(400).json({ message: 'Label is required' });
     const key = label.trim().toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '');
     const count = await PremiumService.countDocuments();
@@ -457,6 +458,7 @@ router.post('/premium-services/catalog', async (req, res) => {
       bullets: (bullets || []).map(b => b.trim()).filter(Boolean),
       unlockedMessage: unlockedMessage?.trim() || '',
       active: active !== false,
+      serviceType: serviceType || 'session',
     });
     res.status(201).json({ service });
   } catch (err) {
@@ -468,14 +470,17 @@ router.post('/premium-services/catalog', async (req, res) => {
 router.put('/premium-services/catalog/:id', async (req, res) => {
   try {
     const PremiumService = require('../models/PremiumService');
-    const { label, description, bullets, unlockedMessage, active } = req.body;
-    const update = {};
-    if (label !== undefined)            update.label = label.trim();
-    if (description !== undefined)      update.description = description.trim();
-    if (bullets !== undefined)          update.bullets = bullets.map(b => b.trim()).filter(Boolean);
-    if (unlockedMessage !== undefined)  update.unlockedMessage = unlockedMessage.trim();
-    if (active !== undefined)           update.active = active;
-    const service = await PremiumService.findByIdAndUpdate(req.params.id, update, { new: true });
+    const { label, description, bullets, unlockedMessage, active, serviceType } = req.body;
+    const $set = {};
+    if (label !== undefined)            $set.label = label.trim();
+    if (description !== undefined)      $set.description = description.trim();
+    if (bullets !== undefined)          $set.bullets = bullets.map(b => b.trim()).filter(Boolean);
+    if (unlockedMessage !== undefined)  $set.unlockedMessage = unlockedMessage.trim();
+    if (active !== undefined)           $set.active = active;
+    if (serviceType !== undefined)      $set.serviceType = serviceType;
+    const service = await PremiumService.findByIdAndUpdate(
+      req.params.id, { $set }, { new: true, runValidators: true }
+    ).lean();
     if (!service) return res.status(404).json({ message: 'Service not found' });
     res.json({ service });
   } catch (err) { res.status(500).json({ message: err.message }); }
@@ -542,6 +547,98 @@ router.delete('/premium-services/:userId/revoke/:key', async (req, res) => {
 
 // ── Session Requests ─────────────────────────────────────────────────────────
 
+// All entitled users for a document-type service with their delivery status
+router.get('/session-requests/entitled/:serviceKey', async (req, res) => {
+  try {
+    const SessionRequest = require('../models/SessionRequest');
+    const FreeOffer = require('../models/FreeOffer');
+    const { serviceKey } = req.params;
+
+    // Users with placement_session unlock or direct service unlock
+    const usersWithUnlock = await User.find({
+      $or: [
+        { 'premiumServices.key': serviceKey },
+        { 'premiumServices.key': 'placement_session' },
+      ],
+    }).select('name email avatar premiumServices').lean();
+
+    // Users with approved offers
+    const approvedOffers = await FreeOffer.find({ status: 'approved' })
+      .populate('user', 'name email avatar premiumServices')
+      .lean();
+    const offerUserIds = new Set(approvedOffers.map(o => String(o.user?._id)).filter(Boolean));
+    const offerUsers = approvedOffers.map(o => o.user).filter(Boolean);
+
+    // Merge, deduplicate
+    const allMap = new Map();
+    for (const u of usersWithUnlock) allMap.set(String(u._id), u);
+    for (const u of offerUsers) if (!allMap.has(String(u._id))) allMap.set(String(u._id), u);
+    const entitledUsers = [...allMap.values()];
+
+    // Attach existing session requests
+    const userIds = entitledUsers.map(u => u._id);
+    const sessions = await SessionRequest.find({ user: { $in: userIds }, serviceKey }).lean();
+    const sessionByUser = {};
+    for (const s of sessions) sessionByUser[String(s.user)] = s;
+
+    const result = entitledUsers.map(u => ({
+      ...u,
+      session: sessionByUser[String(u._id)] || null,
+    }));
+
+    res.json({ users: result });
+  } catch (err) { res.status(500).json({ message: err.message }); }
+});
+
+// Admin directly sends a document link to a user (creates or updates the session)
+router.post('/session-requests/document-deliver', async (req, res) => {
+  try {
+    const SessionRequest = require('../models/SessionRequest');
+    const PremiumService = require('../models/PremiumService');
+    const { sendResumeReadyEmail } = require('../utils/email');
+    const { userId, serviceKey, completionLink } = req.body;
+    if (!userId || !serviceKey || !completionLink?.trim())
+      return res.status(400).json({ message: 'userId, serviceKey and completionLink are required' });
+
+    const [targetUser, service] = await Promise.all([
+      User.findById(userId).select('name email avatar').lean(),
+      PremiumService.findOne({ key: serviceKey }).lean(),
+    ]);
+    if (!targetUser) return res.status(404).json({ message: 'User not found' });
+
+    const serviceLabel = service?.label || serviceKey;
+
+    // Upsert: update existing session or create a new completed one
+    let session = await SessionRequest.findOneAndUpdate(
+      { user: userId, serviceKey },
+      { $set: { status: 'completed', completionLink: completionLink.trim(), serviceLabel, serviceType: 'document' } },
+      { new: true }
+    );
+    if (!session) {
+      session = await SessionRequest.create({
+        user: userId,
+        serviceKey,
+        serviceLabel,
+        serviceType: 'document',
+        status: 'completed',
+        completionLink: completionLink.trim(),
+      });
+    }
+
+    if (targetUser.email) {
+      sendResumeReadyEmail({
+        to: targetUser.email,
+        name: targetUser.name || 'there',
+        serviceLabel,
+        completionLink: completionLink.trim(),
+      }).catch(() => {});
+    }
+
+    const populated = await SessionRequest.findById(session._id).populate('user', 'name email avatar').lean();
+    res.json({ session: populated });
+  } catch (err) { res.status(500).json({ message: err.message }); }
+});
+
 router.get('/session-requests', async (_req, res) => {
   try {
     const SessionRequest = require('../models/SessionRequest');
@@ -571,6 +668,37 @@ router.put('/session-requests/:id', async (req, res) => {
         serviceLabel: session.serviceLabel,
         meetLink: meetLink.trim(),
         scheduledAt: update.scheduledAt,
+      }).catch(() => {});
+    }
+
+    res.json({ session });
+  } catch (err) { res.status(500).json({ message: err.message }); }
+});
+
+router.post('/session-requests/:id/complete', async (req, res) => {
+  try {
+    const SessionRequest = require('../models/SessionRequest');
+    const { sendResumeReadyEmail } = require('../utils/email');
+    const { completionLink, coverLetterLink } = req.body;
+    if (!completionLink?.trim()) return res.status(400).json({ message: 'Resume link is required' });
+
+    const $set = { status: 'completed', completionLink: completionLink.trim() };
+    if (coverLetterLink?.trim()) $set.coverLetterLink = coverLetterLink.trim();
+
+    const session = await SessionRequest.findByIdAndUpdate(
+      req.params.id,
+      { $set },
+      { new: true }
+    ).populate('user', 'name email avatar');
+    if (!session) return res.status(404).json({ message: 'Session request not found' });
+
+    if (session.user?.email) {
+      sendResumeReadyEmail({
+        to: session.user.email,
+        name: session.user.name || 'there',
+        serviceLabel: session.serviceLabel,
+        completionLink: completionLink.trim(),
+        coverLetterLink: coverLetterLink?.trim() || '',
       }).catch(() => {});
     }
 

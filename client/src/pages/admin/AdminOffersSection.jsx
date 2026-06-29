@@ -1,5 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
+import { Eye, Trash2, Zap } from 'lucide-react';
 import api from '../../api/axios';
+import AdminPremiumUsersSection from './AdminPremiumUsersSection';
 
 function PortfolioModal({ offerId, onClose }) {
   const [data, setData] = useState(null);
@@ -129,7 +131,7 @@ function PortfolioModal({ offerId, onClose }) {
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px 24px', marginBottom: 20 }}>
               {user.yearsOfExperience && <div><span style={{ fontSize: 12, color: '#aaa' }}>Experience</span><div style={{ fontSize: 14, fontWeight: 500 }}>{user.yearsOfExperience}</div></div>}
               {user.joiningAvailability && <div><span style={{ fontSize: 12, color: '#aaa' }}>Available to Join</span><div style={{ fontSize: 14, fontWeight: 500 }}>{user.joiningAvailability}</div></div>}
-              {user.currentSalary && <div><span style={{ fontSize: 12, color: '#aaa' }}>Current CTC</span><div style={{ fontSize: 14, fontWeight: 500 }}>₹{user.currentSalary?.toLocaleString()}</div></div>}
+              {user.currentSalary != null && <div><span style={{ fontSize: 12, color: '#aaa' }}>Current CTC</span><div style={{ fontSize: 14, fontWeight: 500 }}>₹{user.currentSalary?.toLocaleString()}</div></div>}
               {user.expectedSalary && <div><span style={{ fontSize: 12, color: '#aaa' }}>Expected CTC</span><div style={{ fontSize: 14, fontWeight: 500 }}>₹{user.expectedSalary?.toLocaleString()}</div></div>}
               {user.phone && <div><span style={{ fontSize: 12, color: '#aaa' }}>Phone</span><div style={{ fontSize: 14, fontWeight: 500 }}>{user.phone}</div></div>}
               {user.jobMode?.length > 0 && <div><span style={{ fontSize: 12, color: '#aaa' }}>Job Mode</span><div style={{ fontSize: 14, fontWeight: 500 }}>{user.jobMode.join(', ')}</div></div>}
@@ -663,11 +665,11 @@ export default function AdminOffersSection() {
     setPage(1);
   }
 
-  async function handleEnroll(e, offer) {
+  async function handleActivate(e, offer) {
     e.stopPropagation();
     try {
-      const res = await api.patch(`/admin/offers/${offer._id}/enroll`);
-      setOffers(prev => prev.map(o => o._id === offer._id ? { ...o, enrolled: res.data.enrolled, enrolledAt: res.data.enrolledAt } : o));
+      const res = await api.patch(`/admin/offers/${offer._id}/activate`);
+      setOffers(prev => prev.map(o => o._id === offer._id ? { ...o, status: res.data.status, enrolled: res.data.enrolled, enrolledAt: res.data.enrolledAt } : o));
     } catch { /* ignore */ }
   }
 
@@ -678,15 +680,6 @@ export default function AdminOffersSection() {
       await api.delete(`/admin/offers/${offerId}`);
       setOffers(prev => prev.filter(o => o._id !== offerId));
       setTotal(prev => prev - 1);
-    } catch { /* ignore */ }
-  }
-
-  async function handleApprove(e, offer) {
-    e.stopPropagation();
-    const newStatus = offer.status === 'approved' ? 'pending' : 'approved';
-    try {
-      const res = await api.patch(`/admin/offers/${offer._id}`, { status: newStatus });
-      setOffers(prev => prev.map(o => o._id === offer._id ? { ...o, status: res.data.status } : o));
     } catch { /* ignore */ }
   }
 
@@ -704,6 +697,7 @@ export default function AdminOffersSection() {
     { key: 'all',      label: 'All' },
     { key: 'approved', label: 'Accepted' },
     { key: 'rejected', label: 'Rejected' },
+    { key: 'enrolled', label: 'Enrolled Users' },
   ];
 
   return (
@@ -738,7 +732,9 @@ export default function AdminOffersSection() {
           </button>
         ))}
       </div>
-      {loading ? (
+      {tab === 'enrolled' ? (
+        <AdminPremiumUsersSection />
+      ) : loading ? (
         <div style={{ textAlign: 'center', padding: '48px', color: '#aaa' }}>Loading…</div>
       ) : offers.length === 0 ? (
         <div style={{ textAlign: 'center', padding: '48px', color: '#aaa' }}>No applications yet</div>
@@ -746,13 +742,12 @@ export default function AdminOffersSection() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1px', background: '#f0f0f0', borderRadius: '12px', overflow: 'hidden' }}>
           {[...offers].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).map((o, i) => (
             <div key={o._id}
-              onClick={() => setSelectedOfferId(o._id)}
               style={{
                 background: '#fff', padding: '14px 18px',
                 display: 'grid',
-                gridTemplateColumns: '28px 34px 1fr 1fr 120px 90px 80px 96px 100px 36px 36px',
+                gridTemplateColumns: '28px 34px 1fr 1fr 120px 150px 36px 100px 100px',
                 alignItems: 'center', gap: '12px',
-                cursor: 'pointer', transition: 'background 0.15s',
+                transition: 'background 0.15s',
               }}
               onMouseEnter={e => e.currentTarget.style.background = '#f9f9f9'}
               onMouseLeave={e => e.currentTarget.style.background = '#fff'}
@@ -806,51 +801,51 @@ export default function AdminOffersSection() {
                 ✦ Summary
               </button>
 
-              {/* View Portfolio */}
-              <div style={{ fontSize: '12px', color: '#0a7373', fontWeight: 500 }}>View Portfolio →</div>
-
-
-              {/* Approve / Revoke button */}
+              {/* View Portfolio eye icon */}
               <button
-                onClick={(e) => handleApprove(e, o)}
-                title={o.status === 'approved' ? 'Revoke approval' : 'Approve — unlocks Services tab for user'}
-                style={{
-                  border: 'none', borderRadius: 8, padding: '4px 10px',
-                  fontSize: 11, fontWeight: 700, cursor: 'pointer',
-                  background: o.status === 'approved' ? '#dcfce7' : '#fef3c7',
-                  color: o.status === 'approved' ? '#166534' : '#92400e',
-                  transition: 'all 0.2s', whiteSpace: 'nowrap',
-                }}
+                onClick={e => { e.stopPropagation(); setSelectedOfferId(o._id); }}
+                title="View Portfolio"
+                style={{ border: 'none', background: 'none', cursor: 'pointer', color: '#0a7373', padding: 4, display: 'flex', alignItems: 'center' }}
               >
-                {o.status === 'approved' ? '✓ Approved' : o.status === 'rejected' ? '✕ Rejected' : '○ Pending'}
+                <Eye size={17} />
               </button>
 
-              {/* Enroll tick button */}
-              <button
-                onClick={(e) => handleEnroll(e, o)}
-                title={o.enrolled ? 'Unenroll' : 'Enroll in program'}
-                style={{
-                  border: 'none', borderRadius: '50%', width: 30, height: 30,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  cursor: 'pointer', fontSize: 16, fontWeight: 700,
-                  background: o.enrolled ? '#0a7373' : '#f0f0f0',
-                  color: o.enrolled ? '#fff' : '#aaa',
-                  transition: 'all 0.2s',
-                }}
-              >✓</button>
+              {/* Status badge */}
+              <span style={{
+                fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: 999, whiteSpace: 'nowrap',
+                background: o.status === 'approved' ? '#dcfce7' : o.status === 'rejected' ? '#fef2f2' : '#fef3c7',
+                color: o.status === 'approved' ? '#166534' : o.status === 'rejected' ? '#dc2626' : '#92400e',
+              }}>
+                {o.status === 'approved' ? '✓ Approved' : o.status === 'rejected' ? '✕ Rejected' : '○ Pending'}
+              </span>
 
-              {/* Delete button */}
-              <button
-                onClick={(e) => handleDelete(e, o._id)}
-                title="Delete application"
-                style={{
-                  border: 'none', borderRadius: '50%', width: 30, height: 30,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  cursor: 'pointer', fontSize: 15,
-                  background: '#fef2f2', color: '#dc2626',
-                  transition: 'all 0.2s',
-                }}
-              >✕</button>
+              {/* Actions column */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }} onClick={e => e.stopPropagation()}>
+                {/* Activate toggle */}
+                <button
+                  onClick={e => handleActivate(e, o)}
+                  title={o.status === 'approved' && o.enrolled ? 'Deactivate' : 'Activate — approve & enroll'}
+                  style={{
+                    display: 'inline-flex', alignItems: 'center', gap: 5,
+                    border: 'none', borderRadius: 7, padding: '4px 10px',
+                    fontSize: 11, fontWeight: 700, cursor: 'pointer',
+                    background: o.status === 'approved' && o.enrolled ? '#0a7373' : '#f0f0f0',
+                    color: o.status === 'approved' && o.enrolled ? '#fff' : '#888',
+                    transition: 'all 0.2s',
+                  }}
+                >
+                  <Zap size={12} />
+                  {o.status === 'approved' && o.enrolled ? 'Active' : 'Activate'}
+                </button>
+                {/* Delete */}
+                <button
+                  onClick={e => handleDelete(e, o._id)}
+                  title="Delete application"
+                  style={{ border: 'none', background: 'none', cursor: 'pointer', padding: 4, display: 'flex', alignItems: 'center', color: '#dc2626' }}
+                >
+                  <Trash2 size={16} />
+                </button>
+              </div>
 
             </div>
           ))}

@@ -30,7 +30,9 @@ function SessionStatus({ session }) {
       {session.status === 'pending' && (
         <div style={{ padding: '14px 16px', background: '#faf8f5', borderRadius: 10, border: '1px solid #eae6df' }}>
           <p style={{ margin: 0, fontSize: 13, color: '#6b7776', lineHeight: 1.6 }}>
-            Your request has been received. Our team will schedule a meeting and share the Google Meet link here.
+            {session.serviceType === 'document'
+              ? "Our team is preparing your documents. You'll receive an email with your download link when they're ready."
+              : 'Your request has been received. Our team will schedule a meeting and share the Google Meet link here.'}
           </p>
         </div>
       )}
@@ -72,26 +74,42 @@ function SessionStatus({ session }) {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '12px 16px', background: '#f0f4ff', borderRadius: 10, border: '1px solid #c7d2fe' }}>
             <CheckCircle2 size={15} color="#3b4fd8" />
-            <span style={{ fontSize: 13, color: '#3b4fd8', fontWeight: 600 }}>Session completed</span>
+            <span style={{ fontSize: 13, color: '#3b4fd8', fontWeight: 600 }}>Completed</span>
           </div>
 
-          {session.instructions && (
-            <div style={{ padding: '16px 18px', background: '#faf8f5', borderRadius: 10, border: '1px solid #eae6df' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 8 }}>
-                <FileText size={14} color="#555" />
-                <span style={{ fontSize: 12, fontWeight: 700, color: '#555', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Instructions</span>
+          {session.completionLink && (
+            <div style={{ padding: '16px 18px', background: '#f0faf9', borderRadius: 10, border: '1.5px solid #0c8c8c', textAlign: 'center' }}>
+              <p style={{ margin: '0 0 14px', fontSize: 13, color: '#0a5f5f', fontWeight: 600 }}>Your documents are ready!</p>
+              <div style={{ display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' }}>
+                <a
+                  href={session.completionLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    display: 'inline-flex', alignItems: 'center', gap: 8,
+                    background: '#0a7373', color: '#fff', borderRadius: 8,
+                    padding: '10px 20px', fontSize: 13, fontWeight: 700,
+                    textDecoration: 'none', fontFamily: "'Manrope', sans-serif",
+                  }}
+                >
+                  <FileText size={14} /> {session.coverLetterLink ? 'Download Resume' : 'Download Documents'}
+                </a>
+                {session.coverLetterLink && (
+                  <a
+                    href={session.coverLetterLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                      display: 'inline-flex', alignItems: 'center', gap: 8,
+                      background: '#0a7373', color: '#fff', borderRadius: 8,
+                      padding: '10px 20px', fontSize: 13, fontWeight: 700,
+                      textDecoration: 'none', fontFamily: "'Manrope', sans-serif",
+                    }}
+                  >
+                    <FileText size={14} /> Download Cover Letter
+                  </a>
+                )}
               </div>
-              <p style={{ margin: 0, fontSize: 13, color: '#3f4948', lineHeight: 1.7, whiteSpace: 'pre-wrap' }}>{session.instructions}</p>
-            </div>
-          )}
-
-          {session.completionFeedback && (
-            <div style={{ padding: '16px 18px', background: '#f0faf9', borderRadius: 10, border: '1px solid #a7f3d0' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 8 }}>
-                <CheckCircle2 size={14} color="#0a7373" />
-                <span style={{ fontSize: 12, fontWeight: 700, color: '#0a7373', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Feedback from Admin</span>
-              </div>
-              <p style={{ margin: 0, fontSize: 13, color: '#0a5f5f', lineHeight: 1.7, whiteSpace: 'pre-wrap' }}>{session.completionFeedback}</p>
             </div>
           )}
         </div>
@@ -135,11 +153,11 @@ function RequestForm({ serviceKey, onRequested }) {
     setLoading(true);
     setError('');
     try {
-      const res = await api.post(`/premium-services/${serviceKey}/session-request`, {
+      await api.post(`/premium-services/${serviceKey}/session-request`, {
         availabilityFrom,
         availabilityTo,
       });
-      onRequested(res.data.session);
+      onRequested();
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to send request. Please try again.');
     } finally {
@@ -213,23 +231,30 @@ function RequestForm({ serviceKey, onRequested }) {
   );
 }
 
-function AccordionItem({ service, unlockEntry, sessions }) {
+function AccordionItem({ service, unlockEntry, session: activeSession, onSessionRequested }) {
   const unlocked = !!unlockEntry;
   const [open, setOpen] = useState(false);
   const [showForm, setShowForm] = useState(false);
-  const [activeSession, setActiveSession] = useState(
-    sessions.find(s => s.serviceKey === service.key && s.status !== 'completed') ||
-    sessions.find(s => s.serviceKey === service.key) ||
-    null
-  );
 
-  const handleRequested = (sess) => {
-    setActiveSession(sess);
+  const isDocumentService = service.serviceType === 'document';
+  const documentReady = isDocumentService && activeSession?.status === 'completed' && activeSession?.completionLink;
+
+  // Auto-expand when scheduled (join button visible) or when document is ready for download
+  useEffect(() => {
+    if (activeSession?.status === 'scheduled') setOpen(true);
+    if (documentReady) setOpen(true);
+  }, [activeSession?.status, documentReady]);
+
+  const handleRequested = () => {
     setShowForm(false);
+    onSessionRequested();
   };
 
-  // Only scheduled/completed sessions have content worth expanding
-  const hasExpandContent = activeSession && (activeSession.status === 'scheduled' || activeSession.status === 'completed');
+  const hasExpandContent = documentReady ||
+    (!isDocumentService && activeSession && (
+      activeSession.status === 'scheduled' ||
+      activeSession.status === 'completed'
+    ));
 
   return (
     <div style={{
@@ -254,20 +279,20 @@ function AccordionItem({ service, unlockEntry, sessions }) {
 
         <div style={{ flex: 1, minWidth: 0 }}>
           <span style={{ fontSize: 14, fontWeight: 700, color: '#1a2120' }}>{service.label}</span>
-          {activeSession && (
+          {activeSession && !(isDocumentService && activeSession.status === 'pending') && (
             <span style={{
               marginLeft: 10, fontSize: 10, fontWeight: 700, padding: '2px 8px',
               borderRadius: 999, verticalAlign: 'middle',
               background: STATUS_COLOR[activeSession.status]?.bg,
               color: STATUS_COLOR[activeSession.status]?.color,
             }}>
-              {STATUS_LABEL[activeSession.status]}
+              {isDocumentService && activeSession.status === 'completed' ? 'Ready' : STATUS_LABEL[activeSession.status]}
             </span>
           )}
         </div>
 
-        {/* Request Session button — shown when unlocked and no active session */}
-        {unlocked && !activeSession && (
+        {/* Request Session button — only for session-type services with no active request */}
+        {unlocked && !activeSession && !isDocumentService && (
           <button
             onClick={() => setShowForm(f => !f)}
             style={{
@@ -321,13 +346,22 @@ export default function Services() {
       .catch(() => setCatalog([]));
   }, []);
 
+  const fetchSessions = () => {
+    api.get('/premium-services/my-sessions').then(r => setSessions(r.data.sessions || [])).catch(() => {});
+  };
+
   useEffect(() => {
     if (!user) return;
     api.get('/premium-services/my-services').then(r => setUnlockedServices(r.data.services || [])).catch(() => {});
-    api.get('/premium-services/my-sessions').then(r => setSessions(r.data.sessions || [])).catch(() => {});
-  }, [user]);
+    fetchSessions();
+  }, [user]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const getUnlockEntry = key => unlockedServices.find(s => s.key === key) || null;
+
+  const getSession = key =>
+    sessions.find(s => s.serviceKey === key && s.status !== 'completed') ||
+    sessions.find(s => s.serviceKey === key) ||
+    null;
 
   if (catalog === null) {
     return (
@@ -353,7 +387,8 @@ export default function Services() {
             key={service.key}
             service={service}
             unlockEntry={getUnlockEntry(service.key)}
-            sessions={sessions}
+            session={getSession(service.key)}
+            onSessionRequested={fetchSessions}
           />
         ))}
       </div>

@@ -112,7 +112,33 @@ async function adminToggleEnroll(req, res) {
       { new: true }
     ).populate('user', 'name email avatar phone designations');
     res.json(updated);
+  } catch {
+    res.status(500).json({ message: 'Server error' });
+  }
+}
 
+async function adminActivate(req, res) {
+  try {
+    const offer = await FreeOffer.findById(req.params.id).lean();
+    if (!offer) return res.status(404).json({ message: 'Not found' });
+
+    const activate = offer.status !== 'approved' || !offer.enrolled;
+    const $set = activate
+      ? { status: 'approved', enrolled: true, enrolledAt: new Date() }
+      : { status: 'pending', enrolled: false, enrolledAt: null };
+
+    const updated = await FreeOffer.findByIdAndUpdate(req.params.id, { $set }, { new: true })
+      .populate('user', 'name email avatar phone designations');
+
+    if (activate) {
+      const user = await User.findById(offer.user);
+      if (user && !user.premiumServices.find(s => s.key === 'placement_session')) {
+        user.premiumServices.push({ key: 'placement_session', notes: 'Auto-unlocked on activation', unlockedBy: req.user._id });
+        await user.save();
+      }
+    }
+
+    res.json(updated);
   } catch {
     res.status(500).json({ message: 'Server error' });
   }
@@ -151,4 +177,4 @@ async function adminGetOfferPortfolio(req, res) {
   }
 }
 
-module.exports = { applyForFreeOffer, getMyOffer, adminGetOffers, adminUpdateOffer, adminDeleteOffer, adminGetOfferStats, adminGetOfferPortfolio, adminMarkWhatsappContacted, adminToggleEnroll };
+module.exports = { applyForFreeOffer, getMyOffer, adminGetOffers, adminUpdateOffer, adminDeleteOffer, adminGetOfferStats, adminGetOfferPortfolio, adminMarkWhatsappContacted, adminToggleEnroll, adminActivate };

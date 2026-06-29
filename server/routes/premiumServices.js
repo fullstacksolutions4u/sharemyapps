@@ -1,28 +1,23 @@
 const router = require('express').Router();
 const { protect } = require('../middleware/auth');
 const User = require('../models/User');
-const PremiumService = require('../models/PremiumService');
 const SessionRequest = require('../models/SessionRequest');
 const FreeOffer = require('../models/FreeOffer');
+const CATALOG = require('../config/services');
 
 // All active services (used by the user-facing Services page)
-router.get('/catalog', async (_req, res) => {
-  try {
-    const services = await PremiumService.find({ active: true }).sort({ number: 1 }).lean();
-    res.json({ services });
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
+router.get('/catalog', (_req, res) => {
+  res.json({ services: CATALOG });
 });
 
 // The calling user's unlocked service entries
 router.get('/my-services', protect, async (req, res) => {
   try {
-    const [user, offer, catalog] = await Promise.all([
+    const [user, offer] = await Promise.all([
       User.findById(req.user._id).select('premiumServices').lean(),
       FreeOffer.findOne({ user: req.user._id, status: 'approved' }).lean(),
-      PremiumService.find({ active: true }).select('key').lean(),
     ]);
+    const catalog = CATALOG;
     let services = user?.premiumServices || [];
 
     // User is entitled to all catalog services if they have placement_session or an approved offer
@@ -31,6 +26,23 @@ router.get('/my-services', protect, async (req, res) => {
       for (const catalogService of catalog) {
         if (!services.find(s => s.key === catalogService.key)) {
           services = [...services, { key: catalogService.key, notes: 'Unlocked via approved offer' }];
+        }
+      }
+    }
+
+    // Auto-create pending SessionRequests for document-type services the user is entitled to
+    const documentServices = catalog.filter(s => s.serviceType === 'document');
+    for (const ds of documentServices) {
+      if (services.find(s => s.key === ds.key)) {
+        const existing = await SessionRequest.findOne({ user: req.user._id, serviceKey: ds.key });
+        if (!existing) {
+          await SessionRequest.create({
+            user: req.user._id,
+            serviceKey: ds.key,
+            serviceLabel: ds.label,
+            serviceType: 'document',
+            status: 'pending',
+          });
         }
       }
     }

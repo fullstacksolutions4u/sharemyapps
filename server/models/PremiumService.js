@@ -9,6 +9,7 @@ const premiumServiceSchema = new mongoose.Schema({
   bullets:          [{ type: String, trim: true }],
   unlockedMessage:  { type: String, default: '', trim: true },
   active:           { type: Boolean, default: true },
+  serviceType:      { type: String, enum: ['session', 'document'], default: 'session' },
   feedback:         [{ userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }, text: String, createdAt: Date }],
 }, { timestamps: true });
 

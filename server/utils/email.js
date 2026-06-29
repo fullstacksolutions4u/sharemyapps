@@ -408,6 +408,49 @@ exports.sendProjectRejectedEmail = async ({ to, name, projectTitle, projectId, a
   });
 };
 
+exports.sendResumeReadyEmail = async ({ to, name, serviceLabel, completionLink, coverLetterLink }) => {
+  const buttons = coverLetterLink
+    ? `
+      <a href="${completionLink}" target="_blank" style="display:inline-block;background:#0A7373;color:#fff;text-decoration:none;padding:12px 28px;border-radius:8px;font-weight:700;font-size:14px;margin:4px 6px;">
+        Download Resume
+      </a>
+      <a href="${coverLetterLink}" target="_blank" style="display:inline-block;background:#0A7373;color:#fff;text-decoration:none;padding:12px 28px;border-radius:8px;font-weight:700;font-size:14px;margin:4px 6px;">
+        Download Cover Letter
+      </a>`
+    : `
+      <a href="${completionLink}" target="_blank" style="display:inline-block;background:#0A7373;color:#fff;text-decoration:none;padding:12px 28px;border-radius:8px;font-weight:700;font-size:14px;">
+        Download Documents
+      </a>`;
+
+  await api.sendTransacEmail({
+    sender: FROM,
+    to: [{ email: to, name }],
+    subject: `Your ${serviceLabel} is ready — Download Now`,
+    htmlContent: `
+      <div style="font-family:Inter,Arial,sans-serif;max-width:560px;margin:0 auto;background:#fff;border-radius:12px;overflow:hidden;border:1px solid #E5E1DA;">
+        <div style="background:#00A693;padding:24px 32px;text-align:center;">
+          <img src="${LOGO_URL}" alt="ShareMyApps" style="height:80px;object-fit:contain;" />
+        </div>
+        <div style="padding:32px;">
+          <h2 style="margin:0 0 8px;font-size:20px;color:#1A1A1A;">Your documents are ready!</h2>
+          <p style="color:#374151;margin:0 0 20px;font-size:14px;">Hi ${name},</p>
+          <p style="color:#374151;margin:0 0 24px;font-size:14px;">
+            Great news! Your <strong>${serviceLabel}</strong> has been completed. Your documents are ready to download:
+          </p>
+          <div style="background:#F0FAF9;border:1.5px solid #0C8C8C;border-radius:10px;padding:20px;margin-bottom:24px;text-align:center;">
+            <p style="margin:0 0 14px;font-size:13px;color:#0A5F5F;font-weight:600;">Click below to access your documents</p>
+            ${buttons}
+          </div>
+          <p style="color:#6B7280;font-size:13px;margin:0;">
+            If you have any questions or need revisions, please reply to this email.
+          </p>
+        </div>
+        ${FOOTER('You received this email because you requested a premium service on ShareMyApps.')}
+      </div>
+    `,
+  });
+};
+
 exports.sendSessionScheduledEmail = async ({ to, name, serviceLabel, meetLink, scheduledAt }) => {
   const scheduledStr = scheduledAt
     ? new Date(scheduledAt).toLocaleString('en-IN', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Kolkata' }) + ' IST'

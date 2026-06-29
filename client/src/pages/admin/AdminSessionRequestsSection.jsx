@@ -92,7 +92,82 @@ function ScheduleModal({ session, onClose, onSaved }) {
               disabled={saving}
               style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: '#0a7373', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 18px', fontSize: 13, fontWeight: 600, cursor: saving ? 'default' : 'pointer', opacity: saving ? 0.7 : 1 }}
             >
-              <Video size={14} /> {saving ? 'Saving…' : 'Save & Notify'}
+              <Video size={14} /> {saving ? 'Scheduling…' : 'Schedule Session'}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+const ATS_KEY = 'ats_compatible_resume_cover_letter_optimization';
+
+function CompleteModal({ session, onClose, onCompleted }) {
+  const isAts = session.serviceKey === ATS_KEY;
+  const [resumeLink, setResumeLink] = useState('');
+  const [coverLetterLink, setCoverLetterLink] = useState('');
+  const [saving, setSaving] = useState(false);
+
+  const handleComplete = async () => {
+    if (!resumeLink.trim()) { toast.error('Please enter the resume link'); return; }
+    if (isAts && !coverLetterLink.trim()) { toast.error('Please enter the cover letter link'); return; }
+    setSaving(true);
+    try {
+      await api.post(`/admin/session-requests/${session._id}/complete`, {
+        completionLink: resumeLink,
+        ...(isAts && { coverLetterLink }),
+      });
+      toast.success('Completed & email sent to user');
+      onCompleted();
+      onClose();
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed');
+    } finally { setSaving(false); }
+  };
+
+  return (
+    <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.35)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
+      <div style={{ background: '#fff', borderRadius: 16, width: '100%', maxWidth: 460, boxShadow: '0 24px 60px rgba(0,0,0,0.18)', overflow: 'hidden' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '18px 20px', borderBottom: '1px solid #f0f0f0' }}>
+          <div>
+            <p style={{ margin: 0, fontWeight: 700, fontSize: 14, color: '#1a1a1a' }}>
+              {isAts ? 'Send Resume & Cover Letter' : 'Mark as Completed'}
+            </p>
+            <p style={{ margin: 0, fontSize: 12, color: '#888' }}>{session.user?.name} · {session.serviceLabel}</p>
+          </div>
+          <button onClick={onClose} style={{ border: 'none', background: 'none', cursor: 'pointer', color: '#888', padding: 4 }}><X size={18} /></button>
+        </div>
+        <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: 14 }}>
+          <div>
+            <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#555', marginBottom: 5 }}>{isAts ? 'Resume Link *' : 'Download Link *'}</label>
+            <input
+              value={resumeLink}
+              onChange={e => setResumeLink(e.target.value)}
+              placeholder="https://drive.google.com/..."
+              style={inputStyle}
+            />
+          </div>
+          {isAts && (
+            <div>
+              <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#555', marginBottom: 5 }}>Cover Letter Link *</label>
+              <input
+                value={coverLetterLink}
+                onChange={e => setCoverLetterLink(e.target.value)}
+                placeholder="https://drive.google.com/..."
+                style={inputStyle}
+              />
+            </div>
+          )}
+          <p style={{ margin: 0, fontSize: 11, color: '#9aaca9' }}>User will receive an email with {isAts ? 'both download links' : 'this link'}.</p>
+          <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+            <button onClick={onClose} style={{ border: '1px solid #e5e7eb', borderRadius: 8, padding: '8px 16px', fontSize: 13, background: '#fff', cursor: 'pointer', color: '#555' }}>Cancel</button>
+            <button
+              onClick={handleComplete}
+              disabled={saving}
+              style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: '#0a7373', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 18px', fontSize: 13, fontWeight: 600, cursor: saving ? 'default' : 'pointer', opacity: saving ? 0.7 : 1 }}
+            >
+              {saving ? 'Sending…' : '✓ Complete & Send'}
             </button>
           </div>
         </div>
@@ -106,21 +181,20 @@ export default function AdminSessionRequestsSection() {
   const [loading, setLoading] = useState(true);
   const [filterStatus, setFilterStatus] = useState('all');
   const [scheduling, setScheduling] = useState(null);
+  const [completing, setCompleting] = useState(null);
 
-  useEffect(() => {
-    (async () => {
-      setLoading(true);
-      try {
-        const res = await api.get('/admin/session-requests');
-        setSessions(res.data.sessions || []);
-      } catch { toast.error('Failed to load session requests'); }
-      finally { setLoading(false); }
-    })();
-  }, []);
-
-  const handleSaved = (updated) => {
-    setSessions(prev => prev.map(s => s._id === updated._id ? updated : s));
+  const fetchSessions = async () => {
+    setLoading(true);
+    try {
+      const res = await api.get('/admin/session-requests');
+      setSessions(res.data.sessions || []);
+    } catch { toast.error('Failed to load session requests'); }
+    finally { setLoading(false); }
   };
+
+  useEffect(() => { fetchSessions(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const handleSaved = () => { fetchSessions(); };
 
   const filtered = filterStatus === 'all' ? sessions : sessions.filter(s => s.status === filterStatus);
 
@@ -167,8 +241,11 @@ export default function AdminSessionRequestsSection() {
             return (
               <div
                 key={session._id}
-                onClick={() => setScheduling(session)}
-                style={{ background: '#fff', padding: '14px 18px', display: 'flex', alignItems: 'center', gap: 14, cursor: 'pointer' }}
+                onClick={() => {
+                  if (session.serviceType === 'document') { if (session.status !== 'completed') setCompleting(session); }
+                  else if (session.status !== 'completed') setScheduling(session);
+                }}
+                style={{ background: '#fff', padding: '14px 18px', display: 'flex', alignItems: 'center', gap: 14, cursor: session.status !== 'completed' ? 'pointer' : 'default' }}
               >
                 {session.user?.avatar
                   ? <img src={session.user.avatar} alt="" style={{ width: 34, height: 34, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />
@@ -189,7 +266,15 @@ export default function AdminSessionRequestsSection() {
                     )}
                   </div>
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+                  {(session.status === 'scheduled' || (session.serviceType === 'document' && session.status === 'pending')) && (
+                    <button
+                      onClick={e => { e.stopPropagation(); setCompleting(session); }}
+                      style={{ fontSize: 11, fontWeight: 700, padding: '4px 10px', borderRadius: 7, border: '1.5px solid #0a7373', background: '#f0faf9', color: '#0a7373', cursor: 'pointer', whiteSpace: 'nowrap' }}
+                    >
+                      {session.serviceType === 'document' ? 'Send Documents' : 'Complete & Send'}
+                    </button>
+                  )}
                   <span style={{ fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: 999, background: c.bg, color: c.color, border: `1px solid ${c.border}` }}>
                     {STATUS_LABEL[session.status]}
                   </span>
@@ -208,6 +293,13 @@ export default function AdminSessionRequestsSection() {
           session={scheduling}
           onClose={() => setScheduling(null)}
           onSaved={handleSaved}
+        />
+      )}
+      {completing && (
+        <CompleteModal
+          session={completing}
+          onClose={() => setCompleting(null)}
+          onCompleted={handleSaved}
         />
       )}
     </div>

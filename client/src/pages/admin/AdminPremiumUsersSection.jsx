@@ -369,7 +369,7 @@ export default function AdminPremiumUsersSection() {
                     gap: 5,
                   }}
                 >
-                  {hasSummary ? '✦' : '✦'} Summary
+                  {hasSummary ? '✦' : '✦'} Premium Applicants
                 </button>
               </div>
             );

@@ -28,8 +28,8 @@ const NAV = [
   { key: 'learning',       label: 'Quiz Zone',        icon: BookOpen },
   { key: 'messages',       label: 'Messages',         icon: MessageSquare },
   { key: 'payments',       label: 'Payments',         icon: IndianRupee },
-{ key: 'offers',          label: 'Summary',        icon: Crown },
-  { key: 'service_access', label: 'Service Access', icon: Unlock },
+{ key: 'offers',          label: 'Premium Applicants', icon: Crown },
+  { key: 'service_access', label: 'Services',           icon: Unlock },
 ];
 
 export default function AdminPanel() {

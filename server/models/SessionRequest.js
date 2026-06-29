@@ -4,6 +4,7 @@ const sessionRequestSchema = new mongoose.Schema({
   user:         { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   serviceKey:   { type: String, required: true },
   serviceLabel: { type: String, default: '' },
+  serviceType:  { type: String, enum: ['session', 'document'], default: 'session' },
   message:           { type: String, default: '' },
   availabilityFrom:  { type: Date },
   availabilityTo:    { type: Date },
@@ -13,6 +14,8 @@ const sessionRequestSchema = new mongoose.Schema({
   adminNotes:        { type: String, default: '' },
   instructions:      { type: String, default: '' },
   completionFeedback:{ type: String, default: '' },
+  completionLink:    { type: String, default: '' },
+  coverLetterLink:   { type: String, default: '' },
 }, { timestamps: true });
 
 sessionRequestSchema.index({ user: 1, serviceKey: 1 });
