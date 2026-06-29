@@ -62,10 +62,9 @@ export default function PaidServices() {
           borderRadius: '8px', padding: '14px', fontSize: '13.5px',
           fontWeight: 700, textAlign: 'center', letterSpacing: '.02em',
         }}>
-          ✓ Applied
+          Successfully registered for job hunting assistance service.
           <span style={{ display: 'block', fontSize: '11.5px', fontWeight: 500, marginTop: '4px', color: '#2a8a7a' }}>
-            You're registered for the free offer. Our executive will contact you within 2 days.{' '}
-            Meanwhile, explore the platform for opportunities.
+            Executive will contact you shortly.
           </span>
         </div>
       );
