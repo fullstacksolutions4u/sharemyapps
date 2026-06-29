@@ -203,7 +203,7 @@ export default function SelectRole() {
       toast.success('Welcome aboard!');
       completingRef.current = true;
       if (updated.userType === 'developer') {
-        navigate('/dashboard', { replace: true });
+        navigate('/dashboard/profile', { replace: true });
       } else {
         navigate(homeFor(updated), { replace: true });
       }
