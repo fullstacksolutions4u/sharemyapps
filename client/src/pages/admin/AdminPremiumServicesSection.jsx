@@ -25,9 +25,12 @@ const btnSecondary = { border: '1px solid #e5e7eb', borderRadius: 8, padding: '7
 
 function ScheduleModal({ session, onClose, onSaved }) {
   const [meetLink, setMeetLink] = useState(session.meetLink || '');
-  const [scheduledAt, setScheduledAt] = useState(
-    session.scheduledAt ? new Date(session.scheduledAt).toISOString().slice(0, 16) : ''
-  );
+  const [scheduledAt, setScheduledAt] = useState(() => {
+    if (!session.scheduledAt) return '';
+    const d = new Date(session.scheduledAt);
+    const pad = n => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  });
   const [saving, setSaving] = useState(false);
 
   const handleSave = async () => {
@@ -43,7 +46,8 @@ function ScheduleModal({ session, onClose, onSaved }) {
     }
     setSaving(true);
     try {
-      const res = await api.put(`/admin/session-requests/${session._id}`, { meetLink, scheduledAt });
+      const scheduledAtUTC = scheduledAt ? new Date(scheduledAt).toISOString() : scheduledAt;
+      const res = await api.put(`/admin/session-requests/${session._id}`, { meetLink, scheduledAt: scheduledAtUTC });
       toast.success('Session scheduled & email sent to user');
       onSaved(res.data.session);
       onClose();

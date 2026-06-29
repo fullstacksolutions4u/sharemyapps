@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { ExternalLink, Mail, ArrowLeft, ChevronLeft, ChevronRight, Pencil, Trash2, EyeOff, Heart, Star, Send, Trash, MessageSquare, X, Eye, UserCircle2, Zap, Award, Trophy, Phone } from 'lucide-react';
+import { ExternalLink, Mail, ArrowLeft, ChevronLeft, ChevronRight, Pencil, Trash2, EyeOff, Heart, Star, Send, Trash, MessageSquare, X, Eye, UserCircle2, Zap, Award, Trophy, Phone, Crown } from 'lucide-react';
 
 const BADGE_CFG = {
   new_member: { label: 'New Member',         Icon: UserCircle2, cls: 'bg-[#F3F0EB] text-muted border-border' },
@@ -576,12 +576,30 @@ export default function ProjectDetail() {
                   }
                   <span className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-400 rounded-full ring-2 ring-white" />
                 </div>
-                {/* Follow button */}
+                {/* Badge top-right */}
+                {owner.premiumServices?.length > 0 ? (
+                  <span className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full font-bold text-white border-0"
+                    style={{ background: 'linear-gradient(135deg, #f59e0b, #d97706)', boxShadow: '0 1px 6px rgba(217,119,6,0.35)' }}>
+                    <Crown size={11} /> Premium
+                  </span>
+                ) : BADGE_CFG[owner.badge] ? (() => {
+                  const { label, Icon, cls } = BADGE_CFG[owner.badge];
+                  return (
+                    <span className={`inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full font-bold border ${cls}`}>
+                      <Icon size={11} /> {label}
+                    </span>
+                  );
+                })() : null}
+              </div>
+
+              <p className="font-bold text-[#1A1A1A] text-base leading-tight">{owner.name}</p>
+              <div className="flex items-center gap-2 mt-1 mb-3 flex-wrap">
+                <span className="text-xs text-muted">Developer</span>
                 {!isOwner && (
                   <button
                     onClick={handleFollow}
                     disabled={followLoading}
-                    className={`text-xs font-semibold px-4 py-1.5 rounded-full transition-all disabled:opacity-50 ${
+                    className={`text-xs font-semibold px-3 py-1 rounded-full transition-all disabled:opacity-50 ${
                       following
                         ? 'bg-[#F3F0EB] text-[#6B7280] hover:bg-red-50 hover:text-red-500'
                         : 'bg-[#00A693] text-white hover:bg-[#007D6F]'
@@ -590,22 +608,11 @@ export default function ProjectDetail() {
                     {followLoading ? '…' : following ? 'Following' : '+ Follow'}
                   </button>
                 )}
-              </div>
-
-              <p className="font-bold text-[#1A1A1A] text-base leading-tight">{owner.name}</p>
-              <div className="flex items-center gap-2 mt-0.5 mb-3">
-                <span className="text-xs text-muted">Developer</span>
-                {BADGE_CFG[owner.badge] ? (() => {
-                  const { label, Icon, cls } = BADGE_CFG[owner.badge];
-                  return (
-                    <span className={`inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full font-medium border ${cls}`}>
-                      <Icon size={11} /> {label}
-                    </span>
-                  );
-                })() : (
-                  <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full font-medium bg-[#F3F0EB] text-muted border border-border">
-                    Member
-                  </span>
+                {owner.linkedinUrl && (
+                  <a href={toAbsUrl(owner.linkedinUrl)} target="_blank" rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 text-xs text-[#0A66C2] hover:underline font-medium">
+                    <LinkedInIcon />
+                  </a>
                 )}
               </div>
 
@@ -664,7 +671,17 @@ export default function ProjectDetail() {
                     ? <img src={c.avatar} alt={c.name} className="w-8 h-8 rounded-full object-cover shrink-0" />
                     : <span className={`w-8 h-8 rounded-full text-white text-xs font-semibold flex items-center justify-center shrink-0 ${['bg-blue-500','bg-violet-500','bg-rose-500','bg-amber-500','bg-emerald-500','bg-cyan-500'][c.name?.charCodeAt(0) % 6]}`}>{c.name?.[0]?.toUpperCase()}</span>
                   }
-                  <span className="text-sm font-medium text-text">{c.name}</span>
+                  <div className="flex flex-col min-w-0">
+                    <span className="text-sm font-medium text-text leading-tight">{c.name}</span>
+                    {BADGE_CFG[c.badge] && (() => {
+                      const { label, Icon, cls } = BADGE_CFG[c.badge];
+                      return (
+                        <span className={`inline-flex items-center gap-1 text-xs px-1.5 py-0.5 rounded-full font-medium border w-fit mt-0.5 ${cls}`}>
+                          <Icon size={10} /> {label}
+                        </span>
+                      );
+                    })()}
+                  </div>
                 </div>
               ))}
             </div>

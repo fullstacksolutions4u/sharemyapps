@@ -169,8 +169,8 @@ exports.getProjects = async (req, res) => {
 exports.getProject = async (req, res) => {
   try {
     const project = await Project.findById(req.params.id)
-      .populate('owner', 'name email avatar phone linkedinUrl githubUrl leetcodeUrl followers badge hidden')
-      .populate('collaborators', 'name avatar');
+      .populate('owner', 'name email avatar phone linkedinUrl githubUrl leetcodeUrl followers badge hidden premiumServices')
+      .populate('collaborators', 'name avatar badge');
     if (!project) return res.status(404).json({ message: 'Project not found' });
     if (project.owner?.hidden) return res.status(404).json({ message: 'Project not found' });
     res.json(project);
