@@ -471,7 +471,7 @@ exports.sendActivationEmail = async ({ to, name }) => {
           </p>
 
           <p style="color:#374151;margin:0 0 20px;font-size:14px;">
-            To get started, visit the <strong>Services</strong> section in your dashboard page and request your session.
+            To get started, visit the <strong>Services</strong> section in your dashboard page and request your <strong>1:1 session with placement officer</strong>.
           </p>
 
           <div style="text-align:center;margin-bottom:24px;">
