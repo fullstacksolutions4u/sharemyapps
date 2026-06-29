@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { Eye, Trash2 } from 'lucide-react';
 import api from '../../api/axios';
 
-function PortfolioModal({ offerId, onClose }) {
+function PortfolioModal({ offerId, onClose, onContacted }) {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -106,6 +106,9 @@ function PortfolioModal({ offerId, onClose }) {
                 <a
                   href={`https://wa.me/${user.phone.replace(/\D/g, '')}?text=${whatsappMsg(user.name)}`}
                   target="_blank" rel="noreferrer"
+                  onClick={() => {
+                    api.patch(`/admin/offers/${offerId}/whatsapp-contacted`).then(() => onContacted && onContacted(offerId)).catch(() => {});
+                  }}
                   style={{
                     display: 'inline-flex', alignItems: 'center', gap: 6,
                     background: '#25D366', color: '#fff', borderRadius: 10,
@@ -693,7 +696,11 @@ export default function AdminOffersSection() {
   return (
     <div>
       {selectedOfferId && (
-        <PortfolioModal offerId={selectedOfferId} onClose={() => setSelectedOfferId(null)} />
+        <PortfolioModal
+          offerId={selectedOfferId}
+          onClose={() => setSelectedOfferId(null)}
+          onContacted={id => setOffers(prev => prev.map(o => o._id === id ? { ...o, whatsappContacted: true } : o))}
+        />
       )}
       {summaryOffer && (
         <SummaryModal offer={summaryOffer} onClose={() => setSummaryOffer(null)} onSummaryUpdate={handleSummaryUpdate} onCommentUpdate={handleCommentUpdate} />

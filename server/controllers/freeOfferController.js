@@ -1,5 +1,7 @@
 const FreeOffer = require('../models/FreeOffer');
 const User = require('../models/User');
+const PremiumService = require('../models/PremiumService');
+const { sendActivationEmail } = require('../utils/email');
 
 async function applyForFreeOffer(req, res) {
   try {
@@ -131,10 +133,19 @@ async function adminActivate(req, res) {
       .populate('user', 'name email avatar phone designations');
 
     if (activate) {
-      const user = await User.findById(offer.user);
-      if (user && !user.premiumServices.find(s => s.key === 'placement_session')) {
-        user.premiumServices.push({ key: 'placement_session', notes: 'Auto-unlocked on activation', unlockedBy: req.user._id });
+      const [user, allServices] = await Promise.all([
+        User.findById(offer.user),
+        PremiumService.find({ active: true }).select('key').lean(),
+      ]);
+      if (user) {
+        const existing = new Set(user.premiumServices.map(s => s.key));
+        for (const svc of allServices) {
+          if (!existing.has(svc.key)) {
+            user.premiumServices.push({ key: svc.key, notes: 'Auto-unlocked on activation', unlockedBy: req.user._id });
+          }
+        }
         await user.save();
+        sendActivationEmail({ to: user.email, name: user.name }).catch(() => {});
       }
     }
 

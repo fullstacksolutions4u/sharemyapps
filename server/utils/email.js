@@ -451,6 +451,61 @@ exports.sendResumeReadyEmail = async ({ to, name, serviceLabel, completionLink, 
   });
 };
 
+exports.sendActivationEmail = async ({ to, name }) => {
+  const servicesUrl = `${BASE_URL}/dashboard/services`;
+
+  await api.sendTransacEmail({
+    sender: FROM,
+    to: [{ email: to, name }],
+    subject: `You're in! Your ShareMyApps placement support is now active`,
+    htmlContent: `
+      <div style="font-family:Inter,Arial,sans-serif;max-width:560px;margin:0 auto;background:#fff;border-radius:12px;overflow:hidden;border:1px solid #E5E1DA;">
+        <div style="background:#00A693;padding:24px 32px;text-align:center;">
+          <img src="${LOGO_URL}" alt="ShareMyApps" style="height:80px;object-fit:contain;" />
+        </div>
+        <div style="padding:32px;">
+          <h2 style="margin:0 0 8px;font-size:20px;color:#1A1A1A;">🎉 You've been activated!</h2>
+          <p style="color:#374151;margin:0 0 16px;font-size:14px;">Hi ${name},</p>
+          <p style="color:#374151;margin:0 0 16px;font-size:14px;">
+            Great news — our team has reviewed your application and you've been <strong>approved for placement support</strong>. All premium services on ShareMyApps are now unlocked for you.
+          </p>
+
+          <div style="background:#F0FAF9;border:1.5px solid #0C8C8C;border-radius:12px;padding:20px 24px;margin-bottom:24px;">
+            <p style="margin:0 0 10px;font-size:13px;font-weight:700;color:#0A5F5F;text-transform:uppercase;letter-spacing:0.05em;">What's unlocked for you</p>
+            <table style="width:100%;border-collapse:collapse;">
+              <tr>
+                <td style="padding:8px 0;border-bottom:1px solid #CCEDE9;font-size:14px;color:#1A2120;">
+                  🎯 <strong>1:1 Session with Placement Specialist</strong>
+                </td>
+              </tr>
+              <tr>
+                <td style="padding:8px 0;font-size:14px;color:#1A2120;">
+                  📄 ATS Compatible Resume &amp; Cover Letter Optimization
+                </td>
+              </tr>
+            </table>
+          </div>
+
+          <p style="color:#374151;margin:0 0 20px;font-size:14px;">
+            To get started, visit your <strong>Services</strong> page and request your <strong>1:1 session</strong> with our placement specialist. Pick a date and time that works for you — our team will confirm and send you a Google Meet link.
+          </p>
+
+          <div style="text-align:center;margin-bottom:24px;">
+            <a href="${servicesUrl}" style="display:inline-block;background:#0A7373;color:#fff;text-decoration:none;padding:13px 32px;border-radius:8px;font-weight:700;font-size:14px;">
+              Request Your 1:1 Session →
+            </a>
+          </div>
+
+          <p style="color:#6B7280;font-size:13px;margin:0;">
+            Have questions? Reply to this email or reach us at <a href="mailto:hello@sharemyapps.in" style="color:#00A693;text-decoration:none;">hello@sharemyapps.in</a>.
+          </p>
+        </div>
+        ${FOOTER('You received this email because your ShareMyApps placement application was approved.')}
+      </div>
+    `,
+  });
+};
+
 exports.sendSessionScheduledEmail = async ({ to, name, serviceLabel, meetLink, scheduledAt }) => {
   const scheduledStr = scheduledAt
     ? new Date(scheduledAt).toLocaleString('en-IN', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Kolkata' }) + ' IST'

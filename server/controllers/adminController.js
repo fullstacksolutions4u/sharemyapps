@@ -1,6 +1,7 @@
 const Project = require('../models/Project');
 const User = require('../models/User');
 const Notification = require('../models/Notification');
+const FreeOffer = require('../models/FreeOffer');
 const { sendProjectApprovedEmail, sendProjectRejectedEmail } = require('../utils/email');
 
 exports.getPendingProjects = async (req, res) => {
@@ -391,7 +392,10 @@ exports.deleteUser = async (req, res) => {
     if (user.role === 'admin') return res.status(403).json({ message: 'Cannot delete admin accounts' });
     user.isDeleted = true;
     user.deletedAt = new Date();
-    await user.save();
+    await Promise.all([
+      user.save(),
+      FreeOffer.deleteOne({ user: user._id }),
+    ]);
     res.json({ message: 'User deleted successfully' });
   } catch (err) {
     res.status(500).json({ message: err.message });
