@@ -5,117 +5,7 @@ import { useAuth } from '../context/AuthContext';
 
 const STATUS_COLOR = {
   pending:   { bg: '#fff8e6', color: '#b45309', border: '#fde68a' },
-  scheduled: { bg: '#f0faf9', color: '#0a7373', border: '#a7f3d0' },
-  completed: { bg: '#f0f4ff', color: '#3b4fd8', border: '#c7d2fe' },
 };
-
-function SessionStatus({ session }) {
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-        <span style={{
-          fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: 999,
-          background: STATUS_COLOR[session.status]?.bg,
-          color: STATUS_COLOR[session.status]?.color,
-          border: `1px solid ${STATUS_COLOR[session.status]?.border}`,
-        }}>
-          {STATUS_LABEL[session.status]}
-        </span>
-        <span style={{ fontSize: 11, color: '#9aaca9' }}>
-          Requested {new Date(session.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
-        </span>
-      </div>
-
-      {session.status === 'pending' && (
-        <div style={{ padding: '14px 16px', background: '#faf8f5', borderRadius: 10, border: '1px solid #eae6df' }}>
-          <p style={{ margin: 0, fontSize: 13, color: '#6b7776', lineHeight: 1.6 }}>
-            {session.serviceType === 'document'
-              ? "Our team is preparing your documents. You'll receive an email with your download link when they're ready."
-              : 'Your request has been received. Our team will schedule a meeting and share the Google Meet link here.'}
-          </p>
-        </div>
-      )}
-
-      {session.status === 'scheduled' && session.meetLink && (
-        <div style={{ padding: '16px 18px', background: '#f0faf9', borderRadius: 10, border: '1.5px solid #0c8c8c' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
-            <Video size={15} color="#0a7373" />
-            <span style={{ fontSize: 13, fontWeight: 700, color: '#0a7373' }}>Meeting Scheduled</span>
-          </div>
-          {session.scheduledAt && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12 }}>
-              <Clock size={13} color="#9aaca9" />
-              <span style={{ fontSize: 12, color: '#6b7776' }}>
-                {new Date(session.scheduledAt).toLocaleString('en-IN', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
-              </span>
-            </div>
-          )}
-          {session.adminNotes && (
-            <p style={{ margin: '0 0 12px', fontSize: 13, color: '#0a5f5f', lineHeight: 1.6 }}>{session.adminNotes}</p>
-          )}
-          <a
-            href={session.meetLink}
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{
-              display: 'inline-flex', alignItems: 'center', gap: 8,
-              background: '#0a7373', color: '#fff', borderRadius: 8,
-              padding: '10px 18px', fontSize: 13, fontWeight: 700,
-              textDecoration: 'none', fontFamily: "'Manrope', sans-serif",
-            }}
-          >
-            <Video size={14} /> Join Google Meet
-          </a>
-        </div>
-      )}
-
-      {session.status === 'completed' && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '12px 16px', background: '#f0f4ff', borderRadius: 10, border: '1px solid #c7d2fe' }}>
-            <CheckCircle2 size={15} color="#3b4fd8" />
-            <span style={{ fontSize: 13, color: '#3b4fd8', fontWeight: 600 }}>Completed</span>
-          </div>
-
-          {session.completionLink && (
-            <div style={{ padding: '16px 18px', background: '#f0faf9', borderRadius: 10, border: '1.5px solid #0c8c8c', textAlign: 'center' }}>
-              <p style={{ margin: '0 0 14px', fontSize: 13, color: '#0a5f5f', fontWeight: 600 }}>Your documents are ready!</p>
-              <div style={{ display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' }}>
-                <a
-                  href={session.completionLink}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{
-                    display: 'inline-flex', alignItems: 'center', gap: 8,
-                    background: '#0a7373', color: '#fff', borderRadius: 8,
-                    padding: '10px 20px', fontSize: 13, fontWeight: 700,
-                    textDecoration: 'none', fontFamily: "'Manrope', sans-serif",
-                  }}
-                >
-                  <FileText size={14} /> {session.coverLetterLink ? 'Download Resume' : 'Download Documents'}
-                </a>
-                {session.coverLetterLink && (
-                  <a
-                    href={session.coverLetterLink}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{
-                      display: 'inline-flex', alignItems: 'center', gap: 8,
-                      background: '#0a7373', color: '#fff', borderRadius: 8,
-                      padding: '10px 20px', fontSize: 13, fontWeight: 700,
-                      textDecoration: 'none', fontFamily: "'Manrope', sans-serif",
-                    }}
-                  >
-                    <FileText size={14} /> Download Cover Letter
-                  </a>
-                )}
-              </div>
-            </div>
-          )}
-        </div>
-      )}
-    </div>
-  );
-}
 
 const fieldStyle = {
   width: '100%', border: '1px solid #e2e8e6', borderRadius: 8,
@@ -236,7 +126,6 @@ function ServiceRow({ service, unlockEntry, session: activeSession, onSessionReq
 
   const isDocumentService = service.serviceType === 'document';
   const isScheduled = activeSession?.status === 'scheduled';
-  const isCompleted = activeSession?.status === 'completed';
 
   const handleRequested = () => {
     setShowForm(false);
@@ -390,7 +279,7 @@ export default function Services() {
     if (!user) return;
     api.get('/premium-services/my-services').then(r => setUnlockedServices(r.data.services || [])).catch(() => {});
     fetchSessions();
-  }, [user]); // eslint-disable-line react-hooks/exhaustive-deps, react-hooks/set-state-in-effect
+  }, [user]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const getUnlockEntry = key => unlockedServices.find(s => s.key === key) || null;
 
