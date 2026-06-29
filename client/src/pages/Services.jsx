@@ -241,8 +241,8 @@ function AccordionItem({ service, unlockEntry, session: activeSession, onSession
 
   // Auto-expand when scheduled (join button visible) or when document is ready for download
   useEffect(() => {
-    if (activeSession?.status === 'scheduled') setOpen(true);
-    if (documentReady) setOpen(true);
+    if (activeSession?.status === 'scheduled') setOpen(true); // eslint-disable-line react-hooks/set-state-in-effect
+    if (documentReady) setOpen(true); // eslint-disable-line react-hooks/set-state-in-effect
   }, [activeSession?.status, documentReady]);
 
   const handleRequested = () => {
@@ -354,7 +354,7 @@ export default function Services() {
     if (!user) return;
     api.get('/premium-services/my-services').then(r => setUnlockedServices(r.data.services || [])).catch(() => {});
     fetchSessions();
-  }, [user]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [user]); // eslint-disable-line react-hooks/exhaustive-deps, react-hooks/set-state-in-effect
 
   const getUnlockEntry = key => unlockedServices.find(s => s.key === key) || null;
 

@@ -206,7 +206,7 @@ function SessionRequestsTab({ serviceKey }) {
     finally { setLoading(false); }
   };
 
-  useEffect(() => { fetchSessions(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { fetchSessions(); }, []); // eslint-disable-line react-hooks/exhaustive-deps, react-hooks/set-state-in-effect
 
   const handleSaved = () => { fetchSessions(); };
 
@@ -392,7 +392,7 @@ function DocumentDeliveriesTab({ service }) {
     finally { setLoading(false); }
   };
 
-  useEffect(() => { fetchUsers(); }, [service.key]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { fetchUsers(); }, [service.key]); // eslint-disable-line react-hooks/exhaustive-deps, react-hooks/set-state-in-effect
 
   if (loading) return <div style={centerMsg}>Loading…</div>;
   if (users.length === 0) return <div style={centerMsg}>No users are entitled to this service yet.</div>;
