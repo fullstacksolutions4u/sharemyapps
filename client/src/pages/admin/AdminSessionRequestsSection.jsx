@@ -25,6 +25,15 @@ function ScheduleModal({ session, onClose, onSaved }) {
 
   const handleSave = async () => {
     if (!meetLink.trim()) { toast.error('Please enter a Google Meet link'); return; }
+    if (scheduledAt && session.availabilityFrom && session.availabilityTo) {
+      const scheduled = new Date(scheduledAt);
+      const from = new Date(session.availabilityFrom);
+      const to = new Date(session.availabilityTo);
+      if (scheduled < from || scheduled > to) {
+        toast.error(`Scheduled time must be within user's availability: ${from.toLocaleString('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })} – ${to.toLocaleString('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}`);
+        return;
+      }
+    }
     setSaving(true);
     try {
       const res = await api.put(`/admin/session-requests/${session._id}`, { meetLink, scheduledAt });
@@ -179,9 +188,9 @@ function CompleteModal({ session, onClose, onCompleted }) {
 export default function AdminSessionRequestsSection() {
   const [sessions, setSessions] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [filterStatus, setFilterStatus] = useState('all');
   const [scheduling, setScheduling] = useState(null);
   const [completing, setCompleting] = useState(null);
+  const [hoveredId, setHoveredId] = useState(null);
 
   const fetchSessions = async () => {
     setLoading(true);
@@ -196,95 +205,106 @@ export default function AdminSessionRequestsSection() {
 
   const handleSaved = () => { fetchSessions(); };
 
-  const filtered = filterStatus === 'all' ? sessions : sessions.filter(s => s.status === filterStatus);
-
-  const counts = sessions.reduce((acc, s) => { acc[s.status] = (acc[s.status] || 0) + 1; return acc; }, {});
+  // Group sessions by user
+  const userGroups = Object.values(
+    sessions.reduce((acc, s) => {
+      const uid = s.user?._id || String(s.user);
+      if (!acc[uid]) acc[uid] = { user: s.user, sessions: [] };
+      acc[uid].sessions.push(s);
+      return acc;
+    }, {})
+  );
 
   return (
     <div>
-      {/* Filter tabs */}
-      <div style={{ display: 'flex', gap: 8, marginBottom: 20, flexWrap: 'wrap' }}>
-        {['all', 'pending', 'scheduled', 'completed'].map(f => (
-          <button
-            key={f}
-            onClick={() => setFilterStatus(f)}
-            style={{
-              border: filterStatus === f ? '1.5px solid #0a7373' : '1px solid #e5e7eb',
-              borderRadius: 8, padding: '6px 14px', fontSize: 12, fontWeight: 600,
-              background: filterStatus === f ? '#f0faf9' : '#fff',
-              color: filterStatus === f ? '#0a7373' : '#555', cursor: 'pointer',
-            }}
-          >
-            {f === 'all' ? 'All' : STATUS_LABEL[f]}
-            {f !== 'all' && counts[f] > 0 && (
-              <span style={{ marginLeft: 6, background: STATUS_COLOR[f]?.bg, color: STATUS_COLOR[f]?.color, borderRadius: 999, padding: '1px 7px', fontSize: 11 }}>
-                {counts[f]}
-              </span>
-            )}
-            {f === 'all' && (
-              <span style={{ marginLeft: 6, background: '#f0f0f0', color: '#555', borderRadius: 999, padding: '1px 7px', fontSize: 11 }}>
-                {sessions.length}
-              </span>
-            )}
-          </button>
-        ))}
-      </div>
-
       {loading ? (
         <div style={{ textAlign: 'center', padding: '40px 24px', color: '#aaa', fontSize: 14 }}>Loading…</div>
-      ) : filtered.length === 0 ? (
+      ) : userGroups.length === 0 ? (
         <div style={{ textAlign: 'center', padding: '40px 24px', color: '#aaa', fontSize: 14 }}>No session requests.</div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 1, background: '#f0f0f0', borderRadius: 12, overflow: 'hidden' }}>
-          {filtered.map(session => {
-            const c = STATUS_COLOR[session.status] || STATUS_COLOR.pending;
-            return (
-              <div
-                key={session._id}
-                onClick={() => {
-                  if (session.serviceType === 'document') { if (session.status !== 'completed') setCompleting(session); }
-                  else if (session.status !== 'completed') setScheduling(session);
-                }}
-                style={{ background: '#fff', padding: '14px 18px', display: 'flex', alignItems: 'center', gap: 14, cursor: session.status !== 'completed' ? 'pointer' : 'default' }}
-              >
-                {session.user?.avatar
-                  ? <img src={session.user.avatar} alt="" style={{ width: 34, height: 34, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />
-                  : <div style={{ width: 34, height: 34, borderRadius: '50%', background: '#dcefed', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 13, color: '#0a7373', flexShrink: 0 }}>{session.user?.name?.[0]?.toUpperCase() || '?'}</div>
+          {userGroups.map(({ user, sessions: userSessions }) => (
+            <div key={user?._id} style={{ background: '#fff', padding: '14px 18px', display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' }}>
+              {/* Avatar + name */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0, minWidth: 180 }}>
+                {user?.avatar
+                  ? <img src={user.avatar} alt="" style={{ width: 34, height: 34, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />
+                  : <div style={{ width: 34, height: 34, borderRadius: '50%', background: '#dcefed', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 13, color: '#0a7373', flexShrink: 0 }}>{user?.name?.[0]?.toUpperCase() || '?'}</div>
                 }
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-                    <span style={{ fontSize: 14, fontWeight: 600, color: '#1a1a1a' }}>{session.user?.name}</span>
-                    <span style={{ fontSize: 11, color: '#888' }}>{session.user?.email}</span>
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 2, flexWrap: 'wrap' }}>
-                    <span style={{ fontSize: 12, color: '#555' }}>{session.serviceLabel}</span>
-                    {session.scheduledAt && (
-                      <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, color: '#9aaca9' }}>
-                        <Clock size={11} />
-                        {new Date(session.scheduledAt).toLocaleString('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
-                      </span>
-                    )}
-                  </div>
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
-                  {(session.status === 'scheduled' || (session.serviceType === 'document' && session.status === 'pending')) && (
-                    <button
-                      onClick={e => { e.stopPropagation(); setCompleting(session); }}
-                      style={{ fontSize: 11, fontWeight: 700, padding: '4px 10px', borderRadius: 7, border: '1.5px solid #0a7373', background: '#f0faf9', color: '#0a7373', cursor: 'pointer', whiteSpace: 'nowrap' }}
-                    >
-                      {session.serviceType === 'document' ? 'Send Documents' : 'Complete & Send'}
-                    </button>
-                  )}
-                  <span style={{ fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: 999, background: c.bg, color: c.color, border: `1px solid ${c.border}` }}>
-                    {STATUS_LABEL[session.status]}
-                  </span>
-                  <span style={{ fontSize: 11, color: '#bbb' }}>
-                    {new Date(session.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}
-                  </span>
+                <div style={{ minWidth: 0 }}>
+                  <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: '#1a1a1a', whiteSpace: 'nowrap' }}>{user?.name}</p>
+                  <p style={{ margin: 0, fontSize: 11, color: '#888', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 140 }}>{user?.email}</p>
                 </div>
               </div>
-            );
-          })}
+
+              {/* Divider */}
+              <div style={{ width: 1, height: 36, background: '#f0ece6', flexShrink: 0 }} />
+
+              {/* Service stage chips */}
+              <div style={{ display: 'flex', alignItems: 'center', flex: 1, flexWrap: 'wrap', gap: 0 }}>
+                {userSessions.map((session, idx) => {
+                  const c = STATUS_COLOR[session.status] || STATUS_COLOR.pending;
+                  const isHovered = hoveredId === session._id;
+                  const canAct = session.status !== 'completed';
+                  const showComplete = session.status === 'scheduled' || (session.serviceType === 'document' && session.status === 'pending');
+
+                  return (
+                    <div key={session._id} style={{ display: 'flex', alignItems: 'center' }}>
+                      {idx > 0 && (
+                        <span style={{ margin: '0 8px', color: '#d0ccc6', fontSize: 16 }}>→</span>
+                      )}
+                      <div
+                        onMouseEnter={() => setHoveredId(session._id)}
+                        onMouseLeave={() => setHoveredId(null)}
+                        onClick={() => {
+                          if (!canAct) return;
+                          if (session.serviceType === 'document') setCompleting(session);
+                          else setScheduling(session);
+                        }}
+                        style={{
+                          display: 'flex', flexDirection: 'column', gap: 6,
+                          padding: '10px 14px', borderRadius: 10,
+                          border: `1px solid ${isHovered ? '#0c8c8c' : '#eae6df'}`,
+                          background: isHovered ? '#f0faf9' : '#faf8f5',
+                          cursor: canAct ? 'pointer' : 'default',
+                          minWidth: 160,
+                          filter: isHovered ? 'none' : 'blur(1.5px)',
+                          opacity: isHovered ? 1 : 0.45,
+                          transition: 'filter 0.2s, opacity 0.2s, border-color 0.2s, background 0.2s',
+                        }}
+                      >
+                        <span style={{ fontSize: 11, fontWeight: 700, color: '#6b7776', whiteSpace: 'nowrap' }}>{session.serviceLabel}</span>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+                          <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 999, background: c.bg, color: c.color, border: `1px solid ${c.border}`, whiteSpace: 'nowrap' }}>
+                            {STATUS_LABEL[session.status]}
+                          </span>
+                          {session.scheduledAt && (
+                            <span style={{ display: 'flex', alignItems: 'center', gap: 3, fontSize: 10, color: '#9aaca9' }}>
+                              <Clock size={10} />
+                              {new Date(session.scheduledAt).toLocaleString('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                            </span>
+                          )}
+                        </div>
+                        {showComplete && (
+                          <button
+                            onClick={e => { e.stopPropagation(); setCompleting(session); }}
+                            style={{ fontSize: 10, fontWeight: 700, padding: '3px 8px', borderRadius: 6, border: '1.5px solid #0a7373', background: '#f0faf9', color: '#0a7373', cursor: 'pointer', whiteSpace: 'nowrap', width: 'fit-content' }}
+                          >
+                            {session.serviceType === 'document' ? 'Send Documents' : 'Complete & Send'}
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Date */}
+              <span style={{ fontSize: 11, color: '#bbb', flexShrink: 0 }}>
+                {new Date(userSessions[0].createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}
+              </span>
+            </div>
+          ))}
         </div>
       )}
 

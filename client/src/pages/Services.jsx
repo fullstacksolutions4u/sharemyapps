@@ -1,9 +1,8 @@
 import { useEffect, useState } from 'react';
-import { Lock, LockOpen, ChevronDown, ChevronUp, Video, Clock, CheckCircle2, FileText } from 'lucide-react';
+import { Lock, LockOpen, Video, CheckCircle2, FileText } from 'lucide-react';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 
-const STATUS_LABEL = { pending: 'Pending', scheduled: 'Scheduled', completed: 'Completed' };
 const STATUS_COLOR = {
   pending:   { bg: '#fff8e6', color: '#b45309', border: '#fde68a' },
   scheduled: { bg: '#f0faf9', color: '#0a7373', border: '#a7f3d0' },
@@ -231,67 +230,110 @@ function RequestForm({ serviceKey, onRequested }) {
   );
 }
 
-function AccordionItem({ service, unlockEntry, session: activeSession, onSessionRequested }) {
+function ServiceRow({ service, unlockEntry, session: activeSession, onSessionRequested }) {
   const unlocked = !!unlockEntry;
-  const [open, setOpen] = useState(false);
   const [showForm, setShowForm] = useState(false);
 
   const isDocumentService = service.serviceType === 'document';
-  const documentReady = isDocumentService && activeSession?.status === 'completed' && activeSession?.completionLink;
-
-  // Auto-expand when scheduled (join button visible) or when document is ready for download
-  useEffect(() => {
-    if (activeSession?.status === 'scheduled') setOpen(true); // eslint-disable-line react-hooks/set-state-in-effect
-    if (documentReady) setOpen(true); // eslint-disable-line react-hooks/set-state-in-effect
-  }, [activeSession?.status, documentReady]);
+  const isScheduled = activeSession?.status === 'scheduled';
+  const isCompleted = activeSession?.status === 'completed';
 
   const handleRequested = () => {
     setShowForm(false);
     onSessionRequested();
   };
 
-  const hasExpandContent = documentReady ||
-    (!isDocumentService && activeSession && (
-      activeSession.status === 'scheduled' ||
-      activeSession.status === 'completed'
-    ));
-
   return (
     <div style={{
-      background: '#fff',
-      borderRadius: 14,
-      border: open ? '1.5px solid #d0d8d6' : '1.5px solid #eae6df',
-      overflow: 'hidden',
-      transition: 'border-color 0.15s',
+      background: '#fff', borderRadius: 14,
+      border: '1.5px solid #eae6df', overflow: 'hidden',
     }}>
-      {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '14px 20px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '14px 20px', flexWrap: 'wrap' }}>
+        {/* Lock icon */}
         <div style={{
           width: 38, height: 38, borderRadius: 10, flexShrink: 0,
           background: unlocked ? '#dcefed' : '#ede9e1',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
         }}>
-          {unlocked
-            ? <LockOpen size={18} color="#0a7373" />
-            : <Lock size={16} color="#9aaca9" />
-          }
+          {unlocked ? <LockOpen size={18} color="#0a7373" /> : <Lock size={16} color="#9aaca9" />}
         </div>
 
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <span style={{ fontSize: 14, fontWeight: 700, color: '#1a2120' }}>{service.label}</span>
-          {activeSession && !(isDocumentService && activeSession.status === 'pending') && (
-            <span style={{
-              marginLeft: 10, fontSize: 10, fontWeight: 700, padding: '2px 8px',
-              borderRadius: 999, verticalAlign: 'middle',
-              background: STATUS_COLOR[activeSession.status]?.bg,
-              color: STATUS_COLOR[activeSession.status]?.color,
-            }}>
-              {isDocumentService && activeSession.status === 'completed' ? 'Ready' : STATUS_LABEL[activeSession.status]}
-            </span>
-          )}
-        </div>
+        {/* Label */}
+        <span style={{ fontSize: 14, fontWeight: 700, color: '#1a2120', flex: 1, minWidth: 0 }}>
+          {service.label}
+        </span>
 
-        {/* Request Session button — only for session-type services with no active request */}
+        {/* Scheduled: Join Google Meet button with time */}
+        {isScheduled && activeSession.meetLink && (
+          <a
+            href={activeSession.meetLink}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              display: 'inline-flex', alignItems: 'center', gap: 8,
+              background: '#0a7373', color: '#fff', borderRadius: 8,
+              padding: '8px 16px', fontSize: 12, fontWeight: 700,
+              textDecoration: 'none', fontFamily: "'Manrope', sans-serif",
+              whiteSpace: 'nowrap', flexShrink: 0,
+            }}
+          >
+            <Video size={13} />
+            Join Google Meet
+            {activeSession.scheduledAt && (
+              <span style={{ fontWeight: 400, opacity: 0.85 }}>
+                · {new Date(activeSession.scheduledAt).toLocaleString('en-IN', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+              </span>
+            )}
+          </a>
+        )}
+
+        {/* Completed session */}
+        {activeSession?.status === 'completed' && !isDocumentService && (
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 700, color: '#3b4fd8' }}>
+            <CheckCircle2 size={14} /> Completed
+          </span>
+        )}
+
+        {/* Document service: always show 2 download buttons, active only when ready */}
+        {isDocumentService && (
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', flexShrink: 0 }}>
+            {[
+              { label: 'Download Resume', link: activeSession?.completionLink },
+              { label: 'Download Cover letter', link: activeSession?.coverLetterLink },
+            ].map(({ label, link }) => (
+              link ? (
+                <a
+                  key={label}
+                  href={link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    display: 'inline-flex', alignItems: 'center', gap: 7,
+                    background: '#0a7373', color: '#fff', borderRadius: 8,
+                    padding: '8px 14px', fontSize: 12, fontWeight: 700,
+                    textDecoration: 'none', fontFamily: "'Manrope', sans-serif", whiteSpace: 'nowrap',
+                  }}
+                >
+                  <FileText size={13} /> {label}
+                </a>
+              ) : (
+                <span
+                  key={label}
+                  style={{
+                    display: 'inline-flex', alignItems: 'center', gap: 7,
+                    background: '#f0f0f0', color: '#b0b0b0', borderRadius: 8,
+                    padding: '8px 14px', fontSize: 12, fontWeight: 700,
+                    whiteSpace: 'nowrap', fontFamily: "'Manrope', sans-serif",
+                  }}
+                >
+                  <FileText size={13} /> {label}
+                </span>
+              )
+            ))}
+          </div>
+        )}
+
+        {/* Request Session button */}
         {unlocked && !activeSession && !isDocumentService && (
           <button
             onClick={() => setShowForm(f => !f)}
@@ -306,28 +348,22 @@ function AccordionItem({ service, unlockEntry, session: activeSession, onSession
           </button>
         )}
 
-        {/* Chevron only when there's scheduled/completed content to show */}
-        {hasExpandContent && (
-          <button
-            onClick={() => setOpen(o => !o)}
-            style={{ flexShrink: 0, color: '#9aaca9', border: 'none', background: 'none', cursor: 'pointer', padding: 4 }}
-          >
-            {open ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
-          </button>
+        {/* Pending non-document: show status badge */}
+        {activeSession?.status === 'pending' && !isDocumentService && (
+          <span style={{
+            fontSize: 10, fontWeight: 700, padding: '3px 10px', borderRadius: 999,
+            background: STATUS_COLOR.pending.bg, color: STATUS_COLOR.pending.color,
+            border: `1px solid ${STATUS_COLOR.pending.border}`, whiteSpace: 'nowrap',
+          }}>
+            Pending
+          </span>
         )}
       </div>
 
-      {/* Request form — inline below header, not inside accordion */}
+      {/* Request form inline */}
       {showForm && (
         <div style={{ borderTop: '1px solid #f0ece6', padding: '16px 20px' }}>
           <RequestForm serviceKey={service.key} onRequested={handleRequested} />
-        </div>
-      )}
-
-      {/* Body — only for scheduled/completed sessions */}
-      {open && hasExpandContent && (
-        <div style={{ borderTop: '1px solid #f0ece6', padding: '20px 20px' }}>
-          <SessionStatus session={activeSession} />
         </div>
       )}
     </div>
@@ -379,11 +415,18 @@ export default function Services() {
     );
   }
 
+  const placementSession = getSession('placement_session');
+  const atsSession = getSession('ats_compatible_resume_cover_letter_optimization');
+  const placementScheduled =
+    placementSession?.status === 'scheduled' ||
+    placementSession?.status === 'completed' ||
+    !!atsSession?.completionLink;
+
   return (
     <div style={{ flex: 1, overflowY: 'auto', padding: '28px 24px', fontFamily: "'Manrope', system-ui, sans-serif", background: '#f2efe8' }}>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-        {catalog.map(service => (
-          <AccordionItem
+        {catalog.filter(service => service.serviceType !== 'document' || placementScheduled).map(service => (
+          <ServiceRow
             key={service.key}
             service={service}
             unlockEntry={getUnlockEntry(service.key)}

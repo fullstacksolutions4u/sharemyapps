@@ -474,7 +474,7 @@ export default function Profile() {
           </div>
 
           {/* Danger zone */}
-          <div className="border border-red-100 bg-red-50/50 rounded-2xl p-6 lg:mt-8">
+          <div className="border border-red-100 bg-red-50/50 rounded-2xl p-6 lg:mt-8 opacity-40 hover:opacity-100 transition-opacity duration-300">
             <h2 className="text-sm font-semibold text-red-600 mb-1">Danger Zone</h2>
             <p className="text-xs text-muted mb-3">Permanently delete your account and all your projects.</p>
             <button

@@ -470,24 +470,8 @@ exports.sendActivationEmail = async ({ to, name }) => {
             Great news — our team has reviewed your application and you've been <strong>approved for placement support</strong>. All premium services on ShareMyApps are now unlocked for you.
           </p>
 
-          <div style="background:#F0FAF9;border:1.5px solid #0C8C8C;border-radius:12px;padding:20px 24px;margin-bottom:24px;">
-            <p style="margin:0 0 10px;font-size:13px;font-weight:700;color:#0A5F5F;text-transform:uppercase;letter-spacing:0.05em;">What's unlocked for you</p>
-            <table style="width:100%;border-collapse:collapse;">
-              <tr>
-                <td style="padding:8px 0;border-bottom:1px solid #CCEDE9;font-size:14px;color:#1A2120;">
-                  🎯 <strong>1:1 Session with Placement Specialist</strong>
-                </td>
-              </tr>
-              <tr>
-                <td style="padding:8px 0;font-size:14px;color:#1A2120;">
-                  📄 ATS Compatible Resume &amp; Cover Letter Optimization
-                </td>
-              </tr>
-            </table>
-          </div>
-
           <p style="color:#374151;margin:0 0 20px;font-size:14px;">
-            To get started, visit your <strong>Services</strong> page and request your <strong>1:1 session</strong> with our placement specialist. Pick a date and time that works for you — our team will confirm and send you a Google Meet link.
+            To get started, visit the <strong>Services</strong> section in your dashboard page and request your session.
           </p>
 
           <div style="text-align:center;margin-bottom:24px;">

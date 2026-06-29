@@ -79,7 +79,7 @@ router.post('/:key/session-request', protect, async (req, res) => {
     const existing = await SessionRequest.findOne({ user: req.user._id, serviceKey: req.params.key, status: { $in: ['pending', 'scheduled'] } });
     if (existing) return res.status(409).json({ message: 'You already have an active request for this service' });
 
-    const service = await PremiumService.findOne({ key: req.params.key }).lean();
+    const service = CATALOG.find(s => s.key === req.params.key);
     const session = await SessionRequest.create({
       user: req.user._id,
       serviceKey: req.params.key,

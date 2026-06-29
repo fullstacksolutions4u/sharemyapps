@@ -639,6 +639,14 @@ router.post('/session-requests/document-deliver', async (req, res) => {
   } catch (err) { res.status(500).json({ message: err.message }); }
 });
 
+router.delete('/session-requests/user/:userId', async (req, res) => {
+  try {
+    const SessionRequest = require('../models/SessionRequest');
+    await SessionRequest.deleteMany({ user: req.params.userId });
+    res.json({ message: 'Deleted' });
+  } catch (err) { res.status(500).json({ message: err.message }); }
+});
+
 router.get('/session-requests', async (_req, res) => {
   try {
     const SessionRequest = require('../models/SessionRequest');
