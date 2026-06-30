@@ -578,7 +578,7 @@ export default function ProjectDetail() {
                 {owner.premiumServices?.length > 0 ? (
                   <span className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full font-bold text-white border-0"
                     style={{ background: 'linear-gradient(135deg, #f59e0b, #d97706)', boxShadow: '0 1px 6px rgba(217,119,6,0.35)' }}>
-                    <Crown size={11} /> Premium
+                    <Crown size={11} /> Premium Member
                   </span>
                 ) : BADGE_CFG[owner.badge] ? (() => {
                   const { label, Icon, cls } = BADGE_CFG[owner.badge];

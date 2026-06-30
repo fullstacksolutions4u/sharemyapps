@@ -8,6 +8,7 @@ import { useQuery } from '@tanstack/react-query';
 import api from '../api/axios';
 
 const BADGE = {
+  premium:    { label: 'Premium Member', cls: 'bg-linear-to-r from-amber-400 via-yellow-500 to-orange-400 text-white border-0 shadow-sm' },
   new_member: { label: 'New Member',    cls: 'bg-linear-to-r from-violet-500 via-pink-500 to-orange-400 text-white border-0 shadow-sm' },
   active:     { label: 'Active Member', cls: 'bg-blue-50 text-blue-600 border-blue-200' },
 };
@@ -55,7 +56,7 @@ function SocialBtn({ href, icon: Icon, label, cls }) {
 
 function DeveloperCard({ dev, idx }) {
   const initials = dev.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
-  const badge = BADGE[dev.badge] || BADGE.new_member;
+  const badge = dev.premiumServices?.length > 0 ? BADGE.premium : (BADGE[dev.badge] || BADGE.new_member);
   const accent = CARD_ACCENTS[idx % CARD_ACCENTS.length];
 
   return (
@@ -98,7 +99,7 @@ function DeveloperCard({ dev, idx }) {
               className="flex items-center gap-1 text-[10px] font-bold px-2.5 py-1 rounded-full border-0 transition-opacity hover:opacity-80"
               style={{ background: 'linear-gradient(135deg, #f59e0b, #d97706)', color: '#fff', boxShadow: '0 1px 6px rgba(217,119,6,0.35)' }}>
               <Crown size={10} />
-              Premium
+              Premium Member
             </Link>
           ) : (
             <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full border ${badge.cls}`}>
