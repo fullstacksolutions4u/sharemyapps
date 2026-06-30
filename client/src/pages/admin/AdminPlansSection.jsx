@@ -13,12 +13,6 @@ function JdAnalysisCard({ config, onSaved }) {
   const [dailyLimit, setDailyLimit]         = useState(config?.jdFreeLimit ?? 5);
   const [saving, setSaving] = useState(false);
 
-  useEffect(() => {
-    if (!config) return;
-    setPaymentEnabled(config.jdFeatureEnabled ?? true);
-    setDailyLimit(config.jdFreeLimit ?? 5);
-  }, [config]);
-
   const handleSave = async () => {
     setSaving(true);
     try {
@@ -86,12 +80,6 @@ function FreeOfferCard({ config, onSaved }) {
   const [enabled, setEnabled] = useState(config?.freeOfferEnabled ?? true);
   const [price, setPrice]     = useState((config?.premiumServicePricePaise ?? 99900) / 100);
   const [saving, setSaving]   = useState(false);
-
-  useEffect(() => {
-    if (!config) return;
-    setEnabled(config.freeOfferEnabled ?? true);
-    setPrice((config.premiumServicePricePaise ?? 99900) / 100);
-  }, [config]);
 
   const handleSave = async () => {
     setSaving(true);
@@ -189,7 +177,12 @@ export default function AdminPlansSection() {
       .finally(() => setLoadingPay(false));
   };
 
-  useEffect(() => { loadPayments(1); }, []);
+  useEffect(() => {
+    api.get('/admin/payments?page=1')
+      .then(r => { setPaymentsData(r.data); setPage(1); })
+      .catch(() => {})
+      .finally(() => setLoadingPay(false));
+  }, []);
 
   return (
     <div className="max-w-5xl">
