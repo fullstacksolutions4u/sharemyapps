@@ -3,6 +3,7 @@ const crypto = require('crypto');
 const User = require('../models/User');
 const Payment = require('../models/Payment');
 const Plan = require('../models/Plan');
+const Notification = require('../models/Notification');
 const { getConfig } = require('../utils/configCache');
 const { sendPlacementPaymentEmail } = require('../utils/email');
 
@@ -158,6 +159,20 @@ const verifyPlacementPayment = async (req, res) => {
       pack:              `placement_${plan.name.toLowerCase()}`,
       analysesGranted:   0,
       status:            'success',
+    });
+
+    // Unlock premium service for the user
+    await User.updateOne(
+      { _id: req.user._id, 'premiumServices.key': { $ne: 'placement_session' } },
+      { $push: { premiumServices: { key: 'placement_session', notes: `Payment: ${razorpay_payment_id}` } } }
+    );
+
+    // In-app notification
+    await Notification.create({
+      user:    req.user._id,
+      type:    'payment_success',
+      title:   'Payment Successful 🎉',
+      message: `Your ₹${plan.price} Premium Service payment was successful. Our HR team will contact you within 2 business days.`,
     });
 
     sendPlacementPaymentEmail({

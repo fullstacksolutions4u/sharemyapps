@@ -29,8 +29,9 @@ export default function PaidServices() {
   const [applyLoading, setApplyLoading] = useState(false);
   const [applyError, setApplyError] = useState('');
   const [offerConfig, setOfferConfig] = useState(null);
-  const [payModal, setPayModal] = useState(null); // holds plan object when open
+  const [payModal, setPayModal] = useState(null);
   const [planLoading, setPlanLoading] = useState(false);
+  const [paidSuccess, setPaidSuccess] = useState(false);
 
   const freeOfferActive = offerConfig?.freeOfferEnabled && (
     !offerConfig.freeOfferDueDate || new Date() <= new Date(offerConfig.freeOfferDueDate)
@@ -46,6 +47,9 @@ export default function PaidServices() {
   useEffect(() => {
     if (!user) return;
     api.get('/offers/my-offer').then(r => setFreeOffer(r.data)).catch(() => {});
+    api.get('/payments/placement/purchases')
+      .then(r => { if (r.data?.length > 0) setPaidSuccess(true); })
+      .catch(() => {});
   }, [user]);
 
   const handleApplyFreeOffer = async () => {
@@ -66,6 +70,21 @@ export default function PaidServices() {
   };
 
   const renderPremiumButton = () => {
+    if (paidSuccess) {
+      return (
+        <div style={{
+          marginTop: '26px', width: '100%', background: '#dcefed', color: '#0a7373',
+          borderRadius: '8px', padding: '14px', fontSize: '13.5px',
+          fontWeight: 700, textAlign: 'center', letterSpacing: '.02em',
+        }}>
+          Payment Successful 🎉
+          <span style={{ display: 'block', fontSize: '11.5px', fontWeight: 500, marginTop: '4px', color: '#2a8a7a' }}>
+            Our HR team will contact you within 2 business days.
+          </span>
+        </div>
+      );
+    }
+
     if (freeOffer) {
       return (
         <div style={{
@@ -142,7 +161,7 @@ export default function PaidServices() {
       <PlacementPaymentModal
         plan={payModal}
         onClose={() => setPayModal(null)}
-        onSuccess={() => { setPayModal(null); toast.success('Payment successful! Our HR team will reach out shortly.'); }}
+        onSuccess={() => { setPayModal(null); setPaidSuccess(true); toast.success('Payment successful! Our HR team will reach out shortly.'); }}
       />
     )}
     <div style={{
