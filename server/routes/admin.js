@@ -104,6 +104,29 @@ router.post('/plans', adminCreatePlan);
 router.put('/plans/:id', adminUpdatePlan);
 router.delete('/plans/:id', adminDeletePlan);
 
+// Repair: backfill FreeOffer + premiumServices for payment-only users
+router.post('/offers/repair-payment-users', async (req, res) => {
+  try {
+    const Payment   = require('../models/Payment');
+    const FreeOffer = require('../models/FreeOffer');
+    const payments  = await Payment.find({ status: 'success', pack: /^placement_/ }).lean();
+    let fixed = 0;
+    for (const p of payments) {
+      const uid = p.user;
+      // Ensure premiumServices entry
+      await User.updateOne({ _id: uid }, { $pull: { premiumServices: { key: 'placement_session' } } });
+      await User.updateOne({ _id: uid }, { $push: { premiumServices: { key: 'placement_session', notes: `Payment: ${p.razorpayPaymentId}` } } });
+      // Ensure FreeOffer entry
+      const existing = await FreeOffer.findOne({ user: uid }).lean();
+      if (!existing) {
+        await FreeOffer.create({ user: uid, status: 'approved', enrolled: true, enrolledAt: p.createdAt });
+        fixed++;
+      }
+    }
+    res.json({ ok: true, fixed, total: payments.length });
+  } catch (err) { res.status(500).json({ message: err.message }); }
+});
+
 // Free offer applications
 router.get('/offers', adminGetOffers);
 router.get('/offers/stats', adminGetOfferStats);
@@ -500,13 +523,42 @@ router.delete('/premium-services/catalog/:id', async (req, res) => {
 router.get('/premium-services/users', async (_req, res) => {
   try {
     const FreeOffer = require('../models/FreeOffer');
-    const offers = await FreeOffer.find()
-      .populate('user', 'name email avatar regNumber designations premiumServices isDeleted')
-      .sort({ createdAt: -1 })
-      .lean();
-    const users = offers
-      .filter(o => o.user && !o.user.isDeleted)
-      .map(o => ({ ...o.user, appliedAt: o.createdAt, enrolled: o.enrolled }));
+    const Payment   = require('../models/Payment');
+
+    const [offers, payments] = await Promise.all([
+      FreeOffer.find()
+        .populate('user', 'name email avatar regNumber designations premiumServices isDeleted')
+        .sort({ createdAt: -1 })
+        .lean(),
+      Payment.find({ status: 'success', pack: /^placement_/ })
+        .populate('user', 'name email avatar regNumber designations premiumServices isDeleted')
+        .sort({ createdAt: -1 })
+        .lean(),
+    ]);
+
+    const seen = new Set();
+    const users = [];
+
+    // Offer-based users first
+    for (const o of offers) {
+      if (!o.user || o.user.isDeleted) continue;
+      const id = String(o.user._id);
+      if (!seen.has(id)) {
+        seen.add(id);
+        users.push({ ...o.user, appliedAt: o.createdAt, enrolled: o.enrolled });
+      }
+    }
+
+    // Payment users not already in list
+    for (const p of payments) {
+      if (!p.user || p.user.isDeleted) continue;
+      const id = String(p.user._id);
+      if (!seen.has(id)) {
+        seen.add(id);
+        users.push({ ...p.user, appliedAt: p.createdAt, enrolled: true, paidViaRazorpay: true });
+      }
+    }
+
     res.json({ users });
   } catch (err) { res.status(500).json({ message: err.message }); }
 });
