@@ -32,7 +32,7 @@ export default function PaidServices() {
   const [payModal, setPayModal] = useState(null);
   const [planLoading, setPlanLoading] = useState(false);
   const [paidSuccess, setPaidSuccess] = useState(false);
-  const [checkingPaid, setCheckingPaid] = useState(true);
+  const [checkingPaid, setCheckingPaid] = useState(user != null);
 
   const freeOfferActive = offerConfig?.freeOfferEnabled && (
     !offerConfig.freeOfferDueDate || new Date() <= new Date(offerConfig.freeOfferDueDate)
@@ -46,7 +46,7 @@ export default function PaidServices() {
   }, []);
 
   useEffect(() => {
-    if (!user) { setCheckingPaid(false); return; }
+    if (!user) return;
     api.get('/offers/my-offer').then(r => setFreeOffer(r.data)).catch(() => {});
     api.get('/payments/placement/my-purchases')
       .then(r => { if (r.data?.length > 0) setPaidSuccess(true); })
