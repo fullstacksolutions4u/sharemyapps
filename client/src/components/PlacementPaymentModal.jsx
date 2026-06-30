@@ -51,16 +51,10 @@ export default function PlacementPaymentModal({ plan, onClose, onSuccess }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm overflow-hidden">
+      <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg overflow-hidden">
 
-        {/* Header */}
-        <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b border-border">
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-center">
-              <Sparkles size={15} className="text-amber-600" />
-            </div>
-            <p className="font-bold text-text">{plan.name} Plan</p>
-          </div>
+        {/* Close button */}
+        <div className="flex justify-end px-4 pt-4">
           <button
             onClick={onClose}
             className="w-7 h-7 flex items-center justify-center rounded-lg text-muted hover:text-text hover:bg-bg transition-colors"
@@ -85,7 +79,7 @@ export default function PlacementPaymentModal({ plan, onClose, onSuccess }) {
             ))}
           </ul>
 
-          <div className="flex items-center gap-1.5 text-[11px] text-muted">
+          <div className="flex items-center justify-center gap-1.5 text-[11px] text-muted">
             <ShieldCheck size={12} className="text-emerald-500 shrink-0" />
             Secured by Razorpay · UPI, Cards, Net Banking accepted
           </div>

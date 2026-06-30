@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
+import PlacementPaymentModal from '../components/PlacementPaymentModal';
 
 const FREE_FEATURES = [
   'Recruiter Direct Hiring',
@@ -28,6 +29,8 @@ export default function PaidServices() {
   const [applyLoading, setApplyLoading] = useState(false);
   const [applyError, setApplyError] = useState('');
   const [offerConfig, setOfferConfig] = useState(null);
+  const [payModal, setPayModal] = useState(null); // holds plan object when open
+  const [planLoading, setPlanLoading] = useState(false);
 
   const freeOfferActive = offerConfig?.freeOfferEnabled && (
     !offerConfig.freeOfferDueDate || new Date() <= new Date(offerConfig.freeOfferDueDate)
@@ -102,21 +105,46 @@ export default function PaidServices() {
       );
     }
 
+    const handlePaidClick = async () => {
+      if (!user) { navigate('/register'); return; }
+      setPlanLoading(true);
+      try {
+        const res = await api.get('/plans');
+        const plan = res.data?.[0];
+        if (!plan) { toast.error('No plan available. Please try again.'); return; }
+        setPayModal({ ...plan, features: PREMIUM_FEATURES });
+      } catch {
+        toast.error('Could not load plan. Please try again.');
+      } finally {
+        setPlanLoading(false);
+      }
+    };
+
     return (
       <button
-        onClick={() => navigate(user ? '/dashboard' : '/register')}
+        onClick={handlePaidClick}
+        disabled={planLoading}
         style={{
           marginTop: '26px', width: '100%', background: '#0c8c8c', color: '#fff',
           border: 'none', borderRadius: '8px', padding: '14px', fontSize: '13.5px',
-          fontWeight: 700, letterSpacing: '.02em', fontFamily: "'Manrope', sans-serif", cursor: 'pointer',
+          fontWeight: 700, letterSpacing: '.02em', fontFamily: "'Manrope', sans-serif",
+          cursor: planLoading ? 'default' : 'pointer', opacity: planLoading ? 0.7 : 1,
         }}
       >
-        Get Started — {priceDisplay ?? '…'}
+        {planLoading ? 'Loading…' : `Get Started — ${priceDisplay ?? '…'}`}
       </button>
     );
   };
 
   return (
+    <>
+    {payModal && (
+      <PlacementPaymentModal
+        plan={payModal}
+        onClose={() => setPayModal(null)}
+        onSuccess={() => { setPayModal(null); toast.success('Payment successful! Our HR team will reach out shortly.'); }}
+      />
+    )}
     <div style={{
       minHeight: 'calc(100vh - 64px)',
       background: '#e9e6df',
@@ -218,5 +246,6 @@ export default function PaidServices() {
 
       </div>
     </div>
+    </>
   );
 }
