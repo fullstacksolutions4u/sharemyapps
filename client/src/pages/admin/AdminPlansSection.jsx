@@ -124,7 +124,8 @@ function FreeOfferCard({ config, onSaved }) {
               min={0}
               value={price}
               onChange={e => setPrice(e.target.value)}
-              className="w-full border border-border rounded-xl px-3 py-2 text-sm font-semibold text-text focus:outline-none focus:border-accent"
+              disabled={enabled}
+              className="w-full border border-border rounded-xl px-3 py-2 text-sm font-semibold text-text focus:outline-none focus:border-accent disabled:opacity-40 disabled:cursor-not-allowed disabled:bg-bg"
             />
           </div>
           <button
