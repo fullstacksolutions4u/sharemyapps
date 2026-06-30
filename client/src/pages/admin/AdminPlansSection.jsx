@@ -159,15 +159,17 @@ function timeAgo(date) {
 
 /* ── Main ───────────────────────────────────────────────────── */
 export default function AdminPlansSection() {
-  const [config, setConfig]   = useState(null);
+  const [config, setConfig]         = useState(null);
+  const [loadingConfig, setLoadingConfig] = useState(true);
   const [paymentsData, setPaymentsData] = useState(null);
-  const [page, setPage]       = useState(1);
+  const [page, setPage]             = useState(1);
   const [loadingPay, setLoadingPay] = useState(true);
 
   useEffect(() => {
     api.get('/admin/config')
       .then(r => setConfig(r.data))
-      .catch(() => toast.error('Failed to load config.'));
+      .catch(() => toast.error('Failed to load config.'))
+      .finally(() => setLoadingConfig(false));
   }, []);
 
   const loadPayments = (p) => {
@@ -189,8 +191,12 @@ export default function AdminPlansSection() {
     <div className="max-w-5xl">
       {/* Top row — three cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-        <JdAnalysisCard key={config?._id ?? 'jd'}   config={config} onSaved={setConfig} />
-        <FreeOfferCard  key={config?._id ?? 'offer'} config={config} onSaved={setConfig} />
+        {loadingConfig
+          ? <div className="bg-white border border-border rounded-2xl px-5 py-4 h-40 animate-pulse" />
+          : <JdAnalysisCard key={config?._id ?? 'jd'} config={config} onSaved={setConfig} />}
+        {loadingConfig
+          ? <div className="bg-white border border-border rounded-2xl px-5 py-4 h-40 animate-pulse" />
+          : <FreeOfferCard key={config?._id ?? 'offer'} config={config} onSaved={setConfig} />}
 
         {/* Total Revenue */}
         <div className="bg-white border border-border rounded-2xl px-5 py-4 flex flex-col gap-4">
