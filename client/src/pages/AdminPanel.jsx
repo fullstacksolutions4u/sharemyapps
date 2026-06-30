@@ -13,11 +13,11 @@ import AdminAnnouncementsSection from './admin/AdminAnnouncementsSection';
 import AdminMessagesSection from './admin/AdminMessagesSection';
 import AdminOpportunitiesSection from './admin/AdminOpportunitiesSection';
 import AdminResumesSection from './admin/AdminResumesSection';
-import AdminPaymentsSection from './admin/AdminPaymentsSection';
 import AdminVacanciesSection from './admin/AdminVacanciesSection';
 import AdminOffersSection from './admin/AdminOffersSection';
 import AdminLearningSection from './admin/AdminLearningSection';
 import AdminPremiumServicesSection from './admin/AdminPremiumServicesSection';
+import AdminPlansSection from './admin/AdminPlansSection';
 
 const NAV = [
   { key: 'overview',       label: 'Overview',        icon: LayoutDashboard },
@@ -27,7 +27,7 @@ const NAV = [
   { key: 'announcements',  label: 'Announcements',    icon: Megaphone },
   { key: 'learning',       label: 'Quiz Zone',        icon: BookOpen },
   { key: 'messages',       label: 'Messages',         icon: MessageSquare },
-  { key: 'payments',       label: 'Payments',         icon: IndianRupee },
+  { key: 'plans_payments',  label: 'Plans & Payments',  icon: IndianRupee },
 { key: 'offers',          label: 'Premium Applicants', icon: Crown },
   { key: 'service_access', label: 'Services',           icon: Unlock },
 ];
@@ -155,7 +155,7 @@ const { user, setUser, logout } = useAuth();
           {section === 'resumes'          && <AdminResumesSection />}
           {section === 'announcements'    && <AdminAnnouncementsSection />}
           {section === 'messages'         && <AdminMessagesSection onUnreadChange={setUnreadMessages} />}
-          {section === 'payments'         && <AdminPaymentsSection />}
+          {section === 'plans_payments'    && <AdminPlansSection />}
           {section === 'offers'           && <AdminOffersSection />}
           {section === 'service_access'   && <AdminPremiumServicesSection />}
           {section === 'learning'         && <AdminLearningSection />}

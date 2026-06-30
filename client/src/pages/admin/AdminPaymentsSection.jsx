@@ -43,7 +43,7 @@ export default function AdminPaymentsSection() {
 
   return (
     <div className="max-w-5xl mx-auto">
-      <h2 className="text-xl font-bold text-text mb-6">Payments</h2>
+      <h2 className="text-xl font-bold text-text mb-6">Transactions</h2>
 
       {/* Summary cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">

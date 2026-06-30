@@ -11,8 +11,9 @@ const siteConfigSchema = new mongoose.Schema({
   jdFeatureEnabled:  { type: Boolean, default: true },
 
   // Free premium offer
-  freeOfferEnabled:  { type: Boolean, default: true },
-  freeOfferDueDate:  { type: Date, default: null },
+  freeOfferEnabled:         { type: Boolean, default: true },
+  freeOfferDueDate:         { type: Date, default: null },
+  premiumServicePricePaise: { type: Number, default: 99900 }, // ₹999 in paise
 }, { timestamps: true });
 
 module.exports = mongoose.model('SiteConfig', siteConfigSchema);

@@ -4,8 +4,6 @@ import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
 
-const FREE_OFFER_DEADLINE = new Date('2026-06-30T23:59:59');
-
 const FREE_FEATURES = [
   'Recruiter Direct Hiring',
   'Apply to Jobs',
@@ -29,8 +27,16 @@ export default function PaidServices() {
   const [freeOffer, setFreeOffer] = useState(null);
   const [applyLoading, setApplyLoading] = useState(false);
   const [applyError, setApplyError] = useState('');
+  const [offerConfig, setOfferConfig] = useState({ freeOfferEnabled: false, freeOfferDueDate: null, premiumServicePricePaise: 99900 });
 
-  const freeOfferActive = new Date() <= FREE_OFFER_DEADLINE;
+  const freeOfferActive = offerConfig.freeOfferEnabled && (
+    !offerConfig.freeOfferDueDate || new Date() <= new Date(offerConfig.freeOfferDueDate)
+  );
+  const priceDisplay = `₹${((offerConfig.premiumServicePricePaise ?? 99900) / 100).toLocaleString('en-IN')}`;
+
+  useEffect(() => {
+    api.get('/offers/config').then(r => setOfferConfig(r.data)).catch(() => {});
+  }, []);
 
   useEffect(() => {
     if (!user) return;
@@ -83,7 +89,9 @@ export default function PaidServices() {
               cursor: applyLoading ? 'default' : 'pointer', opacity: applyLoading ? 0.6 : 1,
             }}
           >
-            {applyLoading ? 'Applying…' : 'Reserve Your Free Spot Before June 30'}
+            {applyLoading ? 'Applying…' : offerConfig.freeOfferDueDate
+              ? `Reserve Your Free Spot Before ${new Date(offerConfig.freeOfferDueDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'long' })}`
+              : 'Reserve Your Free Spot'}
           </button>
           {applyError && (
             <p style={{ fontSize: '12px', color: '#c0392b', margin: 0, textAlign: 'center' }}>{applyError}</p>
@@ -101,7 +109,7 @@ export default function PaidServices() {
           fontWeight: 700, letterSpacing: '.02em', fontFamily: "'Manrope', sans-serif", cursor: 'pointer',
         }}
       >
-        Get Started — ₹999
+        Get Started — {priceDisplay}
       </button>
     );
   };
@@ -183,11 +191,11 @@ export default function PaidServices() {
               <span style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
                 {freeOfferActive && (
                   <span style={{ fontFamily: "'Spectral', serif", fontSize: '18px', fontWeight: 600, color: '#9aa6a4', textDecoration: 'line-through' }}>
-                    ₹999
+                    {priceDisplay}
                   </span>
                 )}
                 <span style={{ fontFamily: "'Spectral', serif", fontSize: '22px', fontWeight: 700, color: freeOfferActive ? '#0a7373' : '#243433' }}>
-                  {freeOfferActive ? '₹0' : '₹999'}
+                  {freeOfferActive ? '₹0' : priceDisplay}
                 </span>
               </span>
             </div>
@@ -211,7 +219,7 @@ export default function PaidServices() {
             textAlign: 'center', padding: '14px 24px', borderTop: '1px solid #eef2f0',
             fontFamily: "'Spectral', serif", fontStyle: 'italic', fontSize: '13px', color: '#8f9594',
           }}>
-            ₹999 Premium Plan · Money-back guarantee if not placed within 2 months
+            {priceDisplay} Premium Plan · Money-back guarantee if not placed within 2 months
           </div>
         )}
       </div>

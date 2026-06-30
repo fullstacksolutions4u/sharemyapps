@@ -1,6 +1,6 @@
 const JDSearchHistory = require('../models/JDSearchHistory');
 const User = require('../models/User');
-const { currentMonth } = require('../middleware/jdQuota');
+const { currentDay } = require('../middleware/jdQuota');
 const { getConfig } = require('../utils/configCache');
 
 const saveSearchHistory = async (req, res) => {
@@ -72,19 +72,19 @@ const getQuota = async (req, res) => {
       getConfig(),
     ]);
     const quota = user?.jdQuota || {};
-    const month = currentMonth();
+    const day   = currentDay();
 
-    const freeUsed      = quota.resetMonth === month ? (quota.freeUsed ?? 0) : 0;
+    const dailyUsed     = quota.resetDay === day ? (quota.dailyUsed ?? 0) : 0;
     const paidRemaining = quota.paidRemaining ?? 0;
 
     res.json({
-      freeUsed,
+      freeUsed:        dailyUsed,
       freeLimit:       cfg.jdFreeLimit,
       paidRemaining,
       paidPackSize:    cfg.jdPaidPackSize,
       packPricePaise:  cfg.jdPackPricePaise,
       featureEnabled:  cfg.jdFeatureEnabled,
-      resetMonth:      month,
+      resetDay:        day,
     });
   } catch (err) {
     res.status(500).json({ message: err.message });

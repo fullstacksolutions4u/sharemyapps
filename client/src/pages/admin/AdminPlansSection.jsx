@@ -1,285 +1,32 @@
 import { useEffect, useState } from 'react';
-import {
-  Search, ChevronRight, ToggleLeft, ToggleRight,
-  Save, ArrowLeft, Zap, IndianRupee, Users,
-  Sparkles, Plus, Trash2, GripVertical, Pencil, Gift,
-} from 'lucide-react';
+import { Search, ToggleLeft, ToggleRight, Save, IndianRupee, Gift, ExternalLink, ChevronLeft, ChevronRight } from 'lucide-react';
 import api from '../../api/axios';
 import toast from 'react-hot-toast';
 
-/* ── Service definitions ─────────────────────────────────── */
-const SERVICES = [
-  {
-    key: 'jdAnalysis',
-    label: 'JD Analysis',
-    description: 'AI-powered job description matching for recruiters',
-    icon: Search,
-    color: 'accent',
-    fields: [
-      { key: 'jdFeatureEnabled', label: 'Feature Enabled', type: 'toggle' },
-      { key: 'jdFreeLimit',      label: 'Free Analyses / Month', type: 'number', min: 0, max: 100, suffix: 'analyses' },
-      { key: 'jdPaidPackSize',   label: 'Paid Pack Size', type: 'number', min: 1, max: 200, suffix: 'analyses' },
-      { key: 'jdPackPricePaise', label: 'Pack Price (₹)', type: 'rupees', min: 1 },
-    ],
-  },
-];
-
-
-/* ── Status badge ────────────────────────────────────────── */
-function StatusBadge({ enabled }) {
-  return (
-    <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full ${
-      enabled ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-600'
-    }`}>
-      {enabled ? 'Active' : 'Disabled'}
-    </span>
-  );
+function fmt(paise) {
+  return `₹${(paise / 100).toLocaleString('en-IN', { minimumFractionDigits: 2 })}`;
 }
 
-/* ── Placement Plans Editor ─────────────────────────────── */
-function PlacementPlansEditor({ onBack }) {
-  const [plans, setPlans] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [editing, setEditing] = useState(null); // plan id or 'new'
-  const [form, setForm] = useState({});
+/* ── JD Analysis card ───────────────────────────────────────── */
+function JdAnalysisCard({ config, onSaved }) {
+  const [paymentEnabled, setPaymentEnabled] = useState(config?.jdFeatureEnabled ?? true);
+  const [dailyLimit, setDailyLimit]         = useState(config?.jdFreeLimit ?? 5);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    api.get('/admin/plans')
-      .then(({ data }) => setPlans(data))
-      .catch(() => toast.error('Failed to load plans'))
-      .finally(() => setLoading(false));
-  }, []);
-
-  const openEdit = (plan) => {
-    setForm({ name: plan.name, price: plan.price, active: plan.active, features: plan.features || [] });
-    setEditing(plan._id);
-  };
-
-  const openNew = () => {
-    setForm({ name: '', price: '', active: true, features: [] });
-    setEditing('new');
-  };
-
-  const addFeature = () => setForm(p => ({ ...p, features: [...(p.features || []), ''] }));
-  const updateFeature = (i, val) => setForm(p => ({ ...p, features: p.features.map((f, idx) => idx === i ? val : f) }));
-  const removeFeature = (i) => setForm(p => ({ ...p, features: p.features.filter((_, idx) => idx !== i) }));
-
-  const handleSave = async () => {
-    if (!form.name.trim() || form.price === '') return toast.error('Name and price are required');
-    setSaving(true);
-    try {
-      if (editing === 'new') {
-        const { data } = await api.post('/admin/plans', { ...form, price: Number(form.price) });
-        setPlans(prev => [...prev, data]);
-        toast.success('Plan created');
-      } else {
-        const { data } = await api.put(`/admin/plans/${editing}`, { ...form, price: Number(form.price) });
-        setPlans(prev => prev.map(p => p._id === editing ? data : p));
-        toast.success('Plan updated');
-      }
-      setEditing(null);
-    } catch {
-      toast.error('Failed to save plan');
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const handleDelete = async (id) => {
-    if (!window.confirm('Delete this plan?')) return;
-    try {
-      await api.delete(`/admin/plans/${id}`);
-      setPlans(prev => prev.filter(p => p._id !== id));
-      toast.success('Plan deleted');
-    } catch {
-      toast.error('Failed to delete');
-    }
-  };
-
-  const toggleActive = async (plan) => {
-    try {
-      const { data } = await api.put(`/admin/plans/${plan._id}`, { active: !plan.active });
-      setPlans(prev => prev.map(p => p._id === plan._id ? data : p));
-    } catch {
-      toast.error('Failed to update');
-    }
-  };
-
-  if (editing !== null) {
-    return (
-      <div className="max-w-2xl">
-        <div className="flex items-center gap-3 mb-6">
-          <button onClick={() => setEditing(null)} className="w-8 h-8 flex items-center justify-center rounded-xl border border-border text-muted hover:text-text hover:bg-bg transition-colors">
-            <ArrowLeft size={15} />
-          </button>
-          <div className="w-9 h-9 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-center">
-            <Sparkles size={16} className="text-amber-600" />
-          </div>
-          <div className="flex-1">
-            <h2 className="text-lg font-bold text-text">{editing === 'new' ? 'New Plan' : 'Edit Plan'}</h2>
-            <p className="text-xs text-muted">Placement Support Services</p>
-          </div>
-          <button
-            onClick={handleSave}
-            disabled={saving}
-            className="flex items-center gap-2 bg-accent hover:bg-accent-hover disabled:opacity-40 text-white text-sm font-semibold px-4 py-2 rounded-xl transition-colors"
-          >
-            {saving ? <span className="w-3.5 h-3.5 border-2 border-white/40 border-t-white rounded-full animate-spin" /> : <Save size={14} />}
-            {saving ? 'Saving…' : 'Save'}
-          </button>
-        </div>
-
-        <div className="space-y-3">
-          {/* Name & Price */}
-          <div className="bg-white border border-border rounded-2xl px-5 py-4 grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs font-semibold text-muted mb-1.5">Plan Name</label>
-              <input
-                value={form.name}
-                onChange={e => setForm(p => ({ ...p, name: e.target.value }))}
-                placeholder="e.g. Basic"
-                className="w-full border border-border rounded-xl px-3 py-2 text-sm text-text focus:outline-none focus:border-accent"
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-semibold text-muted mb-1.5">Price (₹)</label>
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-lg bg-bg border border-border flex items-center justify-center shrink-0">
-                  <IndianRupee size={13} className="text-muted" />
-                </div>
-                <input
-                  type="number"
-                  value={form.price}
-                  onChange={e => setForm(p => ({ ...p, price: e.target.value }))}
-                  placeholder="499"
-                  className="w-full border border-border rounded-xl px-3 py-2 text-sm font-semibold text-text focus:outline-none focus:border-accent"
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Active toggle */}
-          <div className="bg-white border border-border rounded-2xl px-5 py-4 flex items-center justify-between">
-            <div>
-              <p className="text-sm font-semibold text-text">Visible on site</p>
-              <p className="text-xs text-muted mt-0.5">Show this plan on the Placement Support Services page</p>
-            </div>
-            <button onClick={() => setForm(p => ({ ...p, active: !p.active }))} className="text-accent">
-              {form.active ? <ToggleRight size={32} /> : <ToggleLeft size={32} className="text-muted" />}
-            </button>
-          </div>
-
-          {/* Features */}
-          <div className="bg-white border border-border rounded-2xl px-5 py-4">
-            <div className="flex items-center justify-between mb-3">
-              <div>
-                <p className="text-sm font-semibold text-text">Features</p>
-                <p className="text-xs text-muted mt-0.5">Bullet points shown on the pricing card</p>
-              </div>
-              <button onClick={addFeature} className="flex items-center gap-1.5 text-xs font-semibold text-accent hover:text-accent-hover transition-colors">
-                <Plus size={13} /> Add
-              </button>
-            </div>
-            <div className="space-y-2">
-              {(form.features || []).map((f, i) => (
-                <div key={i} className="flex items-center gap-2">
-                  <input
-                    value={f}
-                    onChange={e => updateFeature(i, e.target.value)}
-                    placeholder="Feature description…"
-                    className="flex-1 border border-border rounded-xl px-3 py-2 text-sm text-text focus:outline-none focus:border-accent"
-                  />
-                  <button onClick={() => removeFeature(i)} className="w-7 h-7 flex items-center justify-center rounded-lg border border-border text-muted hover:text-red-500 hover:border-red-300 transition-colors shrink-0">
-                    <Trash2 size={12} />
-                  </button>
-                </div>
-              ))}
-              {(form.features || []).length === 0 && (
-                <p className="text-xs text-muted italic py-1">No features yet. Click Add to create one.</p>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="max-w-3xl">
-      <div className="flex items-center gap-3 mb-6">
-        <button onClick={onBack} className="w-8 h-8 flex items-center justify-center rounded-xl border border-border text-muted hover:text-text hover:bg-bg transition-colors">
-          <ArrowLeft size={15} />
-        </button>
-        <div className="w-9 h-9 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-center">
-          <Sparkles size={16} className="text-amber-600" />
-        </div>
-        <div className="flex-1">
-          <h2 className="text-lg font-bold text-text">Placement Support Services</h2>
-          <p className="text-xs text-muted">Manage pricing plans shown on the public page</p>
-        </div>
-        <button onClick={openNew} className="flex items-center gap-2 bg-accent hover:bg-accent-hover text-white text-sm font-semibold px-4 py-2 rounded-xl transition-colors">
-          <Plus size={14} /> Add Plan
-        </button>
-      </div>
-
-      {loading ? (
-        <div className="space-y-3">
-          {[1, 2, 3].map(i => <div key={i} className="h-16 bg-bg rounded-2xl animate-pulse" />)}
-        </div>
-      ) : (
-        <div className="space-y-3">
-          {plans.map(plan => (
-            <div key={plan._id} className="bg-white border border-border rounded-2xl px-5 py-4 flex items-center gap-4">
-              <GripVertical size={16} className="text-muted shrink-0" />
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 mb-0.5">
-                  <p className="text-sm font-semibold text-text">{plan.name}</p>
-                  <StatusBadge enabled={plan.active} />
-                  {plan.badge && (
-                    <span className="text-[11px] border border-accent/40 text-accent px-2 py-0.5 rounded-full">{plan.badge}</span>
-                  )}
-                </div>
-                <p className="text-xs text-muted">₹{plan.price.toLocaleString('en-IN')}</p>
-              </div>
-              <div className="flex items-center gap-2 shrink-0">
-                <button onClick={() => toggleActive(plan)} className="text-muted hover:text-accent transition-colors">
-                  {plan.active ? <ToggleRight size={22} className="text-accent" /> : <ToggleLeft size={22} />}
-                </button>
-                <button onClick={() => openEdit(plan)} className="w-8 h-8 flex items-center justify-center rounded-lg border border-border text-muted hover:text-accent hover:border-accent transition-colors">
-                  <Pencil size={13} />
-                </button>
-                <button onClick={() => handleDelete(plan._id)} className="w-8 h-8 flex items-center justify-center rounded-lg border border-border text-muted hover:text-red-500 hover:border-red-300 transition-colors">
-                  <Trash2 size={13} />
-                </button>
-              </div>
-            </div>
-          ))}
-          {plans.length === 0 && (
-            <div className="text-center py-10 text-sm text-muted">No plans yet. Add your first plan.</div>
-          )}
-        </div>
-      )}
-    </div>
-  );
-}
-
-/* ── Free Offer Card ─────────────────────────────────────── */
-function FreeOfferCard({ config, onSaved }) {
-  const [enabled, setEnabled] = useState(config?.freeOfferEnabled ?? true);
-  const [dueDate, setDueDate] = useState(
-    config?.freeOfferDueDate ? new Date(config.freeOfferDueDate).toISOString().slice(0, 10) : ''
-  );
-  const [saving, setSaving] = useState(false);
+    if (!config) return;
+    setPaymentEnabled(config.jdFeatureEnabled ?? true);
+    setDailyLimit(config.jdFreeLimit ?? 5);
+  }, [config]);
 
   const handleSave = async () => {
     setSaving(true);
     try {
       const res = await api.put('/admin/config', {
-        freeOfferEnabled: enabled,
-        freeOfferDueDate: dueDate || null,
+        jdFeatureEnabled: paymentEnabled,
+        jdFreeLimit: Number(dailyLimit),
       });
-      toast.success('Free offer settings saved.');
+      toast.success('JD Analysis settings saved.');
       onSaved(res.data);
     } catch {
       toast.error('Failed to save.');
@@ -289,266 +36,144 @@ function FreeOfferCard({ config, onSaved }) {
   };
 
   return (
-    <div className="bg-white border border-border rounded-2xl px-5 py-4 space-y-4">
+    <div className="bg-white border border-border rounded-2xl px-5 py-4 flex flex-col gap-4">
+      {/* Header */}
       <div className="flex items-center gap-3">
-        <div className="w-10 h-10 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-center shrink-0">
-          <Gift size={18} className="text-emerald-600" />
+        <div className="w-10 h-10 rounded-xl bg-accent/10 border border-accent/20 flex items-center justify-center shrink-0">
+          <Search size={18} className="text-accent" />
         </div>
-        <div className="flex-1 min-w-0">
-          <p className="text-sm font-semibold text-text">Free Premium Offer</p>
-          <p className="text-xs text-muted">Show the free apply button on the Career Services page</p>
-        </div>
-        <button onClick={() => setEnabled(v => !v)} className="text-accent shrink-0">
-          {enabled ? <ToggleRight size={32} /> : <ToggleLeft size={32} className="text-muted" />}
-        </button>
+        <p className="text-sm font-semibold text-text">JD Analysis</p>
       </div>
 
-      <div className="flex items-end gap-3 pt-1 border-t border-border">
-        <div className="flex-1">
-          <label className="block text-xs font-semibold text-muted mb-1.5">Offer Due Date</label>
-          <input
-            type="date"
-            value={dueDate}
-            onChange={e => setDueDate(e.target.value)}
-            className="w-full border border-border rounded-xl px-3 py-2 text-sm text-text focus:outline-none focus:border-accent"
-          />
+      <div className="border-t border-border pt-3 space-y-3">
+        {/* Payment toggle */}
+        <div className="flex items-center justify-between">
+          <p className="text-xs font-semibold text-text">Enable Payment</p>
+          <button onClick={() => setPaymentEnabled(v => !v)} className="text-accent shrink-0">
+            {paymentEnabled ? <ToggleRight size={28} /> : <ToggleLeft size={28} className="text-muted" />}
+          </button>
         </div>
-        <button
-          onClick={handleSave}
-          disabled={saving}
-          className="flex items-center gap-2 bg-accent hover:bg-accent-hover disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm font-semibold px-4 py-2 rounded-xl transition-colors shrink-0"
-        >
-          {saving ? <span className="w-3.5 h-3.5 border-2 border-white/40 border-t-white rounded-full animate-spin" /> : <Save size={14} />}
-          {saving ? 'Saving…' : 'Save'}
-        </button>
-      </div>
-    </div>
-  );
-}
 
-/* ── Services list ───────────────────────────────────────── */
-function ServicesList({ config, onSelect, onConfigSaved }) {
-  return (
-    <div className="max-w-3xl">
-      <h2 className="text-xl font-bold text-text mb-6">Plans & Pricing</h2>
-
-      <div className="space-y-3">
-        {/* Placement Support Services card */}
-        <button
-          onClick={() => onSelect('placementPlans')}
-          className="w-full bg-white border border-border hover:border-accent/40 hover:shadow-sm rounded-2xl px-5 py-4 flex items-center gap-4 transition-all group text-left"
-        >
-          <div className="w-10 h-10 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-center shrink-0">
-            <Sparkles size={18} className="text-amber-600" />
+        {/* Daily limit */}
+        <div className="flex items-center gap-3">
+          <div className="flex-1">
+            <label className="block text-xs font-semibold text-muted mb-1.5">Daily Limit</label>
+            <input
+              type="number"
+              min={0}
+              max={999}
+              value={dailyLimit}
+              onChange={e => setDailyLimit(e.target.value)}
+              className="w-full border border-border rounded-xl px-3 py-2 text-sm font-semibold text-text focus:outline-none focus:border-accent"
+            />
           </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-semibold text-text mb-0.5">Placement Support Services</p>
-            <p className="text-xs text-muted">Manage Basic & Premium HR placement plans</p>
-          </div>
-          <ChevronRight size={16} className="text-muted group-hover:text-accent transition-colors shrink-0" />
-        </button>
-
-        {SERVICES.map(svc => {
-          const Icon = svc.icon;
-          const enabled = config?.jdFeatureEnabled ?? true;
-
-          return (
-            <button
-              key={svc.key}
-              onClick={() => onSelect(svc.key)}
-              className="w-full bg-white border border-border hover:border-accent/40 hover:shadow-sm rounded-2xl px-5 py-4 flex items-center gap-4 transition-all group text-left"
-            >
-              <div className="w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center shrink-0">
-                <Icon size={18} className="text-accent" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 mb-0.5">
-                  <p className="text-sm font-semibold text-text">{svc.label}</p>
-                  <StatusBadge enabled={enabled} />
-                </div>
-                <p className="text-xs text-muted">{svc.description}</p>
-              </div>
-              {config && (
-                <div className="hidden sm:flex items-center gap-6 text-xs text-muted shrink-0 mr-2">
-                  <div className="text-center">
-                    <p className="font-semibold text-text">{config.jdFreeLimit}</p>
-                    <p>free/mo</p>
-                  </div>
-                  <div className="text-center">
-                    <p className="font-semibold text-text">{config.jdPaidPackSize}</p>
-                    <p>per pack</p>
-                  </div>
-                  <div className="text-center">
-                    <p className="font-semibold text-accent">₹{(config.jdPackPricePaise / 100).toLocaleString('en-IN')}</p>
-                    <p>price</p>
-                  </div>
-                </div>
-              )}
-              <ChevronRight size={16} className="text-muted group-hover:text-accent transition-colors shrink-0" />
-            </button>
-          );
-        })}
-
-        <FreeOfferCard key={config?._id ?? 'loading'} config={config} onSaved={onConfigSaved} />
-
-        <div className="bg-white border border-dashed border-border rounded-2xl px-5 py-4 flex items-center gap-4 opacity-50">
-          <div className="w-10 h-10 rounded-xl bg-bg flex items-center justify-center shrink-0">
-            <Users size={18} className="text-muted" />
-          </div>
-          <div>
-            <p className="text-sm font-semibold text-muted">More services coming soon</p>
-            <p className="text-xs text-muted">Mentorship, Freelance, Resume AI…</p>
-          </div>
+          <button
+            onClick={handleSave}
+            disabled={saving}
+            className="flex items-center gap-2 bg-accent hover:bg-accent-hover disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm font-semibold px-4 py-2 rounded-xl transition-colors shrink-0 self-end"
+          >
+            {saving ? <span className="w-3.5 h-3.5 border-2 border-white/40 border-t-white rounded-full animate-spin" /> : <Save size={14} />}
+            {saving ? 'Saving…' : 'Save'}
+          </button>
         </div>
       </div>
     </div>
   );
 }
 
-/* ── Service detail ──────────────────────────────────────── */
-function ServiceDetail({ serviceKey, config, onBack, onSaved }) {
-  const svc = SERVICES.find(s => s.key === serviceKey);
-  const [saving, setSaving] = useState(false);
-  const [form, setForm] = useState(() => {
-    if (!config) return null;
-    return Object.fromEntries(
-      svc.fields.map(f => [f.key, f.type === 'rupees' ? config[f.key] / 100 : config[f.key]])
-    );
-  });
+/* ── Free Offer card ────────────────────────────────────────── */
+function FreeOfferCard({ config, onSaved }) {
+  const [enabled, setEnabled] = useState(config?.freeOfferEnabled ?? true);
+  const [price, setPrice]     = useState((config?.premiumServicePricePaise ?? 99900) / 100);
+  const [saving, setSaving]   = useState(false);
 
-  if (!form) return null;
-
-  const dirty = svc.fields.some(f => {
-    const orig = f.type === 'rupees' ? config[f.key] / 100 : config[f.key];
-    return String(form[f.key]) !== String(orig);
-  });
+  useEffect(() => {
+    if (!config) return;
+    setEnabled(config.freeOfferEnabled ?? true);
+    setPrice((config.premiumServicePricePaise ?? 99900) / 100);
+  }, [config]);
 
   const handleSave = async () => {
     setSaving(true);
     try {
-      const payload = {};
-      svc.fields.forEach(f => {
-        if (f.type === 'rupees') {
-          payload[f.key] = Math.round(Number(form[f.key]) * 100);
-        } else if (f.type === 'number') {
-          payload[f.key] = Number(form[f.key]);
-        } else {
-          payload[f.key] = form[f.key];
-        }
+      const res = await api.put('/admin/config', {
+        freeOfferEnabled: enabled,
+        premiumServicePricePaise: Math.round(Number(price) * 100),
       });
-      const res = await api.put('/admin/config', payload);
-      toast.success('Settings saved.');
+      toast.success('Premium service settings saved.');
       onSaved(res.data);
     } catch {
-      toast.error('Failed to save settings.');
+      toast.error('Failed to save.');
     } finally {
       setSaving(false);
     }
   };
 
-  const Icon = svc.icon;
-
   return (
-    <div className="max-w-2xl">
-      <div className="flex items-center gap-3 mb-6">
-        <button onClick={onBack} className="w-8 h-8 flex items-center justify-center rounded-xl border border-border text-muted hover:text-text hover:bg-bg transition-colors">
-          <ArrowLeft size={15} />
-        </button>
-        <div className="w-9 h-9 rounded-xl bg-accent/10 flex items-center justify-center">
-          <Icon size={16} className="text-accent" />
+    <div className="bg-white border border-border rounded-2xl px-5 py-4 flex flex-col gap-4">
+      <div className="flex items-center gap-3">
+        <div className="w-10 h-10 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-center shrink-0">
+          <Gift size={18} className="text-emerald-600" />
         </div>
-        <div className="flex-1">
-          <h2 className="text-lg font-bold text-text">{svc.label}</h2>
-          <p className="text-xs text-muted">{svc.description}</p>
-        </div>
-        <button
-          onClick={handleSave}
-          disabled={!dirty || saving}
-          className="flex items-center gap-2 bg-accent hover:bg-accent-hover disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm font-semibold px-4 py-2 rounded-xl transition-colors"
-        >
-          {saving
-            ? <span className="w-3.5 h-3.5 border-2 border-white/40 border-t-white rounded-full animate-spin" />
-            : <Save size={14} />}
-          {saving ? 'Saving…' : 'Save'}
-        </button>
+        <p className="text-sm font-semibold text-text">Premium Service</p>
       </div>
 
-      <div className="space-y-3">
-        {svc.fields.map(field => (
-          <div key={field.key} className="bg-white border border-border rounded-2xl px-5 py-4">
-            {field.type === 'toggle' ? (
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-semibold text-text">{field.label}</p>
-                  <p className="text-xs text-muted mt-0.5">
-                    {form[field.key]
-                      ? 'Paid quota active — free monthly limit + paid packs apply (15/day cap)'
-                      : 'Free mode — unlimited access with no payment, 15 analyses/day cap'}
-                  </p>
-                </div>
-                <button onClick={() => setForm(prev => ({ ...prev, [field.key]: !prev[field.key] }))} className="text-accent">
-                  {form[field.key] ? <ToggleRight size={32} /> : <ToggleLeft size={32} className="text-muted" />}
-                </button>
-              </div>
-            ) : field.type === 'rupees' ? (
-              <div>
-                <p className="text-sm font-semibold text-text mb-3">{field.label}</p>
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-lg bg-bg border border-border flex items-center justify-center">
-                    <IndianRupee size={13} className="text-muted" />
-                  </div>
-                  <input
-                    type="number"
-                    min={field.min}
-                    value={form[field.key]}
-                    onChange={e => setForm(prev => ({ ...prev, [field.key]: e.target.value }))}
-                    className="w-28 border border-border rounded-xl px-3 py-2 text-sm font-semibold text-text focus:outline-none focus:border-accent"
-                  />
-                  <span className="text-sm text-muted">per pack</span>
-                </div>
-              </div>
-            ) : (
-              <div>
-                <p className="text-sm font-semibold text-text mb-3">{field.label}</p>
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-lg bg-bg border border-border flex items-center justify-center">
-                    <Zap size={13} className="text-muted" />
-                  </div>
-                  <input
-                    type="number"
-                    min={field.min}
-                    max={field.max}
-                    value={form[field.key]}
-                    onChange={e => setForm(prev => ({ ...prev, [field.key]: e.target.value }))}
-                    className="w-24 border border-border rounded-xl px-3 py-2 text-sm font-semibold text-text focus:outline-none focus:border-accent"
-                  />
-                  {field.suffix && <span className="text-sm text-muted">{field.suffix}</span>}
-                </div>
-              </div>
-            )}
-          </div>
-        ))}
+      <div className="border-t border-border pt-3 space-y-3">
+        {/* Free toggle */}
+        <div className="flex items-center justify-between">
+          <p className="text-xs font-semibold text-text">Free</p>
+          <button onClick={() => setEnabled(v => !v)} className="text-accent">
+            {enabled ? <ToggleRight size={28} /> : <ToggleLeft size={28} className="text-muted" />}
+          </button>
+        </div>
 
-        <div className="bg-bg border border-border rounded-2xl px-5 py-4">
-          <p className="text-[11px] font-semibold text-muted uppercase tracking-wide mb-2">Recruiter sees</p>
-          <div className="flex items-center gap-2 text-sm text-text">
-            <Zap size={13} className="text-accent" />
-            <span>
-              <span className="font-semibold">{form.jdFreeLimit}</span> free analyses/month →
-              then <span className="font-semibold">{form.jdPaidPackSize} analyses</span> for{' '}
-              <span className="font-semibold text-accent">₹{Number(form.jdPackPricePaise ?? form.jdPackPriceRupees ?? 0).toLocaleString('en-IN')}</span>
-            </span>
+        {/* Rate input */}
+        <div className="flex items-center gap-3">
+          <div className="flex-1">
+            <label className="block text-xs font-semibold text-muted mb-1.5">Rate (₹)</label>
+            <input
+              type="number"
+              min={0}
+              value={price}
+              onChange={e => setPrice(e.target.value)}
+              className="w-full border border-border rounded-xl px-3 py-2 text-sm font-semibold text-text focus:outline-none focus:border-accent"
+            />
           </div>
+          <button
+            onClick={handleSave}
+            disabled={saving}
+            className="flex items-center gap-2 bg-accent hover:bg-accent-hover disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm font-semibold px-4 py-2 rounded-xl transition-colors shrink-0 self-end"
+          >
+            {saving ? <span className="w-3.5 h-3.5 border-2 border-white/40 border-t-white rounded-full animate-spin" /> : <Save size={14} />}
+            {saving ? 'Saving…' : 'Save'}
+          </button>
         </div>
       </div>
     </div>
   );
 }
 
-/* ── Main component ──────────────────────────────────────── */
+function packLabel(p) {
+  if (p.pack && p.pack.startsWith('placement_')) {
+    return p.pack.replace('placement_', '').replace(/\b\w/g, c => c.toUpperCase());
+  }
+  return `${p.analysesGranted} JD ${p.analysesGranted === 1 ? 'analysis' : 'analyses'}`;
+}
+
+function timeAgo(date) {
+  const s = Math.floor((Date.now() - new Date(date)) / 1000);
+  if (s < 60)   return `${s}s ago`;
+  if (s < 3600)  return `${Math.floor(s / 60)}m ago`;
+  if (s < 86400) return `${Math.floor(s / 3600)}h ago`;
+  return new Date(date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+}
+
+/* ── Main ───────────────────────────────────────────────────── */
 export default function AdminPlansSection() {
-  const [config, setConfig]     = useState(null);
-  const [selected, setSelected] = useState(null);
+  const [config, setConfig]   = useState(null);
+  const [paymentsData, setPaymentsData] = useState(null);
+  const [page, setPage]       = useState(1);
+  const [loadingPay, setLoadingPay] = useState(true);
 
   useEffect(() => {
     api.get('/admin/config')
@@ -556,20 +181,127 @@ export default function AdminPlansSection() {
       .catch(() => toast.error('Failed to load config.'));
   }, []);
 
-  if (selected === 'placementPlans') {
-    return <PlacementPlansEditor onBack={() => setSelected(null)} />;
-  }
+  const loadPayments = (p) => {
+    setLoadingPay(true);
+    api.get(`/admin/payments?page=${p}`)
+      .then(r => { setPaymentsData(r.data); setPage(p); })
+      .catch(() => {})
+      .finally(() => setLoadingPay(false));
+  };
 
-  if (selected) {
-    return (
-      <ServiceDetail
-        serviceKey={selected}
-        config={config}
-        onBack={() => setSelected(null)}
-        onSaved={updated => { setConfig(updated); setSelected(null); }}
-      />
-    );
-  }
+  useEffect(() => { loadPayments(1); }, []);
 
-  return <ServicesList config={config} onSelect={setSelected} onConfigSaved={setConfig} />;
+  return (
+    <div className="max-w-5xl">
+      {/* Top row — three cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+        <JdAnalysisCard key={config?._id ?? 'jd'}   config={config} onSaved={setConfig} />
+        <FreeOfferCard  key={config?._id ?? 'offer'} config={config} onSaved={setConfig} />
+
+        {/* Total Revenue */}
+        <div className="bg-white border border-border rounded-2xl px-5 py-4 flex flex-col gap-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-center shrink-0">
+              <IndianRupee size={18} className="text-emerald-600" />
+            </div>
+            <p className="text-sm font-semibold text-text">Total Revenue</p>
+          </div>
+          <div className="border-t border-border pt-3">
+            <p className="text-2xl font-bold text-text">
+              {paymentsData ? fmt(paymentsData.totalRevenuePaise) : '—'}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Transactions table */}
+      <div className="bg-white border border-border rounded-2xl overflow-hidden">
+        <div className="px-5 py-4 border-b border-border">
+          <p className="text-sm font-semibold text-text">Transaction History</p>
+        </div>
+
+        {loadingPay ? (
+          <div className="p-8 space-y-3">
+            {[0,1,2,3,4].map(i => <div key={i} className="h-12 bg-bg rounded-xl animate-pulse" />)}
+          </div>
+        ) : !paymentsData?.payments?.length ? (
+          <div className="p-12 text-center text-muted text-sm">No payments yet.</div>
+        ) : (
+          <>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-border text-[11px] font-semibold text-muted uppercase tracking-wide">
+                    <th className="text-left px-5 py-3">Recruiter</th>
+                    <th className="text-left px-5 py-3">Pack</th>
+                    <th className="text-left px-5 py-3">Amount</th>
+                    <th className="text-left px-5 py-3">Payment ID</th>
+                    <th className="text-left px-5 py-3">Date</th>
+                    <th className="text-left px-5 py-3">Status</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border">
+                  {paymentsData.payments.map(p => (
+                    <tr key={p._id} className="hover:bg-bg transition-colors">
+                      <td className="px-5 py-3.5">
+                        <p className="font-medium text-text">{p.user?.name || '—'}</p>
+                        <p className="text-[11px] text-muted">{p.user?.email || ''}</p>
+                      </td>
+                      <td className="px-5 py-3.5">
+                        <span className="text-xs font-semibold px-2 py-1 rounded-lg bg-accent/10 text-accent">
+                          {packLabel(p)}
+                        </span>
+                      </td>
+                      <td className="px-5 py-3.5 font-semibold text-text">{fmt(p.amountPaise)}</td>
+                      <td className="px-5 py-3.5">
+                        <a
+                          href={`https://dashboard.razorpay.com/app/payments/${p.razorpayPaymentId}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-1 text-xs text-accent hover:underline font-mono"
+                        >
+                          {p.razorpayPaymentId.slice(0, 16)}…
+                          <ExternalLink size={10} />
+                        </a>
+                      </td>
+                      <td className="px-5 py-3.5 text-xs text-muted">{timeAgo(p.createdAt)}</td>
+                      <td className="px-5 py-3.5">
+                        <span className="text-[11px] font-semibold px-2 py-1 rounded-full bg-emerald-50 text-emerald-700">
+                          Success
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {paymentsData.pages > 1 && (
+              <div className="flex items-center justify-between px-5 py-3 border-t border-border">
+                <p className="text-xs text-muted">
+                  Page {paymentsData.page} of {paymentsData.pages} · {paymentsData.total} transactions
+                </p>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => loadPayments(page - 1)}
+                    disabled={page === 1}
+                    className="w-7 h-7 flex items-center justify-center rounded-lg border border-border text-muted hover:text-text disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                  >
+                    <ChevronLeft size={13} />
+                  </button>
+                  <button
+                    onClick={() => loadPayments(page + 1)}
+                    disabled={page === paymentsData.pages}
+                    className="w-7 h-7 flex items-center justify-center rounded-lg border border-border text-muted hover:text-text disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                  >
+                    <ChevronRight size={13} />
+                  </button>
+                </div>
+              </div>
+            )}
+          </>
+        )}
+      </div>
+    </div>
+  );
 }

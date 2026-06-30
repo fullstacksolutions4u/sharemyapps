@@ -1,4 +1,5 @@
 const SiteConfig = require('../models/SiteConfig');
+const Plan = require('../models/Plan');
 const { invalidateCache, getConfig } = require('../utils/configCache');
 
 const getAdminConfig = async (req, res) => {
@@ -12,7 +13,7 @@ const getAdminConfig = async (req, res) => {
 
 const updateAdminConfig = async (req, res) => {
   try {
-    const allowed = ['jdFreeLimit', 'jdPaidPackSize', 'jdPackPricePaise', 'jdFeatureEnabled', 'freeOfferEnabled', 'freeOfferDueDate'];
+    const allowed = ['jdFreeLimit', 'jdPaidPackSize', 'jdPackPricePaise', 'jdFeatureEnabled', 'freeOfferEnabled', 'freeOfferDueDate', 'premiumServicePricePaise'];
     const update = {};
     for (const key of allowed) {
       if (req.body[key] !== undefined) update[key] = req.body[key];
@@ -23,6 +24,12 @@ const updateAdminConfig = async (req, res) => {
       { $set: update },
       { upsert: true, new: true }
     );
+
+    // Keep Plan model in sync so Razorpay charges the correct amount
+    if (update.premiumServicePricePaise !== undefined) {
+      const priceRupees = update.premiumServicePricePaise / 100;
+      await Plan.updateMany({}, { $set: { price: priceRupees } });
+    }
 
     invalidateCache();
     const fresh = await getConfig();

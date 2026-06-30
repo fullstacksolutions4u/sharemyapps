@@ -7,8 +7,9 @@ router.get('/config', async (_req, res) => {
   try {
     const doc = await SiteConfig.findOne({ key: 'main' }).lean();
     res.json({
-      freeOfferEnabled: doc?.freeOfferEnabled ?? true,
-      freeOfferDueDate: doc?.freeOfferDueDate ?? null,
+      freeOfferEnabled:         doc?.freeOfferEnabled ?? true,
+      freeOfferDueDate:         doc?.freeOfferDueDate ?? null,
+      premiumServicePricePaise: doc?.premiumServicePricePaise ?? 99900,
     });
   } catch { res.status(500).json({ message: 'Server error' }); }
 });
