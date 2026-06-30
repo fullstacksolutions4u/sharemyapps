@@ -40,7 +40,7 @@ function ScheduleModal({ session, onClose, onSaved }) {
       const from = new Date(session.availabilityFrom);
       const to = new Date(session.availabilityTo);
       if (scheduled < from || scheduled > to) {
-        toast.error(`Scheduled time must be within user's availability: ${from.toLocaleString('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })} – ${to.toLocaleString('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}`);
+        toast.error(`Scheduled time must be within user's availability: ${from.toLocaleString('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', timeZone: 'UTC' })} – ${to.toLocaleString('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', timeZone: 'UTC' })}`);
         return;
       }
     }
@@ -83,11 +83,11 @@ function ScheduleModal({ session, onClose, onSaved }) {
                 <Clock size={13} color="#0a7373" />
                 <span>
                   {session.availabilityFrom
-                    ? new Date(session.availabilityFrom).toLocaleString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+                    ? new Date(session.availabilityFrom).toLocaleString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: 'UTC' })
                     : '—'}
                   {' → '}
                   {session.availabilityTo
-                    ? new Date(session.availabilityTo).toLocaleString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+                    ? new Date(session.availabilityTo).toLocaleString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: 'UTC' })
                     : '—'}
                 </span>
               </div>
