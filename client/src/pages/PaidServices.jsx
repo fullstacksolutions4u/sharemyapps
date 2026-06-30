@@ -47,7 +47,7 @@ export default function PaidServices() {
   useEffect(() => {
     if (!user) return;
     api.get('/offers/my-offer').then(r => setFreeOffer(r.data)).catch(() => {});
-    api.get('/payments/placement/purchases')
+    api.get('/payments/placement/my-purchases')
       .then(r => { if (r.data?.length > 0) setPaidSuccess(true); })
       .catch(() => {});
   }, [user]);
@@ -79,7 +79,7 @@ export default function PaidServices() {
         }}>
           Payment Successful 🎉
           <span style={{ display: 'block', fontSize: '11.5px', fontWeight: 500, marginTop: '4px', color: '#2a8a7a' }}>
-            Our HR team will contact you within 2 business days.
+            Our Executive will contact you shortly for further process.
           </span>
         </div>
       );

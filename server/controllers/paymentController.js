@@ -113,6 +113,10 @@ const createPlacementOrder = async (req, res) => {
     const { planId } = req.body;
     if (!planId) return res.status(400).json({ message: 'planId is required.' });
 
+    // Block re-purchase
+    const existing = await Payment.findOne({ user: req.user._id, status: 'success', pack: /^placement_/ }).lean();
+    if (existing) return res.status(409).json({ message: 'You have already purchased a Premium Plan.' });
+
     const plan = await Plan.findById(planId).lean();
     if (!plan || !plan.active) return res.status(404).json({ message: 'Plan not found.' });
 

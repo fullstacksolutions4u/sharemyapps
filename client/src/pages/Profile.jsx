@@ -461,7 +461,7 @@ export default function Profile() {
                   <p className="text-sm text-muted mt-0.5">{user?.email}</p>
                   {placementPlan && (
                     <span className="inline-flex items-center gap-1 mt-2 text-[11px] font-semibold text-amber-700 bg-amber-50 border border-amber-200 px-2.5 py-0.5 rounded-full">
-                      <Crown size={10} className="text-amber-500" /> {placementPlan} Plan Active
+                      <Crown size={10} className="text-amber-500" /> Premium Member
                     </span>
                   )}
                   <span className="text-xs text-muted mt-1 block">
