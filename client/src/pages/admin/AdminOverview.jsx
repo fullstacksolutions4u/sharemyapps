@@ -23,9 +23,7 @@ function fmt(paise) {
 }
 
 function packLabel(p) {
-  if (p.pack && p.pack.startsWith('placement_')) {
-    return p.pack.replace('placement_', '').replace(/\b\w/g, c => c.toUpperCase());
-  }
+  if (p.pack && p.pack.startsWith('placement_')) return 'Premium';
   return `${p.analysesGranted} JD ${p.analysesGranted === 1 ? 'analysis' : 'analyses'}`;
 }
 
@@ -73,13 +71,6 @@ export default function AdminOverview({ stats, onNavigate }) {
 
   return (
     <div className="space-y-6">
-
-      {/* Header */}
-      <div className="flex justify-end">
-        <span className="hidden sm:inline text-xs text-muted px-3 py-1.5 rounded-full border border-border bg-white">
-          {new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
-        </span>
-      </div>
 
       {/* Pending alert */}
       {stats.pending > 0 && (

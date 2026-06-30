@@ -32,6 +32,7 @@ export default function PaidServices() {
   const [payModal, setPayModal] = useState(null);
   const [planLoading, setPlanLoading] = useState(false);
   const [paidSuccess, setPaidSuccess] = useState(false);
+  const [checkingPaid, setCheckingPaid] = useState(true);
 
   const freeOfferActive = offerConfig?.freeOfferEnabled && (
     !offerConfig.freeOfferDueDate || new Date() <= new Date(offerConfig.freeOfferDueDate)
@@ -45,11 +46,12 @@ export default function PaidServices() {
   }, []);
 
   useEffect(() => {
-    if (!user) return;
+    if (!user) { setCheckingPaid(false); return; }
     api.get('/offers/my-offer').then(r => setFreeOffer(r.data)).catch(() => {});
     api.get('/payments/placement/my-purchases')
       .then(r => { if (r.data?.length > 0) setPaidSuccess(true); })
-      .catch(() => {});
+      .catch(() => {})
+      .finally(() => setCheckingPaid(false));
   }, [user]);
 
   const handleApplyFreeOffer = async () => {
@@ -70,6 +72,12 @@ export default function PaidServices() {
   };
 
   const renderPremiumButton = () => {
+    if (checkingPaid) {
+      return (
+        <div style={{ marginTop: '26px', width: '100%', height: '48px', background: '#f0f4f3', borderRadius: '8px' }} />
+      );
+    }
+
     if (paidSuccess) {
       return (
         <div style={{

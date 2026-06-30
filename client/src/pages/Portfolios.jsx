@@ -236,7 +236,7 @@ const DESIGNATIONS = [
   'PHP Developer', 'Laravel Developer',
   'Flutter Developer', 'React Native Developer', 'Android Developer', 'iOS Developer',
   'Data Scientist', 'Machine Learning Engineer', 'DevOps Engineer', 'UI/UX Developer',
-  'Java Full Stack Developer', '.NET Developer', 'Spring Boot Developer',
+  'Java Full Stack Developer', '.NET Developer', 'Spring Boot Developer', 'Others',
 ];
 
 export default function Portfolios() {
