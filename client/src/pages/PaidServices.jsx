@@ -10,6 +10,7 @@ const FREE_FEATURES = [
   'Freelance Opportunities',
   'Mentoring Opportunities',
   'Networking Opportunities with Developers',
+  'Explore other developers projects and source codes',
 ];
 
 const PREMIUM_FEATURES = [
@@ -142,7 +143,7 @@ export default function PaidServices() {
           padding: '12px 24px', fontSize: '13.5px', color: '#4a6663', flexWrap: 'wrap',
         }}>
           <span>Secure a high-paying job and get hired ⚡</span>
-          <span style={{ fontWeight: 800, color: '#0a7373' }}>4x faster</span>
+          <span style={{ fontWeight: 800, color: '#0a7373' }}>10x faster</span>
           <span>with Premium!</span>
         </div>
 
@@ -214,14 +215,6 @@ export default function PaidServices() {
           </div>
         </div>
 
-        {!freeOfferActive && (
-          <div style={{
-            textAlign: 'center', padding: '14px 24px', borderTop: '1px solid #eef2f0',
-            fontFamily: "'Spectral', serif", fontStyle: 'italic', fontSize: '13px', color: '#8f9594',
-          }}>
-            {priceDisplay} Premium Plan · Money-back guarantee if not placed within 2 months
-          </div>
-        )}
       </div>
     </div>
   );
