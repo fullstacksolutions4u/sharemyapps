@@ -1,13 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { ExternalLink, Mail, ArrowLeft, ChevronLeft, ChevronRight, Pencil, Trash2, EyeOff, Heart, Star, Send, Trash, MessageSquare, X, Eye, UserCircle2, Zap, Award, Trophy, Phone, Crown } from 'lucide-react';
+import { ExternalLink, Mail, ArrowLeft, ChevronLeft, ChevronRight, Pencil, Trash2, EyeOff, Heart, Star, Send, Trash, MessageSquare, X, Eye, UserCircle2, Zap, Phone, Crown } from 'lucide-react';
 
 const BADGE_CFG = {
-  new_member: { label: 'New Member',         Icon: UserCircle2, cls: 'bg-[#F3F0EB] text-muted border-border' },
-  active:     { label: 'Active Member',      Icon: Zap,         cls: 'bg-blue-50 text-blue-600 border-blue-200' },
-  top:        { label: 'Top Contributor',    Icon: Award,       cls: 'bg-amber-50 text-amber-600 border-amber-200' },
-  champion:   { label: 'Community Champion', Icon: Trophy,      cls: 'bg-purple-50 text-purple-600 border-purple-200' },
+  new_member: { label: 'New Member',    Icon: UserCircle2, cls: 'bg-[#F3F0EB] text-muted border-border' },
+  active:     { label: 'Active Member', Icon: Zap,         cls: 'bg-blue-50 text-blue-600 border-blue-200' },
 };
 
 const GithubIcon = ({ size = 15 }) => (

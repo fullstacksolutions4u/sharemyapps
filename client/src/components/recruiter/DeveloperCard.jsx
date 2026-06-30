@@ -205,36 +205,36 @@ export default function DeveloperCard({ dev, stagger, hideContact = false }) {
       </div>}
 
       {/* Action buttons */}
-      <div className="flex items-center gap-1.5 flex-wrap pt-0.5 border-t border-border mt-auto">
-        <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2.5 py-1 rounded-lg bg-gray-100 text-gray-600 border border-gray-200">
-          <Globe size={9} /> Portfolio
+      <div className="grid grid-cols-4 gap-1.5 pt-0.5 border-t border-border mt-auto">
+        <span className="inline-flex items-center justify-center text-[10px] font-semibold px-2 py-1 rounded-lg bg-gray-100 text-gray-600 border border-gray-200 text-center">
+          {!hideContact && <Globe size={9} className="mr-1" />} Portfolio
         </span>
         {dev.linkedinUrl && (hideContact ? (
-          <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2.5 py-1 rounded-lg bg-[#EEF4FF] text-[#0A66C2] border border-[#0A66C2]/20">
-            <Link2 size={9} /> LinkedIn
+          <span className="inline-flex items-center justify-center text-[10px] font-semibold px-2 py-1 rounded-lg bg-[#EEF4FF] text-[#0A66C2] border border-[#0A66C2]/20 text-center">
+            LinkedIn
           </span>
         ) : (
           <a
             href={toAbs(dev.linkedinUrl)}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1 text-[10px] font-semibold px-2.5 py-1 rounded-lg bg-[#EEF4FF] text-[#0A66C2] border border-[#0A66C2]/20 hover:bg-[#0A66C2] hover:text-white transition-colors"
+            className="inline-flex items-center justify-center text-[10px] font-semibold px-2 py-1 rounded-lg bg-[#EEF4FF] text-[#0A66C2] border border-[#0A66C2]/20 hover:bg-[#0A66C2] hover:text-white transition-colors"
           >
-            <Link2 size={9} /> LinkedIn
+            <Link2 size={9} className="mr-1" /> LinkedIn
           </a>
         ))}
         {dev.githubUrl && (hideContact ? (
-          <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2.5 py-1 rounded-lg bg-gray-900 text-white border border-gray-900">
-            <GitBranch size={9} /> GitHub
+          <span className="inline-flex items-center justify-center text-[10px] font-semibold px-2 py-1 rounded-lg bg-gray-900 text-white border border-gray-900 text-center">
+            GitHub
           </span>
         ) : (
           <a
             href={toAbs(dev.githubUrl)}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1 text-[10px] font-semibold px-2.5 py-1 rounded-lg bg-gray-900 text-white border border-gray-900 hover:bg-gray-700 transition-colors"
+            className="inline-flex items-center justify-center text-[10px] font-semibold px-2 py-1 rounded-lg bg-gray-900 text-white border border-gray-900 hover:bg-gray-700 transition-colors"
           >
-            <GitBranch size={9} /> GitHub
+            <GitBranch size={9} className="mr-1" /> GitHub
           </a>
         ))}
         {(() => {
@@ -247,7 +247,7 @@ export default function DeveloperCard({ dev, stagger, hideContact = false }) {
             loc = dev.country;
           }
           return loc ? (
-            <span className="inline-flex items-center gap-1 text-[10px] font-medium px-2.5 py-1 rounded-lg bg-bg border border-border text-muted ml-auto">
+            <span className="inline-flex items-center justify-center gap-1 text-[10px] font-medium px-2 py-1 rounded-lg bg-bg border border-border text-muted text-center">
               <MapPin size={9} className="shrink-0" /> {loc}
             </span>
           ) : null;

@@ -7,8 +7,7 @@ import toast from 'react-hot-toast';
 const FREE_FEATURES = [
   'Recruiter Direct Hiring',
   'Apply to Jobs',
-  'Freelance Opportunities',
-  'Mentoring Opportunities',
+  'Freelance Opportunities & Mentoring Opportunities',
   'Networking Opportunities with Developers',
   'Explore other developers projects and source codes',
 ];
@@ -28,12 +27,14 @@ export default function PaidServices() {
   const [freeOffer, setFreeOffer] = useState(null);
   const [applyLoading, setApplyLoading] = useState(false);
   const [applyError, setApplyError] = useState('');
-  const [offerConfig, setOfferConfig] = useState({ freeOfferEnabled: false, freeOfferDueDate: null, premiumServicePricePaise: 99900 });
+  const [offerConfig, setOfferConfig] = useState(null);
 
-  const freeOfferActive = offerConfig.freeOfferEnabled && (
+  const freeOfferActive = offerConfig?.freeOfferEnabled && (
     !offerConfig.freeOfferDueDate || new Date() <= new Date(offerConfig.freeOfferDueDate)
   );
-  const priceDisplay = `₹${((offerConfig.premiumServicePricePaise ?? 99900) / 100).toLocaleString('en-IN')}`;
+  const priceDisplay = offerConfig
+    ? `₹${(offerConfig.premiumServicePricePaise / 100).toLocaleString('en-IN')}`
+    : null;
 
   useEffect(() => {
     api.get('/offers/config').then(r => setOfferConfig(r.data)).catch(() => {});
@@ -110,7 +111,7 @@ export default function PaidServices() {
           fontWeight: 700, letterSpacing: '.02em', fontFamily: "'Manrope', sans-serif", cursor: 'pointer',
         }}
       >
-        Get Started — {priceDisplay}
+        Get Started — {priceDisplay ?? '…'}
       </button>
     );
   };
@@ -190,13 +191,13 @@ export default function PaidServices() {
                 </span>
               </div>
               <span style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
-                {freeOfferActive && (
+                {freeOfferActive && priceDisplay && (
                   <span style={{ fontFamily: "'Spectral', serif", fontSize: '18px', fontWeight: 600, color: '#9aa6a4', textDecoration: 'line-through' }}>
                     {priceDisplay}
                   </span>
                 )}
                 <span style={{ fontFamily: "'Spectral', serif", fontSize: '22px', fontWeight: 700, color: freeOfferActive ? '#0a7373' : '#243433' }}>
-                  {freeOfferActive ? '₹0' : priceDisplay}
+                  {offerConfig === null ? '…' : freeOfferActive ? '₹0' : priceDisplay}
                 </span>
               </span>
             </div>

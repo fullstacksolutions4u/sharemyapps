@@ -36,7 +36,7 @@ router.get('/showcase', async (req, res) => {
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit)
-      .populate('owner', 'name avatar')
+      .populate('owner', 'name avatar badge premiumServices')
       .lean();
     res.json(projects);
   } catch {

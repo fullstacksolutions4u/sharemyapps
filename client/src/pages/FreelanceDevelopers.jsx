@@ -7,10 +7,8 @@ import {
 import api from '../api/axios';
 
 const BADGE = {
-  new_member: { label: 'New',      cls: 'bg-slate-100 text-slate-500 border-slate-200' },
-  active:     { label: 'Active',   cls: 'bg-blue-50 text-blue-600 border-blue-200' },
-  top:        { label: 'Top',      cls: 'bg-amber-50 text-amber-600 border-amber-200' },
-  champion:   { label: 'Champion', cls: 'bg-purple-50 text-purple-600 border-purple-200' },
+  new_member: { label: 'New Member',    cls: 'bg-slate-100 text-slate-500 border-slate-200' },
+  active:     { label: 'Active Member', cls: 'bg-blue-50 text-blue-600 border-blue-200' },
 };
 
 const PROJECT_CHIP_COLORS = [

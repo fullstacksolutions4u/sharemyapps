@@ -39,7 +39,7 @@ const ownerLookupStages = [
       localField: 'owner',
       foreignField: '_id',
       as: 'owner',
-      pipeline: [{ $project: { name: 1, email: 1, avatar: 1, badge: 1 } }],
+      pipeline: [{ $project: { name: 1, email: 1, avatar: 1, badge: 1, premiumServices: 1 } }],
     },
   },
   { $unwind: { path: '$owner', preserveNullAndEmptyArrays: true } },

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import {
   ArrowLeft, Plus, X, Save, Check, Mail, Tag, Clock, Link as LinkIcon, Phone,
   AlertCircle, FileText, Briefcase, Pencil, Trash2, Eye, EyeOff,
-  UserCircle2, Search, Zap, Award, Trophy, FolderOpen as FolderOpenIcon,
+  UserCircle2, Search, Zap, FolderOpen as FolderOpenIcon,
   Heart, Star, Users, History, ChevronDown, ChevronUp, ExternalLink,
   MapPin, Calendar, IndianRupee, Monitor, Languages, MessageSquare,
 } from 'lucide-react';
@@ -10,10 +10,8 @@ import api from '../../api/axios';
 import toast from 'react-hot-toast';
 
 const BADGES = [
-  { value: 'new_member', label: 'New Member',         icon: UserCircle2, cls: 'bg-[#F3F0EB] text-[#6B7280] border-[#E5E1DA]' },
-  { value: 'active',     label: 'Active Member',      icon: Zap,         cls: 'bg-blue-50 text-blue-600 border-blue-200' },
-  { value: 'top',        label: 'Top Contributor',    icon: Award,       cls: 'bg-amber-50 text-amber-600 border-amber-200' },
-  { value: 'champion',   label: 'Community Champion', icon: Trophy,      cls: 'bg-purple-50 text-purple-600 border-purple-200' },
+  { value: 'new_member', label: 'New Member',    icon: UserCircle2, cls: 'bg-[#F3F0EB] text-[#6B7280] border-[#E5E1DA]' },
+  { value: 'active',     label: 'Active Member', icon: Zap,         cls: 'bg-blue-50 text-blue-600 border-blue-200' },
 ];
 
 const inp = 'w-full px-3.5 py-2.5 border border-[#E5E1DA] rounded-xl text-sm text-[#1A1A1A] bg-white placeholder-[#9CA3AF] focus:outline-none focus:border-[#00A693] focus:ring-2 focus:ring-[#00A693]/10 transition';
