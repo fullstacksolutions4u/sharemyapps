@@ -31,7 +31,7 @@ const NAV = [
   { key: 'plans_payments',  label: 'Plans & Payments',  icon: IndianRupee },
 { key: 'offers',          label: 'Premium Applicants', icon: Crown },
   { key: 'service_access', label: 'Services',           icon: Unlock },
-  { key: 'job_recommendations', label: 'Job Recommendations', icon: Mail },
+  { key: 'job_recommendations', label: 'Job Alert', icon: Mail },
 ];
 
 export default function AdminPanel() {
