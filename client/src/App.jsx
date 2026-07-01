@@ -36,7 +36,6 @@ const AddVacancy         = lazy(() => import('./pages/AddVacancy'));
 const LearningTracker    = lazy(() => import('./pages/LearningTracker'));
 const Profile            = lazy(() => import('./pages/Profile'));
 const Services           = lazy(() => import('./pages/Services'));
-const JobRecommendations = lazy(() => import('./pages/JobRecommendations'));
 
 class ErrorBoundary extends Component {
   state = { error: null };
@@ -147,7 +146,6 @@ function AppRoutes() {
             <Route path="/career-services" element={<Navigate to="/dashboard/premium" replace />} />
             <Route path="/tick2test" element={<LearningTracker />} />
             <Route path="/portfolio/:userId" element={<PublicPortfolio />} />
-            <Route path="/job-recommendations" element={<JobRecommendations />} />
             <Route path="/admin" element={<AdminRoute><AdminPanel /></AdminRoute>} />
             <Route path="*" element={<NotFound />} />
           </Routes>

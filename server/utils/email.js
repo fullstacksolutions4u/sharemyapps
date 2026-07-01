@@ -537,24 +537,21 @@ exports.sendJobRecommendationsEmail = async ({ to, name, jobs }) => {
   const showLocation = jobs.some(j => j.workMode !== 'remote');
   const jobRows = jobs.map(j => `
     <tr>
-      <td style="padding:10px 12px;font-size:12px;color:#0A7373;font-weight:600;border-bottom:1px solid #F3F0EB;">
+      <td style="padding:10px 12px;font-size:12px;color:#374151;border-bottom:1px solid #F3F0EB;white-space:nowrap;">
         ${j.emailId}
       </td>
-      <td style="padding:10px 12px;font-size:13px;font-weight:700;color:#1A1A1A;border-bottom:1px solid #F3F0EB;">
+      <td style="padding:10px 12px;font-size:13px;color:#374151;border-bottom:1px solid #F3F0EB;">
         ${j.subject}
       </td>
-      <td style="padding:10px 12px;font-size:12px;font-weight:600;color:#0A7373;border-bottom:1px solid #F3F0EB;white-space:nowrap;">
+      <td style="padding:10px 12px;font-size:12px;color:#374151;border-bottom:1px solid #F3F0EB;white-space:nowrap;">
         ${WORK_MODE_LABEL[j.workMode] || j.workMode}
       </td>
       ${showLocation ? `
-      <td style="padding:10px 12px;font-size:12px;color:#6B7280;border-bottom:1px solid #F3F0EB;white-space:nowrap;">
+      <td style="padding:10px 12px;font-size:12px;color:#374151;border-bottom:1px solid #F3F0EB;white-space:nowrap;">
         ${j.location || '—'}
       </td>` : ''}
     </tr>
   `).join('');
-
-  const encoded = Buffer.from(JSON.stringify(jobs)).toString('base64url');
-  const copyPageUrl = `${BASE_URL}/job-recommendations?d=${encoded}`;
 
   await api.sendTransacEmail({
     sender: FROM,
@@ -566,7 +563,7 @@ exports.sendJobRecommendationsEmail = async ({ to, name, jobs }) => {
           <img src="${LOGO_URL}" alt="ShareMyApps" style="height:80px;object-fit:contain;" />
         </div>
         <div style="padding:32px;">
-          <h2 style="margin:0 0 8px;font-size:18px;color:#1A1A1A;">Today's job recommendations for you</h2>
+          <h2 style="margin:0 0 16px;font-size:18px;color:#1A1A1A;">Today's job recommendations for you <span style="font-size:12px;font-weight:400;color:#9CA3AF;">${new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}</span></h2>
           <p style="color:#374151;margin:0 0 20px;">Hi ${name},</p>
           <p style="color:#374151;margin:0 0 20px;">
             Share your updated resume to the below emails with a good cover letter:
@@ -575,7 +572,7 @@ exports.sendJobRecommendationsEmail = async ({ to, name, jobs }) => {
             <thead>
               <tr>
                 <th style="text-align:left;padding:8px 12px;font-size:11px;color:#9CA3AF;text-transform:uppercase;letter-spacing:.04em;border-bottom:2px solid #E5E1DA;">Email ID</th>
-                <th style="text-align:left;padding:8px 12px;font-size:11px;color:#9CA3AF;text-transform:uppercase;letter-spacing:.04em;border-bottom:2px solid #E5E1DA;">Subject</th>
+                <th style="text-align:left;padding:8px 12px;font-size:11px;color:#9CA3AF;text-transform:uppercase;letter-spacing:.04em;border-bottom:2px solid #E5E1DA;">Designation</th>
                 <th style="text-align:left;padding:8px 12px;font-size:11px;color:#9CA3AF;text-transform:uppercase;letter-spacing:.04em;border-bottom:2px solid #E5E1DA;">Mode</th>
                 ${showLocation ? `<th style="text-align:left;padding:8px 12px;font-size:11px;color:#9CA3AF;text-transform:uppercase;letter-spacing:.04em;border-bottom:2px solid #E5E1DA;">Location</th>` : ''}
               </tr>
@@ -584,9 +581,6 @@ exports.sendJobRecommendationsEmail = async ({ to, name, jobs }) => {
               ${jobRows}
             </tbody>
           </table>
-          <a href="${copyPageUrl}" style="display:inline-block;background:#00A693;color:#fff;text-decoration:none;padding:12px 24px;border-radius:8px;font-weight:600;font-size:14px;">
-            Copy Email &amp; Subject
-          </a>
         </div>
         ${FOOTER('You received this email because you have an active premium service on ShareMyApps.')}
       </div>
