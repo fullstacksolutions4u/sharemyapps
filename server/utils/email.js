@@ -537,8 +537,8 @@ const forJs = (s) => String(s).replace(/\\/g, '\\\\').replace(/'/g, "\\'");
 
 const copyIconButton = (text) => `
   <button type="button" onclick="navigator.clipboard.writeText('${forJs(text)}')" title="Copy"
-    style="border:1px solid #E5E1DA;background:#F9FAFB;border-radius:6px;width:22px;height:22px;padding:0;margin-left:6px;cursor:pointer;vertical-align:middle;display:inline-flex;align-items:center;justify-content:center;">
-    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6B7280" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    style="border:none;background:transparent;padding:0;margin-left:6px;cursor:pointer;vertical-align:middle;display:inline-flex;align-items:center;justify-content:center;">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
       <rect x="9" y="9" width="13" height="13" rx="2"></rect>
       <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
     </svg>
@@ -546,7 +546,7 @@ const copyIconButton = (text) => `
 `;
 
 exports.sendJobRecommendationsEmail = async ({ to, name, jobs }) => {
-  const vacanciesUrl = `${BASE_URL}/vacancies`;
+  const showLocation = jobs.some(j => j.workMode !== 'remote');
   const jobRows = jobs.map(j => `
     <tr>
       <td style="padding:10px 12px;font-size:12px;border-bottom:1px solid #F3F0EB;">
@@ -558,9 +558,10 @@ exports.sendJobRecommendationsEmail = async ({ to, name, jobs }) => {
       <td style="padding:10px 12px;font-size:12px;font-weight:600;color:#0A7373;border-bottom:1px solid #F3F0EB;white-space:nowrap;">
         ${WORK_MODE_LABEL[j.workMode] || j.workMode}
       </td>
+      ${showLocation ? `
       <td style="padding:10px 12px;font-size:12px;color:#6B7280;border-bottom:1px solid #F3F0EB;white-space:nowrap;">
         ${j.location || '—'}
-      </td>
+      </td>` : ''}
     </tr>
   `).join('');
 
@@ -579,22 +580,19 @@ exports.sendJobRecommendationsEmail = async ({ to, name, jobs }) => {
           <p style="color:#374151;margin:0 0 20px;">
             Share your updated resume to the below emails with a good cover letter:
           </p>
-          <table style="width:100%;border-collapse:collapse;margin-bottom:24px;">
+          <table style="width:100%;border-collapse:collapse;">
             <thead>
               <tr>
                 <th style="text-align:left;padding:8px 12px;font-size:11px;color:#9CA3AF;text-transform:uppercase;letter-spacing:.04em;border-bottom:2px solid #E5E1DA;">Email ID</th>
                 <th style="text-align:left;padding:8px 12px;font-size:11px;color:#9CA3AF;text-transform:uppercase;letter-spacing:.04em;border-bottom:2px solid #E5E1DA;">Subject</th>
                 <th style="text-align:left;padding:8px 12px;font-size:11px;color:#9CA3AF;text-transform:uppercase;letter-spacing:.04em;border-bottom:2px solid #E5E1DA;">Mode</th>
-                <th style="text-align:left;padding:8px 12px;font-size:11px;color:#9CA3AF;text-transform:uppercase;letter-spacing:.04em;border-bottom:2px solid #E5E1DA;">Location</th>
+                ${showLocation ? `<th style="text-align:left;padding:8px 12px;font-size:11px;color:#9CA3AF;text-transform:uppercase;letter-spacing:.04em;border-bottom:2px solid #E5E1DA;">Location</th>` : ''}
               </tr>
             </thead>
             <tbody>
               ${jobRows}
             </tbody>
           </table>
-          <a href="${vacanciesUrl}" style="display:inline-block;margin-top:8px;background:#00A693;color:#fff;text-decoration:none;padding:12px 24px;border-radius:8px;font-weight:600;font-size:14px;">
-            Explore All Vacancies
-          </a>
         </div>
         ${FOOTER('You received this email because you have an active premium service on ShareMyApps.')}
       </div>
