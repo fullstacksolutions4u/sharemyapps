@@ -533,27 +533,15 @@ exports.sendSessionScheduledEmail = async ({ to, name, serviceLabel, meetLink, s
 
 const WORK_MODE_LABEL = { remote: 'Remote', onsite: 'On-site', hybrid: 'Hybrid' };
 
-const forJs = (s) => String(s).replace(/\\/g, '\\\\').replace(/'/g, "\\'");
-
-const copyIconButton = (text) => `
-  <button type="button" onclick="navigator.clipboard.writeText('${forJs(text)}')" title="Copy"
-    style="border:none;background:transparent;padding:0;margin-left:6px;cursor:pointer;vertical-align:middle;display:inline-flex;align-items:center;justify-content:center;">
-    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <rect x="9" y="9" width="13" height="13" rx="2"></rect>
-      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-    </svg>
-  </button>
-`;
-
 exports.sendJobRecommendationsEmail = async ({ to, name, jobs }) => {
   const showLocation = jobs.some(j => j.workMode !== 'remote');
   const jobRows = jobs.map(j => `
     <tr>
-      <td style="padding:10px 12px;font-size:12px;border-bottom:1px solid #F3F0EB;">
-        <a href="mailto:${j.emailId}?subject=${encodeURIComponent(j.subject)}" style="color:#0A7373;font-weight:600;text-decoration:none;">${j.emailId}</a>${copyIconButton(j.emailId)}
+      <td style="padding:10px 12px;font-size:12px;color:#0A7373;font-weight:600;border-bottom:1px solid #F3F0EB;">
+        ${j.emailId}
       </td>
       <td style="padding:10px 12px;font-size:13px;font-weight:700;color:#1A1A1A;border-bottom:1px solid #F3F0EB;">
-        ${j.subject}${copyIconButton(j.subject)}
+        ${j.subject}
       </td>
       <td style="padding:10px 12px;font-size:12px;font-weight:600;color:#0A7373;border-bottom:1px solid #F3F0EB;white-space:nowrap;">
         ${WORK_MODE_LABEL[j.workMode] || j.workMode}
@@ -564,6 +552,9 @@ exports.sendJobRecommendationsEmail = async ({ to, name, jobs }) => {
       </td>` : ''}
     </tr>
   `).join('');
+
+  const encoded = Buffer.from(JSON.stringify(jobs)).toString('base64url');
+  const copyPageUrl = `${BASE_URL}/job-recommendations?d=${encoded}`;
 
   await api.sendTransacEmail({
     sender: FROM,
@@ -580,7 +571,7 @@ exports.sendJobRecommendationsEmail = async ({ to, name, jobs }) => {
           <p style="color:#374151;margin:0 0 20px;">
             Share your updated resume to the below emails with a good cover letter:
           </p>
-          <table style="width:100%;border-collapse:collapse;">
+          <table style="width:100%;border-collapse:collapse;margin-bottom:20px;">
             <thead>
               <tr>
                 <th style="text-align:left;padding:8px 12px;font-size:11px;color:#9CA3AF;text-transform:uppercase;letter-spacing:.04em;border-bottom:2px solid #E5E1DA;">Email ID</th>
@@ -593,6 +584,9 @@ exports.sendJobRecommendationsEmail = async ({ to, name, jobs }) => {
               ${jobRows}
             </tbody>
           </table>
+          <a href="${copyPageUrl}" style="display:inline-block;background:#00A693;color:#fff;text-decoration:none;padding:12px 24px;border-radius:8px;font-weight:600;font-size:14px;">
+            Copy Email &amp; Subject
+          </a>
         </div>
         ${FOOTER('You received this email because you have an active premium service on ShareMyApps.')}
       </div>
