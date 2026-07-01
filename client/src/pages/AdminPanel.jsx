@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import {
   LayoutDashboard, FolderOpen, ShieldCheck, Menu, LogOut,
-  Users, Briefcase, Megaphone, MessageSquare, Camera, IndianRupee, Crown, BookOpen, Unlock,
+  Users, Briefcase, Megaphone, MessageSquare, Camera, IndianRupee, Crown, BookOpen, Unlock, Mail,
 } from 'lucide-react';
 import api from '../api/axios';
 import AdminOverview from './admin/AdminOverview';
@@ -18,6 +18,7 @@ import AdminOffersSection from './admin/AdminOffersSection';
 import AdminLearningSection from './admin/AdminLearningSection';
 import AdminPremiumServicesSection from './admin/AdminPremiumServicesSection';
 import AdminPlansSection from './admin/AdminPlansSection';
+import AdminJobRecommendationsSection from './admin/AdminJobRecommendationsSection';
 
 const NAV = [
   { key: 'overview',       label: 'Overview',        icon: LayoutDashboard },
@@ -30,6 +31,7 @@ const NAV = [
   { key: 'plans_payments',  label: 'Plans & Payments',  icon: IndianRupee },
 { key: 'offers',          label: 'Premium Applicants', icon: Crown },
   { key: 'service_access', label: 'Services',           icon: Unlock },
+  { key: 'job_recommendations', label: 'Job Recommendations', icon: Mail },
 ];
 
 export default function AdminPanel() {
@@ -158,6 +160,7 @@ const { user, setUser, logout } = useAuth();
           {section === 'plans_payments'    && <AdminPlansSection />}
           {section === 'offers'           && <AdminOffersSection />}
           {section === 'service_access'   && <AdminPremiumServicesSection />}
+          {section === 'job_recommendations' && <AdminJobRecommendationsSection />}
           {section === 'learning'         && <AdminLearningSection />}
         </div>
       </div>

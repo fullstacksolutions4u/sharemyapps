@@ -795,4 +795,73 @@ router.get('/form-responses', async (_req, res) => {
   }
 });
 
+// ── Job Recommendations (premium users) ──────────────────────────────────────
+
+async function getPremiumUsers() {
+  const FreeOffer = require('../models/FreeOffer');
+
+  const usersWithUnlock = await User.find({
+    'premiumServices.0': { $exists: true },
+    isDeleted: { $ne: true },
+  }).select('name email').lean();
+
+  const approvedOffers = await FreeOffer.find({ status: 'approved' })
+    .populate('user', 'name email isDeleted')
+    .lean();
+  const offerUsers = approvedOffers.map(o => o.user).filter(u => u && !u.isDeleted);
+
+  const allMap = new Map();
+  for (const u of usersWithUnlock) allMap.set(String(u._id), u);
+  for (const u of offerUsers) if (!allMap.has(String(u._id))) allMap.set(String(u._id), u);
+  return [...allMap.values()];
+}
+
+router.get('/job-recommendations/premium-users', async (_req, res) => {
+  try {
+    const users = await getPremiumUsers();
+    res.json({ users, count: users.length });
+  } catch (err) { res.status(500).json({ message: err.message }); }
+});
+
+router.post('/job-recommendations/send', async (req, res) => {
+  try {
+    const { sendJobRecommendationsEmail } = require('../utils/email');
+    const { jobs, userIds } = req.body;
+    if (!Array.isArray(jobs) || jobs.length === 0)
+      return res.status(400).json({ message: 'At least one job is required' });
+    const cleanJobs = jobs
+      .map(j => ({
+        emailId: j.emailId?.trim() || '',
+        subject: j.subject?.trim() || '',
+        workMode: ['remote', 'onsite', 'hybrid'].includes(j.workMode) ? j.workMode : 'remote',
+        location: j.location?.trim() || '',
+      }))
+      .filter(j => j.emailId && j.subject)
+      .map(j => ({ ...j, location: j.workMode === 'remote' ? '' : j.location }));
+    if (cleanJobs.length === 0)
+      return res.status(400).json({ message: 'Each job needs an email id and subject' });
+    if (cleanJobs.some(j => j.workMode !== 'remote' && !j.location))
+      return res.status(400).json({ message: 'Location is required for on-site and hybrid jobs' });
+
+    let users = await getPremiumUsers();
+    if (Array.isArray(userIds) && userIds.length > 0) {
+      const idSet = new Set(userIds.map(String));
+      users = users.filter(u => idSet.has(String(u._id)));
+    }
+    if (users.length === 0)
+      return res.status(404).json({ message: 'No premium users to send to' });
+
+    let sent = 0, failed = 0;
+    for (const u of users) {
+      try {
+        await sendJobRecommendationsEmail({ to: u.email, name: u.name, jobs: cleanJobs });
+        sent++;
+      } catch {
+        failed++;
+      }
+    }
+    res.json({ sent, failed, total: users.length });
+  } catch (err) { res.status(500).json({ message: err.message }); }
+});
+
 module.exports = router;

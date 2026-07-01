@@ -137,7 +137,7 @@ exports.sendPlacementPaymentEmail = async ({ to, name, plan }) => {
     'LinkedIn & Job Portal Profile Optimization',
     'Dedicated Placement Officer Support Until You Get Hired',
     'Mock Interviews with Industry Experts from our community',
-    'Standing out job applications',
+    'Personalized daily job recommendations via registered email',
   ];
   const featureRows = allFeatures.map(f =>
     `<tr><td style="padding:6px 0;border-bottom:1px solid #F3F0EB;font-size:13px;color:#374151;">✓ ${f}</td></tr>`
@@ -526,6 +526,77 @@ exports.sendSessionScheduledEmail = async ({ to, name, serviceLabel, meetLink, s
           </p>
         </div>
         ${FOOTER('You received this email because you requested a premium session on ShareMyApps.')}
+      </div>
+    `,
+  });
+};
+
+const WORK_MODE_LABEL = { remote: 'Remote', onsite: 'On-site', hybrid: 'Hybrid' };
+
+const forJs = (s) => String(s).replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+
+const copyIconButton = (text) => `
+  <button type="button" onclick="navigator.clipboard.writeText('${forJs(text)}')" title="Copy"
+    style="border:1px solid #E5E1DA;background:#F9FAFB;border-radius:6px;width:22px;height:22px;padding:0;margin-left:6px;cursor:pointer;vertical-align:middle;display:inline-flex;align-items:center;justify-content:center;">
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6B7280" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="9" y="9" width="13" height="13" rx="2"></rect>
+      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+    </svg>
+  </button>
+`;
+
+exports.sendJobRecommendationsEmail = async ({ to, name, jobs }) => {
+  const vacanciesUrl = `${BASE_URL}/vacancies`;
+  const jobRows = jobs.map(j => `
+    <tr>
+      <td style="padding:10px 12px;font-size:12px;border-bottom:1px solid #F3F0EB;">
+        <a href="mailto:${j.emailId}?subject=${encodeURIComponent(j.subject)}" style="color:#0A7373;font-weight:600;text-decoration:none;">${j.emailId}</a>${copyIconButton(j.emailId)}
+      </td>
+      <td style="padding:10px 12px;font-size:13px;font-weight:700;color:#1A1A1A;border-bottom:1px solid #F3F0EB;">
+        ${j.subject}${copyIconButton(j.subject)}
+      </td>
+      <td style="padding:10px 12px;font-size:12px;font-weight:600;color:#0A7373;border-bottom:1px solid #F3F0EB;white-space:nowrap;">
+        ${WORK_MODE_LABEL[j.workMode] || j.workMode}
+      </td>
+      <td style="padding:10px 12px;font-size:12px;color:#6B7280;border-bottom:1px solid #F3F0EB;white-space:nowrap;">
+        ${j.location || '—'}
+      </td>
+    </tr>
+  `).join('');
+
+  await api.sendTransacEmail({
+    sender: FROM,
+    to: [{ email: to, name }],
+    subject: `Your Daily Job Recommendations | ShareMyApps`,
+    htmlContent: `
+      <div style="font-family:Inter,Arial,sans-serif;max-width:560px;margin:0 auto;background:#fff;border-radius:12px;overflow:hidden;border:1px solid #E5E1DA;">
+        <div style="background:#00A693;padding:24px 32px;text-align:center;">
+          <img src="${LOGO_URL}" alt="ShareMyApps" style="height:80px;object-fit:contain;" />
+        </div>
+        <div style="padding:32px;">
+          <h2 style="margin:0 0 8px;font-size:18px;color:#1A1A1A;">Today's job recommendations for you</h2>
+          <p style="color:#374151;margin:0 0 20px;">Hi ${name},</p>
+          <p style="color:#374151;margin:0 0 20px;">
+            Share your updated resume to the below emails with a good cover letter:
+          </p>
+          <table style="width:100%;border-collapse:collapse;margin-bottom:24px;">
+            <thead>
+              <tr>
+                <th style="text-align:left;padding:8px 12px;font-size:11px;color:#9CA3AF;text-transform:uppercase;letter-spacing:.04em;border-bottom:2px solid #E5E1DA;">Email ID</th>
+                <th style="text-align:left;padding:8px 12px;font-size:11px;color:#9CA3AF;text-transform:uppercase;letter-spacing:.04em;border-bottom:2px solid #E5E1DA;">Subject</th>
+                <th style="text-align:left;padding:8px 12px;font-size:11px;color:#9CA3AF;text-transform:uppercase;letter-spacing:.04em;border-bottom:2px solid #E5E1DA;">Mode</th>
+                <th style="text-align:left;padding:8px 12px;font-size:11px;color:#9CA3AF;text-transform:uppercase;letter-spacing:.04em;border-bottom:2px solid #E5E1DA;">Location</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${jobRows}
+            </tbody>
+          </table>
+          <a href="${vacanciesUrl}" style="display:inline-block;margin-top:8px;background:#00A693;color:#fff;text-decoration:none;padding:12px 24px;border-radius:8px;font-weight:600;font-size:14px;">
+            Explore All Vacancies
+          </a>
+        </div>
+        ${FOOTER('You received this email because you have an active premium service on ShareMyApps.')}
       </div>
     `,
   });
