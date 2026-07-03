@@ -137,7 +137,7 @@ export default function PaidServices() {
       setPlanLoading(true);
       try {
         const res = await api.get('/plans');
-        const plan = res.data?.[0];
+        const plan = res.data?.find(p => p.name === 'Premium') || res.data?.[0];
         if (!plan) { toast.error('No plan available. Please try again.'); return; }
         setPayModal({ ...plan, features: PREMIUM_FEATURES });
       } catch {

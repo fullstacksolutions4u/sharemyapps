@@ -21,18 +21,9 @@ const SEED_PLANS = [
 ];
 
 async function seedIfEmpty() {
-  await Plan.deleteMany({ name: { $nin: SEED_PLANS.map(p => p.name) } });
   const count = await Plan.countDocuments();
   if (count === 0) {
     await Plan.insertMany(SEED_PLANS);
-  } else {
-    for (const planData of SEED_PLANS) {
-      await Plan.findOneAndUpdate(
-        { name: planData.name },
-        { $set: { price: planData.price, badge: planData.badge, badgeStyle: planData.badgeStyle, features: planData.features, description: planData.description, variant: planData.variant, order: planData.order } },
-        { upsert: false }
-      );
-    }
   }
 }
 
