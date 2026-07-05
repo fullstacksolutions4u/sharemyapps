@@ -168,6 +168,7 @@ export default function PaidServices() {
     {payModal && (
       <PlacementPaymentModal
         plan={payModal}
+        user={user}
         onClose={() => setPayModal(null)}
         onSuccess={() => { setPayModal(null); setPaidSuccess(true); toast.success('Payment successful! Our HR team will reach out shortly.'); }}
       />

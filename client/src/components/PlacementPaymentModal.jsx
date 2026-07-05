@@ -3,7 +3,7 @@ import { X, ShieldCheck, Check, Sparkles } from 'lucide-react';
 import api from '../api/axios';
 import toast from 'react-hot-toast';
 
-export default function PlacementPaymentModal({ plan, onClose, onSuccess }) {
+export default function PlacementPaymentModal({ plan, user, onClose, onSuccess }) {
   const [loading, setLoading] = useState(false);
 
   const handlePay = async () => {
@@ -33,7 +33,11 @@ export default function PlacementPaymentModal({ plan, onClose, onSuccess }) {
           }
         },
         modal: { ondismiss: () => setLoading(false) },
-        prefill: {},
+        prefill: {
+          name: user?.name || '',
+          email: user?.email || '',
+          contact: user?.phone || '',
+        },
         theme: { color: '#B45309' },
       };
 
