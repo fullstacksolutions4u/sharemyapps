@@ -182,10 +182,10 @@ function CandidateIntakeForm({ defaultName, onSubmitted }) {
       background: '#fff', borderRadius: 16, border: '1.5px solid #eae6df',
       padding: '28px 26px', maxWidth: 640, margin: '0 auto',
     }}>
-      <h2 style={{ margin: '0 0 4px', fontSize: 19, fontWeight: 800, color: '#1a2120' }}>
+      <h2 style={{ margin: '0 0 4px', fontSize: 19, fontWeight: 800, color: '#1a2120', textAlign: 'center' }}>
         Tell us about your job search
       </h2>
-      <p style={{ margin: '0 0 22px', fontSize: 13, color: '#7c8b88' }}>
+      <p style={{ margin: '0 0 22px', fontSize: 13, color: '#7c8b88', textAlign: 'center' }}>
         A quick intake so our placement team can help you faster. This only takes a minute.
       </p>
 
