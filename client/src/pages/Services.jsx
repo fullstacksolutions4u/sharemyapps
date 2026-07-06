@@ -135,17 +135,17 @@ const DURATION_OPTIONS = [
   'Other',
 ];
 
-function CandidateIntakeForm({ defaultName, onSubmitted }) {
-  const [fullName, setFullName] = useState(defaultName || '');
-  const [jobSearchStatus, setJobSearchStatus] = useState('');
-  const [jobSearchStatusOther, setJobSearchStatusOther] = useState('');
-  const [searchDuration, setSearchDuration] = useState('');
-  const [searchDurationOther, setSearchDurationOther] = useState('');
-  const [platformsUsed, setPlatformsUsed] = useState('');
-  const [applicationsPerDay, setApplicationsPerDay] = useState('');
-  const [interviewCallsFrequency, setInterviewCallsFrequency] = useState('');
-  const [interviewsScheduledPerWeek, setInterviewsScheduledPerWeek] = useState('');
-  const [availableForMeetingToday, setAvailableForMeetingToday] = useState('');
+function CandidateIntakeForm({ intake, defaultName, onSubmitted }) {
+  const [fullName, setFullName] = useState(intake?.fullName || defaultName || '');
+  const [jobSearchStatus, setJobSearchStatus] = useState(intake?.jobSearchStatus || '');
+  const [jobSearchStatusOther, setJobSearchStatusOther] = useState(intake?.jobSearchStatusOther || '');
+  const [searchDuration, setSearchDuration] = useState(intake?.searchDuration || '');
+  const [searchDurationOther, setSearchDurationOther] = useState(intake?.searchDurationOther || '');
+  const [platformsUsed, setPlatformsUsed] = useState(intake?.platformsUsed || '');
+  const [applicationsPerDay, setApplicationsPerDay] = useState(intake?.applicationsPerDay || '');
+  const [interviewCallsFrequency, setInterviewCallsFrequency] = useState(intake?.interviewCallsFrequency || '');
+  const [interviewsScheduledPerWeek, setInterviewsScheduledPerWeek] = useState(intake?.interviewsScheduledPerWeek || '');
+  const [availableForMeetingToday, setAvailableForMeetingToday] = useState(intake?.availableForMeetingToday || '');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -267,6 +267,85 @@ function CandidateIntakeForm({ defaultName, onSubmitted }) {
           {loading ? 'Submitting…' : 'Submit'}
         </button>
       </div>
+    </div>
+  );
+}
+
+function IntakeField({ label, value }) {
+  if (!value) return null;
+  return (
+    <div>
+      <div style={{ fontSize: 10, fontWeight: 700, color: '#9aaca9', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 2 }}>
+        {label}
+      </div>
+      <div style={{ fontSize: 13, color: '#3f4948', lineHeight: 1.4 }}>{value}</div>
+    </div>
+  );
+}
+
+function CandidateIntakeSummary({ intake, onEdit }) {
+  const [expanded, setExpanded] = useState(false);
+
+  return (
+    <div style={{
+      background: '#fff', borderRadius: 14, border: '1.5px solid #eae6df',
+      padding: '18px 20px', marginBottom: 18,
+    }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+          <div style={{
+            width: 38, height: 38, borderRadius: 10, flexShrink: 0,
+            background: '#dcefed', display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}>
+            <LockOpen size={18} color="#0a7373" />
+          </div>
+          <span style={{ fontSize: 13.5, fontWeight: 700, color: '#1a2120' }}>
+            Job search intake submitted — {intake.fullName}
+          </span>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+          <button
+            onClick={() => setExpanded(v => !v)}
+            style={{
+              background: 'none', border: 'none', cursor: 'pointer',
+              fontSize: 12, fontWeight: 700, color: '#0a7373', fontFamily: 'inherit', padding: 0,
+            }}
+          >
+            {expanded ? 'Hide details' : 'View details'}
+          </button>
+          <button
+            onClick={onEdit}
+            style={{
+              background: 'none', border: 'none', cursor: 'pointer',
+              fontSize: 12, fontWeight: 700, color: '#7c8b88', fontFamily: 'inherit', padding: 0,
+            }}
+          >
+            Edit
+          </button>
+        </div>
+      </div>
+
+      {expanded && (
+        <div style={{
+          marginTop: 16, paddingTop: 16, borderTop: '1px solid #f0ece6',
+          display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px 24px',
+        }}>
+          <IntakeField label="Full Name" value={intake.fullName} />
+          <IntakeField
+            label="Current Job Search Status"
+            value={intake.jobSearchStatus === 'Other' ? intake.jobSearchStatusOther : intake.jobSearchStatus}
+          />
+          <IntakeField
+            label="Search Duration"
+            value={intake.searchDuration === 'Other' ? intake.searchDurationOther : intake.searchDuration}
+          />
+          <IntakeField label="Platforms Used" value={intake.platformsUsed} />
+          <IntakeField label="Applications Per Day" value={intake.applicationsPerDay} />
+          <IntakeField label="Interview Calls Frequency" value={intake.interviewCallsFrequency} />
+          <IntakeField label="Interviews Scheduled Per Week" value={intake.interviewsScheduledPerWeek} />
+          <IntakeField label="Available for Meeting Today" value={intake.availableForMeetingToday} />
+        </div>
+      )}
     </div>
   );
 }
@@ -442,6 +521,7 @@ export default function Services() {
   const [sessions, setSessions] = useState([]);
   const [intake, setIntake] = useState(null);
   const [intakeLoading, setIntakeLoading] = useState(true);
+  const [editingIntake, setEditingIntake] = useState(false);
 
   useEffect(() => {
     api.get('/premium-services/catalog')
@@ -486,10 +566,14 @@ export default function Services() {
     );
   }
 
-  if (!intakeLoading && !intake && unlockedServices.length > 0) {
+  if (!intakeLoading && unlockedServices.length > 0 && (!intake || editingIntake)) {
     return (
       <div style={{ flex: 1, overflowY: 'auto', padding: '28px 24px', fontFamily: "'Manrope', system-ui, sans-serif", background: '#f2efe8' }}>
-        <CandidateIntakeForm defaultName={user?.name} onSubmitted={setIntake} />
+        <CandidateIntakeForm
+          intake={intake}
+          defaultName={user?.name}
+          onSubmitted={next => { setIntake(next); setEditingIntake(false); }}
+        />
       </div>
     );
   }
@@ -503,6 +587,7 @@ export default function Services() {
 
   return (
     <div style={{ flex: 1, overflowY: 'auto', padding: '28px 24px', fontFamily: "'Manrope', system-ui, sans-serif", background: '#f2efe8' }}>
+      {intake && <CandidateIntakeSummary intake={intake} onEdit={() => setEditingIntake(true)} />}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
         {catalog.filter(service => service.serviceType !== 'document' || placementScheduled).map(service => (
           <ServiceRow
