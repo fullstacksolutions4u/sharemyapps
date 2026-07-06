@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { CheckCircle, XCircle, Clock, Bell, CheckCheck, Heart, Star, MessageCircle, AlertTriangle, FileText, Briefcase, Users } from 'lucide-react';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
@@ -14,6 +14,7 @@ const typeIcon = {
   vacancy_reply:       <Briefcase size={18} className="text-accent shrink-0 mt-0.5" />,
   collaborator_added:  <Users size={18} className="text-violet-500 shrink-0 mt-0.5" />,
   recruiter_visit:     <Bell size={18} className="text-indigo-500 shrink-0 mt-0.5" />,
+  job_alert:           <Briefcase size={18} className="text-emerald-500 shrink-0 mt-0.5" />,
 };
 
 const typeBadge = {
@@ -26,6 +27,7 @@ const typeBadge = {
   vacancy_reply:       'bg-accent-light text-accent border-accent/20',
   collaborator_added:  'bg-violet-50 text-violet-700 border-violet-200',
   recruiter_visit:     'bg-indigo-50 text-indigo-700 border-indigo-200',
+  job_alert:           'bg-emerald-50 text-emerald-700 border-emerald-200',
 };
 
 function timeAgo(date) {
@@ -39,6 +41,7 @@ function timeAgo(date) {
 
 export default function Notifications() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -126,8 +129,11 @@ export default function Notifications() {
           {notifications.map(n => (
             <div
               key={n._id}
-              onClick={() => !n.read && markRead(n._id)}
-              className={`bg-white border rounded-2xl p-5 transition-all cursor-default ${
+              onClick={() => {
+                if (!n.read) markRead(n._id);
+                if (n.type === 'job_alert') navigate('/dashboard/job-alerts');
+              }}
+              className={`bg-white border rounded-2xl p-5 transition-all ${n.type === 'job_alert' ? 'cursor-pointer' : 'cursor-default'} ${
                 !n.read ? 'border-[#00A693]/30 bg-[#F0FBF9]' : 'border-[#E5E1DA]'
               }`}
             >
@@ -140,7 +146,7 @@ export default function Notifications() {
                     </span>
                     {n.type && (
                       <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full border capitalize ${typeBadge[n.type] || ''}`}>
-                        {n.type === 'vacancy_reply' ? 'vacancy' : n.type === 'collaborator_added' ? 'collaborator' : n.type === 'recruiter_visit' ? 'recruiter' : n.type}
+                        {n.type === 'vacancy_reply' ? 'vacancy' : n.type === 'collaborator_added' ? 'collaborator' : n.type === 'recruiter_visit' ? 'recruiter' : n.type === 'job_alert' ? 'job alert' : n.type}
                       </span>
                     )}
                     {!n.read && <span className="w-2 h-2 bg-[#00A693] rounded-full shrink-0" />}

@@ -795,72 +795,117 @@ router.get('/form-responses', async (_req, res) => {
   }
 });
 
-// ── Job Recommendations (premium users) ──────────────────────────────────────
+// ── Job Recommendations (premium users who received resume/cover letter documents) ──
 
-async function getPremiumUsers() {
-  const FreeOffer = require('../models/FreeOffer');
+async function getJobAlertEligibleUsers() {
+  const SessionRequest = require('../models/SessionRequest');
 
-  const usersWithUnlock = await User.find({
-    'premiumServices.0': { $exists: true },
-    isDeleted: { $ne: true },
-  }).select('name email').lean();
+  const completed = await SessionRequest.find({
+    serviceKey: 'ats_compatible_resume_cover_letter_optimization',
+    status: 'completed',
+    completionLink: { $ne: '' },
+  }).select('user').lean();
 
-  const approvedOffers = await FreeOffer.find({ status: 'approved' })
-    .populate('user', 'name email isDeleted')
-    .lean();
-  const offerUsers = approvedOffers.map(o => o.user).filter(u => u && !u.isDeleted);
-
-  const allMap = new Map();
-  for (const u of usersWithUnlock) allMap.set(String(u._id), u);
-  for (const u of offerUsers) if (!allMap.has(String(u._id))) allMap.set(String(u._id), u);
-  return [...allMap.values()];
+  const userIds = [...new Set(completed.map(sr => String(sr.user)))];
+  return User.find({ _id: { $in: userIds }, isDeleted: { $ne: true } }).select('name email').lean();
 }
 
 router.get('/job-recommendations/premium-users', async (_req, res) => {
   try {
-    const users = await getPremiumUsers();
+    const users = await getJobAlertEligibleUsers();
     res.json({ users, count: users.length });
   } catch (err) { res.status(500).json({ message: err.message }); }
 });
 
+const JOB_ALERT_TITLE = 'New Job Openings 🎯';
+const JOB_ALERT_MESSAGE = 'New jobs have been released. Please check out your dashboard and apply.';
+
 router.post('/job-recommendations/send', async (req, res) => {
   try {
-    const { sendJobRecommendationsEmail } = require('../utils/email');
-    const { jobs, userIds } = req.body;
+    const JobAlert = require('../models/JobAlert');
+    const Notification = require('../models/Notification');
+    const { jobs, userIds, scheduledAt } = req.body;
     if (!Array.isArray(jobs) || jobs.length === 0)
       return res.status(400).json({ message: 'At least one job is required' });
     const cleanJobs = jobs
       .map(j => ({
         emailId: j.emailId?.trim() || '',
         subject: j.subject?.trim() || '',
-        workMode: ['remote', 'onsite', 'hybrid'].includes(j.workMode) ? j.workMode : 'remote',
-        location: j.location?.trim() || '',
       }))
-      .filter(j => j.emailId && j.subject)
-      .map(j => ({ ...j, location: j.workMode === 'remote' ? '' : j.location }));
+      .filter(j => j.emailId && j.subject);
     if (cleanJobs.length === 0)
-      return res.status(400).json({ message: 'Each job needs an email id and subject' });
-    if (cleanJobs.some(j => j.workMode !== 'remote' && !j.location))
-      return res.status(400).json({ message: 'Location is required for on-site and hybrid jobs' });
+      return res.status(400).json({ message: 'Each job needs a company name and email id' });
 
-    let users = await getPremiumUsers();
+    let users = await getJobAlertEligibleUsers();
     if (Array.isArray(userIds) && userIds.length > 0) {
       const idSet = new Set(userIds.map(String));
       users = users.filter(u => idSet.has(String(u._id)));
     }
     if (users.length === 0)
-      return res.status(404).json({ message: 'No premium users to send to' });
+      return res.status(404).json({ message: 'No eligible users to send to' });
+
+    const sendAt = scheduledAt ? new Date(scheduledAt) : new Date();
+    if (Number.isNaN(sendAt.getTime()))
+      return res.status(400).json({ message: 'Invalid scheduled date/time' });
+    const isScheduledForLater = sendAt.getTime() > Date.now() + 60 * 1000;
+
+    const lastSession = await JobAlert.findOne().sort({ sessionNumber: -1 }).select('sessionNumber').lean();
+    const sessionNumber = (lastSession?.sessionNumber || 0) + 1;
+
+    const alert = await JobAlert.create({
+      jobs: cleanJobs,
+      sentBy: req.user._id,
+      recipients: users.map(u => u._id),
+      scheduledAt: sendAt,
+      notified: false,
+      sessionNumber,
+    });
+
+    if (isScheduledForLater) {
+      return res.json({ scheduled: true, scheduledAt: sendAt, total: users.length, sessionNumber });
+    }
 
     let sent = 0, failed = 0;
     for (const u of users) {
       try {
-        await sendJobRecommendationsEmail({ to: u.email, name: u.name, jobs: cleanJobs });
+        await Notification.create({
+          user:     u._id,
+          type:     'job_alert',
+          title:    JOB_ALERT_TITLE,
+          message:  JOB_ALERT_MESSAGE,
+          jobAlert: alert._id,
+        });
         sent++;
       } catch {
         failed++;
       }
     }
-    res.json({ sent, failed, total: users.length });
+    alert.notified = true;
+    await alert.save();
+    res.json({ scheduled: false, sent, failed, total: users.length, sessionNumber });
+  } catch (err) { res.status(500).json({ message: err.message }); }
+});
+
+// History of past job-alert sessions, for reusing a company/email list against new users
+router.get('/job-recommendations/sessions', async (_req, res) => {
+  try {
+    const JobAlert = require('../models/JobAlert');
+    const sessions = await JobAlert.find()
+      .sort({ sessionNumber: -1 })
+      .limit(50)
+      .select('sessionNumber jobs recipients scheduledAt notified createdAt')
+      .lean();
+    res.json({
+      sessions: sessions.map(s => ({
+        _id: s._id,
+        sessionNumber: s.sessionNumber,
+        jobs: s.jobs,
+        recipientCount: s.recipients?.length || 0,
+        scheduledAt: s.scheduledAt,
+        notified: s.notified,
+        createdAt: s.createdAt,
+      })),
+    });
   } catch (err) { res.status(500).json({ message: err.message }); }
 });
 

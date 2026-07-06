@@ -28,6 +28,7 @@ const typeIcon = {
   rated:     <Star size={14} className="text-amber-400 shrink-0" />,
   commented:     <MessageCircle size={14} className="text-blue-400 shrink-0" />,
   vacancy_reply: <Briefcase size={14} className="text-accent shrink-0" />,
+  job_alert:     <Briefcase size={14} className="text-emerald-500 shrink-0" />,
 };
 
 function MessagesBadge() {
@@ -55,6 +56,7 @@ function MessagesBadge() {
 function NotificationBell() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const ref = useRef();
 
@@ -145,7 +147,10 @@ function NotificationBell() {
               notifications.map(n => (
                 <div
                   key={n._id}
-                  onClick={() => { if (!n.read) markRead(n._id); }}
+                  onClick={() => {
+                    if (!n.read) markRead(n._id);
+                    if (n.type === 'job_alert') { setOpen(false); navigate('/dashboard/job-alerts'); }
+                  }}
                   className={`px-4 py-3 flex items-start gap-3 cursor-pointer hover:bg-bg transition-colors ${!n.read ? 'bg-[#F0FBF9]' : ''}`}
                 >
                   <div className="mt-0.5">{typeIcon[n.type] || <Bell size={14} className="text-muted shrink-0" />}</div>

@@ -79,6 +79,7 @@ function JdAnalysisCard({ config, onSaved }) {
 function FreeOfferCard({ config, onSaved }) {
   const [enabled, setEnabled] = useState(config?.freeOfferEnabled ?? true);
   const [price, setPrice]     = useState((config?.premiumServicePricePaise ?? 99900) / 100);
+  const [dueDate, setDueDate] = useState(config?.freeOfferDueDate ? config.freeOfferDueDate.slice(0, 10) : '');
   const [saving, setSaving]   = useState(false);
 
   const handleSave = async () => {
@@ -87,6 +88,7 @@ function FreeOfferCard({ config, onSaved }) {
       const res = await api.put('/admin/config', {
         freeOfferEnabled: enabled,
         premiumServicePricePaise: Math.round(Number(price) * 100),
+        freeOfferDueDate: dueDate ? new Date(dueDate).toISOString() : null,
       });
       toast.success('Premium service settings saved.');
       onSaved(res.data);
@@ -96,6 +98,8 @@ function FreeOfferCard({ config, onSaved }) {
       setSaving(false);
     }
   };
+
+  const isExpired = dueDate && new Date(dueDate) < new Date(new Date().toDateString());
 
   return (
     <div className="bg-white border border-border rounded-2xl px-5 py-4 flex flex-col gap-4">
@@ -128,15 +132,42 @@ function FreeOfferCard({ config, onSaved }) {
               className="w-full border border-border rounded-xl px-3 py-2 text-sm font-semibold text-text focus:outline-none focus:border-accent disabled:opacity-40 disabled:cursor-not-allowed disabled:bg-bg"
             />
           </div>
-          <button
-            onClick={handleSave}
-            disabled={saving}
-            className="flex items-center gap-2 bg-accent hover:bg-accent-hover disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm font-semibold px-4 py-2 rounded-xl transition-colors shrink-0 self-end"
-          >
-            {saving ? <span className="w-3.5 h-3.5 border-2 border-white/40 border-t-white rounded-full animate-spin" /> : <Save size={14} />}
-            {saving ? 'Saving…' : 'Save'}
-          </button>
         </div>
+
+        {/* Free offer due date */}
+        <div>
+          <label className="block text-xs font-semibold text-muted mb-1.5">Free Offer Due Date (optional)</label>
+          <div className="flex items-center gap-2">
+            <input
+              type="date"
+              value={dueDate}
+              onChange={e => setDueDate(e.target.value)}
+              className="flex-1 border border-border rounded-xl px-3 py-2 text-sm font-semibold text-text focus:outline-none focus:border-accent"
+            />
+            {dueDate && (
+              <button
+                onClick={() => setDueDate('')}
+                className="text-xs font-medium text-muted hover:text-red-500 transition-colors shrink-0"
+              >
+                Clear
+              </button>
+            )}
+          </div>
+          {isExpired && (
+            <p className="text-[11px] text-red-500 mt-1.5">
+              This date is in the past — the free offer will show as expired to users even with Free enabled. Clear it or pick a future date.
+            </p>
+          )}
+        </div>
+
+        <button
+          onClick={handleSave}
+          disabled={saving}
+          className="w-full flex items-center justify-center gap-2 bg-accent hover:bg-accent-hover disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm font-semibold px-4 py-2 rounded-xl transition-colors"
+        >
+          {saving ? <span className="w-3.5 h-3.5 border-2 border-white/40 border-t-white rounded-full animate-spin" /> : <Save size={14} />}
+          {saving ? 'Saving…' : 'Save'}
+        </button>
       </div>
     </div>
   );

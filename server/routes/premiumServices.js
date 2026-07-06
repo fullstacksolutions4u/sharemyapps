@@ -3,7 +3,18 @@ const { protect } = require('../middleware/auth');
 const User = require('../models/User');
 const SessionRequest = require('../models/SessionRequest');
 const FreeOffer = require('../models/FreeOffer');
+const JobAlert = require('../models/JobAlert');
+const CandidateIntake = require('../models/CandidateIntake');
 const CATALOG = require('../config/services');
+
+async function getDocumentDelivery(userId) {
+  return SessionRequest.findOne({
+    user: userId,
+    serviceKey: 'ats_compatible_resume_cover_letter_optimization',
+    status: 'completed',
+    completionLink: { $ne: '' },
+  }).sort({ updatedAt: 1 }).lean();
+}
 
 // All active services (used by the user-facing Services page)
 router.get('/catalog', (_req, res) => {
@@ -89,6 +100,74 @@ router.post('/:key/session-request', protect, async (req, res) => {
       availabilityTo:   availabilityTo   ? new Date(availabilityTo)   : undefined,
     });
     res.status(201).json({ session });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// Whether the calling user is eligible to view the Job Alerts page
+router.get('/job-alerts/eligibility', protect, async (req, res) => {
+  try {
+    const delivery = await getDocumentDelivery(req.user._id);
+    res.json({ eligible: !!delivery, eligibleSince: delivery?.updatedAt || null });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// Job alerts broadcast list (only visible to users who received resume/cover letter documents)
+router.get('/job-alerts', protect, async (req, res) => {
+  try {
+    const delivery = await getDocumentDelivery(req.user._id);
+    if (!delivery) return res.status(403).json({ message: 'Not eligible for job alerts' });
+
+    const alerts = await JobAlert.find().sort({ createdAt: -1 }).limit(30).lean();
+    res.json({ alerts, eligibleSince: delivery.updatedAt });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// The calling user's candidate intake submission, if any
+router.get('/candidate-intake', protect, async (req, res) => {
+  try {
+    const intake = await CandidateIntake.findOne({ user: req.user._id }).lean();
+    res.json({ intake });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// Create/update the calling user's candidate intake submission
+router.post('/candidate-intake', protect, async (req, res) => {
+  try {
+    const {
+      fullName, jobSearchStatus, jobSearchStatusOther, searchDuration, searchDurationOther,
+      platformsUsed, applicationsPerDay, interviewCallsFrequency, interviewsScheduledPerWeek,
+      availableForMeetingToday,
+    } = req.body;
+
+    if (!fullName?.trim() || !searchDuration?.trim() || !platformsUsed?.trim() || !interviewsScheduledPerWeek?.trim())
+      return res.status(400).json({ message: 'Please fill in all required fields.' });
+
+    const intake = await CandidateIntake.findOneAndUpdate(
+      { user: req.user._id },
+      {
+        user: req.user._id,
+        fullName: fullName.trim(),
+        jobSearchStatus: jobSearchStatus?.trim() || '',
+        jobSearchStatusOther: jobSearchStatusOther?.trim() || '',
+        searchDuration: searchDuration.trim(),
+        searchDurationOther: searchDurationOther?.trim() || '',
+        platformsUsed: platformsUsed.trim(),
+        applicationsPerDay: applicationsPerDay?.trim() || '',
+        interviewCallsFrequency: interviewCallsFrequency?.trim() || '',
+        interviewsScheduledPerWeek: interviewsScheduledPerWeek.trim(),
+        availableForMeetingToday: availableForMeetingToday?.trim() || '',
+      },
+      { new: true, upsert: true, setDefaultsOnInsert: true }
+    );
+    res.json({ intake });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
