@@ -865,6 +865,7 @@ router.post('/job-recommendations/send', async (req, res) => {
       return res.json({ scheduled: true, scheduledAt: sendAt, total: users.length, sessionNumber });
     }
 
+    const { sendJobAlertEmail } = require('../utils/email');
     let sent = 0, failed = 0;
     for (const u of users) {
       try {
@@ -875,6 +876,7 @@ router.post('/job-recommendations/send', async (req, res) => {
           message:  JOB_ALERT_MESSAGE,
           jobAlert: alert._id,
         });
+        sendJobAlertEmail({ to: u.email, name: u.name }).catch(err => console.error('Job alert email error:', err));
         sent++;
       } catch {
         failed++;
@@ -900,12 +902,76 @@ router.get('/job-recommendations/sessions', async (_req, res) => {
         _id: s._id,
         sessionNumber: s.sessionNumber,
         jobs: s.jobs,
+        recipients: (s.recipients || []).map(String),
         recipientCount: s.recipients?.length || 0,
         scheduledAt: s.scheduledAt,
         notified: s.notified,
         createdAt: s.createdAt,
       })),
     });
+  } catch (err) { res.status(500).json({ message: err.message }); }
+});
+
+// Modify a scheduled (not yet sent) job-alert session — jobs, recipients, and/or send time
+router.put('/job-recommendations/sessions/:id', async (req, res) => {
+  try {
+    const JobAlert = require('../models/JobAlert');
+    const alert = await JobAlert.findById(req.params.id);
+    if (!alert) return res.status(404).json({ message: 'Session not found' });
+    if (alert.notified) return res.status(409).json({ message: 'This session has already been sent and can no longer be modified' });
+
+    const { jobs, userIds, scheduledAt } = req.body;
+
+    if (jobs !== undefined) {
+      if (!Array.isArray(jobs) || jobs.length === 0)
+        return res.status(400).json({ message: 'At least one job is required' });
+      const cleanJobs = jobs
+        .map(j => ({
+          emailId: j.emailId?.trim() || '',
+          subject: j.subject?.trim() || '',
+        }))
+        .filter(j => j.emailId && j.subject);
+      if (cleanJobs.length === 0)
+        return res.status(400).json({ message: 'Each job needs a company name and email id' });
+      alert.jobs = cleanJobs;
+    }
+
+    if (userIds !== undefined) {
+      if (!Array.isArray(userIds) || userIds.length === 0)
+        return res.status(400).json({ message: 'Select at least one user' });
+      alert.recipients = userIds;
+    }
+
+    if (scheduledAt !== undefined) {
+      const sendAt = scheduledAt ? new Date(scheduledAt) : new Date();
+      if (Number.isNaN(sendAt.getTime()))
+        return res.status(400).json({ message: 'Invalid scheduled date/time' });
+      alert.scheduledAt = sendAt;
+    }
+
+    await alert.save();
+    res.json({
+      session: {
+        _id: alert._id,
+        sessionNumber: alert.sessionNumber,
+        jobs: alert.jobs,
+        recipients: alert.recipients.map(String),
+        recipientCount: alert.recipients.length,
+        scheduledAt: alert.scheduledAt,
+        notified: alert.notified,
+        createdAt: alert.createdAt,
+      },
+    });
+  } catch (err) { res.status(500).json({ message: err.message }); }
+});
+
+// Delete a job-alert session from history. Cancels it if not yet sent.
+router.delete('/job-recommendations/sessions/:id', async (req, res) => {
+  try {
+    const JobAlert = require('../models/JobAlert');
+    const alert = await JobAlert.findByIdAndDelete(req.params.id);
+    if (!alert) return res.status(404).json({ message: 'Session not found' });
+    res.json({ ok: true });
   } catch (err) { res.status(500).json({ message: err.message }); }
 });
 

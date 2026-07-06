@@ -1,10 +1,17 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Plus, Trash2, Send, CalendarClock, History, RotateCcw } from 'lucide-react';
+import { Plus, Trash2, Send, CalendarClock, History, RotateCcw, Pencil, X } from 'lucide-react';
 import api from '../../api/axios';
 import toast from 'react-hot-toast';
 
 const EMPTY_JOB = { emailId: '', subject: '' };
 const inp = 'w-full px-3 py-2 border border-[#E5E1DA] rounded-lg text-sm text-[#1A1A1A] bg-white placeholder-[#9CA3AF] focus:outline-none focus:border-[#00A693] focus:ring-2 focus:ring-[#00A693]/10 transition';
+
+function toDatetimeLocal(iso) {
+  if (!iso) return '';
+  const d = new Date(iso);
+  const pad = n => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
 
 export default function AdminJobRecommendationsSection() {
   const [jobs, setJobs] = useState([{ ...EMPTY_JOB }]);
@@ -16,6 +23,7 @@ export default function AdminJobRecommendationsSection() {
   const [scheduledAt, setScheduledAt] = useState('');
   const [sessions, setSessions] = useState([]);
   const [loadingSessions, setLoadingSessions] = useState(true);
+  const [editingSessionId, setEditingSessionId] = useState(null);
 
   const loadUsers = useCallback(() => {
     setLoadingUsers(true);
@@ -39,11 +47,43 @@ export default function AdminJobRecommendationsSection() {
   useEffect(() => { loadUsers(); loadSessions(); }, [loadUsers, loadSessions]); // eslint-disable-line react-hooks/set-state-in-effect
 
   const handleReuseSession = (session) => {
+    setEditingSessionId(null);
     setJobs(session.jobs.map(j => ({ emailId: j.emailId, subject: j.subject })));
     setSelectedIds(new Set());
     setScheduledAt('');
     toast.success(`Loaded companies from Session ${session.sessionNumber} — select users to send`);
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleEditSession = (session) => {
+    setEditingSessionId(session._id);
+    setJobs(session.jobs.map(j => ({ emailId: j.emailId, subject: j.subject })));
+    setSelectedIds(new Set(session.recipients || []));
+    setScheduledAt(toDatetimeLocal(session.scheduledAt));
+    toast.success(`Editing Session ${session.sessionNumber}`);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleDeleteSession = async (session) => {
+    const confirmMsg = session.notified
+      ? `Delete Session ${session.sessionNumber} from history? This cannot be undone.`
+      : `Cancel and delete scheduled Session ${session.sessionNumber}? Users will not be notified. This cannot be undone.`;
+    if (!window.confirm(confirmMsg)) return;
+    try {
+      await api.delete(`/admin/job-recommendations/sessions/${session._id}`);
+      if (editingSessionId === session._id) cancelEdit();
+      toast.success(`Session ${session.sessionNumber} deleted`);
+      loadSessions();
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to delete session');
+    }
+  };
+
+  const cancelEdit = () => {
+    setEditingSessionId(null);
+    setJobs([{ ...EMPTY_JOB }]);
+    setSelectedIds(new Set());
+    setScheduledAt('');
   };
 
   const handleJobChange = (i, field, value) => {
@@ -83,10 +123,24 @@ export default function AdminJobRecommendationsSection() {
     if (selectedIds.size === 0) { toast.error('Select at least one user'); return; }
     setSending(true);
     try {
+      const scheduledAtISO = scheduledAt ? new Date(scheduledAt).toISOString() : undefined;
+
+      if (editingSessionId) {
+        const res = await api.put(`/admin/job-recommendations/sessions/${editingSessionId}`, {
+          jobs: validJobs,
+          userIds: [...selectedIds],
+          scheduledAt: scheduledAtISO || new Date().toISOString(),
+        });
+        toast.success(`Session ${res.data.session.sessionNumber} updated`);
+        cancelEdit();
+        loadSessions();
+        return;
+      }
+
       const res = await api.post('/admin/job-recommendations/send', {
         jobs: validJobs,
         userIds: [...selectedIds],
-        scheduledAt: scheduledAt || undefined,
+        scheduledAt: scheduledAtISO,
       });
       if (res.data.scheduled) {
         toast.success(`Scheduled for ${new Date(res.data.scheduledAt).toLocaleString('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })} — ${res.data.total} user${res.data.total === 1 ? '' : 's'}`);
@@ -97,7 +151,7 @@ export default function AdminJobRecommendationsSection() {
       setScheduledAt('');
       loadSessions();
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Failed to send recommendations');
+      toast.error(err.response?.data?.message || (editingSessionId ? 'Failed to update session' : 'Failed to send recommendations'));
     } finally {
       setSending(false);
     }
@@ -107,6 +161,20 @@ export default function AdminJobRecommendationsSection() {
 
   return (
     <div className="space-y-6">
+      {editingSessionId && (
+        <div className="flex items-center justify-between gap-3 bg-amber-50 border border-amber-200 rounded-2xl px-4 py-3">
+          <p className="text-sm font-medium text-amber-800">
+            Editing scheduled session — changes will update this session instead of creating a new one.
+          </p>
+          <button
+            onClick={cancelEdit}
+            className="flex items-center gap-1 text-xs font-semibold text-amber-700 hover:text-amber-900 shrink-0"
+          >
+            <X size={13} /> Cancel edit
+          </button>
+        </div>
+      )}
+
       <div className="bg-white border border-[#E5E1DA] rounded-2xl p-5 space-y-4">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
@@ -230,21 +298,33 @@ export default function AdminJobRecommendationsSection() {
             </button>
           )}
         </div>
-        <p className="text-xs text-[#9CA3AF]">Leave blank to notify users immediately.</p>
+        <p className="text-xs text-[#9CA3AF]">
+          {editingSessionId ? 'Leave blank to send as soon as possible.' : 'Leave blank to notify users immediately.'}
+        </p>
       </div>
 
-      <div className="flex justify-end">
+      <div className="flex justify-end gap-2">
+        {editingSessionId && (
+          <button
+            onClick={cancelEdit}
+            className="flex items-center gap-1.5 px-5 py-2.5 border border-[#E5E1DA] text-[#6B7280] hover:text-red-500 hover:bg-red-50 text-sm font-medium rounded-xl transition-colors"
+          >
+            <X size={14} /> Cancel
+          </button>
+        )}
         <button
           onClick={handleSend}
           disabled={sending || validJobs.length === 0 || selectedIds.size === 0}
           className="flex items-center gap-1.5 px-5 py-2.5 bg-[#00A693] hover:bg-[#007D6F] text-white text-sm font-medium rounded-xl transition-colors disabled:opacity-50"
         >
           <Send size={14} />
-          {sending
-            ? (isScheduling ? 'Scheduling…' : 'Sending…')
-            : isScheduling
-              ? `Schedule for ${selectedIds.size} Selected User${selectedIds.size === 1 ? '' : 's'}`
-              : `Send Now to ${selectedIds.size} Selected User${selectedIds.size === 1 ? '' : 's'}`}
+          {editingSessionId
+            ? (sending ? 'Updating…' : `Update Session for ${selectedIds.size} Selected User${selectedIds.size === 1 ? '' : 's'}`)
+            : sending
+              ? (isScheduling ? 'Scheduling…' : 'Sending…')
+              : isScheduling
+                ? `Schedule for ${selectedIds.size} Selected User${selectedIds.size === 1 ? '' : 's'}`
+                : `Send Now to ${selectedIds.size} Selected User${selectedIds.size === 1 ? '' : 's'}`}
         </button>
       </div>
 
@@ -284,12 +364,28 @@ export default function AdminJobRecommendationsSection() {
                     {session.jobs.map(j => j.subject).join(', ')}
                   </p>
                 </div>
-                <button
-                  onClick={() => handleReuseSession(session)}
-                  className="flex items-center gap-1.5 text-xs font-medium text-[#00A693] hover:text-[#007D6F] border border-[#00A693]/30 hover:bg-[#F0FBF9] px-3 py-1.5 rounded-lg transition-colors shrink-0"
-                >
-                  <RotateCcw size={12} /> Reuse
-                </button>
+                <div className="flex items-center gap-2 shrink-0">
+                  {!session.notified && (
+                    <button
+                      onClick={() => handleEditSession(session)}
+                      className="flex items-center gap-1.5 text-xs font-medium text-amber-700 hover:text-amber-900 border border-amber-300 hover:bg-amber-50 px-3 py-1.5 rounded-lg transition-colors"
+                    >
+                      <Pencil size={12} /> Edit
+                    </button>
+                  )}
+                  <button
+                    onClick={() => handleReuseSession(session)}
+                    className="flex items-center gap-1.5 text-xs font-medium text-[#00A693] hover:text-[#007D6F] border border-[#00A693]/30 hover:bg-[#F0FBF9] px-3 py-1.5 rounded-lg transition-colors"
+                  >
+                    <RotateCcw size={12} /> Reuse
+                  </button>
+                  <button
+                    onClick={() => handleDeleteSession(session)}
+                    className="flex items-center gap-1.5 text-xs font-medium text-red-500 hover:text-red-700 border border-red-200 hover:bg-red-50 px-3 py-1.5 rounded-lg transition-colors"
+                  >
+                    <Trash2 size={12} /> Delete
+                  </button>
+                </div>
               </div>
             ))}
           </div>

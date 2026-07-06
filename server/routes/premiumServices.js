@@ -121,7 +121,7 @@ router.get('/job-alerts', protect, async (req, res) => {
     const delivery = await getDocumentDelivery(req.user._id);
     if (!delivery) return res.status(403).json({ message: 'Not eligible for job alerts' });
 
-    const alerts = await JobAlert.find().sort({ createdAt: -1 }).limit(30).lean();
+    const alerts = await JobAlert.find({ notified: true }).sort({ createdAt: -1 }).limit(30).lean();
     res.json({ alerts, eligibleSince: delivery.updatedAt });
   } catch (err) {
     res.status(500).json({ message: err.message });

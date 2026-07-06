@@ -587,3 +587,36 @@ exports.sendJobRecommendationsEmail = async ({ to, name, jobs }) => {
     `,
   });
 };
+
+exports.sendJobAlertEmail = async ({ to, name }) => {
+  const jobAlertsUrl = `${BASE_URL}/dashboard/job-alerts`;
+
+  await api.sendTransacEmail({
+    sender: FROM,
+    to: [{ email: to, name }],
+    subject: `New Job Openings 🎯 | ShareMyApps`,
+    htmlContent: `
+      <div style="font-family:Inter,Arial,sans-serif;max-width:560px;margin:0 auto;background:#fff;border-radius:12px;overflow:hidden;border:1px solid #E5E1DA;">
+        <div style="background:#00A693;padding:24px 32px;text-align:center;">
+          <img src="${LOGO_URL}" alt="ShareMyApps" style="height:80px;object-fit:contain;" />
+        </div>
+        <div style="padding:32px;">
+          <h2 style="margin:0 0 8px;font-size:20px;color:#1A1A1A;">🎯 New Job Openings</h2>
+          <p style="color:#374151;margin:0 0 16px;font-size:14px;">Hi ${name},</p>
+          <p style="color:#374151;margin:0 0 20px;font-size:14px;">
+            New jobs have been released. Please check out your dashboard and apply.
+          </p>
+          <div style="text-align:center;margin-bottom:24px;">
+            <a href="${jobAlertsUrl}" style="display:inline-block;background:#0A7373;color:#fff;text-decoration:none;padding:13px 32px;border-radius:8px;font-weight:700;font-size:14px;">
+              View Job Alerts →
+            </a>
+          </div>
+          <p style="color:#6B7280;font-size:13px;margin:0;">
+            Have questions? Reply to this email or reach us at <a href="mailto:hello@sharemyapps.in" style="color:#00A693;text-decoration:none;">hello@sharemyapps.in</a>.
+          </p>
+        </div>
+        ${FOOTER('You received this email because you have an active premium service on ShareMyApps.')}
+      </div>
+    `,
+  });
+};
