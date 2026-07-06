@@ -7,8 +7,8 @@ import PlacementPaymentModal from '../components/PlacementPaymentModal';
 
 const FREE_FEATURES = [
   'Recruiter Direct Hiring',
-  'Apply to Jobs',
-  'Freelance Opportunities & Mentoring Opportunities',
+  'Apply to all jobs listed on ShareMyApps portal',
+  'Freelance & Mentoring Opportunities',
   'Networking Opportunities with Developers',
   'Explore other developers projects and source codes',
 ];

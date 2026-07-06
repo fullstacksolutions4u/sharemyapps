@@ -25,15 +25,6 @@ function ScheduleModal({ session, onClose, onSaved }) {
 
   const handleSave = async () => {
     if (!meetLink.trim()) { toast.error('Please enter a Google Meet link'); return; }
-    if (scheduledAt && session.availabilityFrom && session.availabilityTo) {
-      const scheduled = new Date(scheduledAt);
-      const from = new Date(session.availabilityFrom);
-      const to = new Date(session.availabilityTo);
-      if (scheduled < from || scheduled > to) {
-        toast.error(`Scheduled time must be within user's availability: ${from.toLocaleString('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })} – ${to.toLocaleString('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}`);
-        return;
-      }
-    }
     setSaving(true);
     try {
       const res = await api.put(`/admin/session-requests/${session._id}`, { meetLink, scheduledAt });
