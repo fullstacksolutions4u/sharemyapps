@@ -5,6 +5,10 @@ const jobAlertSchema = new mongoose.Schema({
     emailId: { type: String, default: '' },
     subject: { type: String, default: '' },
   }],
+  careerLinks: [{
+    company: { type: String, default: '' },
+    url:     { type: String, default: '' },
+  }],
   sentBy:       { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
   recipients:   [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
   scheduledAt:  { type: Date, default: Date.now },

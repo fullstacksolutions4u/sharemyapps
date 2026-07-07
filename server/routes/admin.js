@@ -826,21 +826,33 @@ router.get('/job-recommendations/premium-users', async (_req, res) => {
 const JOB_ALERT_TITLE = 'New Job Openings 🎯';
 const JOB_ALERT_MESSAGE = 'New jobs have been released. Please check out your dashboard and apply.';
 
+// Career-page links where users upload their resume directly; url gets https:// if no protocol given
+function cleanCareerLinks(links) {
+  if (!Array.isArray(links)) return [];
+  return links
+    .map(l => {
+      const company = l.company?.trim() || '';
+      let url = l.url?.trim() || '';
+      if (url && !/^https?:\/\//i.test(url)) url = `https://${url}`;
+      return { company, url };
+    })
+    .filter(l => l.company && l.url);
+}
+
 router.post('/job-recommendations/send', async (req, res) => {
   try {
     const JobAlert = require('../models/JobAlert');
     const Notification = require('../models/Notification');
-    const { jobs, userIds, scheduledAt } = req.body;
-    if (!Array.isArray(jobs) || jobs.length === 0)
-      return res.status(400).json({ message: 'At least one job is required' });
-    const cleanJobs = jobs
+    const { jobs, careerLinks, userIds, scheduledAt } = req.body;
+    const cleanJobs = (Array.isArray(jobs) ? jobs : [])
       .map(j => ({
         emailId: j.emailId?.trim() || '',
         subject: j.subject?.trim() || '',
       }))
       .filter(j => j.emailId && j.subject);
-    if (cleanJobs.length === 0)
-      return res.status(400).json({ message: 'Each job needs a company name and email id' });
+    const cleanLinks = cleanCareerLinks(careerLinks);
+    if (cleanJobs.length === 0 && cleanLinks.length === 0)
+      return res.status(400).json({ message: 'Add at least one job (company name + email id) or one career page link' });
 
     let users = await getJobAlertEligibleUsers();
     if (Array.isArray(userIds) && userIds.length > 0) {
@@ -860,6 +872,7 @@ router.post('/job-recommendations/send', async (req, res) => {
 
     const alert = await JobAlert.create({
       jobs: cleanJobs,
+      careerLinks: cleanLinks,
       sentBy: req.user._id,
       recipients: users.map(u => u._id),
       scheduledAt: sendAt,
@@ -901,13 +914,14 @@ router.get('/job-recommendations/sessions', async (_req, res) => {
     const sessions = await JobAlert.find()
       .sort({ sessionNumber: -1 })
       .limit(50)
-      .select('sessionNumber jobs recipients scheduledAt notified createdAt')
+      .select('sessionNumber jobs careerLinks recipients scheduledAt notified createdAt')
       .lean();
     res.json({
       sessions: sessions.map(s => ({
         _id: s._id,
         sessionNumber: s.sessionNumber,
         jobs: s.jobs,
+        careerLinks: s.careerLinks || [],
         recipients: (s.recipients || []).map(String),
         recipientCount: s.recipients?.length || 0,
         scheduledAt: s.scheduledAt,
@@ -926,20 +940,22 @@ router.put('/job-recommendations/sessions/:id', async (req, res) => {
     if (!alert) return res.status(404).json({ message: 'Session not found' });
     if (alert.notified) return res.status(409).json({ message: 'This session has already been sent and can no longer be modified' });
 
-    const { jobs, userIds, scheduledAt } = req.body;
+    const { jobs, careerLinks, userIds, scheduledAt } = req.body;
 
-    if (jobs !== undefined) {
-      if (!Array.isArray(jobs) || jobs.length === 0)
-        return res.status(400).json({ message: 'At least one job is required' });
-      const cleanJobs = jobs
-        .map(j => ({
-          emailId: j.emailId?.trim() || '',
-          subject: j.subject?.trim() || '',
-        }))
-        .filter(j => j.emailId && j.subject);
-      if (cleanJobs.length === 0)
-        return res.status(400).json({ message: 'Each job needs a company name and email id' });
+    if (jobs !== undefined || careerLinks !== undefined) {
+      const cleanJobs = jobs !== undefined
+        ? (Array.isArray(jobs) ? jobs : [])
+            .map(j => ({
+              emailId: j.emailId?.trim() || '',
+              subject: j.subject?.trim() || '',
+            }))
+            .filter(j => j.emailId && j.subject)
+        : alert.jobs;
+      const cleanLinks = careerLinks !== undefined ? cleanCareerLinks(careerLinks) : alert.careerLinks;
+      if (cleanJobs.length === 0 && cleanLinks.length === 0)
+        return res.status(400).json({ message: 'Add at least one job (company name + email id) or one career page link' });
       alert.jobs = cleanJobs;
+      alert.careerLinks = cleanLinks;
     }
 
     if (userIds !== undefined) {
@@ -961,6 +977,7 @@ router.put('/job-recommendations/sessions/:id', async (req, res) => {
         _id: alert._id,
         sessionNumber: alert.sessionNumber,
         jobs: alert.jobs,
+        careerLinks: alert.careerLinks,
         recipients: alert.recipients.map(String),
         recipientCount: alert.recipients.length,
         scheduledAt: alert.scheduledAt,

@@ -1,11 +1,14 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Plus, Trash2, Send, CalendarClock, RotateCcw, Pencil, X } from 'lucide-react';
+import { Plus, Trash2, Send, CalendarClock, RotateCcw, Pencil, X, Link2 } from 'lucide-react';
 import api from '../../api/axios';
 import toast from 'react-hot-toast';
 
 const EMPTY_JOB = { emailId: '', subject: '' };
+const EMPTY_LINK = { company: '', url: '' };
 const DEFAULT_ROWS = 10;
+const DEFAULT_LINK_ROWS = 3;
 const emptyJobs = () => Array.from({ length: DEFAULT_ROWS }, () => ({ ...EMPTY_JOB }));
+const emptyLinks = () => Array.from({ length: DEFAULT_LINK_ROWS }, () => ({ ...EMPTY_LINK }));
 const inp = 'w-full px-3 py-2 border border-[#E5E1DA] rounded-lg text-sm text-[#1A1A1A] bg-white placeholder-[#9CA3AF] focus:outline-none focus:border-[#00A693] focus:ring-2 focus:ring-[#00A693]/10 transition';
 
 function toDatetimeLocal(iso) {
@@ -17,6 +20,7 @@ function toDatetimeLocal(iso) {
 
 export default function AdminJobRecommendationsSection() {
   const [jobs, setJobs] = useState(emptyJobs);
+  const [links, setLinks] = useState(emptyLinks);
   const [users, setUsers] = useState([]);
   const [loadingUsers, setLoadingUsers] = useState(true);
   const [selectedIds, setSelectedIds] = useState(new Set());
@@ -49,9 +53,13 @@ export default function AdminJobRecommendationsSection() {
 
   useEffect(() => { loadUsers(); loadSessions(); }, [loadUsers, loadSessions]); // eslint-disable-line react-hooks/set-state-in-effect
 
+  const sessionLinks = (session) =>
+    session.careerLinks?.length ? session.careerLinks.map(l => ({ company: l.company, url: l.url })) : emptyLinks();
+
   const handleReuseSession = (session) => {
     setEditingSessionId(null);
-    setJobs(session.jobs.map(j => ({ emailId: j.emailId, subject: j.subject })));
+    setJobs(session.jobs.length ? session.jobs.map(j => ({ emailId: j.emailId, subject: j.subject })) : emptyJobs());
+    setLinks(sessionLinks(session));
     setSelectedIds(new Set());
     setScheduledAt('');
     toast.success(`Loaded companies from Session ${session.sessionNumber} — select users to send`);
@@ -60,7 +68,8 @@ export default function AdminJobRecommendationsSection() {
 
   const handleEditSession = (session) => {
     setEditingSessionId(session._id);
-    setJobs(session.jobs.map(j => ({ emailId: j.emailId, subject: j.subject })));
+    setJobs(session.jobs.length ? session.jobs.map(j => ({ emailId: j.emailId, subject: j.subject })) : emptyJobs());
+    setLinks(sessionLinks(session));
     setSelectedIds(new Set(session.recipients || []));
     setScheduledAt(toDatetimeLocal(session.scheduledAt));
     toast.success(`Editing Session ${session.sessionNumber}`);
@@ -85,6 +94,7 @@ export default function AdminJobRecommendationsSection() {
   const cancelEdit = () => {
     setEditingSessionId(null);
     setJobs(emptyJobs());
+    setLinks(emptyLinks());
     setSelectedIds(new Set());
     setScheduledAt('');
   };
@@ -96,7 +106,15 @@ export default function AdminJobRecommendationsSection() {
   const addRow = () => setJobs(prev => [...prev, { ...EMPTY_JOB }]);
   const removeRow = (i) => setJobs(prev => prev.length === 1 ? prev : prev.filter((_, idx) => idx !== i));
 
+  const handleLinkChange = (i, field, value) => {
+    setLinks(prev => prev.map((l, idx) => idx === i ? { ...l, [field]: value } : l));
+  };
+
+  const addLinkRow = () => setLinks(prev => [...prev, { ...EMPTY_LINK }]);
+  const removeLinkRow = (i) => setLinks(prev => prev.length === 1 ? prev : prev.filter((_, idx) => idx !== i));
+
   const validJobs = jobs.filter(j => j.emailId.trim() && j.subject.trim());
+  const validLinks = links.filter(l => l.company.trim() && l.url.trim());
 
   const sessionPageCount = Math.max(1, Math.ceil(sessions.length / SESSIONS_PER_PAGE));
   const currentSessionPage = Math.min(sessionPage, sessionPageCount);
@@ -111,7 +129,7 @@ export default function AdminJobRecommendationsSection() {
   };
 
   const handleSend = async () => {
-    if (validJobs.length === 0) { toast.error('Add at least one job with company name and email id'); return; }
+    if (validJobs.length === 0 && validLinks.length === 0) { toast.error('Add at least one job (company name + email id) or one career page link'); return; }
     if (selectedIds.size === 0) { toast.error('Select at least one user'); return; }
     setSending(true);
     try {
@@ -120,6 +138,7 @@ export default function AdminJobRecommendationsSection() {
       if (editingSessionId) {
         const res = await api.put(`/admin/job-recommendations/sessions/${editingSessionId}`, {
           jobs: validJobs,
+          careerLinks: validLinks,
           userIds: [...selectedIds],
           scheduledAt: scheduledAtISO || new Date().toISOString(),
         });
@@ -131,6 +150,7 @@ export default function AdminJobRecommendationsSection() {
 
       const res = await api.post('/admin/job-recommendations/send', {
         jobs: validJobs,
+        careerLinks: validLinks,
         userIds: [...selectedIds],
         scheduledAt: scheduledAtISO,
       });
@@ -140,6 +160,7 @@ export default function AdminJobRecommendationsSection() {
         toast.success(`Sent to ${res.data.sent} of ${res.data.total} selected user${res.data.total === 1 ? '' : 's'}${res.data.failed ? ` (${res.data.failed} failed)` : ''}`);
       }
       setJobs(emptyJobs());
+      setLinks(emptyLinks());
       setScheduledAt('');
       loadSessions();
     } catch (err) {
@@ -244,6 +265,60 @@ export default function AdminJobRecommendationsSection() {
         </div>
       </div>
 
+      <div className="bg-white border border-[#E5E1DA] rounded-2xl p-5 space-y-4">
+        <div>
+          <h3 className="flex items-center gap-2 text-sm font-semibold text-[#1A1A1A]">
+            <Link2 size={15} className="text-[#00A693]" /> Career Page Links
+          </h3>
+          <p className="text-xs text-[#9CA3AF] mt-1">
+            Optional — links to company career pages where users can upload their resume directly. Shown alongside the job list on the user's Job Alerts page.
+          </p>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <tbody>
+              {links.map((link, i) => (
+                <tr key={i} className="border-b border-[#F3F0EB] last:border-0">
+                  <td className="py-2 pr-3 text-[#6B7280] text-center">{i + 1}</td>
+                  <td className="py-2 pr-3 w-1/3">
+                    <input
+                      value={link.company}
+                      onChange={e => handleLinkChange(i, 'company', e.target.value)}
+                      placeholder="Company name"
+                      className={inp}
+                    />
+                  </td>
+                  <td className="py-2 pr-3">
+                    <input
+                      type="url"
+                      value={link.url}
+                      onChange={e => handleLinkChange(i, 'url', e.target.value)}
+                      placeholder="Career page link (https://…)"
+                      className={inp}
+                    />
+                  </td>
+                  <td className="py-2">
+                    <button
+                      onClick={() => removeLinkRow(i)}
+                      disabled={links.length === 1}
+                      className="p-2 rounded-lg border border-[#E5E1DA] text-[#9CA3AF] hover:text-red-500 hover:bg-red-50 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <button
+          onClick={addLinkRow}
+          className="flex items-center gap-1.5 text-sm font-medium text-[#00A693] hover:text-[#007D6F] transition-colors"
+        >
+          <Plus size={14} /> Add another link
+        </button>
+      </div>
+
       <div className="bg-white border border-[#E5E1DA] rounded-2xl p-5 flex items-center justify-between flex-wrap gap-3">
         <div className="flex items-center gap-2 flex-wrap">
           <CalendarClock size={15} className="text-[#9CA3AF]" />
@@ -275,7 +350,7 @@ export default function AdminJobRecommendationsSection() {
           )}
           <button
             onClick={handleSend}
-            disabled={sending || validJobs.length === 0 || selectedIds.size === 0}
+            disabled={sending || (validJobs.length === 0 && validLinks.length === 0) || selectedIds.size === 0}
             className="flex items-center gap-1.5 px-5 py-2.5 bg-[#00A693] hover:bg-[#007D6F] text-white text-sm font-medium rounded-xl transition-colors disabled:opacity-50"
           >
             <Send size={14} />
@@ -320,10 +395,11 @@ export default function AdminJobRecommendationsSection() {
                       <> {' · '}Scheduled for {new Date(session.scheduledAt).toLocaleString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</>
                     )}
                     {' · '}{session.jobs.length} compan{session.jobs.length === 1 ? 'y' : 'ies'}
+                    {session.careerLinks?.length > 0 && <> {' · '}{session.careerLinks.length} link{session.careerLinks.length === 1 ? '' : 's'}</>}
                     {' · '}{session.recipientCount} recipient{session.recipientCount === 1 ? '' : 's'}
                   </p>
                   <p className="text-xs text-[#6B7280] mt-1 truncate">
-                    {session.jobs.map(j => j.subject).join(', ')}
+                    {[...session.jobs.map(j => j.subject), ...(session.careerLinks || []).map(l => l.company)].join(', ')}
                   </p>
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
