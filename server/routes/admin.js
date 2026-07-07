@@ -20,6 +20,9 @@ const {
   deleteProject,
   setResumeData,
   setAdminNote,
+  getCompanies,
+  getEmailRecipients,
+  sendCustomEmail,
 } = require('../controllers/adminController');
 const { adminSendMessage } = require('../controllers/messageController');
 const {
@@ -49,6 +52,9 @@ router.patch('/projects/:id/status', updateProjectStatus);
 router.put('/projects/:id', adminUpdateProject);
 router.get('/users', getAllUsers);
 router.get('/resumes', getResumes);
+router.get('/companies', getCompanies);
+router.get('/email/users', getEmailRecipients);
+router.post('/email/send', sendCustomEmail);
 router.patch('/users/:id/badge', setBadge);
 router.patch('/users/:id/designation', setDesignation);
 router.put('/users/:id', adminUpdateUser);

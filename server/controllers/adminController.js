@@ -460,3 +460,156 @@ exports.getUserGrowth = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
+
+// GET /api/admin/email/users — lightweight user list for the Email page recipient picker
+exports.getEmailRecipients = async (req, res) => {
+  try {
+    const users = await User.find({
+      isDeleted: { $ne: true },
+      email: { $exists: true, $ne: '' },
+    })
+      .select('name email avatar regNumber userType')
+      .sort({ createdAt: -1 })
+      .lean();
+    res.json({ users });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+// POST /api/admin/email/send — send a custom email via Brevo to selected users
+exports.sendCustomEmail = async (req, res) => {
+  try {
+    const { subject, body, userIds } = req.body;
+    if (!subject?.trim()) return res.status(400).json({ message: 'Subject is required' });
+    if (!body?.trim()) return res.status(400).json({ message: 'Body is required' });
+    if (!Array.isArray(userIds) || userIds.length === 0)
+      return res.status(400).json({ message: 'Select at least one user' });
+
+    const users = await User.find({
+      _id: { $in: userIds },
+      isDeleted: { $ne: true },
+      email: { $exists: true, $ne: '' },
+    }).select('name email').lean();
+    if (users.length === 0)
+      return res.status(404).json({ message: 'No valid recipients found' });
+
+    const { sendAdminCustomEmail } = require('../utils/email');
+    let sent = 0;
+    const failed = [];
+    for (const u of users) {
+      try {
+        await sendAdminCustomEmail({
+          to: u.email,
+          name: u.name,
+          subject: subject.trim(),
+          body: body.trim(),
+        });
+        sent++;
+      } catch (err) {
+        console.error(`Admin email failed for ${u.email}:`, err.message);
+        failed.push(u.email);
+      }
+    }
+
+    res.json({ sent, failed, total: users.length });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+// GET /api/admin/companies — companies derived from users' resumeData work history.
+// resumeData is Mixed and its shape varies across users (workExperience[] camelCase,
+// legacy experience[] with a duration string, currentCompany / current_company scalars),
+// so extraction happens in JS rather than an aggregation pipeline.
+exports.getCompanies = async (req, res) => {
+  try {
+    const users = await User.find({
+      resumeData: { $ne: null },
+      isDeleted: { $ne: true },
+      userType: { $ne: 'client' },
+    }).select('name email avatar regNumber designations resumeData').lean();
+
+    const normalize = s => String(s).trim().toLowerCase().replace(/\s+/g, ' ');
+    const companies = new Map(); // normalized name -> { name, developers: [] }
+
+    for (const u of users) {
+      const rd = (u.resumeData && typeof u.resumeData === 'object') ? u.resumeData : {};
+      const entries = [];
+
+      if (Array.isArray(rd.workExperience)) {
+        for (const w of rd.workExperience) {
+          if (w && typeof w.company === 'string' && w.company.trim()) {
+            entries.push({
+              company: w.company,
+              role: typeof w.role === 'string' ? w.role : '',
+              period: [w.startDate, w.current ? 'Present' : w.endDate].filter(Boolean).join(' – '),
+              current: !!w.current,
+            });
+          }
+        }
+      }
+
+      if (Array.isArray(rd.experience)) {
+        for (const w of rd.experience) {
+          if (w && typeof w.company === 'string' && w.company.trim()) {
+            entries.push({
+              company: w.company,
+              role: typeof w.role === 'string' ? w.role : '',
+              period: typeof w.duration === 'string' ? w.duration : '',
+              current: /present|current/i.test(w.duration || ''),
+            });
+          }
+        }
+      }
+
+      const cc = rd.currentCompany || rd.current_company;
+      if (typeof cc === 'string' && cc.trim() && !entries.some(e => normalize(e.company) === normalize(cc))) {
+        entries.push({
+          company: cc,
+          role: typeof (rd.currentRole || rd.current_role) === 'string' ? (rd.currentRole || rd.current_role) : '',
+          period: '',
+          current: true,
+        });
+      }
+
+      for (const e of entries) {
+        const name = e.company.trim().replace(/\s+/g, ' ');
+        const key = name.toLowerCase();
+        if (!companies.has(key)) companies.set(key, { name, developers: [] });
+        const company = companies.get(key);
+
+        const userId = String(u._id);
+        const stint = { role: e.role, period: e.period, current: e.current };
+        const existing = company.developers.find(d => d.userId === userId);
+        if (existing) {
+          existing.stints.push(stint);
+          existing.current = existing.current || e.current;
+        } else {
+          company.developers.push({
+            userId,
+            name: u.name,
+            email: u.email,
+            avatar: u.avatar || null,
+            regNumber: u.regNumber || null,
+            designations: Array.isArray(u.designations) ? u.designations.filter(Boolean) : [],
+            current: e.current,
+            stints: [stint],
+          });
+        }
+      }
+    }
+
+    const result = [...companies.values()]
+      .map(c => ({
+        ...c,
+        developerCount: c.developers.length,
+        currentCount: c.developers.filter(d => d.current).length,
+      }))
+      .sort((a, b) => b.developerCount - a.developerCount || a.name.localeCompare(b.name));
+
+    res.json({ companies: result, totalCompanies: result.length, usersScanned: users.length });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};

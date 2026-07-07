@@ -25,8 +25,8 @@ exports.sendFeedbackEmail = async ({ senderName, senderEmail, text }) => {
     subject: `New Feedback from ${senderName}`,
     htmlContent: `
       <div style="font-family:Inter,Arial,sans-serif;max-width:560px;margin:0 auto;background:#fff;border-radius:12px;overflow:hidden;border:1px solid #E5E1DA;">
-        <div style="background:#00A693;padding:24px 32px;text-align:center;">
-          <img src="${LOGO_URL}" alt="ShareMyApps" style="height:80px;object-fit:contain;" />
+        <div style="background:#00A693;padding:12px 32px;text-align:center;">
+          <img src="${LOGO_URL}" alt="ShareMyApps" style="height:40px;object-fit:contain;" />
         </div>
         <div style="padding:32px;">
           <h2 style="margin:0 0 16px;font-size:18px;color:#1A1A1A;">New Feedback Received</h2>
@@ -48,8 +48,8 @@ exports.sendProjectApprovedEmail = async ({ to, name, projectTitle, projectId, a
     subject: `"${projectTitle}" is now live @ ShareMyApps`,
     htmlContent: `
       <div style="font-family:Inter,Arial,sans-serif;max-width:560px;margin:0 auto;background:#fff;border-radius:12px;overflow:hidden;border:1px solid #E5E1DA;">
-        <div style="background:#00A693;padding:24px 32px;text-align:center;">
-          <img src="${LOGO_URL}" alt="ShareMyApps" style="height:80px;object-fit:contain;" />
+        <div style="background:#00A693;padding:12px 32px;text-align:center;">
+          <img src="${LOGO_URL}" alt="ShareMyApps" style="height:40px;object-fit:contain;" />
         </div>
         <div style="padding:32px;">
           <h2 style="margin:0 0 8px;font-size:18px;color:#1A1A1A;">🎉 Your project is live!</h2>
@@ -81,7 +81,7 @@ exports.sendOtpEmail = async ({ to, otp }) => {
     subject: 'Your ShareMyApps password reset OTP',
     htmlContent: `
       <div style="font-family:Inter,Arial,sans-serif;max-width:480px;margin:0 auto;background:#FAF9F6;border-radius:16px;overflow:hidden;border:1px solid #E5E1DA;">
-        <div style="background:#00A693;padding:20px 32px;text-align:center;">
+        <div style="background:#00A693;padding:12px 32px;text-align:center;">
           <img src="${LOGO_URL}" alt="ShareMyApps" style="height:36px;object-fit:contain;" />
         </div>
         <div style="padding:32px;">
@@ -107,8 +107,8 @@ exports.sendCollaboratorAddedEmail = async ({ to, name, addedByName, projectTitl
     subject: `${addedByName} added you as a collaborator on "${projectTitle}"`,
     htmlContent: `
       <div style="font-family:Inter,Arial,sans-serif;max-width:560px;margin:0 auto;background:#fff;border-radius:12px;overflow:hidden;border:1px solid #E5E1DA;">
-        <div style="background:#00A693;padding:24px 32px;text-align:center;">
-          <img src="${LOGO_URL}" alt="ShareMyApps" style="height:80px;object-fit:contain;" />
+        <div style="background:#00A693;padding:12px 32px;text-align:center;">
+          <img src="${LOGO_URL}" alt="ShareMyApps" style="height:40px;object-fit:contain;" />
         </div>
         <div style="padding:32px;">
           <h2 style="margin:0 0 8px;font-size:18px;color:#1A1A1A;">👥 You've been added as a collaborator!</h2>
@@ -149,8 +149,8 @@ exports.sendPlacementPaymentEmail = async ({ to, name, plan }) => {
     subject: `Payment Confirmed – Premium Plan | ShareMyApps`,
     htmlContent: `
       <div style="font-family:Inter,Arial,sans-serif;max-width:560px;margin:0 auto;background:#fff;border-radius:12px;overflow:hidden;border:1px solid #E5E1DA;">
-        <div style="background:#00A693;padding:24px 32px;text-align:center;">
-          <img src="${LOGO_URL}" alt="ShareMyApps" style="height:80px;object-fit:contain;" />
+        <div style="background:#00A693;padding:12px 32px;text-align:center;">
+          <img src="${LOGO_URL}" alt="ShareMyApps" style="height:40px;object-fit:contain;" />
         </div>
         <div style="padding:32px;">
           <h2 style="margin:0 0 6px;font-size:20px;color:#1A1A1A;">Payment Confirmed!</h2>
@@ -198,8 +198,8 @@ exports.sendMarketingCampaignEmail = async ({ to, name }) => {
       <div style="font-family:Inter,Arial,sans-serif;max-width:600px;margin:0 auto;background:#ffffff;border-radius:16px;overflow:hidden;border:1px solid #E5E1DA;">
 
         <!-- Header -->
-        <div style="background:linear-gradient(135deg,#00A693 0%,#007A6D 100%);padding:32px;text-align:center;">
-          <img src="${LOGO_URL}" alt="ShareMyApps" style="height:64px;object-fit:contain;" />
+        <div style="background:linear-gradient(135deg,#00A693 0%,#007A6D 100%);padding:16px 32px;text-align:center;">
+          <img src="${LOGO_URL}" alt="ShareMyApps" style="height:40px;object-fit:contain;" />
           <p style="color:rgba(255,255,255,0.85);margin:12px 0 0;font-size:13px;letter-spacing:0.04em;text-transform:uppercase;font-weight:600;">Placement Support · Exclusively for Our Members</p>
         </div>
 
@@ -325,8 +325,8 @@ exports.sendJobApplicationEmail = async ({ to, name, vacancy }) => {
     subject: `Application submitted – ${vacancy.title}`,
     htmlContent: `
       <div style="font-family:Inter,Arial,sans-serif;max-width:560px;margin:0 auto;background:#fff;border-radius:12px;overflow:hidden;border:1px solid #E5E1DA;">
-        <div style="background:#00A693;padding:24px 32px;text-align:center;">
-          <img src="${LOGO_URL}" alt="ShareMyApps" style="height:80px;object-fit:contain;" />
+        <div style="background:#00A693;padding:12px 32px;text-align:center;">
+          <img src="${LOGO_URL}" alt="ShareMyApps" style="height:40px;object-fit:contain;" />
         </div>
         <div style="padding:32px;">
           <h2 style="margin:0 0 8px;font-size:18px;color:#1A1A1A;">Application Received!</h2>
@@ -380,8 +380,8 @@ exports.sendProjectRejectedEmail = async ({ to, name, projectTitle, projectId, a
     subject: `Action needed on your project "${projectTitle}"`,
     htmlContent: `
       <div style="font-family:Inter,Arial,sans-serif;max-width:560px;margin:0 auto;background:#fff;border-radius:12px;overflow:hidden;border:1px solid #E5E1DA;">
-        <div style="background:#00A693;padding:24px 32px;text-align:center;">
-          <img src="${LOGO_URL}" alt="ShareMyApps" style="height:80px;object-fit:contain;" />
+        <div style="background:#00A693;padding:12px 32px;text-align:center;">
+          <img src="${LOGO_URL}" alt="ShareMyApps" style="height:40px;object-fit:contain;" />
         </div>
         <div style="padding:32px;">
           <h2 style="margin:0 0 8px;font-size:18px;color:#1A1A1A;">Your project needs some changes</h2>
@@ -429,8 +429,8 @@ exports.sendResumeReadyEmail = async ({ to, name, serviceLabel, completionLink, 
     subject: `Your ${serviceLabel} is ready — Download Now`,
     htmlContent: `
       <div style="font-family:Inter,Arial,sans-serif;max-width:560px;margin:0 auto;background:#fff;border-radius:12px;overflow:hidden;border:1px solid #E5E1DA;">
-        <div style="background:#00A693;padding:24px 32px;text-align:center;">
-          <img src="${LOGO_URL}" alt="ShareMyApps" style="height:80px;object-fit:contain;" />
+        <div style="background:#00A693;padding:12px 32px;text-align:center;">
+          <img src="${LOGO_URL}" alt="ShareMyApps" style="height:40px;object-fit:contain;" />
         </div>
         <div style="padding:32px;">
           <h2 style="margin:0 0 8px;font-size:20px;color:#1A1A1A;">Your documents are ready!</h2>
@@ -461,8 +461,8 @@ exports.sendActivationEmail = async ({ to, name }) => {
     subject: `You're in! Your ShareMyApps placement support is now active`,
     htmlContent: `
       <div style="font-family:Inter,Arial,sans-serif;max-width:560px;margin:0 auto;background:#fff;border-radius:12px;overflow:hidden;border:1px solid #E5E1DA;">
-        <div style="background:#00A693;padding:24px 32px;text-align:center;">
-          <img src="${LOGO_URL}" alt="ShareMyApps" style="height:80px;object-fit:contain;" />
+        <div style="background:#00A693;padding:12px 32px;text-align:center;">
+          <img src="${LOGO_URL}" alt="ShareMyApps" style="height:40px;object-fit:contain;" />
         </div>
         <div style="padding:32px;">
           <h2 style="margin:0 0 8px;font-size:20px;color:#1A1A1A;">🎉 You've been activated!</h2>
@@ -502,8 +502,8 @@ exports.sendSessionScheduledEmail = async ({ to, name, serviceLabel, meetLink, s
     subject: `Your session is scheduled — ${serviceLabel}`,
     htmlContent: `
       <div style="font-family:Inter,Arial,sans-serif;max-width:560px;margin:0 auto;background:#fff;border-radius:12px;overflow:hidden;border:1px solid #E5E1DA;">
-        <div style="background:#00A693;padding:24px 32px;text-align:center;">
-          <img src="${LOGO_URL}" alt="ShareMyApps" style="height:80px;object-fit:contain;" />
+        <div style="background:#00A693;padding:12px 32px;text-align:center;">
+          <img src="${LOGO_URL}" alt="ShareMyApps" style="height:40px;object-fit:contain;" />
         </div>
         <div style="padding:32px;">
           <h2 style="margin:0 0 8px;font-size:20px;color:#1A1A1A;">Your session is confirmed!</h2>
@@ -559,8 +559,8 @@ exports.sendJobRecommendationsEmail = async ({ to, name, jobs }) => {
     subject: `Your Daily Job Recommendations | ShareMyApps`,
     htmlContent: `
       <div style="font-family:Inter,Arial,sans-serif;max-width:560px;margin:0 auto;background:#fff;border-radius:12px;overflow:hidden;border:1px solid #E5E1DA;">
-        <div style="background:#00A693;padding:24px 32px;text-align:center;">
-          <img src="${LOGO_URL}" alt="ShareMyApps" style="height:80px;object-fit:contain;" />
+        <div style="background:#00A693;padding:12px 32px;text-align:center;">
+          <img src="${LOGO_URL}" alt="ShareMyApps" style="height:40px;object-fit:contain;" />
         </div>
         <div style="padding:32px;">
           <h2 style="margin:0 0 16px;font-size:18px;color:#1A1A1A;">Today's job recommendations for you <span style="font-size:12px;font-weight:400;color:#9CA3AF;">${new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}</span></h2>
@@ -588,6 +588,32 @@ exports.sendJobRecommendationsEmail = async ({ to, name, jobs }) => {
   });
 };
 
+const escapeHtml = (s) => String(s)
+  .replace(/&/g, '&amp;')
+  .replace(/</g, '&lt;')
+  .replace(/>/g, '&gt;')
+  .replace(/"/g, '&quot;');
+
+exports.sendAdminCustomEmail = async ({ to, name, subject, body }) => {
+  await api.sendTransacEmail({
+    sender: FROM,
+    to: [{ email: to, name }],
+    subject,
+    htmlContent: `
+      <div style="font-family:Inter,Arial,sans-serif;max-width:560px;margin:0 auto;background:#fff;border-radius:12px;overflow:hidden;border:1px solid #E5E1DA;">
+        <div style="background:#00A693;padding:12px 32px;text-align:center;">
+          <img src="${LOGO_URL}" alt="ShareMyApps" style="height:40px;object-fit:contain;" />
+        </div>
+        <div style="padding:32px;">
+          <p style="color:#374151;margin:0 0 16px;font-size:14px;">Hi ${escapeHtml(name || 'there')},</p>
+          <div style="color:#374151;font-size:14px;line-height:1.7;white-space:pre-wrap;">${escapeHtml(body)}</div>
+        </div>
+        ${FOOTER('You received this email because you are a registered user on ShareMyApps.')}
+      </div>
+    `,
+  });
+};
+
 exports.sendJobAlertEmail = async ({ to, name }) => {
   const jobAlertsUrl = `${BASE_URL}/dashboard/job-alerts`;
 
@@ -597,8 +623,8 @@ exports.sendJobAlertEmail = async ({ to, name }) => {
     subject: `New Job Openings 🎯 | ShareMyApps`,
     htmlContent: `
       <div style="font-family:Inter,Arial,sans-serif;max-width:560px;margin:0 auto;background:#fff;border-radius:12px;overflow:hidden;border:1px solid #E5E1DA;">
-        <div style="background:#00A693;padding:24px 32px;text-align:center;">
-          <img src="${LOGO_URL}" alt="ShareMyApps" style="height:80px;object-fit:contain;" />
+        <div style="background:#00A693;padding:12px 32px;text-align:center;">
+          <img src="${LOGO_URL}" alt="ShareMyApps" style="height:40px;object-fit:contain;" />
         </div>
         <div style="padding:32px;">
           <h2 style="margin:0 0 8px;font-size:20px;color:#1A1A1A;">🎯 New Job Openings</h2>

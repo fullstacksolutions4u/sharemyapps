@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import {
   LayoutDashboard, FolderOpen, ShieldCheck, Menu, LogOut,
-  Users, Briefcase, Megaphone, MessageSquare, Camera, IndianRupee, Crown, BookOpen, Unlock, Mail,
+  Users, Briefcase, Megaphone, MessageSquare, Camera, IndianRupee, Crown, BookOpen, Unlock, Mail, Building2, Send,
 } from 'lucide-react';
 import api from '../api/axios';
 import AdminOverview from './admin/AdminOverview';
@@ -19,11 +19,14 @@ import AdminLearningSection from './admin/AdminLearningSection';
 import AdminPremiumServicesSection from './admin/AdminPremiumServicesSection';
 import AdminPlansSection from './admin/AdminPlansSection';
 import AdminJobRecommendationsSection from './admin/AdminJobRecommendationsSection';
+import AdminCompaniesSection from './admin/AdminCompaniesSection';
+import AdminEmailSection from './admin/AdminEmailSection';
 
 const NAV = [
   { key: 'overview',       label: 'Overview',        icon: LayoutDashboard },
   { key: 'projects',       label: 'Projects',         icon: FolderOpen },
   { key: 'users',          label: 'Users',            icon: Users },
+  { key: 'companies',      label: 'Companies',        icon: Building2 },
   { key: 'opportunities',  label: 'Opportunities',    icon: Briefcase },
   { key: 'announcements',  label: 'Announcements',    icon: Megaphone },
   { key: 'learning',       label: 'Quiz Zone',        icon: BookOpen },
@@ -32,6 +35,7 @@ const NAV = [
 { key: 'offers',          label: 'Premium Applicants', icon: Crown },
   { key: 'service_access', label: 'Services',           icon: Unlock },
   { key: 'job_recommendations', label: 'Job Alert', icon: Mail },
+  { key: 'email',          label: 'Email',            icon: Send },
 ];
 
 export default function AdminPanel() {
@@ -152,6 +156,7 @@ const { user, setUser, logout } = useAuth();
           {section === 'overview'         && <AdminOverview stats={stats} onNavigate={navigate} />}
           {section === 'projects'         && <AdminProjectsSection stats={stats} />}
           {section === 'users'            && <AdminUsersSection initialTab="developers" />}
+          {section === 'companies'        && <AdminCompaniesSection />}
           {section === 'vacancies'        && <AdminVacanciesSection />}
           {section === 'opportunities'    && <AdminOpportunitiesSection />}
           {section === 'resumes'          && <AdminResumesSection />}
@@ -161,6 +166,7 @@ const { user, setUser, logout } = useAuth();
           {section === 'offers'           && <AdminOffersSection />}
           {section === 'service_access'   && <AdminPremiumServicesSection />}
           {section === 'job_recommendations' && <AdminJobRecommendationsSection />}
+          {section === 'email'            && <AdminEmailSection />}
           {section === 'learning'         && <AdminLearningSection />}
         </div>
       </div>
