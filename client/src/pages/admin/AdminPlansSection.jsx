@@ -135,30 +135,32 @@ function FreeOfferCard({ config, onSaved }) {
         </div>
 
         {/* Free offer due date */}
-        <div>
-          <label className="block text-xs font-semibold text-muted mb-1.5">Free Offer Due Date (optional)</label>
-          <div className="flex items-center gap-2">
-            <input
-              type="date"
-              value={dueDate}
-              onChange={e => setDueDate(e.target.value)}
-              className="flex-1 border border-border rounded-xl px-3 py-2 text-sm font-semibold text-text focus:outline-none focus:border-accent"
-            />
-            {dueDate && (
-              <button
-                onClick={() => setDueDate('')}
-                className="text-xs font-medium text-muted hover:text-red-500 transition-colors shrink-0"
-              >
-                Clear
-              </button>
+        {enabled && (
+          <div>
+            <label className="block text-xs font-semibold text-muted mb-1.5">Free Offer Due Date (optional)</label>
+            <div className="flex items-center gap-2">
+              <input
+                type="date"
+                value={dueDate}
+                onChange={e => setDueDate(e.target.value)}
+                className="flex-1 border border-border rounded-xl px-3 py-2 text-sm font-semibold text-text focus:outline-none focus:border-accent"
+              />
+              {dueDate && (
+                <button
+                  onClick={() => setDueDate('')}
+                  className="text-xs font-medium text-muted hover:text-red-500 transition-colors shrink-0"
+                >
+                  Clear
+                </button>
+              )}
+            </div>
+            {isExpired && (
+              <p className="text-[11px] text-red-500 mt-1.5">
+                This date is in the past — the free offer will show as expired to users even with Free enabled. Clear it or pick a future date.
+              </p>
             )}
           </div>
-          {isExpired && (
-            <p className="text-[11px] text-red-500 mt-1.5">
-              This date is in the past — the free offer will show as expired to users even with Free enabled. Clear it or pick a future date.
-            </p>
-          )}
-        </div>
+        )}
 
         <button
           onClick={handleSave}

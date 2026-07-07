@@ -329,6 +329,23 @@ export default function AdminPremiumServicesSection() {
                           </div>
                         )}
 
+                        {session && session.status === 'scheduled' && session.serviceType !== 'document' && session.meetLink && (
+                          <a
+                            href={session.meetLink}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={e => e.stopPropagation()}
+                            style={{
+                              display: 'inline-flex', alignItems: 'center', gap: 5,
+                              fontSize: 10, fontWeight: 700, padding: '3px 8px', borderRadius: 6,
+                              border: '1.5px solid #0a7373', background: '#0a7373', color: '#fff',
+                              textDecoration: 'none', whiteSpace: 'nowrap', width: 'fit-content',
+                            }}
+                          >
+                            <Video size={11} /> Join
+                          </a>
+                        )}
+
                         {canAct && session.status !== 'scheduled' && (
                           <div style={{ display: 'flex', gap: 5, alignItems: 'center' }}>
                             {session.serviceType === 'document' ? (
