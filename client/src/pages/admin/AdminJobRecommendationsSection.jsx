@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Plus, Trash2, Send, CalendarClock, RotateCcw, Pencil, X, Link2 } from 'lucide-react';
+import { Plus, Trash2, Send, CalendarClock, RotateCcw, Pencil, X } from 'lucide-react';
 import api from '../../api/axios';
 import toast from 'react-hot-toast';
 
@@ -35,10 +35,7 @@ export default function AdminJobRecommendationsSection() {
   const loadUsers = useCallback(() => {
     setLoadingUsers(true);
     api.get('/admin/job-recommendations/premium-users')
-      .then(res => {
-        setUsers(res.data.users || []);
-        setSelectedIds(new Set());
-      })
+      .then(res => setUsers(res.data.users || []))
       .catch(() => toast.error('Failed to load eligible users'))
       .finally(() => setLoadingUsers(false));
   }, []);
@@ -265,15 +262,8 @@ export default function AdminJobRecommendationsSection() {
         </div>
       </div>
 
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
       <div className="bg-white border border-[#E5E1DA] rounded-2xl p-5 space-y-4">
-        <div>
-          <h3 className="flex items-center gap-2 text-sm font-semibold text-[#1A1A1A]">
-            <Link2 size={15} className="text-[#00A693]" /> Career Page Links
-          </h3>
-          <p className="text-xs text-[#9CA3AF] mt-1">
-            Optional — links to company career pages where users can upload their resume directly. Shown alongside the job list on the user's Job Alerts page.
-          </p>
-        </div>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <tbody>
@@ -319,7 +309,7 @@ export default function AdminJobRecommendationsSection() {
         </button>
       </div>
 
-      <div className="bg-white border border-[#E5E1DA] rounded-2xl p-5 flex items-center justify-between flex-wrap gap-3">
+      <div className="bg-white border border-[#E5E1DA] rounded-2xl p-5 space-y-4">
         <div className="flex items-center gap-2 flex-wrap">
           <CalendarClock size={15} className="text-[#9CA3AF]" />
           <label className="text-sm font-medium text-[#1A1A1A]">Schedule for</label>
@@ -339,7 +329,7 @@ export default function AdminJobRecommendationsSection() {
           )}
         </div>
 
-        <div className="flex justify-end gap-2 shrink-0">
+        <div className="flex justify-center gap-2 flex-wrap">
           {editingSessionId && (
             <button
               onClick={cancelEdit}
@@ -363,6 +353,7 @@ export default function AdminJobRecommendationsSection() {
                   : `Send Now to ${selectedIds.size} Selected User${selectedIds.size === 1 ? '' : 's'}`}
           </button>
         </div>
+      </div>
       </div>
 
       <div className="bg-white border border-[#E5E1DA] rounded-2xl p-5 space-y-3">
