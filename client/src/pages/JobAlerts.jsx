@@ -25,28 +25,20 @@ function CopyButton({ text }) {
   );
 }
 
-function dayNumber(alertDate, sinceDate) {
-  const since = new Date(sinceDate);
-  since.setHours(0, 0, 0, 0);
-  const day = new Date(alertDate);
-  day.setHours(0, 0, 0, 0);
-  return Math.round((day - since) / 86400000) + 1;
-}
-
-function groupByDay(alerts) {
+function groupBySession(alerts) {
   const map = new Map();
   for (const alert of alerts) {
-    const d = new Date(alert.createdAt);
-    const key = `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
-    if (!map.has(key)) map.set(key, { date: alert.createdAt, jobs: [] });
+    const key = alert.sessionNumber;
+    if (!map.has(key)) {
+      map.set(key, { date: alert.scheduledAt || alert.createdAt, day: alert.sessionNumber, jobs: [] });
+    }
     map.get(key).jobs.push(...alert.jobs);
   }
-  return [...map.values()].sort((a, b) => new Date(b.date) - new Date(a.date));
+  return [...map.values()].sort((a, b) => b.day - a.day);
 }
 
 export default function JobAlerts() {
   const [alerts, setAlerts] = useState([]);
-  const [eligibleSince, setEligibleSince] = useState(null);
   const [loading, setLoading] = useState(true);
   const [forbidden, setForbidden] = useState(false);
 
@@ -54,7 +46,6 @@ export default function JobAlerts() {
     api.get('/premium-services/job-alerts')
       .then(res => {
         setAlerts(res.data.alerts || []);
-        setEligibleSince(res.data.eligibleSince || null);
       })
       .catch(err => { if (err.response?.status === 403) setForbidden(true); })
       .finally(() => setLoading(false));
@@ -93,18 +84,16 @@ export default function JobAlerts() {
         </div>
       ) : (
         <div className="space-y-4">
-          {groupByDay(alerts).map(group => (
-            <div key={group.date} className="bg-white border border-[#E5E1DA] rounded-2xl p-5">
+          {groupBySession(alerts).map(group => (
+            <div key={group.day} className="bg-white border border-[#E5E1DA] rounded-2xl p-5">
               <div className="flex items-start justify-between mb-4">
                 <p className="text-sm font-semibold text-[#1A1A1A]">
                   {new Date(group.date).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
                 </p>
-                {eligibleSince && (
-                  <div className="flex flex-col items-center justify-center bg-[#0a7373] text-white rounded-xl px-4 py-1.5 leading-none shrink-0 shadow-sm">
-                    <span className="text-[9px] font-bold tracking-[0.2em] uppercase opacity-80">Day</span>
-                    <span className="text-2xl font-bold font-mono tabular-nums">{dayNumber(group.date, eligibleSince)}</span>
-                  </div>
-                )}
+                <div className="flex flex-col items-center justify-center bg-[#0a7373] text-white rounded-xl px-4 py-1.5 leading-none shrink-0 shadow-sm">
+                  <span className="text-[9px] font-bold tracking-[0.2em] uppercase opacity-80">Day</span>
+                  <span className="text-2xl font-bold font-mono tabular-nums">{group.day}</span>
+                </div>
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
