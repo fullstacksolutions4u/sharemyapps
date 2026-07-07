@@ -7,8 +7,16 @@ const JOB_ALERT_TITLE = 'New Job Openings 🎯';
 const JOB_ALERT_MESSAGE = 'New jobs have been released. Please check out your dashboard and apply.';
 
 async function processDueJobAlerts() {
-  const due = await JobAlert.find({ notified: false, scheduledAt: { $lte: new Date() } });
-  for (const alert of due) {
+  const due = await JobAlert.find({ notified: false, scheduledAt: { $lte: new Date() } }).select('_id');
+  for (const { _id } of due) {
+    // Atomically claim the alert so concurrent scheduler instances can't both process it.
+    const alert = await JobAlert.findOneAndUpdate(
+      { _id, notified: false },
+      { notified: true },
+      { new: true }
+    );
+    if (!alert) continue;
+
     const recipients = await User.find({ _id: { $in: alert.recipients } }).select('name email').lean();
     for (const u of recipients) {
       try {
@@ -22,8 +30,6 @@ async function processDueJobAlerts() {
         sendJobAlertEmail({ to: u.email, name: u.name }).catch(err => console.error('Job alert email error:', err));
       } catch { /* skip failed recipient, don't block the rest */ }
     }
-    alert.notified = true;
-    await alert.save();
   }
 }
 
