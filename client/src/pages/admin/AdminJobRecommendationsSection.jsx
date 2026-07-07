@@ -49,11 +49,6 @@ export default function AdminJobRecommendationsSection() {
 
   useEffect(() => { loadUsers(); loadSessions(); }, [loadUsers, loadSessions]); // eslint-disable-line react-hooks/set-state-in-effect
 
-  useEffect(() => {
-    const pageCount = Math.max(1, Math.ceil(sessions.length / SESSIONS_PER_PAGE));
-    setSessionPage(p => Math.min(p, pageCount));
-  }, [sessions]); // eslint-disable-line react-hooks/set-state-in-effect
-
   const handleReuseSession = (session) => {
     setEditingSessionId(null);
     setJobs(session.jobs.map(j => ({ emailId: j.emailId, subject: j.subject })));
@@ -104,7 +99,8 @@ export default function AdminJobRecommendationsSection() {
   const validJobs = jobs.filter(j => j.emailId.trim() && j.subject.trim());
 
   const sessionPageCount = Math.max(1, Math.ceil(sessions.length / SESSIONS_PER_PAGE));
-  const paginatedSessions = sessions.slice((sessionPage - 1) * SESSIONS_PER_PAGE, sessionPage * SESSIONS_PER_PAGE);
+  const currentSessionPage = Math.min(sessionPage, sessionPageCount);
+  const paginatedSessions = sessions.slice((currentSessionPage - 1) * SESSIONS_PER_PAGE, currentSessionPage * SESSIONS_PER_PAGE);
 
   const toggleUser = (id) => {
     setSelectedIds(prev => {
@@ -360,19 +356,19 @@ export default function AdminJobRecommendationsSection() {
         {!loadingSessions && sessions.length > 0 && (
           <div className="flex items-center justify-between pt-1">
             <p className="text-xs text-[#9CA3AF]">
-              Page {sessionPage} of {sessionPageCount}
+              Page {currentSessionPage} of {sessionPageCount}
             </p>
             <div className="flex items-center gap-2">
               <button
                 onClick={() => setSessionPage(p => Math.max(1, p - 1))}
-                disabled={sessionPage === 1}
+                disabled={currentSessionPage === 1}
                 className="text-xs font-medium text-[#00A693] hover:text-[#007D6F] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 Previous
               </button>
               <button
                 onClick={() => setSessionPage(p => Math.min(sessionPageCount, p + 1))}
-                disabled={sessionPage === sessionPageCount}
+                disabled={currentSessionPage === sessionPageCount}
                 className="text-xs font-medium text-[#00A693] hover:text-[#007D6F] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 Next
