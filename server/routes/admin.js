@@ -932,13 +932,14 @@ router.get('/job-recommendations/sessions', async (_req, res) => {
   } catch (err) { res.status(500).json({ message: err.message }); }
 });
 
-// Modify a scheduled (not yet sent) job-alert session — jobs, recipients, and/or send time
+// Modify a job-alert session. Scheduled sessions can change jobs, recipients, and send time;
+// sent sessions can only change the job/link list (e.g. removing rejected emails) — recipients
+// are not re-notified.
 router.put('/job-recommendations/sessions/:id', async (req, res) => {
   try {
     const JobAlert = require('../models/JobAlert');
     const alert = await JobAlert.findById(req.params.id);
     if (!alert) return res.status(404).json({ message: 'Session not found' });
-    if (alert.notified) return res.status(409).json({ message: 'This session has already been sent and can no longer be modified' });
 
     const { jobs, careerLinks, userIds, scheduledAt } = req.body;
 
@@ -958,17 +959,19 @@ router.put('/job-recommendations/sessions/:id', async (req, res) => {
       alert.careerLinks = cleanLinks;
     }
 
-    if (userIds !== undefined) {
-      if (!Array.isArray(userIds) || userIds.length === 0)
-        return res.status(400).json({ message: 'Select at least one user' });
-      alert.recipients = userIds;
-    }
+    if (!alert.notified) {
+      if (userIds !== undefined) {
+        if (!Array.isArray(userIds) || userIds.length === 0)
+          return res.status(400).json({ message: 'Select at least one user' });
+        alert.recipients = userIds;
+      }
 
-    if (scheduledAt !== undefined) {
-      const sendAt = scheduledAt ? new Date(scheduledAt) : new Date();
-      if (Number.isNaN(sendAt.getTime()))
-        return res.status(400).json({ message: 'Invalid scheduled date/time' });
-      alert.scheduledAt = sendAt;
+      if (scheduledAt !== undefined) {
+        const sendAt = scheduledAt ? new Date(scheduledAt) : new Date();
+        if (Number.isNaN(sendAt.getTime()))
+          return res.status(400).json({ message: 'Invalid scheduled date/time' });
+        alert.scheduledAt = sendAt;
+      }
     }
 
     await alert.save();

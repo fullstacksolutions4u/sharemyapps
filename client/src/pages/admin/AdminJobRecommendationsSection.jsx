@@ -29,6 +29,7 @@ export default function AdminJobRecommendationsSection() {
   const [sessions, setSessions] = useState([]);
   const [loadingSessions, setLoadingSessions] = useState(true);
   const [editingSessionId, setEditingSessionId] = useState(null);
+  const [editingSessionSent, setEditingSessionSent] = useState(false);
   const [sessionPage, setSessionPage] = useState(1);
   const SESSIONS_PER_PAGE = 5;
 
@@ -55,6 +56,7 @@ export default function AdminJobRecommendationsSection() {
 
   const handleReuseSession = (session) => {
     setEditingSessionId(null);
+    setEditingSessionSent(false);
     setJobs(session.jobs.length ? session.jobs.map(j => ({ emailId: j.emailId, subject: j.subject })) : emptyJobs());
     setLinks(sessionLinks(session));
     setSelectedIds(new Set());
@@ -65,10 +67,12 @@ export default function AdminJobRecommendationsSection() {
 
   const handleEditSession = (session) => {
     setEditingSessionId(session._id);
+    setEditingSessionSent(!!session.notified);
     setJobs(session.jobs.length ? session.jobs.map(j => ({ emailId: j.emailId, subject: j.subject })) : emptyJobs());
     setLinks(sessionLinks(session));
-    setSelectedIds(new Set(session.recipients || []));
-    setScheduledAt(toDatetimeLocal(session.scheduledAt));
+    // Sent sessions: recipients and schedule are locked — only the company/email list can change
+    setSelectedIds(session.notified ? new Set() : new Set(session.recipients || []));
+    setScheduledAt(session.notified ? '' : toDatetimeLocal(session.scheduledAt));
     toast.success(`Editing Session ${session.sessionNumber}`);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -90,6 +94,7 @@ export default function AdminJobRecommendationsSection() {
 
   const cancelEdit = () => {
     setEditingSessionId(null);
+    setEditingSessionSent(false);
     setJobs(emptyJobs());
     setLinks(emptyLinks());
     setSelectedIds(new Set());
@@ -127,18 +132,21 @@ export default function AdminJobRecommendationsSection() {
 
   const handleSend = async () => {
     if (validJobs.length === 0 && validLinks.length === 0) { toast.error('Add at least one job (company name + email id) or one career page link'); return; }
-    if (selectedIds.size === 0) { toast.error('Select at least one user'); return; }
+    if (selectedIds.size === 0 && !editingSessionSent) { toast.error('Select at least one user'); return; }
     setSending(true);
     try {
       const scheduledAtISO = scheduledAt ? new Date(scheduledAt).toISOString() : undefined;
 
       if (editingSessionId) {
-        const res = await api.put(`/admin/job-recommendations/sessions/${editingSessionId}`, {
-          jobs: validJobs,
-          careerLinks: validLinks,
-          userIds: [...selectedIds],
-          scheduledAt: scheduledAtISO || new Date().toISOString(),
-        });
+        // Sent sessions: only the company/email list can change — recipients & schedule are locked
+        const res = await api.put(`/admin/job-recommendations/sessions/${editingSessionId}`, editingSessionSent
+          ? { jobs: validJobs, careerLinks: validLinks }
+          : {
+              jobs: validJobs,
+              careerLinks: validLinks,
+              userIds: [...selectedIds],
+              scheduledAt: scheduledAtISO || new Date().toISOString(),
+            });
         toast.success(`Session ${res.data.session.sessionNumber} updated`);
         cancelEdit();
         loadSessions();
@@ -174,7 +182,9 @@ export default function AdminJobRecommendationsSection() {
       {editingSessionId && (
         <div className="flex items-center justify-between gap-3 bg-amber-50 border border-amber-200 rounded-2xl px-4 py-3">
           <p className="text-sm font-medium text-amber-800">
-            Editing scheduled session — changes will update this session instead of creating a new one.
+            {editingSessionSent
+              ? 'Editing sent session — you can update the company/email list (e.g. remove rejected emails). Recipients will not be re-notified.'
+              : 'Editing scheduled session — changes will update this session instead of creating a new one.'}
           </p>
           <button
             onClick={cancelEdit}
@@ -251,7 +261,8 @@ export default function AdminJobRecommendationsSection() {
                     type="checkbox"
                     checked={selectedIds.has(u._id)}
                     onChange={() => toggleUser(u._id)}
-                    className="accent-[#00A693] w-4 h-4"
+                    disabled={editingSessionSent}
+                    className="accent-[#00A693] w-4 h-4 disabled:opacity-40 disabled:cursor-not-allowed"
                   />
                   <span className="text-sm font-medium text-[#1A1A1A]">{u.name}</span>
                   <span className="text-xs text-[#9CA3AF]">{u.email}</span>
@@ -317,7 +328,8 @@ export default function AdminJobRecommendationsSection() {
             type="datetime-local"
             value={scheduledAt}
             onChange={e => setScheduledAt(e.target.value)}
-            className="border border-[#E5E1DA] rounded-lg px-3 py-1.5 text-xs outline-none focus:border-[#00A693]"
+            disabled={editingSessionSent}
+            className="border border-[#E5E1DA] rounded-lg px-3 py-1.5 text-xs outline-none focus:border-[#00A693] disabled:opacity-40 disabled:cursor-not-allowed"
           />
           {scheduledAt && (
             <button
@@ -340,12 +352,16 @@ export default function AdminJobRecommendationsSection() {
           )}
           <button
             onClick={handleSend}
-            disabled={sending || (validJobs.length === 0 && validLinks.length === 0) || selectedIds.size === 0}
+            disabled={sending || (validJobs.length === 0 && validLinks.length === 0) || (selectedIds.size === 0 && !editingSessionSent)}
             className="flex items-center gap-1.5 px-5 py-2.5 bg-[#00A693] hover:bg-[#007D6F] text-white text-sm font-medium rounded-xl transition-colors disabled:opacity-50"
           >
             <Send size={14} />
             {editingSessionId
-              ? (sending ? 'Updating…' : `Update Session for ${selectedIds.size} Selected User${selectedIds.size === 1 ? '' : 's'}`)
+              ? (sending
+                  ? 'Updating…'
+                  : editingSessionSent
+                    ? 'Update Sent Session'
+                    : `Update Session for ${selectedIds.size} Selected User${selectedIds.size === 1 ? '' : 's'}`)
               : sending
                 ? (isScheduling ? 'Scheduling…' : 'Sending…')
                 : isScheduling
@@ -394,14 +410,12 @@ export default function AdminJobRecommendationsSection() {
                   </p>
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
-                  {!session.notified && (
-                    <button
-                      onClick={() => handleEditSession(session)}
-                      className="flex items-center gap-1.5 text-xs font-medium text-amber-700 hover:text-amber-900 border border-amber-300 hover:bg-amber-50 px-3 py-1.5 rounded-lg transition-colors"
-                    >
-                      <Pencil size={12} /> Edit
-                    </button>
-                  )}
+                  <button
+                    onClick={() => handleEditSession(session)}
+                    className="flex items-center gap-1.5 text-xs font-medium text-amber-700 hover:text-amber-900 border border-amber-300 hover:bg-amber-50 px-3 py-1.5 rounded-lg transition-colors"
+                  >
+                    <Pencil size={12} /> Edit
+                  </button>
                   <button
                     onClick={() => handleReuseSession(session)}
                     className="flex items-center gap-1.5 text-xs font-medium text-[#00A693] hover:text-[#007D6F] border border-[#00A693]/30 hover:bg-[#F0FBF9] px-3 py-1.5 rounded-lg transition-colors"
