@@ -6,7 +6,7 @@ import toast from 'react-hot-toast';
 import PlacementPaymentModal from '../components/PlacementPaymentModal';
 
 const FREE_FEATURES = [
-  'Recruiter Direct Hiring',
+  'Recruiter Direct Hiring based on your portfolio and projects',
   'Apply to all jobs listed on ShareMyApps portal',
   'Freelance & Mentoring Opportunities',
   'Networking Opportunities with Developers',
@@ -16,9 +16,9 @@ const FREE_FEATURES = [
 const PREMIUM_FEATURES = [
   '1:1 Session with Placement Specialist for Job Hunting Guidance',
   'ATS Compatible Resume & Cover letter Optimization',
-  'LinkedIn & Job Portal Profile Optimization',
+  'LinkedIn & Job Portals Profile Optimization',
   'Dedicated Placement Officer Support Until You Get Hired',
-  'Mock Interviews with Industry Experts from our community',
+  'Mock Interviews for freshers with Industry Experts',
   'Personalized daily job recommendations via registered email',
 ];
 
@@ -185,7 +185,7 @@ export default function PaidServices() {
     }}>
       <div style={{
         width: '100%',
-        maxWidth: '980px',
+        maxWidth: '1080px',
         background: '#fbfcfb',
         border: '1px solid #e8edeb',
         borderRadius: '22px',

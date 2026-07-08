@@ -14,14 +14,22 @@ const getNextRegNumber = async () => {
   return last?.regNumber ? last.regNumber + 1 : 101;
 };
 
+const cookieOptions = () => ({
+  httpOnly: true,
+  secure: process.env.NODE_ENV === 'production',
+  sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+});
+
 const setCookie = (res, token) => {
   res.cookie('token', token, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+    ...cookieOptions(),
     maxAge: 7 * 24 * 60 * 60 * 1000,
   });
 };
+
+// clearCookie must use the same attributes the cookie was set with —
+// cross-site responses silently drop Set-Cookie without SameSite=None; Secure
+const clearAuthCookie = (res) => res.clearCookie('token', cookieOptions());
 
 exports.register = async (req, res) => {
   try {
@@ -82,7 +90,7 @@ exports.login = async (req, res) => {
 };
 
 exports.logout = (_req, res) => {
-  res.clearCookie('token');
+  clearAuthCookie(res);
   res.json({ message: 'Logged out' });
 };
 
@@ -223,7 +231,7 @@ exports.deleteAccount = async (req, res) => {
       user.deletedAt = new Date();
       await user.save();
     }
-    res.clearCookie('token');
+    clearAuthCookie(res);
     res.json({ message: 'Account deleted' });
   } catch (err) {
     res.status(500).json({ message: err.message });

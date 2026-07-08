@@ -74,12 +74,14 @@ async function run() {
     return;
   }
 
-  // Check existing data in sharemyapps to avoid duplicates
+  // Check existing data in sharemyapps to avoid duplicates.
+  // sharemyapps titles have the "Module N :" prefix stripped, so normalize both sides.
+  const normTitle = (s) => (s || '').replace(/^module\s+\d+\s*[:\s-]+\s*/i, '').trim().toLowerCase();
   const existingTitles = new Set(
-    (await SmaModule.find({}, 'title').lean()).map(m => m.title)
+    (await SmaModule.find({}, 'title').lean()).map(m => normTitle(m.title))
   );
 
-  const toInsert = fssModules.filter(m => !existingTitles.has(m.title));
+  const toInsert = fssModules.filter(m => !existingTitles.has(normTitle(m.title)));
   const skipped  = fssModules.length - toInsert.length;
 
   if (skipped > 0) {

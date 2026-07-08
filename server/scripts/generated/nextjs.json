@@ -1,0 +1,3127 @@
+{
+  "moduleId": "6a3a23db9a46018557828893",
+  "moduleTitle": "Nextjs",
+  "generatedAt": "2026-07-08T10:01:27.743Z",
+  "topics": [
+    {
+      "topicId": "6923dd8f0732ccd4140d58ad",
+      "topicName": "what is nextjs",
+      "quizzes": [
+        {
+          "question": "What is Next.js primarily used for?",
+          "options": [
+            "Building traditional server-rendered applications",
+            "Creating React applications with static site generation",
+            "Developing mobile applications",
+            "Building games"
+          ],
+          "correctAnswer": 1,
+          "explanation": "Next.js is designed for building React applications and provides features like server-side rendering and static site generation."
+        },
+        {
+          "question": "Which file is essential for configuring a Next.js application?",
+          "options": [
+            "app.js",
+            "next.config.js",
+            "package.json",
+            "index.js"
+          ],
+          "correctAnswer": 1,
+          "explanation": "The next.config.js file is used to customize configurations for a Next.js application."
+        },
+        {
+          "question": "How does Next.js handle routing?",
+          "options": [
+            "Using a custom routing library",
+            "Based on the file system",
+            "Through server configuration",
+            "With React Router"
+          ],
+          "correctAnswer": 1,
+          "explanation": "Next.js uses a file-based routing mechanism, where the file structure in the pages directory defines routes automatically."
+        },
+        {
+          "question": "What function must be exported from a page in Next.js to enable server-side rendering?",
+          "options": [
+            "getStaticProps",
+            "getServerSideProps",
+            "SSR",
+            "getInitialProps"
+          ],
+          "correctAnswer": 1,
+          "explanation": "The getServerSideProps function is specifically used in Next.js to fetch data on each request for server-side rendering."
+        },
+        {
+          "question": "In Next.js, which feature allows a static page to be generated at build time?",
+          "options": [
+            "Static generation with getStaticProps",
+            "Server-side rendering",
+            "Client-side rendering",
+            "Dynamic imports"
+          ],
+          "correctAnswer": 0,
+          "explanation": "Static generation with getStaticProps allows pages to be pre-rendered at build time, resulting in improved performance."
+        }
+      ]
+    },
+    {
+      "topicId": "692b9b1debc3f9d2ec9bce76",
+      "topicName": "server side rendering",
+      "quizzes": [
+        {
+          "question": "What is server-side rendering (SSR) in the context of Next.js?",
+          "options": [
+            "Rendering a page entirely on the client side using JavaScript.",
+            "Generating HTML content on the server for each request.",
+            "Pre-rendering all pages at build time and serving static files.",
+            "Serving different content based on the user's browser."
+          ],
+          "correctAnswer": 1,
+          "explanation": "SSR in Next.js involves generating the HTML of a page on the server for every request, which helps with SEO and initial load performance."
+        },
+        {
+          "question": "Which method is used to implement server-side rendering in a Next.js page?",
+          "options": [
+            "getStaticProps",
+            "getServerSideProps",
+            "getInitialProps",
+            "getStaticPaths"
+          ],
+          "correctAnswer": 1,
+          "explanation": "The getServerSideProps function is specifically designed to fetch data and render pages on the server side in Next.js."
+        },
+        {
+          "question": "What is a benefit of using server-side rendering in Next.js?",
+          "options": [
+            "Faster client-side navigation.",
+            "SEO-friendly content rendering.",
+            "Reduced server costs.",
+            "Simplified client state management."
+          ],
+          "correctAnswer": 1,
+          "explanation": "SSR allows search engines to index the content efficiently, resulting in better SEO performance compared to client-side rendered applications."
+        },
+        {
+          "question": "When using getServerSideProps in Next.js, which of the following is true?",
+          "options": [
+            "It runs on the client side during the page load.",
+            "It runs on every request to the page.",
+            "It can only fetch data from a local API.",
+            "It must return an empty object."
+          ],
+          "correctAnswer": 1,
+          "explanation": "getServerSideProps is executed on the server for every request to the page, allowing it to fetch data dynamically."
+        },
+        {
+          "question": "Which of the following scenarios might NOT benefit from server-side rendering in Next.js?",
+          "options": [
+            "A constantly changing dashboard showing real-time data.",
+            "A blog that rarely updates its content.",
+            "An e-commerce product page with SEO needs.",
+            "A news site with frequently updated articles."
+          ],
+          "correctAnswer": 0,
+          "explanation": "A constantly changing dashboard is typically not suitable for SSR as the data changes often, and client-side rendering might be more efficient."
+        }
+      ]
+    },
+    {
+      "topicId": "692b9b1debc3f9d2ec9bce7b",
+      "topicName": "static site generation",
+      "quizzes": [
+        {
+          "question": "What is the primary function of Static Site Generation (SSG) in Next.js?",
+          "options": [
+            "To generate HTML at request time",
+            "To pre-render pages at build time",
+            "To optimize images on the fly",
+            "To manage API routes"
+          ],
+          "correctAnswer": 1,
+          "explanation": "Static Site Generation (SSG) allows Next.js to pre-render pages at build time, making them faster and more efficient for users."
+        },
+        {
+          "question": "Which method is used in Next.js to generate static pages from dynamic data?",
+          "options": [
+            "getStaticProps",
+            "getServerSideProps",
+            "getInitialProps",
+            "getStaticPaths"
+          ],
+          "correctAnswer": 0,
+          "explanation": "The getStaticProps method is used in Next.js to fetch data at build time for static pages."
+        },
+        {
+          "question": "What do you use getStaticPaths for in Next.js?",
+          "options": [
+            "To define dynamic routes",
+            "To pre-render static pages",
+            "To fetch data on the server side",
+            "To generate a sitemap"
+          ],
+          "correctAnswer": 0,
+          "explanation": "getStaticPaths is used in Next.js to specify dynamic routes for pages that need to be generated statically at build time."
+        },
+        {
+          "question": "How can you improve the performance of static pages generated with Next.js?",
+          "options": [
+            "By using a database connection",
+            "By enabling server-side rendering",
+            "By implementing image optimization",
+            "By reducing CSS file size only"
+          ],
+          "correctAnswer": 2,
+          "explanation": "Implementing image optimization helps to improve the performance of static pages by ensuring images load efficiently."
+        },
+        {
+          "question": "In a large Next.js project, how might you decide whether to use Static Site Generation or Server-Side Rendering for a particular page?",
+          "options": [
+            "Use SSG if the data is frequently changing",
+            "Use SSG for pages where SEO is critical and data seldom changes",
+            "Always choose SSG to maximize performance",
+            "Use SSR if you want to pre-render only once"
+          ],
+          "correctAnswer": 1,
+          "explanation": "Using SSG is ideal for pages where SEO is critical and where the data does not change frequently, as it pre-renders the page at build time."
+        }
+      ]
+    },
+    {
+      "topicId": "69305c9281ffe246cf2e7771",
+      "topicName": "why use App Router?",
+      "quizzes": [
+        {
+          "question": "What is the primary purpose of using App Router in Next.js?",
+          "options": [
+            "To manage API routes more efficiently",
+            "To handle client-side routing automatically",
+            "To enable server-side rendering by default",
+            "To simplify the file system routing"
+          ],
+          "correctAnswer": 3,
+          "explanation": "The App Router simplifies the routing process by leveraging the file system structure, allowing developers to create routes simply by adding files and folders."
+        },
+        {
+          "question": "How does the App Router differ from the traditional routing approach in Next.js?",
+          "options": [
+            "It uses dynamic imports for route definitions",
+            "It allows for nested routes based on folders",
+            "It supports client-side navigation only",
+            "It requires manual configuration of routes"
+          ],
+          "correctAnswer": 1,
+          "explanation": "The App Router supports nested routes based on the directory structure, allowing developers to organize routes logically without additional configuration."
+        },
+        {
+          "question": "When using the App Router, what is a benefit of folder-based routing?",
+          "options": [
+            "Increased page loading time",
+            "Improved code organization and maintainability",
+            "More complex URL structures",
+            "Elimination of file-based routing"
+          ],
+          "correctAnswer": 1,
+          "explanation": "Folder-based routing improves code organization and maintainability by allowing developers to structure their application logically, reflecting the routing hierarchy in the file system."
+        },
+        {
+          "question": "What happens if you create a page in the App Router that does not follow the expected structure?",
+          "options": [
+            "Next.js will throw an error during compilation",
+            "The page will not be accessible via its intended route",
+            "It will be automatically redirected to the homepage",
+            "It will be ignored and not included in the build"
+          ],
+          "correctAnswer": 1,
+          "explanation": "If a page does not follow the expected structure, it will not be accessible through its intended route, as Next.js relies on the file system for routing."
+        },
+        {
+          "question": "In a complex application using App Router, how can you enhance server-side data fetching while maintaining routing?",
+          "questionCode": "export const getServerSideProps = async (context) => { /* fetch data */ };",
+          "options": [
+            "Implement getStaticProps in the route component",
+            "Use API routes to fetch the required data",
+            "Leverage getServerSideProps for dynamic data fetching",
+            "Set static props in the next.config.js"
+          ],
+          "correctAnswer": 2,
+          "explanation": "Using getServerSideProps allows fetching dynamic data for a page on the server for each request, which is ideal for applications requiring fresh data that changes frequently."
+        }
+      ]
+    },
+    {
+      "topicId": "69305c9381ffe246cf2e7778",
+      "topicName": "client components vs server components",
+      "quizzes": [
+        {
+          "question": "What is the main advantage of using server components in Next.js?",
+          "options": [
+            "They are rendered on the client side, improving interactivity.",
+            "They can fetch data on the server side, reducing the amount of client-side data processing.",
+            "They depend entirely on client-side JavaScript.",
+            "They require an external API to function."
+          ],
+          "correctAnswer": 1,
+          "explanation": "Server components can fetch data directly on the server, which reduces the amount of processing required on the client side for rendering."
+        },
+        {
+          "question": "Which of the following statements is true regarding client components?",
+          "options": [
+            "Client components cannot manage local state.",
+            "Client components are not executed until the entire page is loaded.",
+            "Client components are ideal for interactive UI and state management.",
+            "Client components cannot accept props."
+          ],
+          "correctAnswer": 2,
+          "explanation": "Client components are well-suited for interactive user interfaces as they can leverage local state and event handling."
+        },
+        {
+          "question": "In which scenario would you prefer to use server components over client components in Next.js?",
+          "options": [
+            "When building a complex form with many interactive elements.",
+            "When performing SEO optimization by fetching data for static pages.",
+            "When you need to handle real-time data updates.",
+            "When you require access to the browser's local storage."
+          ],
+          "correctAnswer": 1,
+          "explanation": "Server components are preferable when SEO is a priority, as they can render data on the server, making it accessible to search engines."
+        },
+        {
+          "question": "What is a limitation of server components in Next.js?",
+          "options": [
+            "They cannot access the browser's local storage.",
+            "They can only be used in static site generation.",
+            "They don't support data fetching from APIs.",
+            "They must always be rendered before client components."
+          ],
+          "correctAnswer": 0,
+          "explanation": "Server components cannot access browser-specific APIs like local storage because they are executed on the server."
+        },
+        {
+          "question": "Given the following Next.js component structure, identify the component that could be a client component. Why?",
+          "questionCode": "export default function MyComponent() { const [count, setCount] = useState(0); return <button onClick={() => setCount(count + 1)}>{count}</button>; }",
+          "options": [
+            "The entire component is a server component.",
+            "The useState hook indicates this component is a client component.",
+            "This component cannot be a client component because it uses a button.",
+            "Client components must not utilize hooks."
+          ],
+          "correctAnswer": 1,
+          "explanation": "The component is a client component because it uses the useState hook, indicating it manages state and has interactivity."
+        }
+      ]
+    },
+    {
+      "topicId": "69305c9481ffe246cf2e7780",
+      "topicName": "Prerendering",
+      "quizzes": [
+        {
+          "question": "What is prerendering in Next.js?",
+          "options": [
+            "Generating HTML at build time",
+            "Fetching data at runtime",
+            "Sending static files to the client",
+            "Handling server-side errors"
+          ],
+          "correctAnswer": 0,
+          "explanation": "Prerendering in Next.js means generating the HTML for a page at build time, which can improve performance and SEO."
+        },
+        {
+          "question": "Which method is used for Static Generation in Next.js?",
+          "options": [
+            "getServerSideProps",
+            "getStaticProps",
+            "getInitialProps",
+            "getStaticPaths"
+          ],
+          "correctAnswer": 1,
+          "explanation": "getStaticProps is the Next.js method specifically used for fetching data at build time, enabling static site generation."
+        },
+        {
+          "question": "In what scenario would you prefer using getServerSideProps over getStaticProps?",
+          "options": [
+            "When data changes frequently and needs to be up-to-date",
+            "For pages that do not change often",
+            "When you want to implement caching",
+            "For simple static pages"
+          ],
+          "correctAnswer": 0,
+          "explanation": "You would use getServerSideProps when you need to render a page with data that changes frequently, ensuring the user always sees the latest data."
+        },
+        {
+          "question": "Consider the following code snippet. What will be the outcome if you try to build the application without the getStaticProps function?",
+          "questionCode": "export default function Post({ data }) { return <div>{data.title}</div>; }",
+          "options": [
+            "It will throw an error.",
+            "It will render a blank page.",
+            "It will return an empty data object.",
+            "It will display 'undefined' for the title."
+          ],
+          "correctAnswer": 0,
+          "explanation": "The absence of getStaticProps means no data is fetched at build time, which will lead to an error for the undefined 'data' prop."
+        },
+        {
+          "question": "What is the purpose of getStaticPaths in Next.js?",
+          "options": [
+            "To fetch additional data for server-side rendering",
+            "To define dynamic routes that require prerendering",
+            "To enable API routes to function",
+            "To manage page caching strategies"
+          ],
+          "correctAnswer": 1,
+          "explanation": "getStaticPaths is used to specify dynamic routes that should be prerendered at build time, allowing Next.js to know which paths to generate."
+        }
+      ]
+    },
+    {
+      "topicId": "69305c9481ffe246cf2e7789",
+      "topicName": "SSG (Static Site Generation)",
+      "quizzes": [
+        {
+          "question": "What is Static Site Generation (SSG) in Next.js?",
+          "options": [
+            "Dynamically generating pages on every request",
+            "Building HTML pages at build time and serving them as static files",
+            "Serving pages from a client-side JavaScript application",
+            "Pre-rendering pages at runtime based on user input"
+          ],
+          "correctAnswer": 1,
+          "explanation": "Static Site Generation (SSG) refers to the process of generating HTML pages at build time, creating static files for improved performance and SEO."
+        },
+        {
+          "question": "Which function in Next.js is used to enable Static Site Generation for a page?",
+          "options": [
+            "getServerSideProps",
+            "getInitialProps",
+            "getStaticProps",
+            "getStaticPaths"
+          ],
+          "correctAnswer": 2,
+          "explanation": "The getStaticProps function is used in Next.js to fetch data at build time for static generation, enabling SSG for a page."
+        },
+        {
+          "question": "What will be the output if a page is pre-rendered with SSG and new data is added after the build process?",
+          "options": [
+            "The page will show the new data instantly.",
+            "The page will show the old data until the next build.",
+            "The page will automatically update via client-side rendering.",
+            "The page will return a 404 error."
+          ],
+          "correctAnswer": 1,
+          "explanation": "When a page is pre-rendered with SSG, it serves the static page generated at build time and does not update until a new build is triggered."
+        },
+        {
+          "question": "How can you generate dynamic routes with SSG in Next.js?",
+          "options": [
+            "By using the getStaticPaths function to specify the paths to pre-render",
+            "By defining routes directly in the pages folder",
+            "Using getStaticProps to fetch data for each route dynamically",
+            "By appending query parameters in the URL"
+          ],
+          "correctAnswer": 0,
+          "explanation": "The getStaticPaths function is used to specify dynamic routes for pages, allowing Next.js to know which paths to pre-render at build time."
+        },
+        {
+          "question": "What can you do to ensure that a statically generated page is up to date with the latest data without a complete rebuild?",
+          "options": [
+            "Use getServerSideProps instead of SSG",
+            "Implement Incremental Static Regeneration (ISR)",
+            "Manually refresh the build site",
+            "Use client-side fetching for all data"
+          ],
+          "correctAnswer": 1,
+          "explanation": "Incremental Static Regeneration (ISR) allows you to update static pages after deployment without rebuilding the entire site, keeping the content fresh."
+        }
+      ]
+    },
+    {
+      "topicId": "69305c9581ffe246cf2e7793",
+      "topicName": "SSR (Server Side Rendering)",
+      "quizzes": [
+        {
+          "question": "What is the main purpose of Server Side Rendering (SSR) in Next.js?",
+          "options": [
+            "To reduce server load by caching static pages",
+            "To pre-render pages on the server at request time",
+            "To handle client-side navigation faster",
+            "To serve pre-built static assets from a CDN"
+          ],
+          "correctAnswer": 1,
+          "explanation": "SSR allows pages to be pre-rendered on the server at the time of the request, providing faster initial page loads and improved SEO."
+        },
+        {
+          "question": "In Next.js, which method is typically used to implement Server Side Rendering?",
+          "options": [
+            "getStaticProps",
+            "getServerSideProps",
+            "getInitialProps",
+            "getStaticPaths"
+          ],
+          "correctAnswer": 1,
+          "explanation": "The `getServerSideProps` function is specifically designed for fetching data on the server for each request, enabling SSR."
+        },
+        {
+          "question": "When using SSR in Next.js, what is a key advantage over Static Site Generation (SSG)?",
+          "options": [
+            "Faster response times for large sites",
+            "The ability to fetch fresh data on each request",
+            "Lower server costs due to fewer render requests",
+            "Improved caching strategies"
+          ],
+          "correctAnswer": 1,
+          "explanation": "SSR fetches fresh data for every request, ensuring that users always see updated content, unlike SSG which serves pre-built pages."
+        },
+        {
+          "question": "Consider the following code snippet. What will it return when a user accesses the page?",
+          "questionCode": "export async function getServerSideProps() { return { props: { time: new Date().toISOString() } }; }",
+          "options": [
+            "The current time in UTC format, updated on each request",
+            "The static time when the page was built",
+            "Error, cannot return Date object in props",
+            "Only the hour part of the current time"
+          ],
+          "correctAnswer": 0,
+          "explanation": "The code returns the current time as a prop, which will be calculated afresh every time the page is accessed."
+        },
+        {
+          "question": "What happens if an error occurs in the `getServerSideProps` function?",
+          "options": [
+            "The page will return an empty response",
+            "Next.js can show a custom error page using a 500 status code",
+            "The client will never know that an error occurred",
+            "The page will reload with a newer version"
+          ],
+          "correctAnswer": 1,
+          "explanation": "If an error occurs in `getServerSideProps`, Next.js can handle it and render a custom error page or send a 500 status code."
+        }
+      ]
+    },
+    {
+      "topicId": "69305c9681ffe246cf2e779e",
+      "topicName": "Suspense SSR Architecture",
+      "quizzes": [
+        {
+          "question": "What is the main purpose of React Suspense in Next.js for SSR (Server-Side Rendering)?",
+          "options": [
+            "To lazy-load components",
+            "To improve SEO capabilities",
+            "To handle API calls",
+            "To manage state in components"
+          ],
+          "correctAnswer": 0,
+          "explanation": "React Suspense allows components to delay their rendering until data is ready, optimizing the loading process and improving user experience."
+        },
+        {
+          "question": "Which hook is commonly used in conjunction with React Suspense for data fetching in Next.js?",
+          "options": [
+            "useEffect",
+            "useState",
+            "useSWR",
+            "useMemo"
+          ],
+          "correctAnswer": 2,
+          "explanation": "useSWR is a popular hook for data fetching that works well with React Suspense to manage remote data and loading states efficiently."
+        },
+        {
+          "question": "In a Next.js application, how do you implement Suspense for a data-fetching component?",
+          "questionCode": "const DataComponent = () => { const data = fetchUserData(); return <div>{data}</div>; };",
+          "options": [
+            "Wrap the component with `<Suspense>`",
+            "Call `useSuspense()` hook",
+            "Use `fetch` directly in the render method",
+            "Return a placeholder while loading"
+          ],
+          "correctAnswer": 0,
+          "explanation": "To implement Suspense for a data-fetching component, you wrap it in the `<Suspense>` component to handle loading states gracefully.",
+          "sampleCode": "import { Suspense } from 'react'; <Suspense fallback={<div>Loading...</div>}><DataComponent /></Suspense>"
+        },
+        {
+          "question": "What happens if a component wrapped in Suspense does not resolve its promise before the timeout expires?",
+          "options": [
+            "The application crashes",
+            "A fallback UI is displayed",
+            "The promise is retried indefinitely",
+            "The component renders blank"
+          ],
+          "correctAnswer": 1,
+          "explanation": "If a component wrapped in Suspense does not resolve before the timeout, the fallback UI specified in the Suspense component is displayed."
+        },
+        {
+          "question": "How can you achieve data fetching with Suspense in Next.js using getServerSideProps?",
+          "questionCode": "export async function getServerSideProps() { const data = await fetchData(); return { props: { data } }; }",
+          "options": [
+            "It cannot be done with Suspense",
+            "Return a promise in getServerSideProps",
+            "Use a loader during the server-side rendering stage",
+            "Wrap getServerSideProps with Suspense"
+          ],
+          "correctAnswer": 0,
+          "explanation": "Suspense is primarily client-side for handling loading states and it doesn't directly work with getServerSideProps, which runs before the component renders."
+        }
+      ]
+    },
+    {
+      "topicId": "69305c9781ffe246cf2e77aa",
+      "topicName": "HTML Streaming",
+      "quizzes": [
+        {
+          "question": "What is HTML Streaming in Next.js?",
+          "options": [
+            "A method to load CSS asynchronously",
+            "A technique to reduce server response time",
+            "The process of sending HTML as it is generated",
+            "A way to pre-render pages at build time"
+          ],
+          "correctAnswer": 2,
+          "explanation": "HTML Streaming refers to sending HTML output to the client as it is generated, allowing for faster initial rendering."
+        },
+        {
+          "question": "Which of the following is a benefit of using streaming in Next.js?",
+          "options": [
+            "Decreased load on client-side rendering",
+            "Faster first byte time (TTFB)",
+            "Increased overall page size",
+            "More complex application architecture"
+          ],
+          "correctAnswer": 1,
+          "explanation": "Streaming allows server-generated HTML to be sent to the client more quickly, thus reducing the TTFB."
+        },
+        {
+          "question": "How does Next.js handle streaming pages?",
+          "options": [
+            "By using CSS-in-JS libraries",
+            "Through automatic static optimization",
+            "By sending static files only",
+            "By using React's Suspense for data fetching"
+          ],
+          "correctAnswer": 3,
+          "explanation": "Next.js utilizes React's Suspense to enable streaming of server-rendered content, allowing the UI to load incrementally."
+        },
+        {
+          "question": "What flag is used to enable streaming in Next.js when building an application?",
+          "options": [
+            "next-stream",
+            "experimental-streaming",
+            "streaming-enabled",
+            "next-server-stream"
+          ],
+          "correctAnswer": 1,
+          "explanation": "The experimental 'experimental-streaming' flag enables streaming features in Next.js applications."
+        },
+        {
+          "question": "When implementing HTML streaming, which method should you use to optimize streaming performance in a Next.js application?",
+          "options": [
+            "Utilize static site generation for all pages",
+            "Avoid using dynamic imports",
+            "Minimize upstream data fetching delays",
+            "Disable server-side rendering"
+          ],
+          "correctAnswer": 2,
+          "explanation": "Minimizing upstream data fetching delays is critical in streaming as it ensures quicker availability of data for rendering."
+        }
+      ]
+    },
+    {
+      "topicId": "69305c9881ffe246cf2e77b7",
+      "topicName": "Selective Hydration",
+      "quizzes": [
+        {
+          "question": "What is the primary purpose of selective hydration in Next.js?",
+          "options": [
+            "To hydrate all components on the page simultaneously.",
+            "To only hydrate components that are currently visible or needed.",
+            "To prevent any component from hydrating on the client-side.",
+            "To pre-render all components for better SEO."
+          ],
+          "correctAnswer": 1,
+          "explanation": "Selective hydration allows Next.js to optimize performance by only hydrating the components that are actively used or visible to the user."
+        },
+        {
+          "question": "Which components benefit the most from selective hydration in a Next.js application?",
+          "options": [
+            "Static components that do not change.",
+            "Components that require user input or interaction.",
+            "Components that are server-rendered without interactivity.",
+            "All components equally benefit from it."
+          ],
+          "correctAnswer": 1,
+          "explanation": "Components that require user input or interaction benefit greatly from selective hydration, as it reduces the initial load time and resource usage."
+        },
+        {
+          "question": "In Next.js, how can you implement selective hydration on a component?",
+          "questionCode": "const Component = () => {\n  return <div>Content</div>;\n};\n\nexport default Component;",
+          "options": [
+            "By using `next/dynamic` with the `ssr: false` option.",
+            "By using `getStaticProps` to fetch data.",
+            "By applying a `key` property on the component.",
+            "By wrapping the component with a `React.memo()`."
+          ],
+          "correctAnswer": 0,
+          "explanation": "Using `next/dynamic` with the `ssr: false` option allows selective hydration by ensuring the component is only rendered on the client-side.",
+          "sampleCode": "import dynamic from 'next/dynamic';\nconst DynamicComponent = dynamic(() => import('./Component'), { ssr: false });"
+        },
+        {
+          "question": "What problem does selective hydration solve in client-side rendering?",
+          "options": [
+            "It improves the accessibility of the application.",
+            "It reduces the time to first paint by avoiding unnecessary hydration.",
+            "It eliminates the need for server-side rendering altogether.",
+            "It ensures that all stateful components are updated synchronously."
+          ],
+          "correctAnswer": 1,
+          "explanation": "Selective hydration mitigates performance issues by reducing the overhead of hydrating components that are not immediately needed, thus speeding up the time to first paint."
+        },
+        {
+          "question": "Which of the following scenarios best illustrates when to use selective hydration?",
+          "questionCode": "const Posts = () => {\n  const [showComments, setShowComments] = useState(false);\n  return (\n    <div>\n      <h1>Posts</h1>\n      <button onClick={() => setShowComments(!showComments)}>Toggle Comments</button>\n      {showComments && <Comments />}\n    </div>\n  );\n};",
+          "options": [
+            "Displaying a long list of posts that are all visible at once.",
+            "Loading a set of data that never changes over time.",
+            "Hiding comments until the button is clicked, then rendering the comments.",
+            "Rendering components that fetch data from an API without any user interaction."
+          ],
+          "correctAnswer": 2,
+          "explanation": "In this scenario, selective hydration is appropriate as comments are only rendered and hydrated upon user interaction, optimizing resource usage."
+        }
+      ]
+    },
+    {
+      "topicId": "69305c9981ffe246cf2e77c5",
+      "topicName": "ISR (Incremental Static Regeneration)",
+      "quizzes": [
+        {
+          "question": "What does ISR stand for in Next.js?",
+          "options": [
+            "Incremental Static Regeneration",
+            "Instant Static Render",
+            "Incremental Server Rendering",
+            "Instant Server Recovery"
+          ],
+          "correctAnswer": 0,
+          "explanation": "ISR stands for Incremental Static Regeneration, which allows developers to create static pages that can be updated incrementally."
+        },
+        {
+          "question": "How does ISR improve performance in a Next.js application?",
+          "options": [
+            "By serving dynamic content only",
+            "By pre-rendering pages at build time",
+            "By allowing on-demand regeneration of static pages",
+            "By minimizing server-side rendering"
+          ],
+          "correctAnswer": 2,
+          "explanation": "ISR allows static pages to be regenerated on-demand, thus improving performance by reducing the load on the server while ensuring up-to-date content."
+        },
+        {
+          "question": "Which method is used to trigger a regeneration of a static page when using ISR?",
+          "options": [
+            "getStaticProps",
+            "getServerSideProps",
+            "setRevalidate",
+            "getInitialProps"
+          ],
+          "correctAnswer": 0,
+          "explanation": "The 'getStaticProps' method can include a revalidation time, prompting Next.js to regenerate the static page after a specified time.",
+          "sampleCode": "export async function getStaticProps() { return { props: {}, revalidate: 10 }; }"
+        },
+        {
+          "question": "What happens to pages defined with ISR when the revalidation time expires?",
+          "options": [
+            "They are removed from the cache",
+            "They become inaccessible",
+            "They are automatically regenerated on the next request",
+            "They display an error message"
+          ],
+          "correctAnswer": 2,
+          "explanation": "When the revalidation time expires, pages are regenerated on the next request, ensuring users always get updated content."
+        },
+        {
+          "question": "In an application using ISR, what will be the URL response when a stale page is requested before it is regenerated?",
+          "questionCode": "const res = await fetch('/some-page');",
+          "options": [
+            "A 404 error",
+            "The cached version of the page",
+            "A loading indicator",
+            "An error message"
+          ],
+          "correctAnswer": 1,
+          "explanation": "When a stale page is requested, the cached version is served while it regenerates the new version in the background."
+        }
+      ]
+    },
+    {
+      "topicId": "69305d6881ffe246cf2e77d5",
+      "topicName": "dynamic routing",
+      "quizzes": [
+        {
+          "question": "What is dynamic routing in Next.js?",
+          "options": [
+            "A technique to add static routes at build time.",
+            "A method to change API endpoint styles.",
+            "A way to generate pages at runtime based on data.",
+            "A function to manage client-side cache."
+          ],
+          "correctAnswer": 2,
+          "explanation": "Dynamic routing allows Next.js to generate routes based on data fetched at runtime, making pages responsive to various inputs."
+        },
+        {
+          "question": "How do you implement dynamic routes in Next.js?",
+          "options": [
+            "By creating a folder named 'routes' in the pages directory.",
+            "By using square brackets in the filename inside the pages directory.",
+            "By defining dynamic routes in the next.config.js file.",
+            "By calling dynamicRoute() in the component lifecycle."
+          ],
+          "correctAnswer": 1,
+          "explanation": "Dynamic routes in Next.js are implemented using square brackets in the filename, which indicate a variable part of the URL."
+        },
+        {
+          "question": "What is the purpose of getStaticPaths in dynamic routing?",
+          "options": [
+            "To fetch data from an external API.",
+            "To pre-render pages based on dynamic parameters.",
+            "To manage routing for static pages.",
+            "To define global styles for the application."
+          ],
+          "correctAnswer": 1,
+          "explanation": "getStaticPaths is used to specify which paths should be statically generated based on dynamic routes, allowing for pre-rendering of those pages."
+        },
+        {
+          "question": "When must you use getServerSideProps in a dynamic routing scenario?",
+          "options": [
+            "When the data depends on user authentication.",
+            "When the data is static and known at build time.",
+            "When you want the page to utilize client-side caching.",
+            "When you do not need to fetch data at all."
+          ],
+          "correctAnswer": 0,
+          "explanation": "getServerSideProps is necessary when you need to fetch data on each request, particularly when the data must respond to user-specific conditions like authentication."
+        },
+        {
+          "question": "Given the following code snippet, what route would be generated?” <br> 'pages/posts/[id].js'",
+          "questionCode": "export default function Post({ post }) { return <div>{post.title}</div>; }",
+          "options": [
+            "/posts/",
+            "/posts/[id]",
+            "/posts/1",
+            "/posts/id"
+          ],
+          "correctAnswer": 2,
+          "explanation": "The route pages/posts/[id].js will match any request to /posts/[id], effectively generating specific pages like /posts/1, where '1' would be replaced with the actual ID."
+        }
+      ]
+    },
+    {
+      "topicId": "69305d6981ffe246cf2e77e5",
+      "topicName": "catch-all segments [...slug]",
+      "quizzes": [
+        {
+          "question": "What is the purpose of catch-all segments in Next.js routing?",
+          "options": [
+            "They allow for dynamic nested routes",
+            "They enable API route creation",
+            "They can be used for static site generation",
+            "They are only applicable in pages directory"
+          ],
+          "correctAnswer": 0,
+          "explanation": "Catch-all segments in Next.js allow for dynamic nested routes to be created by capturing all sub-paths."
+        },
+        {
+          "question": "How do you define a catch-all route in Next.js?",
+          "options": [
+            "Using [...slug] in the file name",
+            "Using {slug} in the file name",
+            "Using <slug> in the file name",
+            "Using [slug...].js in the file name"
+          ],
+          "correctAnswer": 0,
+          "explanation": "A catch-all route is defined using the notation [...slug] in the Next.js pages directory."
+        },
+        {
+          "question": "Given the route structure `/posts/[...slug]`, which URL will be matched?",
+          "options": [
+            "/posts/a/b/c",
+            "/posts/a",
+            "/posts/",
+            "/posts/a/b/c/d/e"
+          ],
+          "correctAnswer": 0,
+          "explanation": "The catch-all segment captures all sub-paths after `/posts/`, hence it will match `/posts/a/b/c`."
+        },
+        {
+          "question": "In a file named `pages/[...slug].js`, how can you access the parameters passed to the catch-all segment?",
+          "questionCode": "export default function Page({ params }) { return <h1>{params.slug}</h1>; }",
+          "options": [
+            "params.slug will return a single string",
+            "params.slug will return an array of strings",
+            "You cannot access parameters in catch-all segments",
+            "params.slug will return an object"
+          ],
+          "correctAnswer": 1,
+          "explanation": "In a catch-all segment, parameters are grouped into an array, so params.slug yields an array of strings."
+        },
+        {
+          "question": "Which of the following scenarios best demonstrates when to use catch-all segments?",
+          "options": [
+            "When creating a single static page",
+            "When building a multi-level blog structure",
+            "When fetching data from a database",
+            "When defining API endpoints"
+          ],
+          "correctAnswer": 1,
+          "explanation": "Catch-all segments are particularly useful for handling multi-level routes, such as a blog with categories and posts."
+        }
+      ]
+    },
+    {
+      "topicId": "69305d6a81ffe246cf2e77f6",
+      "topicName": "optional catch-all [[...slug]]",
+      "quizzes": [
+        {
+          "question": "What does the optional catch-all route [[...slug]] in Next.js allow you to do?",
+          "options": [
+            "Capture a route parameter with a single value.",
+            "Capture one or more route parameters as an array.",
+            "Redirect requests to a different page.",
+            "Dynamically generate API routes."
+          ],
+          "correctAnswer": 1,
+          "explanation": "The [[...slug]] syntax allows you to capture one or more route parameters as an array, enabling more flexible routing patterns."
+        },
+        {
+          "question": "Given the route definition in Next.js, how would you access the route parameters in a page that uses [[...slug]]?",
+          "options": [
+            "Using the `getStaticProps` method.",
+            "Using `useRouter` from 'next/router'.",
+            "Using `getServerSideProps` to fetch data.",
+            "Directly accessing `context.params`."
+          ],
+          "correctAnswer": 1,
+          "explanation": "To access route parameters captured by [[...slug]], you can use the `useRouter` hook from 'next/router'."
+        },
+        {
+          "question": "What would the URL '/about/team/members' resolve to if your Next.js page file is named [[...slug]].js?",
+          "options": [
+            "An error page since it's an unsupported format.",
+            "The About Team Members page.",
+            "The page will be accessible via '/about' only.",
+            "The URL is broken and will not resolve."
+          ],
+          "correctAnswer": 1,
+          "explanation": "The URL '/about/team/members' would resolve to the [[...slug]].js page, capturing 'about/team/members' as the slug parameters."
+        },
+        {
+          "question": "Which of the following scenarios best employs the use of an optional catch-all route [[...slug]] in a dynamic routing situation?",
+          "questionCode": "export function handler(req, res) { const { slug } = req.query; res.send(slug); }",
+          "options": [
+            "Creating a contact page with static content.",
+            "Building a blog directory with nested articles.",
+            "Serving a specific product information page.",
+            "Route redirection based on user authentication."
+          ],
+          "correctAnswer": 1,
+          "explanation": "An optional catch-all route is valuable for building a blog directory where articles may have nested routes, allowing for flexible URL structures."
+        },
+        {
+          "question": "If a request is made to the URL '/shop/electronics/phones', how would you ensure that the [[...slug]] route captures only the last segment 'phones'?",
+          "options": [
+            "Use [[...slug]] directly in the directory structure.",
+            "Modify the [[...slug]] to include a specific number of segments.",
+            "Implement custom routing logic in server.js.",
+            "Query parameters are required to filter segments."
+          ],
+          "correctAnswer": 1,
+          "explanation": "In the directory structure, using [[...slug]] captures all segments, but you can apply logic in your component to handle specific cases like just capturing the last segment."
+        }
+      ]
+    },
+    {
+      "topicId": "69305d6b81ffe246cf2e7808",
+      "topicName": "parallel routes (slots, default slots)",
+      "quizzes": [
+        {
+          "question": "What is the main purpose of parallel routes in Next.js?",
+          "options": [
+            "To optimize image loading",
+            "To allow navigation between multiple views simultaneously",
+            "To enhance server-side rendering",
+            "To manage state across components"
+          ],
+          "correctAnswer": 1,
+          "explanation": "Parallel routes enable navigating between different layouts and components simultaneously, enhancing user experience by providing multiple views without full page reloads."
+        },
+        {
+          "question": "In Next.js, what is a default slot in the context of routing?",
+          "options": [
+            "A placeholder for custom route parameters",
+            "The primary content area of a page",
+            "A slot that takes effect when no other slots are defined",
+            "A reserved keyword for API routes"
+          ],
+          "correctAnswer": 1,
+          "explanation": "The default slot refers to the primary content area of a page where components render when no other specific routes are defined."
+        },
+        {
+          "question": "How do you define a parallel route in Next.js?",
+          "options": [
+            "Using the 'useRoute' hook",
+            "By nesting routes within a directory structure",
+            "Including a layout component as a parent",
+            "Defining routes in the pages/api directory"
+          ],
+          "correctAnswer": 2,
+          "explanation": "Parallel routes are defined in Next.js by including layout components as parents to other route components, allowing different routes to render at the same time within a single layout."
+        },
+        {
+          "question": "Given the structure of folders in a Next.js application, where should you place files to define parallel routes?",
+          "questionCode": "src/app/(auth)/login/page.tsx",
+          "options": [
+            "In the 'pages' directory",
+            "Inside a special folder named 'parallel'",
+            "Under the 'app' directory with a specific naming convention",
+            "In the root directory"
+          ],
+          "correctAnswer": 2,
+          "explanation": "Parallel routes should be placed under the 'app' directory using a specific naming convention for the folders to indicate they are parallel routes."
+        },
+        {
+          "question": "If you want to switch the visibility of two components based on a route change while keeping them loaded, which Next.js feature would you use?",
+          "options": [
+            "Dynamic routes",
+            "Server-side rendering",
+            "Parallel routes",
+            "Static site generation"
+          ],
+          "correctAnswer": 2,
+          "explanation": "Parallel routes are ideal for switching between components based on route changes while maintaining their mounted state, thus enhancing performance and providing a smoother user experience."
+        }
+      ]
+    },
+    {
+      "topicId": "69305e4081ffe246cf2e781c",
+      "topicName": "conditional routes",
+      "quizzes": [
+        {
+          "question": "What method is typically used to conditionally render a page based on query parameters in Next.js?",
+          "options": [
+            "getServerSideProps",
+            "getStaticProps",
+            "getInitialProps",
+            "getClientSideProps"
+          ],
+          "correctAnswer": 0,
+          "explanation": "getServerSideProps allows you to fetch data on each request, making it ideal for conditionally rendering based on query parameters."
+        },
+        {
+          "question": "Which of the following Next.js components is best suited for creating conditional routes?",
+          "options": [
+            "Link",
+            "Router",
+            "Route",
+            "DynamicRoute"
+          ],
+          "correctAnswer": 1,
+          "explanation": "Next.js Router provides methods for conditional navigation and rendering based on the current route."
+        },
+        {
+          "question": "In Next.js, how can you create a dynamic route that captures a condition from the URL?",
+          "options": [
+            "/posts/[id]",
+            "/posts/:id",
+            "/posts/(id)",
+            "dynamic/posts/id"
+          ],
+          "correctAnswer": 0,
+          "explanation": "The correct syntax for a dynamic route in Next.js uses square brackets, allowing the framework to capture the 'id' parameter from the URL."
+        },
+        {
+          "question": "If a user visits the URL '/profile/123', what will the Next.js dynamic route '/profile/[userId]' return when using getServerSideProps?",
+          "options": [
+            "Data for user ID 123",
+            "Error 404",
+            "User profile not found",
+            "List of all users"
+          ],
+          "correctAnswer": 0,
+          "explanation": "The dynamic route captures '123' as userId, allowing getServerSideProps to return specific data for that user."
+        },
+        {
+          "question": "How can you implement a redirect based on user authentication status in the getServerSideProps function of a page?",
+          "questionCode": "export async function getServerSideProps(context) {\n  const isAuthenticated = false; // This would be determined by your auth logic\n  if (!isAuthenticated) {\n    return {\n      redirect: {\n        destination: '/login',\n        permanent: false,\n      },\n    };\n  }\n  return { props: {} };\n}",
+          "options": [
+            "Using the Router.push method",
+            "Returning a redirect object from getServerSideProps",
+            "Setting a cookie",
+            "Using a custom server"
+          ],
+          "correctAnswer": 1,
+          "explanation": "Returning a redirect object from getServerSideProps enables you to conditionally navigate users based on their authentication status."
+        }
+      ]
+    },
+    {
+      "topicId": "69305e4181ffe246cf2e7830",
+      "topicName": "intercepting routes",
+      "quizzes": [
+        {
+          "question": "What is the primary purpose of intercepting routes in Next.js?",
+          "options": [
+            "To modify the HTTP methods of requests",
+            "To perform server-side rendering of components",
+            "To control the loading behavior of a page",
+            "To handle authentication and authorization"
+          ],
+          "correctAnswer": 3,
+          "explanation": "Intercepting routes is commonly used to implement authentication and authorization checks before rendering a page."
+        },
+        {
+          "question": "Which component in Next.js allows you to manage custom route handling?",
+          "options": [
+            "Link",
+            "Router",
+            "Page",
+            "Layout"
+          ],
+          "correctAnswer": 1,
+          "explanation": "The Router component in Next.js is responsible for managing client-side routing and can be used for custom route handling."
+        },
+        {
+          "question": "When using the 'getServerSideProps' function in a page, what will happen if the user does not meet certain conditions?",
+          "options": [
+            "The page will redirect to an error page.",
+            "The page will render normally without any data.",
+            "The server will provide a 404 status.",
+            "The server will redirect the user to a different route."
+          ],
+          "correctAnswer": 3,
+          "explanation": "You can handle conditions in 'getServerSideProps' to redirect users to a different route if they do not meet certain conditions."
+        },
+        {
+          "question": "In Next.js, how can you intercept and modify route objects before they are processed?",
+          "questionCode": "export default function MyCustomRouteHandler(req, res) { /* code here */ }",
+          "options": [
+            "By using the Middleware API",
+            "By modifying the page component directly",
+            "By adding custom headers in 'getInitialProps'",
+            "By utilizing React Context"
+          ],
+          "correctAnswer": 0,
+          "explanation": "Next.js Middleware allows you to intercept and modify requests before they reach the route endpoint, enabling edge functions and custom logic."
+        },
+        {
+          "question": "In what scenario would you want to use the 'next/router' package for intercepting routes?",
+          "options": [
+            "To create dynamic pages based on server state",
+            "To programmatically navigate between pages on the client-side",
+            "To handle API calls to fetch user data",
+            "To customize page metadata at build time"
+          ],
+          "correctAnswer": 1,
+          "explanation": "The 'next/router' package is used to programmatically control navigation between pages on the client-side and handle route changes."
+        }
+      ]
+    },
+    {
+      "topicId": "69305e4181ffe246cf2e7845",
+      "topicName": "route groups",
+      "quizzes": [
+        {
+          "question": "What is the primary purpose of route groups in Next.js?",
+          "options": [
+            "To create nested routes",
+            "To group related routes for better organization",
+            "To handle API routes",
+            "To enable static site generation"
+          ],
+          "correctAnswer": 1,
+          "explanation": "Route groups allow developers to organize related routes together without affecting the URL structure, improving code readability and management."
+        },
+        {
+          "question": "Which file structure is used to define a route group in Next.js?",
+          "options": [
+            "Using a sub-folder with brackets",
+            "Using a file named 'group.js'",
+            "Using a folder prefixed with an underscore",
+            "Using a file within the 'pages' directory"
+          ],
+          "correctAnswer": 2,
+          "explanation": "Route groups in Next.js are defined using a folder prefixed with an underscore (e.g., _shared). This structure helps to organize routes while keeping the URL cleaner."
+        },
+        {
+          "question": "Consider the following route group structure. What URL will '/dashboard/stats' resolve to? <br> _dashboard/ <br> └── stats.js",
+          "options": [
+            "/_dashboard/stats",
+            "/dashboard/stats",
+            "/stats",
+            "/dashboard/_dashboard/stats"
+          ],
+          "correctAnswer": 1,
+          "explanation": "The URL '/dashboard/stats' resolves directly to the 'stats.js' route within the '_dashboard' group, which does not add to the actual URL path."
+        },
+        {
+          "question": "If you want to apply a common layout to all routes within a route group, which method would you usually apply?",
+          "options": [
+            "Using middleware",
+            "Creating a layout component",
+            "Utilizing getServerSideProps",
+            "Directly inside each route component"
+          ],
+          "correctAnswer": 1,
+          "explanation": "To apply a common layout to all routes in a route group, you typically create a layout component that is used by the individual route components within that group."
+        },
+        {
+          "question": "In using route groups, which of the following implementations would lead to a 404 error?",
+          "questionCode": "const pageGroup = () => { return <div>Page</div>; }; <br> export default pageGroup;",
+          "options": [
+            "Saving the file as '_page.js' instead of '_group.js'",
+            "Including the route group in the 'pages' directory",
+            "Having no index.js in the route group",
+            "Incorrectly setting the route in Link component"
+          ],
+          "correctAnswer": 0,
+          "explanation": "Naming the file '_page.js' instead of '_group.js' violates the naming convention for route groups, resulting in Next.js being unable to recognize the group, leading to a 404 error."
+        }
+      ]
+    },
+    {
+      "topicId": "69305e4281ffe246cf2e785b",
+      "topicName": "types of metadata",
+      "quizzes": [
+        {
+          "question": "What is the primary purpose of metadata in a Next.js application?",
+          "options": [
+            "To create dynamic web pages",
+            "To provide information about data",
+            "To handle server-side rendering",
+            "To manage user authentication"
+          ],
+          "correctAnswer": 1,
+          "explanation": "Metadata provides information about the data and is used for improving SEO and managing page content in Next.js."
+        },
+        {
+          "question": "Which type of metadata is commonly used to define the character encoding in a Next.js page?",
+          "questionCode": "<meta charset=\"UTF-8\">",
+          "options": [
+            "Structural metadata",
+            "Descriptive metadata",
+            "Administrative metadata",
+            "Technical metadata"
+          ],
+          "correctAnswer": 3,
+          "explanation": "Technical metadata, like character encoding, specifies how the data is formatted and processed within the web page."
+        },
+        {
+          "question": "In Next.js, what component is typically used to manage SEO metadata for pages?",
+          "options": [
+            "<Head>",
+            "<Meta>",
+            "<SEO>",
+            "<Page>"
+          ],
+          "correctAnswer": 0,
+          "explanation": "The <Head> component in Next.js is specifically designed to manage metadata for SEO purposes."
+        },
+        {
+          "question": "Which of the following is NOT a valid type of metadata in Next.js?",
+          "options": [
+            "Descriptions and keywords",
+            "Language translations",
+            "Open Graph tags",
+            "Viewport settings"
+          ],
+          "correctAnswer": 1,
+          "explanation": "Language translations are not considered a type of metadata in Next.js, while the other options are used for various metadata purposes."
+        },
+        {
+          "question": "How would you add custom metadata for a specific page in a Next.js application?",
+          "questionCode": "export default function Page() { return (<Head><title>Custom Title</title></Head>); }",
+          "options": [
+            "Use a global <Head> component in _app.js",
+            "Add a <Meta> component within the page component",
+            "Directly manipulate the DOM to add <meta> tags",
+            "Use the <Head> component specific to that page"
+          ],
+          "correctAnswer": 3,
+          "explanation": "The <Head> component can be used within a specific page component to inject custom metadata, allowing for page-specific SEO optimizations.",
+          "sampleCode": "import Head from 'next/head';"
+        }
+      ]
+    },
+    {
+      "topicId": "69305e4381ffe246cf2e7872",
+      "topicName": "responsibilities of Files: page.tsx, layout.tsx, template.tsx, not-found.tsx, loading.tsx, error.tsx",
+      "quizzes": [
+        {
+          "question": "What is the primary purpose of the page.tsx file in a Next.js project?",
+          "options": [
+            "To define the layout of the entire application",
+            "To handle routing",
+            "To serve as the main entry point for a specific page",
+            "To manage API routes"
+          ],
+          "correctAnswer": 2,
+          "explanation": "The page.tsx file is used to define the main entry point for a specific page, rendering the content that gets displayed for that route."
+        },
+        {
+          "question": "Which file is responsible for wrapping pages with common layout components in Next.js?",
+          "options": [
+            "page.tsx",
+            "layout.tsx",
+            "template.tsx",
+            "loading.tsx"
+          ],
+          "correctAnswer": 1,
+          "explanation": "The layout.tsx file is used to wrap pages with common layout components, allowing for consistent design across different pages."
+        },
+        {
+          "question": "What will the template.tsx file be typically used for in a Next.js application?",
+          "options": [
+            "To define custom error pages",
+            "To provide reusable components that can be rendered on a page",
+            "To manage loading states",
+            "To define routes for the application"
+          ],
+          "correctAnswer": 1,
+          "explanation": "The template.tsx file is used to provide reusable components that can be rendered across different pages, facilitating more efficient code reuse."
+        },
+        {
+          "question": "In Next.js, what is the role of loading.tsx?",
+          "options": [
+            "To display a spinner during data fetching",
+            "To handle 404 errors",
+            "To define the application's main entry point",
+            "To manage user authentication"
+          ],
+          "correctAnswer": 0,
+          "explanation": "The loading.tsx file is specifically used to display a loading spinner or message while data is being fetched, enhancing user experience."
+        },
+        {
+          "question": "When will the not-found.tsx file be rendered in a Next.js application?",
+          "questionCode": "export default function NotFound() { return <h1>404 - Page Not Found</h1>; }",
+          "options": [
+            "When the API fails to respond",
+            "When a user visits a URL that does not match any defined routes",
+            "When an error occurs during server-side rendering",
+            "When a component takes too long to load"
+          ],
+          "correctAnswer": 1,
+          "explanation": "The not-found.tsx file is rendered when a user visits a URL that does not match any defined routes, displaying a 404 error message."
+        }
+      ]
+    },
+    {
+      "topicId": "69305e7d81ffe246cf2e788b",
+      "topicName": "error object",
+      "quizzes": [
+        {
+          "question": "What is the purpose of the error object in Next.js?",
+          "options": [
+            "To handle authentication errors",
+            "To represent an HTTP error response",
+            "To manage state in components",
+            "To create a loading spinner"
+          ],
+          "correctAnswer": 1,
+          "explanation": "The error object in Next.js is primarily used to represent HTTP errors that occur during data fetching or page rendering."
+        },
+        {
+          "question": "Which of the following methods can be used to customize error pages in Next.js?",
+          "options": [
+            "getStaticProps",
+            "getServerSideProps",
+            "custom _error.js page",
+            "getInitialProps"
+          ],
+          "correctAnswer": 2,
+          "explanation": "In Next.js, customizing error pages is typically done by creating a custom _error.js page that handles different error statuses."
+        },
+        {
+          "question": "In which scenario would you typically log the error object in Next.js?",
+          "options": [
+            "During a successful data fetch",
+            "When handling unhandled exceptions",
+            "Before rendering a component",
+            "While static generating pages"
+          ],
+          "correctAnswer": 1,
+          "explanation": "Logging the error object is commonly performed when there's an unhandled exception to diagnose and troubleshoot issues."
+        },
+        {
+          "question": "If you need to pass an error message to a component in Next.js, which property of the error object would you typically use?",
+          "options": [
+            "error.status",
+            "error.message",
+            "error.data",
+            "error.code"
+          ],
+          "correctAnswer": 1,
+          "explanation": "The error.message property contains the description of the error, which can be passed to components for rendering."
+        },
+        {
+          "question": "Consider the following code snippet. What is the likely outcome if the fetched data contains an error?",
+          "questionCode": "async function fetchData() { const res = await fetch('/api/data'); const error = await res.json(); if (error) throw new Error(error.message); return res.json(); }",
+          "options": [
+            "The data will be logged",
+            "An error page will be rendered",
+            "The application will crash",
+            "The error will silently fail"
+          ],
+          "correctAnswer": 1,
+          "explanation": "If an error is thrown in data fetching, Next.js will render the custom error page to inform the user about the issue."
+        }
+      ]
+    },
+    {
+      "topicId": "69305e7e81ffe246cf2e78a4",
+      "topicName": "reset()",
+      "quizzes": [
+        {
+          "question": "What is the primary purpose of the `reset()` function in a Next.js form?",
+          "options": [
+            "To submit the form data",
+            "To clear the form inputs",
+            "To validate form input",
+            "To apply styles to the form"
+          ],
+          "correctAnswer": 1,
+          "explanation": "The `reset()` function is used to clear all the form inputs, resetting them to their initial values."
+        },
+        {
+          "question": "In a Next.js form with controlled components, what must be done for `reset()` to work as intended?",
+          "options": [
+            "Bind the form to the state",
+            "Attach an event handler",
+            "Use a useEffect hook",
+            "Import useState from React"
+          ],
+          "correctAnswer": 0,
+          "explanation": "For `reset()` to properly clear inputs, the form must be controlled, meaning that the input values are managed by component state."
+        },
+        {
+          "question": "What happens if `reset()` is called on a form with uncontrolled components?",
+          "options": [
+            "It resets all input values to zero",
+            "It does nothing to the input values",
+            "It throws an error",
+            "It re-initializes the component"
+          ],
+          "correctAnswer": 1,
+          "explanation": "Calling `reset()` on a form with uncontrolled components will not affect their values since they are not tied to component state."
+        },
+        {
+          "question": "How would you effectively utilize `reset()` within a form's submit handler in a Next.js application?",
+          "questionCode": "const handleSubmit = (event) => { event.preventDefault(); // process form data reset(); };",
+          "options": [
+            "Call reset() after preventDefault()",
+            "Call reset() before preventDefault()",
+            "Call reset() only if there's an error",
+            "It should never be called in the submit handler"
+          ],
+          "correctAnswer": 0,
+          "explanation": "Calling `reset()` after `preventDefault()` ensures that you can process the form data correctly before clearing the inputs.",
+          "sampleCode": "const formRef = useRef(null); const handleSubmit = (event) => { event.preventDefault(); // process form data formRef.current.reset(); };"
+        },
+        {
+          "question": "If you want to reset only specific fields in a form managed by state, which is the best approach?",
+          "options": [
+            "Use reset() on the entire form",
+            "Reset the state of specific inputs",
+            "Use refs to manipulate inputs directly",
+            "Invoke a custom reset function for specific fields"
+          ],
+          "correctAnswer": 1,
+          "explanation": "Resetting specific fields should be achieved by updating the component's state directly to their initial values.",
+          "sampleCode": "const resetFields = () => { setField1(''); setField2(''); };"
+        }
+      ]
+    },
+    {
+      "topicId": "69305e7e81ffe246cf2e78be",
+      "topicName": "error bubbling rules",
+      "quizzes": [
+        {
+          "question": "What is error bubbling in the context of Next.js?",
+          "options": [
+            "The process of passing errors up the component tree until handled",
+            "A method to log errors directly to the console",
+            "A way to convert errors into user-friendly messages",
+            "The practice of displaying errors on the screen immediately"
+          ],
+          "correctAnswer": 0,
+          "explanation": "Error bubbling refers to the mechanism where errors can propagate up through the component hierarchy until they are caught and handled, allowing for centralized error handling."
+        },
+        {
+          "question": "In Next.js, where do errors thrown in a child component typically bubble to?",
+          "options": [
+            "To the nearest error boundary",
+            "To the document root",
+            "To the nearest API route",
+            "They do not bubble in Next.js"
+          ],
+          "correctAnswer": 0,
+          "explanation": "Errors thrown within a child component in Next.js will bubble up to the nearest error boundary, which can then handle the error appropriately."
+        },
+        {
+          "question": "What is the purpose of an error boundary in Next.js?",
+          "options": [
+            "To prevent errors from occurring in components",
+            "To capture and handle JavaScript errors in the component tree",
+            "To log errors to an external monitoring service",
+            "To display loading states before an error is shown"
+          ],
+          "correctAnswer": 1,
+          "explanation": "An error boundary is a React component that catches JavaScript errors in its child component tree and allows rendering a fallback UI instead of crashing the entire application."
+        },
+        {
+          "question": "Which lifecycle method is commonly used to catch errors in class components in Next.js?",
+          "options": [
+            "componentDidMount",
+            "componentDidCatch",
+            "getDerivedStateFromError",
+            "shouldComponentUpdate"
+          ],
+          "correctAnswer": 1,
+          "explanation": "The 'componentDidCatch' lifecycle method is specifically designed to handle errors in class components, enabling logging and UI fallback."
+        },
+        {
+          "question": "How can you implement a custom error page for unhandled errors in Next.js?",
+          "options": [
+            "By creating a 404.js page in the pages directory",
+            "By defining a custom Error component and exporting it from _app.js",
+            "By using a try-catch block in each component",
+            "By configuring global error handlers in the server.js file"
+          ],
+          "correctAnswer": 1,
+          "explanation": "In Next.js, you can customize your error handling by creating a custom Error component and exporting it from _app.js, allowing you to define how unhandled errors are displayed across the application."
+        }
+      ]
+    },
+    {
+      "topicId": "69305efc81ffe246cf2e78da",
+      "topicName": "route handling in nextjs",
+      "quizzes": [
+        {
+          "question": "What is the default route handler for a Next.js application?",
+          "options": [
+            "/pages/index.js",
+            "/pages/home.js",
+            "/src/routes/index.js",
+            "/app/main.js"
+          ],
+          "correctAnswer": 0,
+          "explanation": "In a Next.js application, the default route handler is located in '/pages/index.js', which serves as the entry point of the application."
+        },
+        {
+          "question": "How do you create a dynamic route in Next.js?",
+          "options": [
+            "By using brackets in the filename, e.g., [id].js",
+            "By creating a folder for each route",
+            "By using a query parameter",
+            "By defining routes in a configuration file"
+          ],
+          "correctAnswer": 0,
+          "explanation": "Dynamic routes in Next.js are created by using square brackets in the filename, such as [id].js, allowing for parameters in the URL."
+        },
+        {
+          "question": "In the file structure of a Next.js app, where would you define API routes?",
+          "options": [
+            "/pages/api",
+            "/api/pages",
+            "/src/api",
+            "/config/api"
+          ],
+          "correctAnswer": 0,
+          "explanation": "API routes in a Next.js application are defined in the '/pages/api' directory, allowing you to create endpoints for server-side logic."
+        },
+        {
+          "question": "Which Next.js feature allows for nested routes?",
+          "options": [
+            "Dynamic Routing",
+            "Subdirectory Routing",
+            "Custom Routing",
+            "Nested Layouts"
+          ],
+          "correctAnswer": 3,
+          "explanation": "Nested layouts in Next.js allow for the creation of nested routes by organizing components in a directory structure that reflects the route hierarchy."
+        },
+        {
+          "question": "Given the following route handler, what will the URL '/products/123' resolve to?",
+          "questionCode": "export default function Product({ params }) { return <div>Product ID: {params.id}</div>; }",
+          "options": [
+            "Product ID: undefined",
+            "Product ID: 123",
+            "Not found",
+            "Product ID: NaN"
+          ],
+          "correctAnswer": 1,
+          "explanation": "The URL '/products/123' would resolve to the Product component where 'params.id' will correctly extract the dynamic segment '123'."
+        }
+      ]
+    },
+    {
+      "topicId": "69305efd81ffe246cf2e78f6",
+      "topicName": "client-side fetching",
+      "quizzes": [
+        {
+          "question": "What function is commonly used in Next.js to perform client-side data fetching?",
+          "options": [
+            "getStaticProps",
+            "getServerSideProps",
+            "useEffect",
+            "getInitialProps"
+          ],
+          "correctAnswer": 2,
+          "explanation": "In Next.js, useEffect is a hook that can be used for client-side data fetching after the component mounts.",
+          "sampleCode": "useEffect(() => { fetch('/api/data').then(res => res.json()).then(data => setData(data)); }, []);"
+        },
+        {
+          "question": "Which hook is typically combined with client-side fetching to manage local state in a functional component?",
+          "options": [
+            "useContext",
+            "useReducer",
+            "useState",
+            "useMemo"
+          ],
+          "correctAnswer": 2,
+          "explanation": "useState is a React hook that allows you to manage state in a functional component, which is useful for handling fetched data.",
+          "sampleCode": "const [data, setData] = useState(null);"
+        },
+        {
+          "question": "In Next.js, which file would typically contain the API routes used for client-side fetching?",
+          "options": [
+            "pages/api",
+            "src/pages",
+            "components/api",
+            "public/api"
+          ],
+          "correctAnswer": 0,
+          "explanation": "Next.js API routes are defined in the pages/api directory, allowing you to set up server-side APIs easily.",
+          "sampleCode": "export default (req, res) => { res.status(200).json({ message: 'Hello World' }); };"
+        },
+        {
+          "question": "What strategy would you use in Next.js to prefetch data while navigating between pages without triggering additional server calls?",
+          "options": [
+            "On-demand revalidation",
+            "Static generation",
+            "Client-side fetching",
+            "Incremental Static Regeneration"
+          ],
+          "correctAnswer": 2,
+          "explanation": "Client-side fetching allows data to be fetched dynamically as users navigate, which can reduce server load by utilizing already fetched resources.",
+          "sampleCode": "const { data } = useFetch('/api/data');"
+        },
+        {
+          "question": "When using client-side fetching in Next.js, which of the following could lead to performance issues if not handled properly?",
+          "options": [
+            "Setting up proper caching",
+            "Fetching data inside useEffect without dependencies",
+            "Fetching data on every component re-render",
+            "Using SWR for data management"
+          ],
+          "correctAnswer": 1,
+          "explanation": "Fetching data inside useEffect without proper dependencies could lead to performance issues with excessive re-fetching on every render.",
+          "sampleCode": "useEffect(() => { fetchData(); }, []);"
+        }
+      ]
+    },
+    {
+      "topicId": "69305efe81ffe246cf2e7913",
+      "topicName": "server-side fetching",
+      "quizzes": [
+        {
+          "question": "What is the purpose of server-side fetching in Next.js?",
+          "options": [
+            "To enhance client-side performance",
+            "To fetch data during the server-side rendering process",
+            "To handle API routes",
+            "To manage static content"
+          ],
+          "correctAnswer": 1,
+          "explanation": "Server-side fetching allows Next.js to retrieve data during the server rendering process, ensuring that data is available when the page is loaded."
+        },
+        {
+          "question": "Which function is primarily used for server-side data fetching in Next.js pages?",
+          "options": [
+            "getStaticProps",
+            "getServerSideProps",
+            "getInitialProps",
+            "getStaticPaths"
+          ],
+          "correctAnswer": 1,
+          "explanation": "getServerSideProps is specifically designed for fetching data on each request during server-side rendering in Next.js."
+        },
+        {
+          "question": "Which of the following statements about getServerSideProps is true?",
+          "options": [
+            "It can be used with static site generation",
+            "It runs on both the server and client",
+            "It is executed on every request",
+            "It cannot return props to the page component"
+          ],
+          "correctAnswer": 2,
+          "explanation": "getServerSideProps is executed on every request, allowing the page to fetch the latest data each time it is accessed."
+        },
+        {
+          "question": "If you have the following code, what will be the output of the page during server-side rendering?",
+          "questionCode": "export async function getServerSideProps() { return { props: { data: await fetch('https://api.example.com/data') } } }",
+          "options": [
+            "The data will be fetched on the client-side",
+            "Data will be pre-fetched and available as props on initial load",
+            "The fetch request will fail",
+            "The props will not be available until the second render"
+          ],
+          "correctAnswer": 1,
+          "explanation": "The data fetched in getServerSideProps will be made available as props during the initial server-side rendering, ensuring the data is present when the page loads."
+        },
+        {
+          "question": "In a Next.js application, how does server-side fetching impact SEO compared to client-side fetching?",
+          "options": [
+            "It has no effect on SEO",
+            "It improves SEO by making content available in server responses",
+            "It makes crawlers ignore the page",
+            "It slows down the page rendering significantly"
+          ],
+          "correctAnswer": 1,
+          "explanation": "Server-side fetching improves SEO because search engines can access the pre-rendered HTML content, leading to better indexing compared to client-side fetched data."
+        }
+      ]
+    },
+    {
+      "topicId": "69305eff81ffe246cf2e7931",
+      "topicName": "parallel fetching",
+      "quizzes": [
+        {
+          "question": "What is the primary benefit of parallel fetching in Next.js?",
+          "options": [
+            "Improved SEO",
+            "Reduced code complexity",
+            "Faster data retrieval",
+            "Better error handling"
+          ],
+          "correctAnswer": 2,
+          "explanation": "Parallel fetching allows multiple data requests to occur simultaneously, which significantly reduces the time it takes to retrieve all necessary data."
+        },
+        {
+          "question": "In Next.js, which function is commonly used to implement parallel fetching?",
+          "options": [
+            "getStaticProps",
+            "getServerSideProps",
+            "Promise.all",
+            "useEffect"
+          ],
+          "correctAnswer": 2,
+          "explanation": "The Promise.all method is used for parallel fetching as it allows multiple Promises to be executed concurrently."
+        },
+        {
+          "question": "Which of the following scenarios would benefit most from parallel fetching?",
+          "options": [
+            "Fetching user data on a login page",
+            "Fetching product details on an e-commerce site",
+            "Generating a static site at build time",
+            "Performing server-side authentication"
+          ],
+          "correctAnswer": 1,
+          "explanation": "An e-commerce site fetching multiple product details can significantly reduce loading times by using parallel fetching."
+        },
+        {
+          "question": "What will happen if one of the requests in Promise.all fails in parallel fetching?",
+          "options": [
+            "Only successful requests will resolve",
+            "All requests will resolve with partial data",
+            "Promise.all will return a rejected promise",
+            "The entire application will crash"
+          ],
+          "correctAnswer": 2,
+          "explanation": "If any of the Promises in the Promise.all array fails, it causes the entire Promise to reject, encapsulating the error."
+        },
+        {
+          "question": "Which of the following code snippets correctly demonstrates fetching multiple APIs in parallel using Next.js?",
+          "questionCode": "async function fetchData() { const [data1, data2] = await Promise.all([fetch('/api/data1'), fetch('/api/data2')]); return { data1, data2 }; }",
+          "options": [
+            "async function fetchData() { return Promise.all([fetch('/api/data1'), fetch('/api/data2')]); }",
+            "function fetchData() { return fetch('/api/data1').then(fetch('/api/data2')); }",
+            "async function fetchData() { let data1 = await fetch('/api/data1'); let data2 = await fetch('/api/data2'); return { data1, data2 }; }",
+            "async function fetchData() { const [data1, data2] = await Promise.all([fetch('/api/data1'), fetch('/api/data2')]); return data1; }"
+          ],
+          "correctAnswer": 0,
+          "explanation": "The first snippet correctly uses await with Promise.all to fetch both APIs concurrently and return their results."
+        }
+      ]
+    },
+    {
+      "topicId": "69305f0081ffe246cf2e7950",
+      "topicName": "sequential fetching",
+      "quizzes": [
+        {
+          "question": "What is sequential fetching in Next.js?",
+          "options": [
+            "Fetching multiple resources at the same time",
+            "Fetching resources in a specific order",
+            "Pre-fetching data before rendering",
+            "Loading assets from the server"
+          ],
+          "correctAnswer": 1,
+          "explanation": "Sequential fetching refers to fetching resources in a specific order, ensuring that each request is completed before the next begins."
+        },
+        {
+          "question": "Which Next.js function can you use to implement sequential data fetching?",
+          "options": [
+            "getServerSideProps",
+            "getStaticProps",
+            "useEffect",
+            "getInitialProps"
+          ],
+          "correctAnswer": 3,
+          "explanation": "getInitialProps can be used to fetch data sequentially on both server-side and client-side for each page request."
+        },
+        {
+          "question": "In the context of Next.js, what would be the main benefit of using sequential fetching?",
+          "options": [
+            "Faster page loads",
+            "Predictable data availability",
+            "Reduced API load",
+            "Simpler code structure"
+          ],
+          "correctAnswer": 1,
+          "explanation": "Sequential fetching allows for predictable data availability, as the second fetch can't begin until the first has completed, ensuring data integrity."
+        },
+        {
+          "question": "Why might you choose to avoid parallel fetching in a Next.js application?",
+          "options": [
+            "It can lead to race conditions",
+            "It's the only option available",
+            "It is only supported in older versions",
+            "It guarantees faster loading times"
+          ],
+          "correctAnswer": 0,
+          "explanation": "Parallel fetching can lead to race conditions where the order of responses may affect how data is used, which is particularly problematic if one fetch depends on another."
+        },
+        {
+          "question": "Given the following code for fetching data in a Next.js page, identify the issue with the sequential fetching approach:",
+          "questionCode": "const fetchData = async () => { const res1 = await fetch('/api/data1'); const data1 = await res1.json(); const res2 = await fetch('/api/data2?param=' + data1.id); const data2 = await res2.json(); return { data1, data2 }; };",
+          "options": [
+            "It fetches data correctly in order",
+            "It's not using getServerSideProps",
+            "It should handle errors explicitly",
+            "It's using too many async/await calls"
+          ],
+          "correctAnswer": 2,
+          "explanation": "While the fetching is done in order, the function lacks error handling, which is crucial for dealing with failed network requests during sequential fetching."
+        }
+      ]
+    },
+    {
+      "topicId": "69305f0181ffe246cf2e7970",
+      "topicName": "deduplication",
+      "quizzes": [
+        {
+          "question": "What is the primary purpose of deduplication in a Next.js application?",
+          "options": [
+            "To reduce the size of images",
+            "To eliminate duplicate data in state management",
+            "To enhance server-side rendering speed",
+            "To compress static files"
+          ],
+          "correctAnswer": 1,
+          "explanation": "The primary purpose of deduplication is to eliminate duplicate data, which can help maintain a clean state and optimize performance."
+        },
+        {
+          "question": "In which scenario might you consider using a deduplication strategy in data fetching within a Next.js app?",
+          "options": [
+            "When fetching user profile data from an API",
+            "When using multiple components that require the same data",
+            "When implementing image optimization",
+            "When utilizing static site generation"
+          ],
+          "correctAnswer": 1,
+          "explanation": "Using deduplication when multiple components fetch the same data can prevent unnecessary API calls, thus improving application performance."
+        },
+        {
+          "question": "Which Next.js feature may help to manage deduplication for dynamic data fetching?",
+          "options": [
+            "getStaticProps",
+            "getServerSideProps",
+            "SWC Compiler",
+            "Revalidate"
+          ],
+          "correctAnswer": 1,
+          "explanation": "getServerSideProps fetches data on each request, and when multiple components use it to fetch similar data, implementing a deduplication strategy ensures optimal network resource usage."
+        },
+        {
+          "question": "Consider the following code snippet. What would you add to enhance deduplication for the API fetching process?",
+          "questionCode": "const fetchData = async () => { const res = await fetch('/api/data'); return res.json(); }\nconst DataComponent = () => { const data = fetchData(); return <div>{data}</div>; };",
+          "options": [
+            "Use SWR for fetching and caching data",
+            "Fetch data using a state variable",
+            "Call the fetch function inside useEffect",
+            "Implement a loading state"
+          ],
+          "correctAnswer": 0,
+          "explanation": "Using SWR helps with deduplication by caching the data and avoiding multiple fetch requests to the same endpoint.",
+          "sampleCode": "import useSWR from 'swr';\nconst { data } = useSWR('/api/data', fetchData);"
+        },
+        {
+          "question": "What potential issue might arise from not implementing deduplication in a Next.js application with multiple data fetching components?",
+          "options": [
+            "Increased server load and API response time",
+            "More verbose code and maintenance issues",
+            "Reduced client-side performance due to file sizes",
+            "Limited user access to server-side rendered pages"
+          ],
+          "correctAnswer": 0,
+          "explanation": "Not implementing deduplication can lead to multiple requests for the same data, resulting in increased server load and longer response times."
+        }
+      ]
+    },
+    {
+      "topicId": "69305f0281ffe246cf2e7991",
+      "topicName": "caching layers",
+      "quizzes": [
+        {
+          "question": "What is the primary purpose of caching in a Next.js application?",
+          "options": [
+            "To store user data permanently",
+            "To improve performance by reducing the number of server requests",
+            "To encrypt sensitive data before sending it",
+            "To manage authentication states"
+          ],
+          "correctAnswer": 1,
+          "explanation": "Caching improves performance by storing frequently accessed data, which reduces the number of server requests needed for each data fetch."
+        },
+        {
+          "question": "Which caching strategy is recommended for static assets in Next.js?",
+          "options": [
+            "Stale-While-Revalidate",
+            "No Cache",
+            "Cache-Control: no-store",
+            "Max-Age: 0"
+          ],
+          "correctAnswer": 0,
+          "explanation": "Stale-While-Revalidate allows for serving cached assets while simultaneously updating them in the background, which is ideal for static assets."
+        },
+        {
+          "question": "In Next.js, what is the role of the getStaticProps function?",
+          "options": [
+            "To fetch dynamic data on the client side",
+            "To generate static pages at build time with cached data",
+            "To render pages only on the server side with real-time data",
+            "To manage API routes exclusively"
+          ],
+          "correctAnswer": 1,
+          "explanation": "getStaticProps is used for generating static pages at build time, enabling data caching for those pages until the next build."
+        },
+        {
+          "question": "How can caching be effectively managed in API routes for a Next.js application?",
+          "questionCode": "export default async function handler(req, res) { if (req.method === 'GET') { res.setHeader('Cache-Control', 's-maxage=10, stale-while-revalidate=59'); res.status(200).json({ data: 'some data' }); } }",
+          "options": [
+            "By setting Cache-Control headers correctly based on the type of data being served",
+            "By clearing the cache every time new data is fetched",
+            "By always returning dynamic data without caching",
+            "By using only in-memory cache"
+          ],
+          "correctAnswer": 0,
+          "explanation": "Setting appropriate Cache-Control headers helps manage how long data should be cached and when it should be revalidated."
+        },
+        {
+          "question": "Which of the following is a potential downside of aggressive caching in a Next.js application?",
+          "options": [
+            "Increased loading times for user accounts",
+            "Serving outdated information to users",
+            "Higher server costs due to caching infrastructure",
+            "More frequent API calls"
+          ],
+          "correctAnswer": 1,
+          "explanation": "Aggressive caching can result in serving outdated information if the cache isn't invalidated correctly, leading to a poor user experience."
+        }
+      ]
+    },
+    {
+      "topicId": "69305f8981ffe246cf2e79b4",
+      "topicName": "generateStaticParams",
+      "quizzes": [
+        {
+          "question": "What is the primary purpose of the generateStaticParams function in Next.js?",
+          "options": [
+            "To fetch dynamic content from an API",
+            "To generate static pages for dynamic routes",
+            "To add middleware to a route",
+            "To optimize images during build time"
+          ],
+          "correctAnswer": 1,
+          "explanation": "The generateStaticParams function is used to specify dynamic routes that need to be pre-rendered at build time, allowing Next.js to generate static pages for those routes."
+        },
+        {
+          "question": "In which lifecycle phase of a Next.js application is generateStaticParams called?",
+          "options": [
+            "During server-side rendering",
+            "During client-side navigation",
+            "At build time",
+            "Whenever a user requests a page"
+          ],
+          "correctAnswer": 2,
+          "explanation": "generateStaticParams is called at build time, allowing Next.js to prepare static pages for dynamic routes based on the parameters provided."
+        },
+        {
+          "question": "Which of the following is true about the return value of generateStaticParams?",
+          "options": [
+            "It must return a Promise that resolves to an array",
+            "It can return an object with route parameters",
+            "It should return a single object for one route",
+            "It returns static props directly for pages"
+          ],
+          "correctAnswer": 0,
+          "explanation": "The return value of generateStaticParams must be a Promise that resolves to an array of objects, each representing dynamic route parameters for static generation."
+        },
+        {
+          "question": "Consider the following code snippet. What will be the output of the generateStaticParams function if it's set to create static pages for user profiles?",
+          "questionCode": "export async function generateStaticParams() { return [{ id: '1' }, { id: '2' }]; }",
+          "options": [
+            "[{ id: '1' }]",
+            "[{ params: { id: '1' } }, { params: { id: '2' } }]",
+            "[{ id: 1 }, { id: 2 }]",
+            "['1', '2']"
+          ],
+          "correctAnswer": 1,
+          "explanation": "The generateStaticParams function must return an array of objects with a params key for dynamic routes, hence the correct format is [{ params: { id: '1' } }, { params: { id: '2' } }]."
+        },
+        {
+          "question": "How can you utilize the output of generateStaticParams within a page component?",
+          "options": [
+            "By calling it inside componentDidMount",
+            "By using it in getStaticProps",
+            "By invoking it conditionally on user interaction",
+            "By passing it directly to the component as props"
+          ],
+          "correctAnswer": 1,
+          "explanation": "The output of generateStaticParams is utilized in conjunction with getStaticProps to provide the necessary parameters for rendering static pages for dynamic routes."
+        }
+      ]
+    },
+    {
+      "topicId": "69305f8a81ffe246cf2e79d7",
+      "topicName": "dynamicParams",
+      "quizzes": [
+        {
+          "question": "What is the purpose of dynamicParams in Next.js?",
+          "options": [
+            "To handle server-side rendering",
+            "To create dynamic routes",
+            "To optimize performance",
+            "To manage global state"
+          ],
+          "correctAnswer": 1,
+          "explanation": "Dynamic parameters, or dynamic routes, in Next.js allow you to create routes that can change based on the data provided, enabling a more flexible routing structure."
+        },
+        {
+          "question": "Which file structure is typically used to define dynamic routes in a Next.js application?",
+          "options": [
+            "/pages/[param].js",
+            "/routes/[param].js",
+            "/handlers/[param].js",
+            "/components/[param].js"
+          ],
+          "correctAnswer": 0,
+          "explanation": "In Next.js, you define dynamic routes by creating files with square brackets in the /pages directory, like /pages/[param].js."
+        },
+        {
+          "question": "Given a page at /posts/[id].js, how would you retrieve the dynamic parameter 'id' in the component?",
+          "questionCode": "export default function Post() {\n  // How to access 'id' here?\n}",
+          "options": [
+            "useRouter()",
+            "useParams()",
+            "getStaticProps()",
+            "getServerSideProps()"
+          ],
+          "correctAnswer": 0,
+          "explanation": "You can retrieve the dynamic parameter 'id' by using the useRouter() hook, which provides access to the router object containing the parameters.",
+          "sampleCode": "import { useRouter } from 'next/router';\n\nexport default function Post() {\n  const router = useRouter();\n  const { id } = router.query;\n  return <div>Post ID: {id}</div>;\n}"
+        },
+        {
+          "question": "What do you need to do in a Next.js application to generate a list of pages based on data fetched from an API for dynamic routes?",
+          "options": [
+            "Use getStaticPaths and getStaticProps",
+            "Use getServerSideProps only",
+            "Use dynamic imports",
+            "Import the data directly into the component"
+          ],
+          "correctAnswer": 0,
+          "explanation": "You need to use getStaticPaths to specify which dynamic routes to pre-render at build time and getStaticProps to fetch the required data for those routes."
+        },
+        {
+          "question": "Consider the following code snippet. What will happen if the 'getStaticProps' does not return a 'notFound' property for a non-existent dynamic route?",
+          "questionCode": "export async function getStaticProps({ params }) {\n  const data = await fetch(`https://api.example.com/posts/${params.id}`);\n  const post = await data.json();\n  return {\n    props: { post },\n  };\n}",
+          "options": [
+            "Next.js will return a 404 page",
+            "The page will still render with an empty object",
+            "An error will be thrown",
+            "Next.js will use the last cached page"
+          ],
+          "correctAnswer": 1,
+          "explanation": "If getStaticProps does not return a 'notFound' property, the page will render, but it may display an empty object if the fetch request fails or finds no data."
+        }
+      ]
+    },
+    {
+      "topicId": "69305f8b81ffe246cf2e79fb",
+      "topicName": "nested layouts",
+      "quizzes": [
+        {
+          "question": "What is the primary purpose of nested layouts in Next.js?",
+          "options": [
+            "To improve SEO by grouping pages",
+            "To share layout and styling between different pages",
+            "To enable server-side rendering for all components",
+            "To enhance client-side caching of components"
+          ],
+          "correctAnswer": 1,
+          "explanation": "Nested layouts allow developers to maintain consistent structure and styling across multiple pages by reusing layout components."
+        },
+        {
+          "question": "Which of the following hooks allows sharing state in a nested layout?",
+          "options": [
+            "useLayoutEffect",
+            "useState",
+            "useContext",
+            "useReducer"
+          ],
+          "correctAnswer": 2,
+          "explanation": "The useContext hook is specifically designed to share state across nested components and layouts in React, making it ideal for nested layouts."
+        },
+        {
+          "question": "How would you define a nested layout in Next.js?",
+          "questionCode": "const MainLayout = ({ children }) => { return <div>{children}</div>; };",
+          "options": [
+            "By creating a component and wrapping page components with it",
+            "By importing styles directly into each page component",
+            "By defining layout in the _app.js file only",
+            "By using only CSS Grid for layout management"
+          ],
+          "correctAnswer": 0,
+          "explanation": "A nested layout in Next.js is defined by creating a layout component that wraps around page components, thus providing a consistent structure."
+        },
+        {
+          "question": "In Next.js, what happens if you do not properly nest your layouts?",
+          "options": [
+            "The application will crash on load",
+            "The layouts will not render as expected",
+            "SEO will be negatively impacted",
+            "It makes the bundle size significantly larger"
+          ],
+          "correctAnswer": 1,
+          "explanation": "If layouts are not nested properly, the intended structure or styling will not be applied, leading to unexpected results in the rendering of components."
+        },
+        {
+          "question": "Consider the following implementation: 'const Page = () => <MainLayout><ChildComponent /></MainLayout>'. What would be the outcome if ChildComponent does not have access to props defined in MainLayout?",
+          "questionCode": "const MainLayout = ({ children, sharedProp }) => { return <div>{children}</div>; };",
+          "options": [
+            "ChildComponent will receive an error and fail to render",
+            "ChildComponent will only render without the sharedProp",
+            "ChildComponent will automatically inherit props from MainLayout",
+            "ChildComponent will render with default props"
+          ],
+          "correctAnswer": 1,
+          "explanation": "If ChildComponent is not designed to receive props from MainLayout, it will simply render without the sharedProp, as prop passing is not automatic."
+        }
+      ]
+    },
+    {
+      "topicId": "69305f8c81ffe246cf2e7a20",
+      "topicName": "route-group layouts",
+      "quizzes": [
+        {
+          "question": "What is the primary purpose of route groups in Next.js?",
+          "options": [
+            "To allow nested routing with layout components",
+            "To enhance performance by optimizing page load",
+            "To manage API routes more efficiently",
+            "To define global CSS styles for the application"
+          ],
+          "correctAnswer": 0,
+          "explanation": "Route groups allow developers to create nested routes, facilitating the use of shared layouts across multiple pages without affecting the URL structure."
+        },
+        {
+          "question": "How do you create a route group in Next.js?",
+          "options": [
+            "By using the folder structure with parentheses",
+            "By defining a group in the next.config.js file",
+            "By using a special routing API provided by Next.js",
+            "By creating a new component in the pages directory"
+          ],
+          "correctAnswer": 0,
+          "explanation": "In Next.js, route groups are created by adding parentheses to the folder names in the `app` directory, allowing for shared layouts without altering the routes."
+        },
+        {
+          "question": "Given the following folder structure, which URL corresponds to the route defined by the group?",
+          "questionCode": "app/(auth)/login/page.js",
+          "options": [
+            "/login",
+            "/auth/login",
+            "/(auth)/login",
+            "/(auth)"
+          ],
+          "correctAnswer": 0,
+          "explanation": "The route `/login` is the correct URL; route groups do not appear in the final URL structure but allow for organized code structure in the app directory."
+        },
+        {
+          "question": "What happens to the layout when a new page is added within a route group?",
+          "options": [
+            "The layout remains unchanged for all pages in the group.",
+            "A new layout must be defined for each new page.",
+            "The layout is ignored and only the page component renders.",
+            "Pages in the group automatically inherit the layout of their parent."
+          ],
+          "correctAnswer": 3,
+          "explanation": "When a new page is added within a route group, it automatically inherits the layout defined for its parent route group, maintaining consistency across related pages."
+        },
+        {
+          "question": "Why might you use route groups over standard routing in a Next.js application?",
+          "options": [
+            "To create dynamic segments in the URL",
+            "To share authentication logic among several pages",
+            "To avoid code duplication by sharing layouts and components",
+            "To improve SEO performance of specific pages"
+          ],
+          "correctAnswer": 2,
+          "explanation": "Route groups are particularly beneficial for sharing layouts and components among multiple pages, thereby reducing code duplication and promoting maintainability."
+        }
+      ]
+    },
+    {
+      "topicId": "69305f8d81ffe246cf2e7a46",
+      "topicName": "templates vs layouts",
+      "quizzes": [
+        {
+          "question": "What is the main purpose of using templates in Next.js?",
+          "options": [
+            "To define global styles for an application",
+            "To create reusable components with dynamic data",
+            "To manage server-side routing",
+            "To handle API fetch requests"
+          ],
+          "correctAnswer": 1,
+          "explanation": "Templates in Next.js are designed to create reusable components that can accept dynamic data, allowing for efficient rendering of similar UI elements."
+        },
+        {
+          "question": "Which of the following best describes a layout in Next.js?",
+          "options": [
+            "A way to control data fetching",
+            "A design structure that wraps multiple pages",
+            "A method for changing URL paths",
+            "A component responsible for styling forms"
+          ],
+          "correctAnswer": 1,
+          "explanation": "Layouts in Next.js provide a way to define a consistent design structure that wraps around multiple pages, ensuring that shared UI elements are maintained."
+        },
+        {
+          "question": "In Next.js, how can you implement a layout that is shared across multiple pages?",
+          "questionCode": "export default function Layout({ children }) {\n  return <div className='layout'>{children}</div>;\n}",
+          "options": [
+            "Use a higher-order component to wrap page components",
+            "Add the layout directly within each page component",
+            "Use the App component to apply the layout globally",
+            "Create a unique layout for every single page"
+          ],
+          "correctAnswer": 2,
+          "explanation": "The App component in Next.js allows you to apply a layout globally across all pages by wrapping page components, ensuring consistency."
+        },
+        {
+          "question": "What happens if you try to use a layout but do not include the children of the layout in Next.js?",
+          "options": [
+            "The page will throw an error",
+            "The layout will render but the page will be empty",
+            "Next.js will auto-fill the children with default values",
+            "Layouts cannot be used without children"
+          ],
+          "correctAnswer": 1,
+          "explanation": "If the children prop is not included, the layout will render but will not display any content, resulting in an empty page."
+        },
+        {
+          "question": "Which statement about the use of templates and layouts in Next.js is true?",
+          "options": [
+            "Templates are only used for static content, while layouts are for dynamic content.",
+            "Both templates and layouts are used interchangeably without any difference.",
+            "Layouts can use templates to render content, but templates cannot use layouts.",
+            "Templates focus on specific page content, while layouts provide overall structure."
+          ],
+          "correctAnswer": 3,
+          "explanation": "Templates are designed to handle specific content for pages, while layouts provide a broader structure that can surround multiple templates."
+        }
+      ]
+    },
+    {
+      "topicId": "69305f8e81ffe246cf2e7a6d",
+      "topicName": "loading states",
+      "quizzes": [
+        {
+          "question": "What is the purpose of a loading state in a Next.js application?",
+          "options": [
+            "To preload all images for better performance",
+            "To indicate that data is being fetched or processed",
+            "To enhance the styling of components",
+            "To prevent users from interacting with the page"
+          ],
+          "correctAnswer": 1,
+          "explanation": "A loading state serves to inform users that an operation is ongoing, such as data fetching, enhancing user experience by providing visual feedback."
+        },
+        {
+          "question": "Which of the following Next.js hooks is primarily used to manage loading states during data fetching?",
+          "options": [
+            "useEffect",
+            "useState",
+            "useLoading",
+            "useSWR"
+          ],
+          "correctAnswer": 3,
+          "explanation": "The useSWR hook is specifically designed for data fetching with built-in loading state management, making it easier to handle asynchronous data."
+        },
+        {
+          "question": "In a functional component, where should you set the loading state when fetching data in Next.js using useEffect?",
+          "questionCode": "useEffect(() => { setLoading(true); fetchData(); setLoading(false); }, []);",
+          "options": [
+            "Before calling fetchData()",
+            "After calling fetchData()",
+            "When the component first mounts",
+            "Loading state should not be set in useEffect"
+          ],
+          "correctAnswer": 0,
+          "explanation": "The loading state should be set to true before the data-fetching call to indicate that the operation is in progress to the user.",
+          "sampleCode": "const [loading, setLoading] = useState(false);"
+        },
+        {
+          "question": "What is an effective way to display a loading spinner in a Next.js component while waiting for data to load?",
+          "options": [
+            "Use CSS animations only",
+            "Conditionally render a spinner component based on loading state",
+            "Disable all buttons during loading",
+            "Fetch data without any loading indication"
+          ],
+          "correctAnswer": 1,
+          "explanation": "Conditionally rendering a spinner based on the loading state provides clear visual feedback to users that data is being loaded."
+        },
+        {
+          "question": "When using getServerSideProps in Next.js, how do you handle loading states for client-side operations that follow?",
+          "options": [
+            "You don’t need a loading state since data is pre-fetched",
+            "Use a global loading state for the whole application",
+            "You must manage loading states manually after server-side data is received",
+            "All stateful components will automatically handle loading for you"
+          ],
+          "correctAnswer": 2,
+          "explanation": "After server-side data is fetched, any asynchronous client-side operations still require manual loading state management to properly indicate progress to users."
+        }
+      ]
+    },
+    {
+      "topicId": "69305f8f81ffe246cf2e7a95",
+      "topicName": "suspense boundaries",
+      "quizzes": [
+        {
+          "question": "What is the primary purpose of suspense boundaries in Next.js?",
+          "options": [
+            "To enable lazy loading of components",
+            "To optimize images automatically",
+            "To provide error handling for components",
+            "To manage server-side rendering"
+          ],
+          "correctAnswer": 0,
+          "explanation": "Suspense boundaries allow components to indicate that they are waiting for some data or code to load, enabling lazy loading and improving loading performance."
+        },
+        {
+          "question": "Which of the following statements is true regarding suspense boundaries?",
+          "options": [
+            "They fetch data from the server",
+            "They improve the SEO of a page",
+            "They can be nested within each other",
+            "They are only applicable to class components"
+          ],
+          "correctAnswer": 2,
+          "explanation": "Suspense boundaries can be nested within each other, allowing developers to create complex loading states and different fallbacks."
+        },
+        {
+          "question": "When using Suspense in Next.js, how can you provide a fallback UI while waiting for a component to load?",
+          "options": [
+            "By using a loading spinner inside the component",
+            "By wrapping the component in a <Suspense> tag with a fallback prop",
+            "By setting a loading state in the parent component",
+            "By manually importing the component"
+          ],
+          "correctAnswer": 1,
+          "explanation": "The correct way to provide a fallback UI is by wrapping the component with a <Suspense> tag and specifying a fallback prop, which will be displayed during loading.",
+          "sampleCode": "<Suspense fallback={<div>Loading...</div>}><MyComponent /></Suspense>"
+        },
+        {
+          "question": "How does using multiple suspense boundaries affect rendering performance in a Next.js application?",
+          "options": [
+            "It decreases performance as more boundaries add overhead",
+            "It has no impact on performance",
+            "It can improve performance by allowing independent loading states",
+            "It causes global loading states across the app"
+          ],
+          "correctAnswer": 2,
+          "explanation": "Using multiple suspense boundaries can enhance performance by allowing different parts of the application to load independently, reducing waiting times for users."
+        },
+        {
+          "question": "Consider the following code snippet. What will happen if the LazyComponent takes a long time to load?",
+          "questionCode": "const LazyComponent = React.lazy(() => import('./LazyComponent')); function App() { return <React.Suspense fallback={<div>Loading...</div>}><LazyComponent /></React.Suspense>; }",
+          "options": [
+            "The app will crash",
+            "The loading spinner will be shown until LazyComponent is ready",
+            "The LazyComponent will render immediately",
+            "The app will freeze during the loading period"
+          ],
+          "correctAnswer": 1,
+          "explanation": "The fallback provided in the Suspense boundary will be shown until the LazyComponent is fully loaded, enhancing user experience."
+        }
+      ]
+    },
+    {
+      "topicId": "69305f9081ffe246cf2e7abe",
+      "topicName": "error boundaries",
+      "quizzes": [
+        {
+          "question": "What is the primary purpose of error boundaries in React applications?",
+          "options": [
+            "To log errors to an external service",
+            "To handle JavaScript errors in child components",
+            "To optimize component rendering times",
+            "To prevent prop drilling"
+          ],
+          "correctAnswer": 1,
+          "explanation": "Error boundaries are designed to catch JavaScript errors in their child component tree, logging those errors and displaying a fallback UI instead of crashing the whole application."
+        },
+        {
+          "question": "Which lifecycle methods can be used to define an error boundary class component?",
+          "options": [
+            "componentDidMount and componentDidUpdate",
+            "getDerivedStateFromError and componentDidCatch",
+            "shouldComponentUpdate and componentWillUnmount",
+            "render and componentDidCatch"
+          ],
+          "correctAnswer": 1,
+          "explanation": "Error boundaries implement the static method getDerivedStateFromError and the component lifecycle method componentDidCatch to handle errors effectively."
+        },
+        {
+          "question": "What happens if an error boundary encounters an error while rendering a fallback UI?",
+          "options": [
+            "The application will crash completely",
+            "The error boundary will ignore it and render nothing",
+            "Another error boundary higher up the tree will try to catch it",
+            "The fallback UI will render normally without issues"
+          ],
+          "correctAnswer": 0,
+          "explanation": "If the fallback UI of an error boundary throws an error during rendering, it will cause the entire application to crash unless there is another error boundary higher up the tree."
+        },
+        {
+          "question": "Can functional components use Error Boundaries in Next.js applications?",
+          "options": [
+            "Yes, using hooks is sufficient to manage errors",
+            "No, only class components can implement error boundaries",
+            "Yes, but they need to be wrapped in a class component",
+            "No, functional components cannot manage any errors"
+          ],
+          "correctAnswer": 1,
+          "explanation": "In React (and thus Next.js), only class components can implement error boundaries; functional components do not have this capability natively as of now."
+        },
+        {
+          "question": "In which scenario should you use an error boundary in a Next.js application?",
+          "options": [
+            "To capture errors from API calls in getServerSideProps",
+            "To prevent errors in third-party components from crashing your app",
+            "To handle errors during data fetching in getStaticProps",
+            "To log user interaction errors"
+          ],
+          "correctAnswer": 1,
+          "explanation": "Error boundaries are beneficial in preventing errors from child component rendering from crashing the entire app, particularly those involving third-party components."
+        }
+      ]
+    },
+    {
+      "topicId": "69305f9081ffe246cf2e7ae8",
+      "topicName": "handling asynchronous components",
+      "quizzes": [
+        {
+          "question": "What is the primary method used in Next.js to handle asynchronous data fetching for a page during server-side rendering?",
+          "options": [
+            "getStaticProps",
+            "getServerSideProps",
+            "getInitialProps",
+            "getStaticPaths"
+          ],
+          "correctAnswer": 1,
+          "explanation": "getServerSideProps is specifically designed for server-side rendering and fetching data at request time, making it the correct method for handling asynchronous data fetching in this context."
+        },
+        {
+          "question": "Which hook does Next.js provide for loading external data in a React component during the client-side rendering phase?",
+          "options": [
+            "useEffect",
+            "useAsync",
+            "useFetch",
+            "useStaticProps"
+          ],
+          "correctAnswer": 0,
+          "explanation": "useEffect is the standard React hook for performing side effects in function components, including loading external data in Next.js client-side components."
+        },
+        {
+          "question": "In Next.js, what is the purpose of the 'fallback' key in the getStaticPaths function?",
+          "options": [
+            "To pre-render all paths at build time",
+            "To create 404 pages",
+            "To allow incremental static regeneration",
+            "To specify alternative rendering methods"
+          ],
+          "correctAnswer": 2,
+          "explanation": "The 'fallback' key in the getStaticPaths function is used to control how paths that haven’t been generated at build time are handled, specifically allowing for incremental static regeneration."
+        },
+        {
+          "question": "When would you choose to implement SWR (stale-while-revalidate) for data fetching in a Next.js application?",
+          "options": [
+            "When you need server-side data only",
+            "When you want to fetch data only at build time",
+            "When you want to keep data fresh with minimal user impact",
+            "When you require synchronous data updates"
+          ],
+          "correctAnswer": 2,
+          "explanation": "SWR is designed to keep data updated and fresh with minimal user impact, providing a great user experience while managing asynchronous data fetching effectively."
+        },
+        {
+          "question": "Consider the following code snippet for a data fetching component. What is potentially wrong with the error handling in the useEffect hook?",
+          "questionCode": "useEffect(() => { fetchData().catch(err => setError(err)); }, []);",
+          "options": [
+            "It does not handle the response properly",
+            "It doesn't manage loading states",
+            "It only catches network errors",
+            "It does not clean up after itself"
+          ],
+          "correctAnswer": 1,
+          "explanation": "The error handling in this snippet does not address managing loading states, which is essential for providing feedback during data fetching, and could lead to a poor user experience."
+        }
+      ]
+    },
+    {
+      "topicId": "69305fbf81ffe246cf2e7b14",
+      "topicName": "<Link>",
+      "quizzes": [
+        {
+          "question": "What method is used to create a new Next.js app?",
+          "options": [
+            "npx create-next-app",
+            "npm init next-app",
+            "yarn create next-app",
+            "all of the above"
+          ],
+          "correctAnswer": 3,
+          "explanation": "All the listed commands can be used to create a new Next.js application, each with different package managers."
+        },
+        {
+          "question": "In Next.js, which data-fetching method can be used to fetch data at build time?",
+          "options": [
+            "getServerSideProps",
+            "getStaticProps",
+            "getInitialProps",
+            "getStaticPaths"
+          ],
+          "correctAnswer": 1,
+          "explanation": "getStaticProps is specifically designed to fetch data at build time for static generation."
+        },
+        {
+          "question": "Which of the following is a characteristic feature of static pages in Next.js?",
+          "options": [
+            "They get updated with each request.",
+            "They are generated at build time.",
+            "They require a database connection.",
+            "They use server-side rendering."
+          ],
+          "correctAnswer": 1,
+          "explanation": "Static pages in Next.js are generated at build time, which makes them faster and reduces server load."
+        },
+        {
+          "question": "What is the purpose of the <Link> component in Next.js?",
+          "options": [
+            "To handle API requests",
+            "To enable navigation between pages",
+            "To manage global state",
+            "To create responsive layouts"
+          ],
+          "correctAnswer": 1,
+          "explanation": "The <Link> component in Next.js is used for client-side navigation between pages, enabling faster transitions."
+        },
+        {
+          "question": "When using getStaticPaths in Next.js, what should it return?",
+          "options": [
+            "An array of object with paths and params",
+            "A single path string",
+            "A boolean indicating static generation",
+            "A promise that resolves to data"
+          ],
+          "correctAnswer": 0,
+          "explanation": "getStaticPaths must return an object containing an array of paths and an optional fallback boolean, defining which paths to generate at build time.",
+          "sampleCode": "export async function getStaticPaths() {\n  return {\n    paths: [{ params: { id: '1' } }],\n    fallback: false,\n  };\n}"
+        }
+      ]
+    },
+    {
+      "topicId": "69305fc081ffe246cf2e7b40",
+      "topicName": "router.push()",
+      "quizzes": [
+        {
+          "question": "What is the primary purpose of the 'router.push()' method in Next.js?",
+          "options": [
+            "To replace the current URL",
+            "To navigate to a new URL",
+            "To reload the current page",
+            "To modify the browser history"
+          ],
+          "correctAnswer": 1,
+          "explanation": "'router.push()' is used to navigate to a new URL while maintaining the browser's history."
+        },
+        {
+          "question": "When using 'router.push()', what happens if the URL passed as an argument is the same as the current URL?",
+          "options": [
+            "An error is thrown",
+            "The page will not reload",
+            "The page will reload with a new URL",
+            "The browser history will not be updated"
+          ],
+          "correctAnswer": 1,
+          "explanation": "If the new URL is the same as the current one, 'router.push()' will not cause a reload, but it will still update the browser history."
+        },
+        {
+          "question": "Which of the following can be passed as an argument to 'router.push()'?",
+          "options": [
+            "A string representing the URL",
+            "An array of routes",
+            "A component to render",
+            "An object with SEO properties"
+          ],
+          "correctAnswer": 0,
+          "explanation": "The first argument to 'router.push()' is typically a string representing the URL to navigate to."
+        },
+        {
+          "question": "Given the following code snippet, what will happen when the button is clicked?",
+          "questionCode": "router.push('/about')",
+          "options": [
+            "Navigates to the About page",
+            "Causes a console error",
+            "Reloads the About page",
+            "Does nothing"
+          ],
+          "correctAnswer": 0,
+          "explanation": "The 'router.push('/about')' will navigate the user to the About page when executed.",
+          "sampleCode": "const handleClick = () => { router.push('/about'); }"
+        },
+        {
+          "question": "In which scenario would you want to use 'router.push()' with a state object?",
+          "options": [
+            "When navigating between different domains",
+            "When setting a new page as the home page",
+            "When you want to pass data to the new route",
+            "When performing a server-side redirect"
+          ],
+          "correctAnswer": 2,
+          "explanation": "Using 'router.push()' with a state object allows you to pass data to the new route, which can be accessed via the router.",
+          "sampleCode": "router.push('/about', undefined, { state: { userId: 1 } });"
+        }
+      ]
+    },
+    {
+      "topicId": "69305fc181ffe246cf2e7b6d",
+      "topicName": "router.replace()",
+      "quizzes": [
+        {
+          "question": "What does the router.replace() method do in Next.js?",
+          "options": [
+            "It updates the current URL and adds a new entry to the browser's history stack.",
+            "It updates the current URL and replaces the current entry in the browser's history stack.",
+            "It navigates to a new page without changing the URL.",
+            "It refreshes the current page."
+          ],
+          "correctAnswer": 1,
+          "explanation": "The router.replace() method changes the URL to a new one and replaces the current entry in the browser's history stack, preventing the user from navigating back to the previous URL using the back button."
+        },
+        {
+          "question": "When would you typically use router.replace() instead of router.push()?",
+          "options": [
+            "When you want to push a new state to the history stack.",
+            "When you want to navigate to the same route with different parameters.",
+            "When you want to avoid leaving a history entry for the current route.",
+            "When you want to create a permanent redirect."
+          ],
+          "correctAnswer": 2,
+          "explanation": "Using router.replace() allows you to navigate without leaving the current history entry, which is useful in situations where you want to avoid cluttering the browsing history."
+        },
+        {
+          "question": "What will happen if you call router.replace() with the same URL as the current page?",
+          "options": [
+            "The page will refresh.",
+            "Nothing will happen.",
+            "An error will be thrown.",
+            "The URL will change, but the content will not update."
+          ],
+          "correctAnswer": 1,
+          "explanation": "Calling router.replace() with the same URL does not trigger a page refresh or an update; it simply results in no action taken, as the router recognizes that the URL is already the current route."
+        },
+        {
+          "question": "Given the following code snippet, what will happen when the button is clicked?",
+          "questionCode": "router.replace('/about')",
+          "options": [
+            "The user will be taken to the '/about' page, and the '/home' page will remain in the history.",
+            "The user will be taken to the '/about' page, and the '/home' page will be removed from the history.",
+            "The application will throw an error.",
+            "The user will see a console log of the current URL."
+          ],
+          "correctAnswer": 1,
+          "explanation": "The router.replace() method navigates to the '/about' page and removes the current '/home' page entry from the history stack, allowing users not to go back to '/home' using the back button."
+        },
+        {
+          "question": "Which of the following is NOT a valid use case for router.replace()?",
+          "options": [
+            "Navigating to a new page based on user input.",
+            "Updating the URL to reflect a change in application state without adding a history entry.",
+            "Creating permanent redirects for SEO optimization.",
+            "Changing the URL after form submission without allowing the user to return."
+          ],
+          "correctAnswer": 2,
+          "explanation": "While router.replace() is useful for navigating and updating URLs without adding history entries, it is not intended for creating permanent redirects, which should be handled differently, typically in server-side configurations or specific routing setups."
+        }
+      ]
+    },
+    {
+      "topicId": "69305fc281ffe246cf2e7b9b",
+      "topicName": "router.back()",
+      "quizzes": [
+        {
+          "question": "What is the primary purpose of the router.back() method in Next.js?",
+          "options": [
+            "To navigate to the previous page in the browsing history",
+            "To redirect to a specific URL",
+            "To reload the current page",
+            "To exit the application"
+          ],
+          "correctAnswer": 0,
+          "explanation": "The router.back() method is used to navigate to the previous page in the user's browsing history, similar to the back button in a web browser."
+        },
+        {
+          "question": "If a user accesses a page directly without navigating from another page, what will router.back() do?",
+          "options": [
+            "It will navigate to the homepage",
+            "It will do nothing or remain on the current page",
+            "It will show an error message",
+            "It will navigate to the last visited page"
+          ],
+          "correctAnswer": 1,
+          "explanation": "If there's no previous entry in the browser's history, the router.back() method will effectively do nothing and keep the user on the current page."
+        },
+        {
+          "question": "Which hook is necessary to use the router object within a functional component in Next.js?",
+          "options": [
+            "useRouter",
+            "useState",
+            "useEffect",
+            "useContext"
+          ],
+          "correctAnswer": 0,
+          "explanation": "To access the router object in a functional component, you need to use the useRouter hook provided by Next.js."
+        },
+        {
+          "question": "How can the functionality of router.back() be enhanced to perform additional actions during navigation?",
+          "options": [
+            "By using router.events",
+            "By overriding the popstate event",
+            "By manipulating the history API directly",
+            "By combining it with useEffect"
+          ],
+          "correctAnswer": 0,
+          "explanation": "You can listen to router events, such as 'routeChangeStart', to add logic or actions before or after using router.back()."
+        },
+        {
+          "question": "What happens if router.back() is called inside an asynchronous function?",
+          "questionCode": "async function navigate() { await router.back(); }",
+          "options": [
+            "It will always work as expected",
+            "It may not wait for the back navigation to complete",
+            "It will throw an error",
+            "It will trigger a re-render regardless of the page state"
+          ],
+          "correctAnswer": 1,
+          "explanation": "Calling router.back() in an asynchronous function does not inherently wait for the navigation to complete, which can lead to unexpected behavior if not handled properly."
+        }
+      ]
+    },
+    {
+      "topicId": "69305fc381ffe246cf2e7bca",
+      "topicName": "router.forward()",
+      "quizzes": [
+        {
+          "question": "What is the primary purpose of the router.forward() method in Next.js?",
+          "options": [
+            "To redirect to another route",
+            "To push a new route to the history stack",
+            "To replace the current route",
+            "To forward a request to an API"
+          ],
+          "correctAnswer": 0,
+          "explanation": "router.forward() allows you to redirect the user to another route within your Next.js application."
+        },
+        {
+          "question": "Which of the following is the correct syntax to use router.forward() in a Next.js component?",
+          "questionCode": "import { useRouter } from 'next/router';\nconst MyComponent = () => {\n  const router = useRouter();\n  const handleClick = () => {\n    // Your code here\n  };\n};",
+          "options": [
+            "router.forward('/home');",
+            "router.push('/home');",
+            "router.replace('/home');",
+            "router.go('/home');"
+          ],
+          "correctAnswer": 0,
+          "explanation": "The correct syntax to redirect a user to the '/home' route using router.forward() is router.forward('/home');."
+        },
+        {
+          "question": "If you needed to navigate programmatically after a successful API call, which approach would you take within an async function?",
+          "questionCode": "const handleSubmit = async () => {\n  const response = await fetch('/api/data');\n  // Your logic after fetching\n};",
+          "options": [
+            "router.forward('/success');",
+            "router.push('/success');",
+            "router.replace('/success');",
+            "router.link('/success');"
+          ],
+          "correctAnswer": 1,
+          "explanation": "After a successful API call, using router.push() is the appropriate way to navigate to a new route."
+        },
+        {
+          "question": "What happens if you call router.forward() when the current path is already at the target route?",
+          "options": [
+            "It refreshes the page",
+            "It does nothing",
+            "It throws an error",
+            "It appends to the URL"
+          ],
+          "correctAnswer": 1,
+          "explanation": "Calling router.forward() on a route that is already active will not trigger any new navigation."
+        },
+        {
+          "question": "In which scenario would using router.forward() be considered a bad practice?",
+          "options": [
+            "When redirecting from a login page after authentication",
+            "When using it for client-side navigation between pages",
+            "When forwarding requests to a backend endpoint",
+            "When navigating back to a previous route"
+          ],
+          "correctAnswer": 2,
+          "explanation": "Using router.forward() to forward requests to a backend endpoint is a misuse, as it is meant for client-side navigation only."
+        }
+      ]
+    },
+    {
+      "topicId": "69305fc481ffe246cf2e7bfa",
+      "topicName": "useRouter()",
+      "quizzes": [
+        {
+          "question": "What is the main purpose of the useRouter() hook in Next.js?",
+          "options": [
+            "To manage component state",
+            "To handle routing in Next.js applications",
+            "To make API calls",
+            "To style components"
+          ],
+          "correctAnswer": 1,
+          "explanation": "The useRouter() hook provides access to the router object, which allows developers to manage navigation and routing within Next.js applications."
+        },
+        {
+          "question": "Which property of the router object can be used to get the current URL path in a Next.js component?",
+          "options": [
+            "router.query",
+            "router.pathname",
+            "router.index",
+            "router.url"
+          ],
+          "correctAnswer": 1,
+          "explanation": "The 'router.pathname' property gives the current URL path, excluding the query string."
+        },
+        {
+          "question": "How can you programmatically navigate to a different route using useRouter()?",
+          "options": [
+            "router.navigate('/new-route')",
+            "router.push('/new-route')",
+            "router.go('/new-route')",
+            "router.move('/new-route')"
+          ],
+          "correctAnswer": 1,
+          "explanation": "The 'router.push()' method is used to navigate to a new route programmatically in Next.js.",
+          "sampleCode": "const router = useRouter();\nrouter.push('/new-route');"
+        },
+        {
+          "question": "What happens when you call router.push() with the same URL as the current route?",
+          "options": [
+            "It reloads the page",
+            "It does nothing",
+            "It causes a routing error",
+            "It updates the state without reloading"
+          ],
+          "correctAnswer": 0,
+          "explanation": "Calling router.push() with the same URL will trigger a page reload in Next.js, as it recognizes the navigation to the same route."
+        },
+        {
+          "question": "In which scenario is useRouter() particularly useful?",
+          "questionCode": "const { query } = useRouter();\nconsole.log(query.id);",
+          "options": [
+            "When retrieving data based on a dynamic route",
+            "When styling dynamically based on path",
+            "When creating a loading spinner",
+            "When managing local state"
+          ],
+          "correctAnswer": 0,
+          "explanation": "useRouter() is particularly useful for retrieving query parameters from a dynamic route, allowing developers to fetch data based on specific IDs or other parameters in the URL.",
+          "sampleCode": "const router = useRouter();\nconst { id } = router.query; // Fetch data based on ID"
+        }
+      ]
+    },
+    {
+      "topicId": "69305fc581ffe246cf2e7c2b",
+      "topicName": "usePathname()",
+      "quizzes": [
+        {
+          "question": "What is the primary purpose of the usePathname() hook in Next.js?",
+          "options": [
+            "To retrieve the current pathname of the URL",
+            "To navigate to a new route",
+            "To manage local state",
+            "To fetch data from an API"
+          ],
+          "correctAnswer": 0,
+          "explanation": "The usePathname() hook is designed to retrieve the current pathname of the URL in a Next.js application."
+        },
+        {
+          "question": "In which version of Next.js was the usePathname() hook introduced?",
+          "options": [
+            "Next.js 10",
+            "Next.js 11",
+            "Next.js 12",
+            "Next.js 13"
+          ],
+          "correctAnswer": 3,
+          "explanation": "The usePathname() hook was introduced in Next.js 13 as part of new routing features."
+        },
+        {
+          "question": "How can you use usePathname() to conditionally render a component based on the current URL?",
+          "questionCode": "const pathname = usePathname();",
+          "options": [
+            "return <Component />;",
+            "return pathname === '/about' ? <Component /> : null;",
+            "return null;",
+            "console.log(pathname);"
+          ],
+          "correctAnswer": 1,
+          "explanation": "You can use the pathname returned by usePathname() to check the current URL and conditionally render components.",
+          "sampleCode": "const ComponentToRender = () => { const pathname = usePathname(); return pathname === '/about' ? <AboutComponent /> : null; };"
+        },
+        {
+          "question": "Which of the following statements about usePathname() is FALSE?",
+          "options": [
+            "It directly manipulates the browser's history stack.",
+            "It provides the pathname as a string.",
+            "It only updates when the pathname changes.",
+            "It can be used in function components."
+          ],
+          "correctAnswer": 0,
+          "explanation": "usePathname() does not manipulate the browser's history; it simply provides the current pathname from the React context."
+        },
+        {
+          "question": "You want to show a modal when the pathname is '/products'. How would you correctly implement this using usePathname()?",
+          "options": [
+            "const pathname = usePathname(); if (pathname === '/products') showModal();",
+            "if (usePathname() === '/products') showModal();",
+            "const pathname = usePathname(); return pathname === '/products' ? <Modal /> : null;",
+            "Both option A and B are correct."
+          ],
+          "correctAnswer": 2,
+          "explanation": "The correct implementation uses the pathname to conditionally render the modal component when the pathname matches '/products'.",
+          "sampleCode": "const ModalTrigger = () => { const pathname = usePathname(); return pathname === '/products' ? <Modal /> : null; };"
+        }
+      ]
+    },
+    {
+      "topicId": "69305fc581ffe246cf2e7c5d",
+      "topicName": "router.prefetch()",
+      "quizzes": [
+        {
+          "question": "What does router.prefetch() do in a Next.js application?",
+          "options": [
+            "It caches the current page to improve performance.",
+            "It preloads the page's resources for faster navigation.",
+            "It fetches data from an API before rendering a component.",
+            "It updates the browser's history state."
+          ],
+          "correctAnswer": 1,
+          "explanation": "router.prefetch() preloads a page's resources in the background, allowing for faster navigation when the user clicks a link to that page."
+        },
+        {
+          "question": "When should you typically use router.prefetch()?",
+          "options": [
+            "Only when the application is first loaded.",
+            "On every link click to ensure pages are always preloaded.",
+            "In a component where you anticipate user interaction with a link.",
+            "Whenever component state updates."
+          ],
+          "correctAnswer": 2,
+          "explanation": "Using router.prefetch() in a component where user interaction is anticipated allows for better performance and a smoother user experience."
+        },
+        {
+          "question": "Which of the following statements is TRUE about router.prefetch()?",
+          "options": [
+            "router.prefetch() requires special permission from the user.",
+            "router.prefetch() can be used for API data fetching.",
+            "There is no performance benefit from using router.prefetch().",
+            "router.prefetch() can help reduce perceived loading times."
+          ],
+          "correctAnswer": 3,
+          "explanation": "By preloading a page's resources, router.prefetch() can significantly reduce the time it takes to navigate to that page, enhancing the user experience."
+        },
+        {
+          "question": "How would you prefetch the 'about' page in Next.js using router.prefetch()?",
+          "questionCode": "router.prefetch('/about');",
+          "options": [
+            "router.load('/about');",
+            "router.prefetch('/about');",
+            "router.fetch('/about');",
+            "router.preload('/about');"
+          ],
+          "correctAnswer": 1,
+          "explanation": "The correct syntax to prefetch the 'about' page in a Next.js application is router.prefetch('/about')."
+        },
+        {
+          "question": "What happens if you use router.prefetch() for a page that does not exist?",
+          "options": [
+            "It will throw an error and stop the application.",
+            "It will log a warning in the console but otherwise do nothing.",
+            "It will prefetch an empty page, consuming network resources.",
+            "There will be no effect since it only prefetches valid routes."
+          ],
+          "correctAnswer": 2,
+          "explanation": "Using router.prefetch() on a page that does not exist will still attempt to prefetch it, leading to an empty page being cached, which is inefficient."
+        }
+      ]
+    },
+    {
+      "topicId": "6930601181ffe246cf2e7c91",
+      "topicName": "shallow routing",
+      "quizzes": [
+        {
+          "question": "What is shallow routing in Next.js?",
+          "options": [
+            "Updating the URL without triggering a page reload",
+            "Loading a new page by fully refreshing",
+            "Using a different backend on route change",
+            "Rendering dynamic content based on query parameters"
+          ],
+          "correctAnswer": 0,
+          "explanation": "Shallow routing allows you to change the URL with `Router.push` without running data fetching methods again, thus preventing a full page reload."
+        },
+        {
+          "question": "When is shallow routing commonly used in Next.js applications?",
+          "options": [
+            "For form submissions",
+            "For navigating between pages without losing state",
+            "For optimizing image loading",
+            "For server-side rendering only"
+          ],
+          "correctAnswer": 1,
+          "explanation": "Shallow routing is particularly useful for maintaining application state while changing URLs, allowing for seamless navigation without a reload."
+        },
+        {
+          "question": "Which method in the Next.js router enables shallow routing?",
+          "options": [
+            "Router.push()",
+            "Router.replace()",
+            "Router.navigate()",
+            "Router.link()"
+          ],
+          "correctAnswer": 0,
+          "explanation": "Both `Router.push` and `Router.replace` can be used for shallow routing, allowing changes to the URL without a full reload.",
+          "sampleCode": "Router.push('/your-page', undefined, { shallow: true });"
+        },
+        {
+          "question": "What happens to the lifecycle methods when shallow routing is used?",
+          "options": [
+            "They are triggered every time the route changes.",
+            "They are only triggered the first time the component mounts.",
+            "They are skipped completely.",
+            "Only the data fetching methods are skipped."
+          ],
+          "correctAnswer": 3,
+          "explanation": "When using shallow routing, only the data fetching methods are skipped, while the component lifecycle methods are still called."
+        },
+        {
+          "question": "Consider the following code snippet. What will happen when the `shallow` option is set to true? <br> <code>Router.push('/about', undefined, { shallow: true });</code>",
+          "questionCode": "<code>Router.push('/about', undefined, { shallow: true });</code>",
+          "options": [
+            "The '/about' page will load with a full refresh.",
+            "Both getStaticProps and getServerSideProps will run.",
+            "Only the component will update, without calling any data fetching methods.",
+            "The URL will change but will not update the component."
+          ],
+          "correctAnswer": 2,
+          "explanation": "With `shallow: true`, the URL updates, and the component will re-render without calling data fetching methods like `getStaticProps` or `getServerSideProps`."
+        }
+      ]
+    },
+    {
+      "topicId": "6930601381ffe246cf2e7cc5",
+      "topicName": "replacing vs pushing",
+      "quizzes": [
+        {
+          "question": "What is the primary difference between 'replace' and 'push' in Next.js routing?",
+          "options": [
+            "'replace' changes the URL without adding a new entry in the history stack",
+            "'push' navigates back to the previous page",
+            "'replace' conducts a full page reload",
+            "'push' changes the URL and adds a new entry in the history stack"
+          ],
+          "correctAnswer": 0,
+          "explanation": "'replace' modifies the URL and doesn't store the new state in history, unlike 'push' which adds to the history stack."
+        },
+        {
+          "question": "Which method would you use in Next.js to redirect users without allowing them to go back to the last page?",
+          "options": [
+            "push",
+            "replace",
+            "navigate",
+            "setRoute"
+          ],
+          "correctAnswer": 1,
+          "explanation": "The 'replace' method is ideal for redirection without saving the previous page in the browser history."
+        },
+        {
+          "question": "Consider the following code snippet: async function handleNavigation() { router.push('/home'); } What will happen if the user clicks the back button after this navigation?",
+          "questionCode": "router.push('/home');",
+          "options": [
+            "The user will return to the previous page in their history stack.",
+            "The user will remain on the home page.",
+            "The user will see an error.",
+            "The router will reload the '/home' page."
+          ],
+          "correctAnswer": 0,
+          "explanation": "Using 'push' adds the '/home' route to the history stack, allowing the user to go back to the previous page."
+        },
+        {
+          "question": "What is a potential downside of using 'replace' multiple times in a row in your application?",
+          "options": [
+            "It may lead to navigation loops.",
+            "It can cause the application to crash.",
+            "It doesn't maintain the user's navigation history effectively.",
+            "It increases load times significantly."
+          ],
+          "correctAnswer": 2,
+          "explanation": "Repeatedly using 'replace' can remove all previous entries in the history, making it difficult for users to navigate back to previous pages."
+        },
+        {
+          "question": "In scenarios where users need to maintain their navigation history, which routing method should be favored and why?",
+          "options": [
+            "'push' because it maintains history needed for back navigation.",
+            "'replace' because it prevents clutter in history.",
+            "'setRoute' as it combines best of both methods.",
+            "'navigate' is always preferable for all scenarios."
+          ],
+          "correctAnswer": 0,
+          "explanation": "The 'push' method allows users to navigate back to previous pages since it stores each new page in the history stack."
+        }
+      ]
+    }
+  ]
+}

@@ -212,6 +212,22 @@ export default function Login() {
                 </button>
               </form>
             )}
+
+            {/* Google sign-in for mobile/tablet — desktop shows it in the left column */}
+            <div className="lg:hidden">
+              <div className="flex items-center gap-3 my-5">
+                <div className="flex-1 h-px bg-border" />
+                <span className="text-xs text-muted">or</span>
+                <div className="flex-1 h-px bg-border" />
+              </div>
+              <a
+                href={`${import.meta.env.VITE_API_URL || ''}/api/auth/google`}
+                className="flex items-center justify-center gap-3 w-full border border-border hover:border-text bg-white px-4 py-2.5 rounded-xl text-sm font-medium text-text transition-colors"
+              >
+                <GoogleIcon />
+                Continue with Google
+              </a>
+            </div>
           </div>
 
         </div>

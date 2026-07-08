@@ -1,0 +1,72 @@
+{
+  "generatedAt": "2026-07-08T13:26:13.852Z",
+  "modules": [
+    {
+      "moduleId": "6a3a23db9a460185578287d6",
+      "moduleTitle": "postgreSQL",
+      "topics": [
+        {
+          "topicId": "6938c22b2e54c34c8aa75e75",
+          "topicName": "psql commands",
+          "quizzes": [
+            {
+              "question": "What command would you use to connect to a PostgreSQL database using psql?",
+              "options": [
+                "CONNECT your_database_name;",
+                "psql -d your_database_name",
+                "USE your_database_name;",
+                "OPEN your_database_name;"
+              ],
+              "correctAnswer": 1,
+              "explanation": "The correct command to connect to a PostgreSQL database in psql is 'psql -d your_database_name'."
+            },
+            {
+              "question": "Which psql command lists all tables in the current database?",
+              "options": [
+                "\\dt",
+                "ables",
+                "\\list",
+                "\\show tables"
+              ],
+              "correctAnswer": 0,
+              "explanation": "The command '\\dt' is used in psql to list all tables in the current database."
+            },
+            {
+              "question": "How do you run a SQL file named 'script.sql' using psql?",
+              "options": [
+                "\\i script.sql",
+                "RUN script.sql",
+                "EXECUTE script.sql",
+                "LOAD script.sql"
+              ],
+              "correctAnswer": 0,
+              "explanation": "The command '\\i script.sql' is used in psql to execute a SQL script from a file."
+            },
+            {
+              "question": "What is the correct syntax to display help for a specific command in psql?",
+              "options": [
+                "? command",
+                "help command",
+                "\\h command",
+                "help for command"
+              ],
+              "correctAnswer": 2,
+              "explanation": "Using '\\h command' in psql displays the help for the specific SQL command."
+            },
+            {
+              "question": "Which command would you use to exit psql?",
+              "options": [
+                "QUIT",
+                "EXIT",
+                "\\q",
+                "LEAVE"
+              ],
+              "correctAnswer": 2,
+              "explanation": "The correct command to exit psql is '\\q'."
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

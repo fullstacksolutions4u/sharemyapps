@@ -1,0 +1,2644 @@
+{
+  "moduleId": "6a3a23db9a46018557828972",
+  "moduleTitle": "System Design",
+  "generatedAt": "2026-07-08T10:15:44.277Z",
+  "topics": [
+    {
+      "topicId": "69306b21d2037f41a1987014",
+      "topicName": "what is system design ?",
+      "quizzes": [
+        {
+          "question": "What is the primary goal of system design?",
+          "options": [
+            "To maximize resource utilization",
+            "To create high-level architecture",
+            "To limit scalability",
+            "To enhance code complexity"
+          ],
+          "correctAnswer": 1,
+          "explanation": "The primary goal of system design is to create a high-level architecture that meets business requirements while ensuring scalability and maintainability."
+        },
+        {
+          "question": "Which of the following components is not typically included in a system architecture diagram?",
+          "options": [
+            "Servers",
+            "Database",
+            "User Interfaces",
+            "Individual Lines of Code"
+          ],
+          "correctAnswer": 3,
+          "explanation": "Individual lines of code are not represented in a system architecture diagram, which focuses on high-level components and their interactions."
+        },
+        {
+          "question": "What is a key aspect of designing a scalable system?",
+          "options": [
+            "Using a single database",
+            "Implementing load balancing",
+            "Ignoring fault tolerance",
+            "Limiting user access"
+          ],
+          "correctAnswer": 1,
+          "explanation": "Implementing load balancing is crucial for scalability as it distributes traffic across multiple servers, preventing overload and improving performance."
+        },
+        {
+          "question": "In a microservices architecture, how do services typically communicate with each other?",
+          "options": [
+            "Direct memory access",
+            "File sharing",
+            "REST APIs or messaging queues",
+            "Shared databases"
+          ],
+          "correctAnswer": 2,
+          "explanation": "Microservices commonly communicate via REST APIs or messaging queues, allowing them to remain loosely coupled and independently deployable."
+        },
+        {
+          "question": "Which of the following design patterns is best suited for handling system failures gracefully?",
+          "options": [
+            "Observer Pattern",
+            "Circuit Breaker Pattern",
+            "Singleton Pattern",
+            "Factory Pattern"
+          ],
+          "correctAnswer": 1,
+          "explanation": "The Circuit Breaker Pattern is specifically designed to prevent repeated failures in distributed systems by stopping attempts to invoke a service that is likely to fail."
+        }
+      ]
+    },
+    {
+      "topicId": "694123693f38d3ce12b7f125",
+      "topicName": "Functional vs Non-functional requirements",
+      "quizzes": [
+        {
+          "question": "What is a functional requirement?",
+          "options": [
+            "A requirement that defines what a system should do.",
+            "A requirement that defines how a system performs its functions.",
+            "A requirement related to the system's scalability.",
+            "A requirement about documentation and maintenance."
+          ],
+          "correctAnswer": 0,
+          "explanation": "Functional requirements specify the behavior and functions of a system, detailing what tasks the system must accomplish."
+        },
+        {
+          "question": "Which of the following is an example of a non-functional requirement?",
+          "options": [
+            "The system should allow users to create accounts.",
+            "The system must be able to handle 10,000 concurrent users.",
+            "The system should display user feedback in real-time.",
+            "The system must integrate with a third-party payment processor."
+          ],
+          "correctAnswer": 1,
+          "explanation": "Non-functional requirements relate to how a system performs its functions, such as scalability, performance, and security."
+        },
+        {
+          "question": "In which stage of system design are non-functional requirements typically assessed?",
+          "options": [
+            "During requirements gathering",
+            "During user acceptance testing",
+            "During system development",
+            "During project initiation"
+          ],
+          "correctAnswer": 0,
+          "explanation": "Non-functional requirements are usually defined during the requirements gathering stage to ensure they are considered early in the design process."
+        },
+        {
+          "question": "Which of the following statements best distinguishes functional from non-functional requirements?",
+          "options": [
+            "Functional requirements are about the user interface, while non-functional are about security.",
+            "Functional requirements describe what the system should do, while non-functional describe how it should perform.",
+            "Functional requirements are mandatory, while non-functional are optional.",
+            "Functional requirements are related to coding, while non-functional relate only to hardware."
+          ],
+          "correctAnswer": 1,
+          "explanation": "The key distinction is that functional requirements detail the actions a system must take, while non-functional requirements focus on the quality attributes of those actions."
+        },
+        {
+          "question": "How can you measure a non-functional requirement related to performance?",
+          "questionCode": "responseTime.js",
+          "options": [
+            "By counting the number of active users at peak times.",
+            "By running load testing to determine response time under load.",
+            "By checking the code for efficiency.",
+            "By surveying user satisfaction after the system is deployed."
+          ],
+          "correctAnswer": 1,
+          "explanation": "Load testing provides quantitative measurements of how the system performs under various conditions, establishing compliance with non-functional performance requirements.",
+          "sampleCode": "const responseTime = measureResponseTime();"
+        }
+      ]
+    },
+    {
+      "topicId": "6941236a3f38d3ce12b7f12a",
+      "topicName": "Requirement clarification",
+      "quizzes": [
+        {
+          "question": "What is the primary goal of requirement clarification in system design?",
+          "options": [
+            "To gather detailed system functionality",
+            "To eliminate all ambiguities in requirements",
+            "To prioritize system requirements",
+            "To minimize stakeholder involvement"
+          ],
+          "correctAnswer": 1,
+          "explanation": "The primary goal is to eliminate ambiguities in requirements to ensure a clear understanding among all stakeholders."
+        },
+        {
+          "question": "Which technique is commonly used to clarify requirements with stakeholders?",
+          "options": [
+            "Prototyping",
+            "Code review",
+            "Debugging",
+            "Version control"
+          ],
+          "correctAnswer": 0,
+          "explanation": "Prototyping is a technique that allows stakeholders to visualize requirements, making it easier to clarify and refine them."
+        },
+        {
+          "question": "When should requirement clarification ideally take place?",
+          "options": [
+            "Only after initial development starts",
+            "At the end of the project",
+            "Before and during the development process",
+            "After the project is completed"
+          ],
+          "correctAnswer": 2,
+          "explanation": "Requirement clarification should take place before and throughout the development process to ensure alignment and adapt to any changes."
+        },
+        {
+          "question": "In a situation where conflicting requirements are identified during clarification, what is the best course of action?",
+          "options": [
+            "Ignore the conflicts",
+            "Raise the issues with stakeholders for discussion",
+            "Choose the requirements arbitrarily",
+            "Implement both requirements as is"
+          ],
+          "correctAnswer": 1,
+          "explanation": "The best approach is to raise the conflicting requirements with stakeholders to discuss and resolve the issues collectively."
+        },
+        {
+          "question": "How can requirement ambiguity impact the design process?",
+          "options": [
+            "It can lead to perfectly meeting user needs",
+            "It ensures faster development",
+            "It can cause project delays and increased costs",
+            "It simplifies the coding process"
+          ],
+          "correctAnswer": 2,
+          "explanation": "Ambiguity in requirements can lead to misunderstandings, resulting in project delays and increased costs due to rework or incorrect implementations."
+        }
+      ]
+    },
+    {
+      "topicId": "6941236b3f38d3ce12b7f130",
+      "topicName": "Capacity estimation (users, traffic, storage)",
+      "quizzes": [
+        {
+          "question": "What is the primary purpose of capacity estimation in system design?",
+          "options": [
+            "To determine the maximum user load a system can handle",
+            "To identify potential security vulnerabilities",
+            "To optimize the user interface",
+            "To measure the performance of a database"
+          ],
+          "correctAnswer": 0,
+          "explanation": "Capacity estimation helps to define the maximum load a system can manage effectively under given constraints, ensuring scalability and reliability."
+        },
+        {
+          "question": "When estimating traffic for a web application, what metric is typically most important?",
+          "options": [
+            "Total storage used",
+            "Number of unique visitors",
+            "Number of HTTP requests per second",
+            "Database query complexity"
+          ],
+          "correctAnswer": 2,
+          "explanation": "The number of HTTP requests per second is critical as it directly impacts server load and resource allocation."
+        },
+        {
+          "question": "If a web application expects to have 100,000 users and each user is predicted to produce an average of 0.5 requests per second, what is the estimated total traffic in requests per second?",
+          "options": [
+            "50,000 requests/second",
+            "100,000 requests/second",
+            "200,000 requests/second",
+            "10,000 requests/second"
+          ],
+          "correctAnswer": 0,
+          "explanation": "With 100,000 users producing 0.5 requests per second each, the total traffic would be 100,000 * 0.5 = 50,000 requests per second."
+        },
+        {
+          "question": "In terms of storage capacity, which factor is least likely to affect the total required storage for user data?",
+          "options": [
+            "Size of user profile images",
+            "Frequency of user activity",
+            "User account settings data",
+            "Data retention policy length"
+          ],
+          "correctAnswer": 1,
+          "explanation": "While user activity frequency can influence server load, it is the size and type of data stored that directly affects storage capacity, not how often users interact with the system."
+        },
+        {
+          "question": "How would you estimate the required storage capacity for logs generated by a microservices architecture that produces 10 MB of logs per service per hour, assuming 10 services and a retention period of 30 days?",
+          "options": [
+            "Total storage = 3 TB",
+            "Total storage = 7.2 GB",
+            "Total storage = 10 GB",
+            "Total storage = 12 TB"
+          ],
+          "correctAnswer": 3,
+          "explanation": "With 10 services producing 10 MB/hour, over 30 days, total logs would be 10 MB * 10 services * 24 hours * 30 days = 72,000 MB, which is 12 TB."
+        }
+      ]
+    },
+    {
+      "topicId": "6941236c3f38d3ce12b7f137",
+      "topicName": "Latency vs throughput",
+      "quizzes": [
+        {
+          "question": "What is latency in the context of system performance?",
+          "options": [
+            "The amount of data processed in a given time.",
+            "The time delay from the request to the response.",
+            "The total number of requests handled per second.",
+            "The maximum capacity of a network."
+          ],
+          "correctAnswer": 1,
+          "explanation": "Latency refers to the time delay between a request for data and the start of the response, making option B the correct answer."
+        },
+        {
+          "question": "What does throughput measure in a system?",
+          "options": [
+            "The latency of processes within a system.",
+            "The total number of messages queued in a system.",
+            "The amount of data successfully processed in a given time frame.",
+            "The number of errors encountered during processing."
+          ],
+          "correctAnswer": 2,
+          "explanation": "Throughput is the measure of how much data can be processed in a specific time frame, therefore option C is correct."
+        },
+        {
+          "question": "Which of the following statements is true regarding latency and throughput?",
+          "options": [
+            "High latency always results in high throughput.",
+            "Low latency can correspond to low throughput.",
+            "Latency and throughput are directly correlated in all systems.",
+            "Throughput can be increased by reducing latency without any cost."
+          ],
+          "correctAnswer": 1,
+          "explanation": "It is possible to have low latency with low throughput, especially in systems that process requests one at a time, making option B the correct statement."
+        },
+        {
+          "question": "In a system where a single task takes considerable time to execute, how might this affect overall throughput?",
+          "options": [
+            "Throughput will likely increase due to faster processing.",
+            "Throughput will be low due to the time taken for each task.",
+            "Latency and throughput are unrelated, so throughput remains unaffected.",
+            "Throughput will fluctuate significantly with each task."
+          ],
+          "correctAnswer": 1,
+          "explanation": "If a single task takes a long time to execute, the overall throughput will decrease because fewer tasks are completed in the same timeframe, making option B correct."
+        },
+        {
+          "question": "How can improving latency impact a system with high throughput requirements?",
+          "options": [
+            "Improving latency will not affect throughput.",
+            "Improving latency typically increases throughput as requests are processed faster.",
+            "Latency improvements make no difference in user experience.",
+            "Reducing latency will always increase system costs significantly."
+          ],
+          "correctAnswer": 1,
+          "explanation": "Reducing latency allows requests to be handled more quickly, ideally leading to higher throughput as more requests can be processed in the same time, so option B is correct."
+        }
+      ]
+    },
+    {
+      "topicId": "6941236d3f38d3ce12b7f13f",
+      "topicName": "Availability vs consistency trade-offs",
+      "quizzes": [
+        {
+          "question": "What does the CAP theorem state?",
+          "options": [
+            "Consistency, Availability, Partition tolerance",
+            "Consistency, Accessibility, Performance",
+            "Availability, Partition tolerance, Efficiency",
+            "Consistency, Accessibility, Partitioning"
+          ],
+          "correctAnswer": 0,
+          "explanation": "The CAP theorem states that a distributed system can guarantee only two of the three properties: Consistency, Availability, and Partition tolerance."
+        },
+        {
+          "question": "In a scenario where a system prioritizes availability over consistency, what can happen during a network partition?",
+          "options": [
+            "Data may be lost permanently",
+            "Data may become inconsistent across nodes",
+            "Requests may be rejected",
+            "All reads will return the same stale data"
+          ],
+          "correctAnswer": 1,
+          "explanation": "When prioritizing availability during a network partition, the system allows operations to continue, potentially leading to inconsistent data across nodes until the partition is resolved."
+        },
+        {
+          "question": "Which of the following architectures is more likely to prioritize consistency over availability?",
+          "options": [
+            "AP systems",
+            "CP systems",
+            "CA systems",
+            "EA systems"
+          ],
+          "correctAnswer": 1,
+          "explanation": "CP systems prioritize consistency and partition tolerance at the cost of availability, ensuring that operations provide consistent results even in the event of a partition."
+        },
+        {
+          "question": "In a distributed database, when is it acceptable to sacrifice consistency for higher availability?",
+          "options": [
+            "During high read loads",
+            "In financial transactions",
+            "In non-critical systems where user experience is prioritized",
+            "During system maintenance"
+          ],
+          "correctAnswer": 2,
+          "explanation": "In non-critical systems where user experience is more important than perfect data accuracy, sacrificing consistency for availability can improve responsiveness."
+        },
+        {
+          "question": "What is the primary downside of ensuring strong consistency in a distributed system?",
+          "options": [
+            "Increased response time",
+            "Reduced availability",
+            "Higher latency",
+            "All of the above"
+          ],
+          "correctAnswer": 3,
+          "explanation": "Ensuring strong consistency typically leads to increased response time, reduced availability due to waiting for consensus, and higher latency, as nodes must communicate to agree on the data state."
+        }
+      ]
+    },
+    {
+      "topicId": "6941236d3f38d3ce12b7f148",
+      "topicName": "Bottlenecks & constraints",
+      "quizzes": [
+        {
+          "question": "What is a bottleneck in system design?",
+          "options": [
+            "A point in the system that limits overall performance",
+            "A component that enhances system speed",
+            "An area of high redundancy in a system",
+            "A security vulnerability in the architecture"
+          ],
+          "correctAnswer": 0,
+          "explanation": "A bottleneck is a point in the system where the performance is limited, which slows down the entire process."
+        },
+        {
+          "question": "Which of the following methods is most effective for identifying performance bottlenecks?",
+          "options": [
+            "Code reviews",
+            "Load testing",
+            "Static code analysis",
+            "Documentation audits"
+          ],
+          "correctAnswer": 1,
+          "explanation": "Load testing simulates user traffic to identify how different components of the system react under stress, revealing potential bottlenecks."
+        },
+        {
+          "question": "In a distributed system, which of the following is a common constraint that can cause bottlenecks?",
+          "options": [
+            "Network latency",
+            "Excessive redundancy",
+            "Code duplication",
+            "Generous resource allocation"
+          ],
+          "correctAnswer": 0,
+          "explanation": "Network latency can slow down communication between system components, leading to performance issues and bottlenecks."
+        },
+        {
+          "question": "Which strategy can help alleviate bottlenecks in a database system?",
+          "options": [
+            "Increase the number of indexes",
+            "Decrease the amount of data stored",
+            "Reduce the number of queries",
+            "Centralize database access"
+          ],
+          "correctAnswer": 0,
+          "explanation": "Increasing the number of indexes can improve query performance by allowing the database to retrieve data faster, alleviating bottlenecks."
+        },
+        {
+          "question": "Consider a web application that experiences slow response times during peak usage. What may be a potential cause of this bottleneck?",
+          "questionCode": "function processRequest(request) { /* implementation */ }",
+          "options": [
+            "Limited concurrency handling",
+            "Excessive caching",
+            "Optimized database queries",
+            "Using a load balancer"
+          ],
+          "correctAnswer": 0,
+          "explanation": "If a web application cannot handle multiple requests concurrently due to limited concurrency management, it can lead to slow response times during peak usage."
+        }
+      ]
+    },
+    {
+      "topicId": "694123863f38d3ce12b7f153",
+      "topicName": "Monolithic architecture",
+      "quizzes": [
+        {
+          "question": "What is the main characteristic of a monolithic architecture?",
+          "options": [
+            "Microservices are used",
+            "All components are interdependent",
+            "Database is decentralized",
+            "Scalability is achieved through multiple services"
+          ],
+          "correctAnswer": 1,
+          "explanation": "In a monolithic architecture, all components are tightly coupled and interdependent, forming a single, unified application."
+        },
+        {
+          "question": "Which of the following is a potential downside of using monolithic architecture?",
+          "options": [
+            "Easier deployment of individual components",
+            "High maintainability",
+            "Difficulties in scaling parts of the application",
+            "Better performance due to unified codebase"
+          ],
+          "correctAnswer": 2,
+          "explanation": "Scaling parts of a monolithic application can be challenging since the entire application must be scaled together."
+        },
+        {
+          "question": "In a monolithic application, which of the following is typically true regarding deployment?",
+          "options": [
+            "Individual components can be deployed separately",
+            "Deployment is done once for the entire application",
+            "Requires complex orchestration tools",
+            "Updates can be rolled back individually"
+          ],
+          "correctAnswer": 1,
+          "explanation": "Monolithic applications require a single deployment of the entire application, as it operates as a cohesive unit."
+        },
+        {
+          "question": "How does a monolithic architecture generally affect code maintainability as the application grows?",
+          "options": [
+            "Maintainability improves due to simplicity",
+            "Maintainability becomes more difficult due to increased complexity",
+            "Maintainability remains unchanged regardless of size",
+            "It allows for easier testing of individual functionalities"
+          ],
+          "correctAnswer": 1,
+          "explanation": "As monolithic applications grow, the complexity can make them harder to maintain due to tightly coupled components."
+        },
+        {
+          "question": "In what scenario might a developer choose to refactor a monolithic application into microservices?",
+          "options": [
+            "When the application has minimal load",
+            "To simplify development processes",
+            "When scalability and independent deployment are required",
+            "To maintain a traditional architecture"
+          ],
+          "correctAnswer": 2,
+          "explanation": "Refactoring to microservices is beneficial when scalability and independent deployment of application components are essential due to increasing demands."
+        }
+      ]
+    },
+    {
+      "topicId": "694123863f38d3ce12b7f15e",
+      "topicName": "Layered architecture",
+      "quizzes": [
+        {
+          "question": "What is the primary purpose of using layered architecture in software design?",
+          "options": [
+            "To increase performance by reducing layers",
+            "To encourage reuse and separate concerns",
+            "To eliminate the need for API documentation",
+            "To make the code more obtuse"
+          ],
+          "correctAnswer": 1,
+          "explanation": "Layered architecture promotes separation of concerns, making it easier to manage and reuse components."
+        },
+        {
+          "question": "Which of the following layers typically handles the data access logic in a layered architecture?",
+          "options": [
+            "Presentation Layer",
+            "Business Logic Layer",
+            "Data Access Layer",
+            "Service Layer"
+          ],
+          "correctAnswer": 2,
+          "explanation": "The Data Access Layer is responsible for all interactions with the data source, abstracting the underlying data storage details."
+        },
+        {
+          "question": "In a typical layered architecture, which layer would directly interact with the user interface?",
+          "options": [
+            "Business Logic Layer",
+            "Data Access Layer",
+            "Presentation Layer",
+            "Application Layer"
+          ],
+          "correctAnswer": 2,
+          "explanation": "The Presentation Layer is specifically designed to handle user interface interactions and present data to the user."
+        },
+        {
+          "question": "Consider the following code snippet. Which layer is likely missing if the error relates to business rules not being enforced?",
+          "questionCode": "function calculateTotal(price, quantity) { return price * quantity; }",
+          "options": [
+            "Presentation Layer",
+            "Data Access Layer",
+            "Business Logic Layer",
+            "Service Layer"
+          ],
+          "correctAnswer": 2,
+          "explanation": "The Business Logic Layer is responsible for implementing and enforcing business rules, and if they are missing, this layer is likely not implemented correctly."
+        },
+        {
+          "question": "In the context of layered architecture, what is the drawback of having too many layers?",
+          "options": [
+            "Reduces code maintainability",
+            "Increases network latency",
+            "Complicates the testing process",
+            "Can introduce performance overhead"
+          ],
+          "correctAnswer": 3,
+          "explanation": "Having too many layers can introduce performance overhead due to increased data passing and processing time between layers."
+        }
+      ]
+    },
+    {
+      "topicId": "694123873f38d3ce12b7f16a",
+      "topicName": "Microservices architecture",
+      "quizzes": [
+        {
+          "question": "What is a primary benefit of microservices architecture over monolithic architecture?",
+          "options": [
+            "Easier to scale individual components",
+            "Simpler codebase management",
+            "Less deployment complexity",
+            "Tighter coupling between components"
+          ],
+          "correctAnswer": 0,
+          "explanation": "Microservices allow for independent scaling of services, which is a key advantage over monolithic architectures."
+        },
+        {
+          "question": "In a microservices architecture, what is a common way to enable service-to-service communication?",
+          "options": [
+            "Direct database access",
+            "Message queues",
+            "Shared memory",
+            "Single API endpoint for all services"
+          ],
+          "correctAnswer": 1,
+          "explanation": "Message queues facilitate asynchronous communication between microservices, ensuring decoupling and improving resiliency."
+        },
+        {
+          "question": "Which of the following patterns is commonly used for handling failures in microservices?",
+          "options": [
+            "Load balancing",
+            "Circuit breaker",
+            "Vertical scaling",
+            "HTTP cache"
+          ],
+          "correctAnswer": 1,
+          "explanation": "The circuit breaker pattern helps to prevent failure propagation in a microservice architecture by opening a circuit to stop requests to a failing service."
+        },
+        {
+          "question": "When deploying a microservices application, what is one of the main concerns regarding data management?",
+          "options": [
+            "Using a single database for all services",
+            "Data consistency across services",
+            "Limiting data access to one service only",
+            "Centralizing data processing"
+          ],
+          "correctAnswer": 1,
+          "explanation": "Microservices often have their own databases, which raises challenges with consistency, especially in distributed transactions."
+        },
+        {
+          "question": "Which of the following best describes 'API gateway' in the context of microservices?",
+          "options": [
+            "A direct link between the client and services",
+            "A single entry point for managing requests to multiple services",
+            "A database that stores API keys",
+            "A service that scales other services automatically"
+          ],
+          "correctAnswer": 1,
+          "explanation": "An API gateway is a mediator that manages requests from clients to various microservices, handling routing, security, and load balancing."
+        }
+      ]
+    },
+    {
+      "topicId": "694123883f38d3ce12b7f177",
+      "topicName": "Event-driven architecture",
+      "quizzes": [
+        {
+          "question": "What defines an event-driven architecture?",
+          "options": [
+            "It relies on synchronous requests between services.",
+            "It uses messages to trigger actions within systems.",
+            "It is based on a monolithic design structure.",
+            "It prioritizes database transactions."
+          ],
+          "correctAnswer": 1,
+          "explanation": "Event-driven architecture is characterized by the production and consumption of events that trigger actions within systems."
+        },
+        {
+          "question": "Which of the following is a common benefit of using event-driven architecture?",
+          "options": [
+            "Increased database integrity",
+            "Improved coupling between services",
+            "Scalability through asynchronous processing",
+            "Reduced latency in service calls"
+          ],
+          "correctAnswer": 2,
+          "explanation": "Event-driven architecture enhances scalability by allowing services to communicate asynchronously, leading to better resource utilization."
+        },
+        {
+          "question": "In an event-driven system, what role does an event bus play?",
+          "options": [
+            "It stores events for future processing",
+            "It connects producers and consumers of events",
+            "It processes events synchronously",
+            "It encrypts events for secure transmission"
+          ],
+          "correctAnswer": 1,
+          "explanation": "An event bus serves as the middleware that facilitates the communication between event producers and consumers in an event-driven architecture."
+        },
+        {
+          "question": "Which of the following would be an appropriate use case for event sourcing?",
+          "options": [
+            "Storing user profiles",
+            "Logging user actions for audit",
+            "Real-time data analytics dashboard",
+            "Tracking product stock levels"
+          ],
+          "correctAnswer": 1,
+          "explanation": "Event sourcing is suitable for scenarios where complete access to the history of changes is needed, such as logging user actions for audit purposes."
+        },
+        {
+          "question": "Identify the problem in the following event-driven architecture pattern: an event producer waits for a consumer to acknowledge each event before sending the next one.",
+          "questionCode": "const eventProducer = async (event) => { await consumer.acknowledge(event); sendNextEvent(); };",
+          "options": [
+            "This is a typical use of an event loop.",
+            "It allows for high throughput of events.",
+            "This creates a bottleneck in event processing.",
+            "It ensures strong consistency of event handling."
+          ],
+          "correctAnswer": 2,
+          "explanation": "By requiring an acknowledgment for each event before sending the next, this pattern introduces a bottleneck and negates the advantages of asynchronous event processing."
+        }
+      ]
+    },
+    {
+      "topicId": "694123893f38d3ce12b7f185",
+      "topicName": "Serverless architecture",
+      "quizzes": [
+        {
+          "question": "What is the primary benefit of serverless architecture?",
+          "options": [
+            "Reduced operational costs",
+            "More control over server management",
+            "Improved application speed",
+            "Simplified data storage"
+          ],
+          "correctAnswer": 0,
+          "explanation": "Serverless architecture allows developers to pay only for the compute resources they use, thereby significantly reducing operational costs."
+        },
+        {
+          "question": "Which service is commonly associated with serverless architecture?",
+          "options": [
+            "AWS EC2",
+            "AWS Lambda",
+            "Google Cloud Compute",
+            "Azure Virtual Machines"
+          ],
+          "correctAnswer": 1,
+          "explanation": "AWS Lambda is a serverless compute service that lets you run code without provisioning or managing servers."
+        },
+        {
+          "question": "What happens to serverless functions after execution?",
+          "options": [
+            "They run indefinitely",
+            "They are terminated",
+            "They are cached",
+            "They are stored for future use"
+          ],
+          "correctAnswer": 1,
+          "explanation": "Serverless functions are designed to run in stateless environments and are typically terminated after execution to optimize resource usage."
+        },
+        {
+          "question": "In a serverless architecture, what is a common approach to handling asynchronous tasks?",
+          "options": [
+            "Direct function calls between services",
+            "Using message queues",
+            "Polling databases",
+            "HTTP synchronous requests"
+          ],
+          "correctAnswer": 1,
+          "explanation": "Message queues are often used to handle asynchronous tasks in a serverless architecture, allowing for decoupled services."
+        },
+        {
+          "question": "How does cold start impact serverless function performance?",
+          "options": [
+            "Decreases latency significantly",
+            "Increases response time for infrequently invoked functions",
+            "Eliminates the need for scaling",
+            "Optimizes resource allocation"
+          ],
+          "correctAnswer": 1,
+          "explanation": "Cold start refers to the time taken to initialize a serverless function when it hasn't been invoked recently, which can result in increased response times for infrequently called functions."
+        }
+      ]
+    },
+    {
+      "topicId": "6941238a3f38d3ce12b7f194",
+      "topicName": "Modular monolith",
+      "quizzes": [
+        {
+          "question": "What is a modular monolith?",
+          "options": [
+            "A single codebase with clear boundaries between modules",
+            "A microservices architecture in a single repository",
+            "A type of monolithic architecture without modules",
+            "A distributed system of services"
+          ],
+          "correctAnswer": 0,
+          "explanation": "A modular monolith is a single application with modular design, promoting separation of concerns within a single codebase."
+        },
+        {
+          "question": "Which of the following is a key benefit of using a modular monolith over microservices?",
+          "options": [
+            "Increased complexity in deployment",
+            "Simplified data management",
+            "Better scalability",
+            "Higher performance under load"
+          ],
+          "correctAnswer": 1,
+          "explanation": "A modular monolith simplifies data management by allowing all modules to share the same database without the overhead of service communication."
+        },
+        {
+          "question": "In a modular monolith, how can developers enforce module boundaries?",
+          "options": [
+            "By using separate database schemas",
+            "By implementing internal APIs",
+            "By encapsulating modules within specific packages",
+            "By deploying modules independently"
+          ],
+          "correctAnswer": 2,
+          "explanation": "Encapsulating modules within specific packages helps developers maintain clear boundaries and define module interfaces."
+        },
+        {
+          "question": "What potential risk does a developer face when designing a modular monolith?",
+          "options": [
+            "Too many external dependencies",
+            "Tight coupling between modules",
+            "Excessive deployment overhead",
+            "Inflexibility in coding languages"
+          ],
+          "correctAnswer": 1,
+          "explanation": "Tight coupling can occur if modules are not properly isolated, negating the benefits of modularity within the application."
+        },
+        {
+          "question": "How can a team effectively transition from a monolith to a modular monolith?",
+          "options": [
+            "By extracting all functionalities immediately",
+            "By gradually refactoring the codebase into well-defined modules",
+            "By rewriting in a different programming language",
+            "By implementing a microservices architecture right away"
+          ],
+          "correctAnswer": 1,
+          "explanation": "Gradually refactoring the codebase into modules allows the team to manage risks while improving the architecture step-by-step."
+        }
+      ]
+    },
+    {
+      "topicId": "6941238b3f38d3ce12b7f1a4",
+      "topicName": "SOA (Service-Oriented Architecture)",
+      "quizzes": [
+        {
+          "question": "What is the primary goal of Service-Oriented Architecture (SOA)?",
+          "options": [
+            "To provide a single monolithic application",
+            "To promote loose coupling between services",
+            "To enforce a strict data model",
+            "To eliminate the use of APIs"
+          ],
+          "correctAnswer": 1,
+          "explanation": "The primary goal of SOA is to promote loose coupling between services, allowing them to interact while remaining independent."
+        },
+        {
+          "question": "In SOA, what is typically used to enable communication between services?",
+          "options": [
+            "Direct database access",
+            "Message queues",
+            "Shared memory",
+            "Inline function calls"
+          ],
+          "correctAnswer": 1,
+          "explanation": "Message queues are commonly used in SOA to facilitate communication between services asynchronously."
+        },
+        {
+          "question": "Which of the following is NOT a characteristic of SOA?",
+          "options": [
+            "Interoperability",
+            "Reusability",
+            "Tight coupling",
+            "Scalability"
+          ],
+          "correctAnswer": 2,
+          "explanation": "Tight coupling is not a characteristic of SOA; rather, SOA aims for services to be loosely coupled to enhance flexibility."
+        },
+        {
+          "question": "What is a common format for data exchange in RESTful services within an SOA?",
+          "options": [
+            "XML",
+            "Plain text",
+            "CSV",
+            "HTML"
+          ],
+          "correctAnswer": 0,
+          "explanation": "XML is a common format for data exchange in RESTful services, although JSON has also gained significant popularity."
+        },
+        {
+          "question": "Suppose you have a service that retrieves user data. You want it to return data in both JSON and XML formats based on the client's request. How would you implement this in a SOA context?",
+          "options": [
+            "Define two separate services for JSON and XML",
+            "Use a query parameter to specify the format",
+            "Always return JSON and convert to XML on the client",
+            "Use SOAP as the only protocol"
+          ],
+          "correctAnswer": 1,
+          "explanation": "Using a query parameter to specify the format allows the service to be flexible and return data in the requested format without needing multiple services."
+        }
+      ]
+    },
+    {
+      "topicId": "6941239b3f38d3ce12b7f1b6",
+      "topicName": "Vertical scaling (scale up)",
+      "quizzes": [
+        {
+          "question": "What does vertical scaling refer to in system design?",
+          "options": [
+            "Adding more machines to the system",
+            "Increasing the resources of an existing machine",
+            "Optimizing code for performance",
+            "Distributing load across multiple servers"
+          ],
+          "correctAnswer": 1,
+          "explanation": "Vertical scaling, also known as scaling up, involves adding more resources such as CPU, RAM, or storage to an existing machine."
+        },
+        {
+          "question": "Which of the following is a disadvantage of vertical scaling?",
+          "options": [
+            "Easy to implement",
+            "Limited by hardware capacity",
+            "Lower latency due to reduced network calls",
+            "Simpler management compared to horizontal scaling"
+          ],
+          "correctAnswer": 1,
+          "explanation": "A primary disadvantage of vertical scaling is that it is limited by the maximum capacity of the hardware, which can be a bottleneck for growth."
+        },
+        {
+          "question": "In which scenario would you choose vertical scaling instead of horizontal scaling?",
+          "options": [
+            "For applications requiring stateful sessions",
+            "When dealing with large distributed databases",
+            "For microservices architectures",
+            "When cost is the primary concern"
+          ],
+          "correctAnswer": 0,
+          "explanation": "Vertical scaling is often preferred in stateful applications where maintaining session state on a single instance is more efficient than distribution."
+        },
+        {
+          "question": "What is a common risk associated with vertical scaling?",
+          "options": [
+            "Higher operational costs",
+            "Increased modularity",
+            "Reduced data access speeds",
+            "Single point of failure"
+          ],
+          "correctAnswer": 3,
+          "explanation": "Vertical scaling can create a single point of failure, as all resources are concentrated on one machine, risking downtime if that machine fails."
+        },
+        {
+          "question": "Given the following scenario, what is the most likely issue when vertically scaling a web application server?",
+          "questionCode": "server_instance = create_server(cpu=8, ram=32GB)",
+          "options": [
+            "Server becomes too expensive to maintain",
+            "Application performance never improves",
+            "Traffic spikes lead to resource exhaustion",
+            "Database connections become limited"
+          ],
+          "correctAnswer": 2,
+          "explanation": "Vertical scaling can lead to resource exhaustion during traffic spikes because the single server cannot handle the increased load beyond its capabilities.",
+          "sampleCode": "if traffic > server_instance.max_capacity:\n    alert('Resource exhaustion predicted')"
+        }
+      ]
+    },
+    {
+      "topicId": "6941239b3f38d3ce12b7f1c8",
+      "topicName": "Horizontal scaling (scale out)",
+      "quizzes": [
+        {
+          "question": "What does horizontal scaling (scale out) refer to in system design?",
+          "options": [
+            "Adding more power to existing machines",
+            "Increasing the number of machines to share the load",
+            "Improving the performance of a single application",
+            "Reducing latency by optimizing code"
+          ],
+          "correctAnswer": 1,
+          "explanation": "Horizontal scaling involves adding more machines to handle increased load, unlike vertical scaling, which adds resources to existing machines."
+        },
+        {
+          "question": "Which of the following is a primary benefit of horizontal scaling?",
+          "options": [
+            "Simplicity of implementation",
+            "Increased redundancy and fault tolerance",
+            "Decreased operational costs",
+            "Easier database migrations"
+          ],
+          "correctAnswer": 1,
+          "explanation": "Horizontal scaling allows multiple instances to serve requests, providing redundancy which improves fault tolerance."
+        },
+        {
+          "question": "What is a common challenge when implementing horizontal scaling?",
+          "options": [
+            "Single points of failure",
+            "Database consistency",
+            "Memory consumption",
+            "File storage limits"
+          ],
+          "correctAnswer": 1,
+          "explanation": "Because multiple instances are involved, ensuring data consistency across distributed databases can be challenging when scaling out."
+        },
+        {
+          "question": "Which architecture is typically best suited for horizontal scaling?",
+          "options": [
+            "Monolithic architecture",
+            "Microservices architecture",
+            "Layered architecture",
+            "Client-server architecture"
+          ],
+          "correctAnswer": 1,
+          "explanation": "Microservices architecture allows individual components to be scaled independently, making it ideal for horizontal scaling."
+        },
+        {
+          "question": "In a load-balanced system, how does horizontal scaling affect user requests?",
+          "options": [
+            "Requests are sent to a single server",
+            "Requests are randomly distributed to multiple servers",
+            "All requests are processed in sequence",
+            "Load balancers handle data storage decisions"
+          ],
+          "correctAnswer": 1,
+          "explanation": "In a horizontally scaled environment with load balancing, user requests are distributed across multiple servers to enhance performance and availability."
+        }
+      ]
+    },
+    {
+      "topicId": "6941239c3f38d3ce12b7f1db",
+      "topicName": "Stateless vs stateful services",
+      "quizzes": [
+        {
+          "question": "What is a primary characteristic of a stateless service?",
+          "options": [
+            "It maintains client state across multiple requests.",
+            "It does not store any client context between requests.",
+            "It provides faster response times with caching.",
+            "It requires session management for each client."
+          ],
+          "correctAnswer": 1,
+          "explanation": "A stateless service does not maintain any client context between requests, rendering each request independent of others."
+        },
+        {
+          "question": "Which of the following is an example of a stateful service?",
+          "options": [
+            "A RESTful API",
+            "An HTTP server",
+            "An online shopping cart",
+            "A static website"
+          ],
+          "correctAnswer": 2,
+          "explanation": "An online shopping cart is stateful because it maintains the user's session and tracks items added to the cart across different requests."
+        },
+        {
+          "question": "Why might a developer choose to implement a stateless service over a stateful service?",
+          "options": [
+            "Stateless services are easier to scale horizontally.",
+            "Stateful services offer better user experience.",
+            "Stateless services are always faster.",
+            "Stateful services consume less memory."
+          ],
+          "correctAnswer": 0,
+          "explanation": "Stateless services can be scaled horizontally more easily since they do not rely on any stored state, allowing for more efficient distribution across servers."
+        },
+        {
+          "question": "In which scenario would a stateful service be less suitable?",
+          "options": [
+            "When high availability is paramount.",
+            "When the workload is unpredictable.",
+            "When user sessions are short-lived.",
+            "When user preferences need to be remembered."
+          ],
+          "correctAnswer": 0,
+          "explanation": "Stateful services may struggle with high availability as they depend on maintaining state, which can complicate load balancing and server failures."
+        },
+        {
+          "question": "Given the following service architecture, which component demonstrates stateful behavior?",
+          "questionCode": "const sessionData = {}; function handleRequest(userId) { if (!sessionData[userId]) { sessionData[userId] = initializeSession(userId); } return sessionData[userId]; }",
+          "options": [
+            "Function initializes a session for each request.",
+            "Session data is stored in a simple variable.",
+            "Maintains user session state across requests.",
+            "All sessions are immediately disposed after use."
+          ],
+          "correctAnswer": 2,
+          "explanation": "This service maintains user session data, indicating it has a stateful behavior by storing user-specific data across multiple requests."
+        }
+      ]
+    },
+    {
+      "topicId": "6941239d3f38d3ce12b7f1ef",
+      "topicName": "Auto-scaling",
+      "quizzes": [
+        {
+          "question": "What is auto-scaling primarily used for in cloud architectures?",
+          "options": [
+            "To manage database transactions",
+            "To automatically adjust the amount of computational resources",
+            "To enhance security measures",
+            "To deploy software updates"
+          ],
+          "correctAnswer": 1,
+          "explanation": "Auto-scaling automatically adjusts the number of computational resources based on the current demand, helping to optimize costs and performance."
+        },
+        {
+          "question": "Which of the following metrics is commonly used to trigger an auto-scaling event?",
+          "options": [
+            "Number of active users",
+            "CPU utilization",
+            "Memory leak percentage",
+            "Network latency"
+          ],
+          "correctAnswer": 1,
+          "explanation": "CPU utilization is a primary metric for auto-scaling because it directly indicates the load on instances, allowing for efficient resource management."
+        },
+        {
+          "question": "In a horizontal scaling approach, what does auto-scaling add to handle increased load?",
+          "options": [
+            "More powerful servers",
+            "More servers of the same type",
+            "More storage capacity",
+            "More dedicated load balancers"
+          ],
+          "correctAnswer": 1,
+          "explanation": "Horizontal scaling involves adding more servers of the same type to distribute the load, enhancing the system's capacity without requiring more powerful hardware."
+        },
+        {
+          "question": "What is a common disadvantage of quickly scaling up resources in an auto-scaling strategy?",
+          "options": [
+            "Higher operational costs",
+            "Slow recovery time",
+            "Increased risk of application downtime",
+            "Under-utilization of resources"
+          ],
+          "correctAnswer": 0,
+          "explanation": "Quickly scaling up resources can lead to higher operational costs if the additional resources are not efficiently utilized, which can affect overall cloud expenditure."
+        },
+        {
+          "question": "If an auto-scaling policy is set to scale out when the average CPU usage exceeds 70% for 5 minutes, what happens when the usage drops below 70% after reaching that threshold?",
+          "options": [
+            "No action is taken until another scaling threshold is breached",
+            "Instances will immediately scale back down",
+            "The system will switch to manual scaling mode",
+            "Scaling actions will revert to the default configuration"
+          ],
+          "correctAnswer": 0,
+          "explanation": "Auto-scaling policies typically require a cooldown period before scaling back down, thus no action will be taken until a new threshold condition is met."
+        }
+      ]
+    },
+    {
+      "topicId": "6941239e3f38d3ce12b7f204",
+      "topicName": "Bottleneck identification",
+      "quizzes": [
+        {
+          "question": "What is a bottleneck in system design?",
+          "options": [
+            "A point in the system where the flow is significantly slowed down.",
+            "A method of optimizing code performance.",
+            "A type of database that improves query efficiency.",
+            "A network protocol used for data transfer."
+          ],
+          "correctAnswer": 0,
+          "explanation": "A bottleneck refers to a point in a system where the performance is limited, causing the overall system to slow down due to reduced throughput."
+        },
+        {
+          "question": "Which of the following tools is commonly used for identifying performance bottlenecks in applications?",
+          "options": [
+            "Load balancer",
+            "Profiling tools",
+            "Caching mechanisms",
+            "Data encryption tools"
+          ],
+          "correctAnswer": 1,
+          "explanation": "Profiling tools help to analyze the application's runtime behavior and identify sections of code that are causing performance issues or bottlenecks."
+        },
+        {
+          "question": "In a web application, if users experience slow loading times when accessing a specific page, what could be a potential bottleneck?",
+          "options": [
+            "High traffic volume on the server",
+            "A custom domain name",
+            "Using HTTPS protocol",
+            "A well-structured database"
+          ],
+          "correctAnswer": 0,
+          "explanation": "High traffic volume can overwhelm the server's resources, leading to slower response times and delays in serving content to users, identifying it as a potential bottleneck."
+        },
+        {
+          "question": "How can introducing caching impact bottleneck resolution?",
+          "options": [
+            "It can increase the load on the database.",
+            "It can reduce the frequency of requests to a slow service.",
+            "It adds complexity to application architecture.",
+            "It guarantees quicker response times for all users."
+          ],
+          "correctAnswer": 1,
+          "explanation": "Caching stores frequently accessed data in a fast-access layer, which reduces the need for repeated requests to slower services or databases, thereby alleviating bottlenecks."
+        },
+        {
+          "question": "Given the following code snippet, identify the potential bottleneck.",
+          "questionCode": "for(int i = 0; i < 100000; i++) { /* perform database query */ }",
+          "options": [
+            "The number of iterations is too high.",
+            "The database query is likely slow.",
+            "The entire loop is executed in memory.",
+            "The code lacks error handling."
+          ],
+          "correctAnswer": 1,
+          "explanation": "Each iteration performs a database query, which can cause significant delays and lead to a bottleneck due to the database's response time being a slow component in this process."
+        }
+      ]
+    },
+    {
+      "topicId": "6941240f3f38d3ce12b7f21b",
+      "topicName": "what is load balanacing",
+      "quizzes": [
+        {
+          "question": "What is load balancing primarily used for in distributed systems?",
+          "options": [
+            "To increase bandwidth for a single server",
+            "To distribute traffic among multiple servers",
+            "To enhance the security of the application",
+            "To manage database transactions"
+          ],
+          "correctAnswer": 1,
+          "explanation": "Load balancing is used to distribute incoming network traffic across multiple servers to ensure no single server becomes overwhelmed, thereby improving overall application performance and reliability."
+        },
+        {
+          "question": "Which of the following is NOT a common method of load balancing?",
+          "options": [
+            "Round Robin",
+            "Least Connections",
+            "Random Sampling",
+            "IP Hash"
+          ],
+          "correctAnswer": 2,
+          "explanation": "Random Sampling is not a recognized or standard method of load balancing, unlike Round Robin, Least Connections, and IP Hash, which are widely implemented methods."
+        },
+        {
+          "question": "In a load balancing scenario, 'sticky sessions' refer to what?",
+          "options": [
+            "Sessions that are only allowed to connect to a single load balancer",
+            "Sessions that are routed to the same server after initial connection",
+            "Sessions that are always distributed evenly across servers",
+            "Sessions that do not expire during user interaction"
+          ],
+          "correctAnswer": 1,
+          "explanation": "Sticky sessions, also known as session persistence, ensure that a user's requests are consistently directed to the same server to maintain session state across multiple requests."
+        },
+        {
+          "question": "When implementing load balancing at the application layer, which of the following is typically true?",
+          "options": [
+            "Layer 4 load balancers operate at the transport level.",
+            "Layer 7 load balancers can redirect based on URL.",
+            "Layer 4 load balancers can inspect HTTP headers.",
+            "Layer 7 load balancers handle TCP traffic more efficiently."
+          ],
+          "correctAnswer": 1,
+          "explanation": "Layer 7 load balancers operate at the application layer and can make decisions based on HTTP traffic characteristics, such as URL, allowing for more advanced routing techniques."
+        },
+        {
+          "question": "In a microservices architecture, what is one key benefit of using a load balancer between services?",
+          "options": [
+            "It simplifies database management.",
+            "It ensures service scalability and availability.",
+            "It reduces code complexity.",
+            "It increases service deployment time."
+          ],
+          "correctAnswer": 1,
+          "explanation": "Using a load balancer between microservices helps ensure that the services can scale in response to demand and remain available even if some instances fail."
+        }
+      ]
+    },
+    {
+      "topicId": "694124103f38d3ce12b7f232",
+      "topicName": "Caching",
+      "quizzes": [
+        {
+          "question": "What is caching primarily used for in system design?",
+          "options": [
+            "To store persistent data",
+            "To reduce latency",
+            "To ensure data consistency",
+            "To enable data backup"
+          ],
+          "correctAnswer": 1,
+          "explanation": "Caching is primarily used to reduce latency by storing frequently accessed data closer to the application, allowing for quicker retrieval."
+        },
+        {
+          "question": "Which caching strategy is best for data that doesn't change often but is read frequently?",
+          "options": [
+            "Write-through caching",
+            "Write-back caching",
+            "Time-based expiration caching",
+            "Cache-aside caching"
+          ],
+          "correctAnswer": 2,
+          "explanation": "Time-based expiration caching is suitable for data that is read frequently but changes less often, as it sets a TTL (time-to-live) for cached items."
+        },
+        {
+          "question": "In which scenario would cache miss be detrimental to performance?",
+          "options": [
+            "The cached item is rarely accessed.",
+            "The cache size is very large.",
+            "The system uses an in-memory cache.",
+            "The data is session-specific."
+          ],
+          "correctAnswer": 2,
+          "explanation": "A cache miss can be particularly detrimental when the cache is in-memory, as it leads to higher latency due to fetching the data from a slower data store."
+        },
+        {
+          "question": "Which of the following is a potential drawback of using caching?",
+          "options": [
+            "Increased load on the database",
+            "Decreased latency",
+            "Data staleness",
+            "Higher network I/O"
+          ],
+          "correctAnswer": 2,
+          "explanation": "Data staleness is a potential drawback of caching, as cached data may not reflect the latest changes, leading to outdated information being served."
+        },
+        {
+          "question": "Consider the following code snippet. What is the main purpose of the caching mechanism implemented here?",
+          "questionCode": "function getData(id) { if (cache[id]) { return cache[id]; } const data = fetchFromDatabase(id); cache[id] = data; return data; }",
+          "options": [
+            "To retrieve data if it exists in the cache",
+            "To decrease the database size",
+            "To automatically update the cache",
+            "To create a backup of data"
+          ],
+          "correctAnswer": 0,
+          "explanation": "The main purpose of the caching mechanism is to retrieve data from the cache if it exists, thereby improving performance by avoiding unnecessary database calls."
+        }
+      ]
+    },
+    {
+      "topicId": "694124103f38d3ce12b7f24a",
+      "topicName": "Data Storage & Databases",
+      "quizzes": [
+        {
+          "question": "What type of database uses a table-based structure to store data?",
+          "options": [
+            "NoSQL",
+            "Relational",
+            "Object-oriented",
+            "Graph"
+          ],
+          "correctAnswer": 1,
+          "explanation": "Relational databases use a table-based structure to store data, where data is organized into rows and columns."
+        },
+        {
+          "question": "Which of the following is a common relational database management system (RDBMS)?",
+          "options": [
+            "MongoDB",
+            "PostgreSQL",
+            "Firebase",
+            "Cassandra"
+          ],
+          "correctAnswer": 1,
+          "explanation": "PostgreSQL is a commonly used relational database management system, while the others listed are NoSQL databases."
+        },
+        {
+          "question": "What does ACID stand for in the context of database transactions?",
+          "options": [
+            "Atomicity, Consistency, Isolation, Durability",
+            "Accuracy, Consistency, Integrity, Durability",
+            "Atomicity, Consistency, Integrity, Data",
+            "Atomic, Consistent, Isolated, Durable"
+          ],
+          "correctAnswer": 0,
+          "explanation": "ACID stands for Atomicity, Consistency, Isolation, Durability, which are the four properties that guarantee reliable transaction processing."
+        },
+        {
+          "question": "Which database model allows for better flexibility and scalability by storing data in a hierarchical form?",
+          "options": [
+            "Document Store",
+            "Key-Value Store",
+            "Graph Database",
+            "Relational Database"
+          ],
+          "correctAnswer": 0,
+          "explanation": "Document Stores allow for greater flexibility and scalability due to their ability to store data in a hierarchical format using documents."
+        },
+        {
+          "question": "In SQL, which statement is used to add a new row to a table?",
+          "questionCode": "INSERT INTO users (name, age) VALUES ('Alice', 30);",
+          "options": [
+            "ADD",
+            "INSERT",
+            "CREATE",
+            "UPDATE"
+          ],
+          "correctAnswer": 1,
+          "explanation": "The INSERT statement is used to add new rows to a table in SQL."
+        }
+      ]
+    },
+    {
+      "topicId": "694124113f38d3ce12b7f263",
+      "topicName": "CAP Theorem",
+      "quizzes": [
+        {
+          "question": "What does the CAP theorem state regarding distributed data systems?",
+          "options": [
+            "You can have consistency, availability, or partition tolerance, but not all three.",
+            "You can achieve consistency and availability at all times with no partitions.",
+            "Partition tolerance is optional in any distributed system.",
+            "Availability guarantees that data is always consistent."
+          ],
+          "correctAnswer": 0,
+          "explanation": "The CAP theorem asserts that in a distributed data system, you can only guarantee two out of three properties: consistency, availability, and partition tolerance."
+        },
+        {
+          "question": "In a distributed system, which of the following scenarios highlights the 'partition tolerance' aspect of the CAP theorem?",
+          "options": [
+            "The system becomes unavailable due to network issues.",
+            "A user accesses stale data due to delays in replication.",
+            "The database cannot process requests during heavy load.",
+            "Two nodes in the system cannot communicate due to a network split."
+          ],
+          "correctAnswer": 3,
+          "explanation": "Partition tolerance refers to the system's ability to continue operating despite communication failures between nodes, exemplified by a network split."
+        },
+        {
+          "question": "Which type of database system would typically prioritize availability over consistency?",
+          "options": [
+            "Relational Database Management Systems (RDBMS)",
+            "Eventually Consistent Systems like DynamoDB",
+            "Strongly Consistent Systems like HBase",
+            "Graph Databases"
+          ],
+          "correctAnswer": 1,
+          "explanation": "Eventually consistent systems, like DynamoDB, are designed to sacrifice immediate consistency for higher availability during network partitions."
+        },
+        {
+          "question": "What happens to a distributed system that prioritizes consistency and partition tolerance?",
+          "options": [
+            "The system guarantees that every read receives the most recent write.",
+            "The system will always be available for reads and writes.",
+            "The system may deny requests when partitions occur.",
+            "The system can tolerate network failures without losing data."
+          ],
+          "correctAnswer": 2,
+          "explanation": "When a system prioritizes consistency and partition tolerance, it may sacrifice availability during network partitions, potentially denying requests."
+        },
+        {
+          "question": "If a developer chooses to implement a system that uses a consensus algorithm like Raft, what properties of the CAP theorem are they likely to enhance?",
+          "options": [
+            "Consistency and Availability",
+            "Partition Tolerance and Availability",
+            "Consistency and Partition Tolerance",
+            "All three properties equally"
+          ],
+          "correctAnswer": 2,
+          "explanation": "Consensus algorithms like Raft are specifically designed to ensure consistency across distributed nodes, even in the face of network partitions, thus enhancing consistency and partition tolerance."
+        }
+      ]
+    },
+    {
+      "topicId": "694124123f38d3ce12b7f27d",
+      "topicName": "Consistency Models",
+      "quizzes": [
+        {
+          "question": "What is the primary characteristic of a strong consistency model?",
+          "options": [
+            "All nodes see the same data at the same time.",
+            "Data can be temporarily inconsistent.",
+            "Performance is optimized at the cost of consistency.",
+            "Users can read stale data."
+          ],
+          "correctAnswer": 0,
+          "explanation": "A strong consistency model ensures that all nodes in the system reflect the same data simultaneously, providing a single, up-to-date view of the data."
+        },
+        {
+          "question": "In which consistency model can a read operation return stale data?",
+          "options": [
+            "Eventual consistency",
+            "Strong consistency",
+            "Causal consistency",
+            "Linearizability"
+          ],
+          "correctAnswer": 0,
+          "explanation": "Eventual consistency allows reads to return stale data because the system guarantees that, eventually, all replicas will be consistent, but immediate consistency is not required."
+        },
+        {
+          "question": "Which of the following is true about causal consistency?",
+          "options": [
+            "It guarantees that all operations are performed in the exact order they were issued.",
+            "It allows operations to be seen in different orders on different nodes.",
+            "It is a strict form of strong consistency.",
+            "It restricts read operations entirely until writes are applied."
+          ],
+          "correctAnswer": 1,
+          "explanation": "Causal consistency allows operations to be observed in different orders on different nodes, as long as causally dependent operations are seen in the same order."
+        },
+        {
+          "question": "Which kind of application would benefit most from an eventual consistency model?",
+          "options": [
+            "Real-time financial transactions",
+            "Collaborative document editing",
+            "Instant messaging",
+            "Online shopping cart updates"
+          ],
+          "correctAnswer": 1,
+          "explanation": "Collaborative document editing can tolerate eventual consistency because it allows multiple users to edit concurrently and resolves conflicts later, providing a smoother user experience."
+        },
+        {
+          "question": "If a distributed system uses a lazy replication strategy, which consistency model is it most likely to implement?",
+          "options": [
+            "Strong consistency",
+            "Causal consistency",
+            "Eventual consistency",
+            "Linearizability"
+          ],
+          "correctAnswer": 2,
+          "explanation": "Lazy replication typically results in eventual consistency, as updates to replicas occur over time rather than immediately, allowing for temporary inconsistencies."
+        }
+      ]
+    },
+    {
+      "topicId": "694124133f38d3ce12b7f298",
+      "topicName": "Distributed Systems Basics",
+      "quizzes": [
+        {
+          "question": "What is a key advantage of using a distributed system?",
+          "options": [
+            "Reduced complexity for data management",
+            "Increased reliability and fault tolerance",
+            "Easier single point of failure management",
+            "Simplified application deployment"
+          ],
+          "correctAnswer": 1,
+          "explanation": "A key advantage of distributed systems is increased reliability and fault tolerance, as they can continue operating even if some components fail."
+        },
+        {
+          "question": "Which of the following is a common challenge in distributed systems?",
+          "options": [
+            "Single point of failure",
+            "Network latency and communication issues",
+            "Data redundancy",
+            "User authentication"
+          ],
+          "correctAnswer": 1,
+          "explanation": "Network latency and communication issues are common challenges in distributed systems due to the need for data to travel across multiple networked nodes."
+        },
+        {
+          "question": "What does CAP theorem state regarding distributed systems?",
+          "options": [
+            "Consistency, Availability, and Partition Tolerance are all achievable.",
+            "You can guarantee two out of three guarantees: Consistency, Availability, and Partition Tolerance.",
+            "Distributed systems are always consistent.",
+            "Network failures are completely manageable."
+          ],
+          "correctAnswer": 1,
+          "explanation": "The CAP theorem states that in the presence of a network partition, a distributed system can guarantee only two of the three properties: Consistency, Availability, and Partition Tolerance."
+        },
+        {
+          "question": "In a distributed system, what is the purpose of a consensus algorithm?",
+          "options": [
+            "To ensure all nodes agree on the current state of the system",
+            "To prioritize network traffic effectively",
+            "To reduce the amount of data replicated",
+            "To eliminate the need for data consistency"
+          ],
+          "correctAnswer": 0,
+          "explanation": "Consensus algorithms are used in distributed systems to ensure that all nodes agree on the current state of the system, which is essential for maintaining consistency."
+        },
+        {
+          "question": "Which of the following protocols is commonly used for ensuring data consistency in distributed databases?",
+          "options": [
+            "Two-phase commit protocol",
+            "HTTP",
+            "FTP",
+            "SMTP"
+          ],
+          "correctAnswer": 0,
+          "explanation": "The Two-phase commit protocol is commonly used to ensure data consistency across distributed databases by coordinating commits from multiple nodes in a way that either all or none of them succeed."
+        }
+      ]
+    },
+    {
+      "topicId": "6941244f3f38d3ce12b7f2b5",
+      "topicName": "Messaging & Event-Driven Systems",
+      "quizzes": [
+        {
+          "question": "What is the primary benefit of using a message broker in an event-driven architecture?",
+          "options": [
+            "Increased data security",
+            "Decoupling of services",
+            "Simplified data storage",
+            "Improved database performance"
+          ],
+          "correctAnswer": 1,
+          "explanation": "A message broker facilitates communication between services, allowing them to operate independently and reducing direct dependencies, thus achieving decoupling."
+        },
+        {
+          "question": "Which of the following is a common protocol used in message queuing systems?",
+          "options": [
+            "HTTP",
+            "SMTP",
+            "AMQP",
+            "FTP"
+          ],
+          "correctAnswer": 2,
+          "explanation": "AMQP (Advanced Message Queuing Protocol) is specifically designed for message-oriented middleware and is widely used in messaging systems."
+        },
+        {
+          "question": "In an event-driven architecture, what pattern allows a service to subscribe to multiple topics and receive events accordingly?",
+          "options": [
+            "Publish-Subscribe Pattern",
+            "Request-Reply Pattern",
+            "Event Sourcing",
+            "Command Query Responsibility Segregation"
+          ],
+          "correctAnswer": 0,
+          "explanation": "The Publish-Subscribe Pattern enables services to subscribe to channels (or topics) and receive messages in real-time as events are published."
+        },
+        {
+          "question": "What is the purpose of an event schema in an event-driven system?",
+          "options": [
+            "To serialize data for storage",
+            "To define the structure of events",
+            "To manage message queue depth",
+            "To log message consumption"
+          ],
+          "correctAnswer": 1,
+          "explanation": "An event schema specifies the structure and format of events, ensuring that producers and consumers can understand and correctly handle the data being passed."
+        },
+        {
+          "question": "What challenge might arise from using a direct communication model in an event-driven architecture compared to an asynchronous model?",
+          "options": [
+            "Higher latency",
+            "Reduced system complexity",
+            "Tighter coupling of components",
+            "Easier debugging"
+          ],
+          "correctAnswer": 2,
+          "explanation": "Direct communication models often result in tighter coupling between services, making it harder to change one component without affecting others, whereas asynchronous models promote loose coupling."
+        }
+      ]
+    },
+    {
+      "topicId": "694124983f38d3ce12b7f2d3",
+      "topicName": "API Design Patterns",
+      "quizzes": [
+        {
+          "question": "What does REST stand for in the context of API design?",
+          "options": [
+            "Representational State Transfer",
+            "Remote Execution State Technology",
+            "Resource Event State Transfer",
+            "Rapid Endpoint Service Technology"
+          ],
+          "correctAnswer": 0,
+          "explanation": "REST stands for Representational State Transfer, which is an architectural style for designing networked applications."
+        },
+        {
+          "question": "Which HTTP verb is typically used to create a resource in a RESTful API?",
+          "options": [
+            "GET",
+            "POST",
+            "PUT",
+            "DELETE"
+          ],
+          "correctAnswer": 1,
+          "explanation": "The POST method is used to create a new resource in a RESTful API, while GET retrieves, PUT updates, and DELETE removes resources."
+        },
+        {
+          "question": "In which scenario is it most appropriate to use the GraphQL API design pattern?",
+          "options": [
+            "When you have a static data model",
+            "When clients need different data structures",
+            "When security is the highest priority",
+            "When the API is only accessed by a single client"
+          ],
+          "correctAnswer": 1,
+          "explanation": "GraphQL is ideal for scenarios where clients require different data structures because it allows clients to specify precisely what data they need."
+        },
+        {
+          "question": "Which design pattern allows for the separation of concerns in API design by enabling different versions of an API to exist simultaneously?",
+          "options": [
+            "Microservices",
+            "Versioning",
+            "Polyglot Persistence",
+            "Monolithic Architecture"
+          ],
+          "correctAnswer": 1,
+          "explanation": "API versioning allows different versions of an API to coexist, separating concerns and ensuring backward compatibility."
+        },
+        {
+          "question": "Consider the following code snippet. What problem does this API design pattern illustrate?",
+          "questionCode": "app.get('/api/users/:id', (req, res) => { /* fetch user logic */ });",
+          "options": [
+            "Over-fetching data",
+            "Under-fetching data",
+            "Inefficient caching",
+            "Poor error handling"
+          ],
+          "correctAnswer": 0,
+          "explanation": "This API design may lead to over-fetching data if the user object is large, but only a few fields are needed by the client."
+        }
+      ]
+    },
+    {
+      "topicId": "694124993f38d3ce12b7f2f1",
+      "topicName": "Micro Services Design",
+      "quizzes": [
+        {
+          "question": "What is a primary benefit of using microservices architecture over a monolithic architecture?",
+          "options": [
+            "Easier deployment of the entire application",
+            "Improved team autonomy",
+            "Simplified code base",
+            "Reduced network latency"
+          ],
+          "correctAnswer": 1,
+          "explanation": "Microservices architecture allows teams to work on different services independently, increasing autonomy and speeding up development."
+        },
+        {
+          "question": "Which of the following best describes a microservice?",
+          "options": [
+            "A large, integrated application",
+            "A service that is not independent",
+            "A loosely coupled service that performs a specific function",
+            "A frontend UI component"
+          ],
+          "correctAnswer": 2,
+          "explanation": "A microservice is defined by its independence and ability to perform a specific function without being tightly coupled to other services."
+        },
+        {
+          "question": "Which of the following patterns is commonly used to manage communication between microservices?",
+          "options": [
+            "Event Sourcing",
+            "Load Balancing",
+            "API Gateway",
+            "Monolithic Middleware"
+          ],
+          "correctAnswer": 2,
+          "explanation": "An API Gateway centralizes access to backend services, facilitating communication and managing requests in a microservices architecture."
+        },
+        {
+          "question": "When implementing microservices, which strategy is often recommended for service data management?",
+          "options": [
+            "Sharing a single database across all services",
+            "Each service has its own data store",
+            "Using a monolithic storage approach",
+            "Persisting all data in memory"
+          ],
+          "correctAnswer": 1,
+          "explanation": "Each microservice should manage its own data store, which helps maintain independence and scalability."
+        },
+        {
+          "question": "In a microservices architecture, which approach is typically used to scale individual services?",
+          "options": [
+            "Vertical Scaling",
+            "Horizontal Scaling",
+            "Scale to the monolith",
+            "Permanent scaling"
+          ],
+          "correctAnswer": 1,
+          "explanation": "Horizontal scaling allows for the addition of more instances of the service instead of upgrading a single instance, enhancing flexibility and cost-effectiveness."
+        }
+      ]
+    },
+    {
+      "topicId": "6941249a3f38d3ce12b7f310",
+      "topicName": "Fault Tolerance & Reliability",
+      "quizzes": [
+        {
+          "question": "What is fault tolerance in system design?",
+          "options": [
+            "The ability to recover from errors gracefully",
+            "The ability to write code without bugs",
+            "The practice of logging errors only",
+            "The process of optimizing algorithms"
+          ],
+          "correctAnswer": 0,
+          "explanation": "Fault tolerance refers to the ability of a system to continue operating properly in the event of the failure of some of its components."
+        },
+        {
+          "question": "Which of the following is a common strategy for achieving fault tolerance?",
+          "options": [
+            "Implementing extensive logging",
+            "Using replicated resources",
+            "Optimizing the code performance",
+            "Reducing the number of users"
+          ],
+          "correctAnswer": 1,
+          "explanation": "Using replicated resources, such as redundant servers, ensures that if one component fails, another can take over, thus maintaining service availability."
+        },
+        {
+          "question": "In which of the following scenarios is 'graceful degradation' a preferred approach?",
+          "options": [
+            "During a complete system shutdown",
+            "When a component fails but service continuity is essential",
+            "When developing new features",
+            "When optimizing database queries"
+          ],
+          "correctAnswer": 1,
+          "explanation": "Graceful degradation allows a system to continue operating at a reduced level of functionality instead of failing completely when a component fails."
+        },
+        {
+          "question": "What does the CAP theorem state about distributed systems?",
+          "options": [
+            "Consistency can always be guaranteed",
+            "You can only achieve two out of three: Consistency, Availability, and Partition Tolerance",
+            "All distributed systems are fault-tolerant",
+            "Latency is always non-existent"
+          ],
+          "correctAnswer": 1,
+          "explanation": "The CAP theorem states that in the context of distributed systems, it is impossible to guarantee all three properties (Consistency, Availability, Partition Tolerance) simultaneously."
+        },
+        {
+          "question": "What design pattern can be used to handle retries in a distributed system for fault tolerance?",
+          "options": [
+            "Circuit Breaker",
+            "Singleton",
+            "Observer",
+            "Factory"
+          ],
+          "correctAnswer": 0,
+          "explanation": "The Circuit Breaker pattern prevents a system from repeatedly trying to execute an operation that is likely to fail, allowing it to recover gracefully."
+        }
+      ]
+    },
+    {
+      "topicId": "6941249b3f38d3ce12b7f330",
+      "topicName": "High Availability",
+      "quizzes": [
+        {
+          "question": "What does 'High Availability' mean in system design?",
+          "options": [
+            "Systems are designed to be operational 100% of the time",
+            "The system can automatically recover from failures",
+            "The system provides continuous access to data and services",
+            "Systems are scalable and can handle increased loads"
+          ],
+          "correctAnswer": 2,
+          "explanation": "High Availability refers to systems designed to be continuously operational and ensure that users have constant access to services and data, even in the face of failures."
+        },
+        {
+          "question": "Which of the following is a commonly used technique to achieve high availability?",
+          "options": [
+            "Load balancing",
+            "Single point of failure",
+            "Data mirroring",
+            "Both A and C"
+          ],
+          "correctAnswer": 3,
+          "explanation": "Load balancing and data mirroring are both techniques that can help achieve high availability by distributing workloads and maintaining data replicas."
+        },
+        {
+          "question": "What role does a 'failover' mechanism play in high availability?",
+          "options": [
+            "It encrypts data for security",
+            "It allows systems to switch to a backup in case of failure",
+            "It monitors system performance",
+            "It distributes traffic among multiple servers"
+          ],
+          "correctAnswer": 1,
+          "explanation": "A failover mechanism enables a system to switch from a failed primary component to a backup component, ensuring continued availability."
+        },
+        {
+          "question": "In a multi-region deployment, which strategy best enhances high availability?",
+          "options": [
+            "Using a single database instance",
+            "Geographically distributed replicas with automatic data synchronization",
+            "Deploying resources in a single cloud provider",
+            "Limiting traffic to one region"
+          ],
+          "correctAnswer": 1,
+          "explanation": "Geographically distributed replicas with automatic synchronization enhance high availability by reducing latency and allowing continued operations even if one region fails."
+        },
+        {
+          "question": "How can you ensure that a load balancer does not route traffic to an unhealthy instance?",
+          "options": [
+            "By implementing a sticky session",
+            "By performing health checks on instances",
+            "By replicating the load balancer",
+            "By prioritizing service level agreements"
+          ],
+          "correctAnswer": 1,
+          "explanation": "Health checks are essential in load balancing to ensure that traffic is only routed to healthy instances that can handle requests."
+        }
+      ]
+    },
+    {
+      "topicId": "6941249c3f38d3ce12b7f351",
+      "topicName": "Security",
+      "quizzes": [
+        {
+          "question": "What is the primary purpose of encryption in system security?",
+          "options": [
+            "To make data unreadable to unauthorized users",
+            "To speed up data access",
+            "To reduce data redundancy",
+            "To optimize database queries"
+          ],
+          "correctAnswer": 0,
+          "explanation": "The primary purpose of encryption is to protect sensitive data by making it unreadable to unauthorized individuals."
+        },
+        {
+          "question": "Which of the following is a common method to prevent SQL injection attacks?",
+          "options": [
+            "Using prepared statements",
+            "Validating user input",
+            "Encrypting the database",
+            "Increasing server performance"
+          ],
+          "correctAnswer": 0,
+          "explanation": "Using prepared statements helps to ensure that SQL commands are parameterized, preventing SQL injection attacks by differentiating between code and data."
+        },
+        {
+          "question": "What does the principle of least privilege refer to in security?",
+          "options": [
+            "Users should have unlimited access to resources",
+            "Users should have access only to the resources necessary for their role",
+            "Privileges should be defined by the system administrator",
+            "Everyone should have the same level of access"
+          ],
+          "correctAnswer": 1,
+          "explanation": "The principle of least privilege dictates that users should only have the access necessary to perform their job functions, reducing the risk of malicious activity."
+        },
+        {
+          "question": "In a web application, how can Cross-Site Scripting (XSS) vulnerabilities be mitigated?",
+          "options": [
+            "By using HTTPS",
+            "By validating and encoding user input",
+            "By compressing resources",
+            "By using a content delivery network"
+          ],
+          "correctAnswer": 1,
+          "explanation": "Validating and encoding user input is essential for mitigating XSS vulnerabilities as it prevents the execution of malicious scripts embedded in user inputs."
+        },
+        {
+          "question": "Which security approach uses multiple layers of defense to secure an application?",
+          "options": [
+            "Defense in depth",
+            "Single point security",
+            "Application isolation",
+            "Breach detection"
+          ],
+          "correctAnswer": 0,
+          "explanation": "Defense in depth is a security strategy that employs multiple layers of security controls to protect an application, providing redundancy in case of a failure in a single defense layer."
+        }
+      ]
+    },
+    {
+      "topicId": "694124ba3f38d3ce12b7f374",
+      "topicName": "Logging",
+      "quizzes": [
+        {
+          "question": "What is the primary purpose of logging in a software application?",
+          "options": [
+            "To improve the appearance of the application",
+            "To track and record application behavior and errors",
+            "To enhance the performance of the application",
+            "To provide user documentation"
+          ],
+          "correctAnswer": 1,
+          "explanation": "Logging is primarily used to track and record the application behavior, events, or errors, which aids in debugging and monitoring."
+        },
+        {
+          "question": "Which of the following is a common logging level used in applications?",
+          "options": [
+            "DEBUG",
+            "SECURE",
+            "ENCRYPTED",
+            "PACKAGE"
+          ],
+          "correctAnswer": 0,
+          "explanation": "DEBUG is a common logging level that indicates detailed information useful for debugging purposes."
+        },
+        {
+          "question": "In which scenario would you use 'ERROR' level logging instead of 'DEBUG'?",
+          "options": [
+            "When you want to log detailed information for diagnostics",
+            "When a significant issue that impacts application functionality occurs",
+            "When you want to log normal operations",
+            "When you are starting the application"
+          ],
+          "correctAnswer": 1,
+          "explanation": "'ERROR' level logging is used to indicate that a significant issue has occurred, affecting the application's functionality."
+        },
+        {
+          "question": "Given the following logging configuration, which logging level will be recorded?",
+          "questionCode": "logger.setLevel(Level.INFO);",
+          "options": [
+            "Only ERROR messages",
+            "INFO and higher messages",
+            "DEBUG and INFO messages",
+            "Only DEBUG messages"
+          ],
+          "correctAnswer": 1,
+          "explanation": "When the logging level is set to INFO, it will record INFO messages and all higher severity messages (like WARN and ERROR)."
+        },
+        {
+          "question": "What is one potential downside of overly verbose logging in production environments?",
+          "options": [
+            "It improves the application's performance",
+            "It can lead to information overload and excessive storage use",
+            "It makes debugging easier",
+            "It reduces the size of log files"
+          ],
+          "correctAnswer": 1,
+          "explanation": "Overly verbose logging can create information overload, making it difficult to find relevant information, and can also consume excessive storage space."
+        }
+      ]
+    },
+    {
+      "topicId": "694124bb3f38d3ce12b7f397",
+      "topicName": "Metrics",
+      "quizzes": [
+        {
+          "question": "What is a common primary metric used to evaluate system performance?",
+          "options": [
+            "Throughput",
+            "Latency",
+            "Availability",
+            "Error Rate"
+          ],
+          "correctAnswer": 1,
+          "explanation": "Latency is the time taken to process a request, making it a key metric for performance evaluation."
+        },
+        {
+          "question": "Which of the following metrics would best indicate the reliability of a system?",
+          "options": [
+            "Response Time",
+            "Error Rate",
+            "Load Average",
+            "Database Query Time"
+          ],
+          "correctAnswer": 1,
+          "explanation": "Error Rate measures the frequency of system failures, providing a direct indication of reliability."
+        },
+        {
+          "question": "In the context of distributed systems, what does the Consistency metric refer to?",
+          "options": [
+            "Same data available across nodes",
+            "Fast response times",
+            "System's ability to handle load",
+            "Error-free operations"
+          ],
+          "correctAnswer": 0,
+          "explanation": "Consistency in distributed systems means that all nodes reflect the same data at the same time."
+        },
+        {
+          "question": "When analyzing metrics, what does a high availability percentage typically imply?",
+          "options": [
+            "The system has low uptime",
+            "The system often experiences downtimes",
+            "The system is perpetually online",
+            "Service is unreliable during peak hours"
+          ],
+          "correctAnswer": 2,
+          "explanation": "High availability means the system is reliably online and accessible, indicating good performance."
+        },
+        {
+          "question": "Which combination of metrics would you analyze to assess the impact of increased traffic on a web application?",
+          "options": [
+            "Error Rate and Latency",
+            "Availability and Throughput",
+            "Response Time and Load Average",
+            "All of the above"
+          ],
+          "correctAnswer": 3,
+          "explanation": "All these metrics together provide a comprehensive view of an application's performance under increased traffic conditions."
+        }
+      ]
+    },
+    {
+      "topicId": "694124bc3f38d3ce12b7f3bb",
+      "topicName": "Tracing",
+      "quizzes": [
+        {
+          "question": "What is the primary purpose of tracing in system design?",
+          "options": [
+            "To monitor system performance",
+            "To log user actions",
+            "To capture system error messages",
+            "To track the flow of requests through a system"
+          ],
+          "correctAnswer": 3,
+          "explanation": "Tracing primarily enables the tracking of the flow of requests through a system, which helps in understanding and diagnosing system behavior."
+        },
+        {
+          "question": "Which tracing technique captures execution details without significantly impacting performance?",
+          "options": [
+            "Instrumentation",
+            "Sampling",
+            "Event logging",
+            "Manual tracing"
+          ],
+          "correctAnswer": 1,
+          "explanation": "Sampling allows for capturing execution details at intervals, reducing performance overhead compared to instrumentation, which records all events."
+        },
+        {
+          "question": "What is a common format used to export trace data for analysis?",
+          "options": [
+            "JSON",
+            "CSV",
+            "XML",
+            "All of the above"
+          ],
+          "correctAnswer": 3,
+          "explanation": "All of the mentioned formats (JSON, CSV, XML) are commonly used to export trace data for subsequent analysis and visualization."
+        },
+        {
+          "question": "In a distributed system, what is 'distributed tracing' primarily used for?",
+          "options": [
+            "To display real-time user data",
+            "To monitor system uptime",
+            "To trace requests across multiple services",
+            "To handle load balancing"
+          ],
+          "correctAnswer": 2,
+          "explanation": "Distributed tracing is a technique used to track requests as they move through different services in a distributed architecture, helping to identify bottlenecks."
+        },
+        {
+          "question": "Which of the following is NOT a common tool used for tracing in microservices?",
+          "options": [
+            "OpenTelemetry",
+            "Jaeger",
+            "Datadog",
+            "Jenkins"
+          ],
+          "correctAnswer": 3,
+          "explanation": "Jenkins is primarily a CI/CD tool, while OpenTelemetry, Jaeger, and Datadog are specifically designed for tracing and monitoring services in microservices architectures."
+        }
+      ]
+    },
+    {
+      "topicId": "694124bd3f38d3ce12b7f3e0",
+      "topicName": "Monitoring",
+      "quizzes": [
+        {
+          "question": "What is the primary purpose of monitoring in system design?",
+          "options": [
+            "To reduce system latency",
+            "To improve user interface",
+            "To track system health and performance",
+            "To increase database size"
+          ],
+          "correctAnswer": 2,
+          "explanation": "The primary purpose of monitoring is to track system health and performance, which helps in identifying and resolving issues proactively."
+        },
+        {
+          "question": "Which of the following tools is primarily used for real-time monitoring of system metrics?",
+          "options": [
+            "JIRA",
+            "Prometheus",
+            "Slack",
+            "GitHub"
+          ],
+          "correctAnswer": 1,
+          "explanation": "Prometheus is specifically designed for real-time monitoring and alerting of system metrics, making it suitable for this purpose."
+        },
+        {
+          "question": "What is a key benefit of using distributed tracing in monitoring?",
+          "options": [
+            "Simplifying database queries",
+            "Enabling API versioning",
+            "Visualizing request paths in microservices",
+            "Reducing server costs"
+          ],
+          "correctAnswer": 2,
+          "explanation": "Distributed tracing allows developers to visualize request paths across microservices, helping identify bottlenecks and performance issues."
+        },
+        {
+          "question": "In the context of monitoring, what does the term 'SLO' stand for?",
+          "options": [
+            "Service Latency Optimization",
+            "Service Level Objective",
+            "System Load Operation",
+            "Standard Logging Output"
+          ],
+          "correctAnswer": 1,
+          "explanation": "SLO stands for Service Level Objective, which defines the expected level of service reliability and performance targets."
+        },
+        {
+          "question": "When implementing alerts in a monitoring system, which of the following strategies is most effective in avoiding alert fatigue?",
+          "options": [
+            "Setting a high threshold for alerts",
+            "Creating alerts for every minor issue",
+            "Implementing context-aware alerts",
+            "Using the same alert message for all events"
+          ],
+          "correctAnswer": 2,
+          "explanation": "Context-aware alerts consider the severity and context of an issue, which helps reduce noise and prevent alert fatigue among developers."
+        }
+      ]
+    },
+    {
+      "topicId": "694124be3f38d3ce12b7f406",
+      "topicName": "Alerting",
+      "quizzes": [
+        {
+          "question": "What is the primary purpose of alerting in system design?",
+          "options": [
+            "To inform users about system updates",
+            "To monitor system performance",
+            "To notify about errors or anomalies",
+            "To optimize resource usage"
+          ],
+          "correctAnswer": 2,
+          "explanation": "The primary purpose of alerting is to notify stakeholders about errors or anomalies in the system that require immediate attention."
+        },
+        {
+          "question": "Which of the following is NOT a common type of alert?",
+          "options": [
+            "Threshold alert",
+            "Anomaly detection alert",
+            "Scheduled alert",
+            "Performance degradation alert"
+          ],
+          "correctAnswer": 2,
+          "explanation": "Scheduled alerts aren't typically categorized as a type of alert since they are predefined times for checks rather than an alert based on specific conditions."
+        },
+        {
+          "question": "In a monitoring system, what is the consequence of setting the alert threshold too low?",
+          "options": [
+            "Increased risk of missing critical events",
+            "Higher chance of alert fatigue",
+            "Reduced response time to alerts",
+            "More accurate monitoring"
+          ],
+          "correctAnswer": 1,
+          "explanation": "Setting the alert threshold too low can result in alert fatigue, where users become desensitized to alerts due to an overwhelming number of notifications."
+        },
+        {
+          "question": "Which method is commonly used to prioritize alerts in a system?",
+          "options": [
+            "By frequency of occurrence",
+            "By time of day",
+            "By user roles",
+            "By severity levels"
+          ],
+          "correctAnswer": 3,
+          "explanation": "Alerts are commonly prioritized based on severity levels, allowing teams to focus on the most critical issues first."
+        },
+        {
+          "question": "Consider the following alerting system configuration. It sends alerts when error rates exceed 2% over a 10-minute window. Which statement about this configuration is most accurate?",
+          "questionCode": "if (errorRate > 0.02) { sendAlert(); }",
+          "options": [
+            "It is suitable for detecting brief spikes in error rates",
+            "It might lead to alert storms during high traffic",
+            "It is ineffective for low error rate systems",
+            "It cannot handle multiple error types"
+          ],
+          "correctAnswer": 1,
+          "explanation": "The configuration is suitable for detecting brief spikes as it monitors error rates over a defined period, making it responsive to short-lived issues."
+        }
+      ]
+    },
+    {
+      "topicId": "694124be3f38d3ce12b7f42d",
+      "topicName": "SLIs, SLOs, SLAs",
+      "quizzes": [
+        {
+          "question": "What does SLI stand for in the context of service performance?",
+          "options": [
+            "Service Level Indicator",
+            "Service Level Intent",
+            "System Level Integration",
+            "Service Level Index"
+          ],
+          "correctAnswer": 0,
+          "explanation": "SLI stands for Service Level Indicator, which measures the performance of a service against a defined metric."
+        },
+        {
+          "question": "Which of the following best defines SLO?",
+          "options": [
+            "Service Level Objective",
+            "Service Level Operation",
+            "System Load Optimization",
+            "Service Latency Observation"
+          ],
+          "correctAnswer": 0,
+          "explanation": "SLO stands for Service Level Objective, which is a goal set for the level of service performance."
+        },
+        {
+          "question": "What is the primary difference between an SLO and an SLA?",
+          "options": [
+            "SLO is a goal; SLA is a legal contract",
+            "SLO is more rigid than SLA",
+            "SLO includes penalties; SLA does not",
+            "SLO is less important than SLA"
+          ],
+          "correctAnswer": 0,
+          "explanation": "An SLO is a performance goal, while an SLA (Service Level Agreement) is a legal agreement that includes those goals along with penalties for not meeting them."
+        },
+        {
+          "question": "If a service has an SLO of 99.9% uptime, how many hours of downtime can be tolerated in a year?",
+          "options": [
+            "8.76 hours",
+            "21.6 hours",
+            "43.2 hours",
+            "0.9 hours"
+          ],
+          "correctAnswer": 0,
+          "explanation": "99.9% uptime translates to about 8.76 hours of allowable downtime in a year, calculated as 0.1% of 365 days."
+        },
+        {
+          "question": "In a scenario where an application has an SLI measuring response time and reports 98% of requests meet the SLO of 200ms, but the SLA states a penalty clause if below 99%, what does this scenario imply?",
+          "options": [
+            "The service provider is fulfilling the SLA",
+            "The service provider is violating the SLA",
+            "The SLO is acceptable regardless of the SLA",
+            "No action is required if the SLO is met"
+          ],
+          "correctAnswer": 1,
+          "explanation": "Since the service provider is only meeting 98% of requests under the SLO while the SLA requires 99%, this indicates a violation of the SLA."
+        }
+      ]
+    },
+    {
+      "topicId": "694125113f38d3ce12b7f552",
+      "topicName": "DNS",
+      "quizzes": [
+        {
+          "question": "What does DNS stand for?",
+          "options": [
+            "Domain Name Service",
+            "Domain Name System",
+            "Direct Name Service",
+            "Dynamic Network System"
+          ],
+          "correctAnswer": 1,
+          "explanation": "DNS stands for Domain Name System, which is the system that translates domain names to IP addresses."
+        },
+        {
+          "question": "Which of the following is a primary function of a DNS server?",
+          "options": [
+            "Route the network traffic",
+            "Cache web pages",
+            "Translate domain names to IP addresses",
+            "Provide email services"
+          ],
+          "correctAnswer": 2,
+          "explanation": "The primary function of a DNS server is to translate domain names into IP addresses so that browsers can load Internet resources."
+        },
+        {
+          "question": "Which record type in DNS is used to map a domain to an IP address?",
+          "options": [
+            "CNAME",
+            "MX",
+            "A",
+            "PTR"
+          ],
+          "correctAnswer": 2,
+          "explanation": "The A record type is used to map a domain name to an IPv4 address, while AAAA records are used for IPv6 addresses."
+        },
+        {
+          "question": "In a typical DNS resolution process, which of the following steps occurs first?",
+          "options": [
+            "The resolver sends a query to the root DNS server.",
+            "The browser caches the DNS record.",
+            "The local DNS resolver checks its cache.",
+            "The authoritative DNS server responds."
+          ],
+          "correctAnswer": 2,
+          "explanation": "In the DNS resolution process, the local DNS resolver first checks its cache for the requested domain name before making further queries."
+        },
+        {
+          "question": "What is a potential downside of using a DNS-based load balancer?",
+          "options": [
+            "It can load balance across multiple servers.",
+            "It ensures high availability.",
+            "Changes to DNS records may take time to propagate.",
+            "It's highly scalable."
+          ],
+          "correctAnswer": 2,
+          "explanation": "A downside of using a DNS-based load balancer is that changes to DNS records can take time to propagate due to caching by resolvers, which may lead to outdated routing information."
+        }
+      ]
+    },
+    {
+      "topicId": "694125123f38d3ce12b7f57b",
+      "topicName": "TCP vs UDP",
+      "quizzes": [
+        {
+          "question": "What is the main characteristic that distinguishes TCP from UDP?",
+          "options": [
+            "TCP is connection-oriented; UDP is connectionless",
+            "TCP is faster than UDP",
+            "TCP is used for streaming; UDP is for file transfers",
+            "TCP supports multicast; UDP does not"
+          ],
+          "correctAnswer": 0,
+          "explanation": "TCP establishes a connection before data transfer, ensuring reliability, whereas UDP sends data without establishing a connection, making it faster but less reliable."
+        },
+        {
+          "question": "In which scenario would you prefer to use UDP over TCP?",
+          "options": [
+            "File downloads",
+            "Video streaming",
+            "Web page loading",
+            "Email communication"
+          ],
+          "correctAnswer": 1,
+          "explanation": "UDP is preferred for video streaming due to its low latency and tolerance for packet loss, which are less critical in real-time applications compared to other options."
+        },
+        {
+          "question": "Which of the following statements is true regarding TCP and UDP header sizes?",
+          "options": [
+            "TCP headers are always smaller than UDP headers",
+            "UDP has a fixed header size, while TCP headers can vary",
+            "TCP headers contain no error-checking information",
+            "UDP headers contain more fields than TCP headers"
+          ],
+          "correctAnswer": 1,
+          "explanation": "UDP has a fixed header size of 8 bytes, while TCP headers can vary in size due to options, making them larger."
+        },
+        {
+          "question": "What happens when a packet is lost in a TCP connection?",
+          "options": [
+            "The packet is discarded silently",
+            "The sender is notified and retransmits the packet",
+            "The packet is ignored but delivery continues",
+            "The connection is terminated"
+          ],
+          "correctAnswer": 1,
+          "explanation": "TCP ensures reliable delivery; if a packet is lost, TCP detects it via acknowledgments and retransmits the packet."
+        },
+        {
+          "question": "Which of the following accurately describes how TCP manages data flow?",
+          "options": [
+            "It uses a fixed window size for all connections",
+            "It adjusts the window size based on network conditions",
+            "It sends data without any control mechanisms",
+            "It relies solely on the underlying network for data integrity"
+          ],
+          "correctAnswer": 1,
+          "explanation": "TCP employs a flow control mechanism that adjusts the window size based on the current network conditions to optimize data transmission."
+        }
+      ]
+    },
+    {
+      "topicId": "694125133f38d3ce12b7f5a5",
+      "topicName": "HTTP/1.1 vs HTTP/2 vs HTTP/3",
+      "quizzes": [
+        {
+          "question": "What is the primary difference between HTTP/1.1 and HTTP/2 regarding multiplexing?",
+          "options": [
+            "HTTP/1.1 allows multiplexing",
+            "HTTP/2 allows multiplexing",
+            "Both allow multiplexing",
+            "Neither allows multiplexing"
+          ],
+          "correctAnswer": 1,
+          "explanation": "HTTP/2 supports multiplexing of multiple streams over a single connection, significantly improving performance compared to HTTP/1.1, which does not."
+        },
+        {
+          "question": "Which HTTP version introduces header compression to reduce overhead?",
+          "options": [
+            "HTTP/1.1",
+            "HTTP/2",
+            "HTTP/3",
+            "None of the above"
+          ],
+          "correctAnswer": 1,
+          "explanation": "HTTP/2 uses HPACK compression to minimize header size, making it more efficient than HTTP/1.1."
+        },
+        {
+          "question": "In which HTTP version was the QUIC transport protocol first introduced?",
+          "options": [
+            "HTTP/1.1",
+            "HTTP/2",
+            "HTTP/3",
+            "None of the above"
+          ],
+          "correctAnswer": 2,
+          "explanation": "HTTP/3 is built on top of the QUIC protocol, which was designed to provide faster and more reliable connections compared to earlier versions."
+        },
+        {
+          "question": "How does HTTP/3 improve connection establishment compared to earlier versions?",
+          "options": [
+            "It uses TCP instead of UDP",
+            "It reduces the number of round trips required",
+            "It requires SSL for every request",
+            "It eliminates TLS completely"
+          ],
+          "correctAnswer": 1,
+          "explanation": "HTTP/3 uses QUIC, which allows for zero round trip time (0-RTT) connection establishment, improving speed compared to previous versions that relied solely on TCP."
+        },
+        {
+          "question": "When should a developer consider switching from HTTP/1.1 to HTTP/2 or HTTP/3?",
+          "options": [
+            "When static content is the main application",
+            "When low latency and high throughput are required",
+            "When using REST APIs only",
+            "When dealing with simple web pages"
+          ],
+          "correctAnswer": 1,
+          "explanation": "HTTP/2 and HTTP/3 are designed for high-performance applications, providing benefits like multiplexing and reduced latency, making them preferable for applications requiring fast data transfer."
+        }
+      ]
+    },
+    {
+      "topicId": "694125143f38d3ce12b7f5d0",
+      "topicName": "TLS/SSL",
+      "quizzes": [
+        {
+          "question": "What does TLS stand for in the context of network security?",
+          "options": [
+            "Transport Layer Security",
+            "Transmission Layer Security",
+            "Transport Logic Security",
+            "Transmission Logic Security"
+          ],
+          "correctAnswer": 0,
+          "explanation": "TLS stands for Transport Layer Security, which is a cryptographic protocol designed to provide secure communication over a computer network."
+        },
+        {
+          "question": "Which of the following is NOT a purpose of SSL/TLS?",
+          "options": [
+            "Encryption of data in transit",
+            "Data integrity verification",
+            "Authentication of the server",
+            "Caching of requests"
+          ],
+          "correctAnswer": 3,
+          "explanation": "Caching of requests is not a purpose of SSL/TLS; rather, SSL/TLS focuses on ensuring encryption, data integrity, and server authentication."
+        },
+        {
+          "question": "What does a PKI (Public Key Infrastructure) provide for SSL/TLS?",
+          "options": [
+            "Server certificates",
+            "Session management",
+            "Data compression",
+            "Application-layer encryption"
+          ],
+          "correctAnswer": 0,
+          "explanation": "PKI provides server certificates that are essential for the authentication process in SSL/TLS communication, enabling users to trust the servers they connect to."
+        },
+        {
+          "question": "In the SSL/TLS handshake, which message is sent by the client first?",
+          "options": [
+            "ServerHello",
+            "ClientHello",
+            "ChangeCipherSpec",
+            "Finished"
+          ],
+          "correctAnswer": 1,
+          "explanation": "The handshake process starts with the client sending a 'ClientHello' message to initiate the SSL/TLS handshake and propose connection parameters."
+        },
+        {
+          "question": "In an SSL/TLS connection, what is the primary function of the 'ChangeCipherSpec' message?",
+          "options": [
+            "To initiate the handshake",
+            "To signal the transition to encrypted communication",
+            "To complete the session",
+            "To authenticate the client"
+          ],
+          "correctAnswer": 1,
+          "explanation": "The 'ChangeCipherSpec' message is used to signal that subsequent messages will be encrypted with the negotiated cipher suite, marking the transition to encrypted communication."
+        }
+      ]
+    },
+    {
+      "topicId": "694125143f38d3ce12b7f5fc",
+      "topicName": "Reverse proxy",
+      "quizzes": [
+        {
+          "question": "What is the primary function of a reverse proxy server?",
+          "options": [
+            "To connect clients directly to the web server",
+            "To cache static content for improved performance",
+            "To distribute client requests to multiple servers",
+            "To encrypt data between client and server"
+          ],
+          "correctAnswer": 2,
+          "explanation": "A reverse proxy primarily acts as an intermediary that forwards client requests to one or more backend servers, which can improve load balancing and availability."
+        },
+        {
+          "question": "Which of the following is NOT a typical use case for a reverse proxy?",
+          "options": [
+            "Load balancing",
+            "SSL termination",
+            "Static file caching",
+            "Database query optimization"
+          ],
+          "correctAnswer": 3,
+          "explanation": "Database query optimization is not a function of a reverse proxy; it primarily deals with handling web traffic and requests rather than database interactions."
+        },
+        {
+          "question": "In the context of security, how can a reverse proxy enhance web server security?",
+          "options": [
+            "By providing direct access to the database",
+            "By hiding the identity and structure of backend servers",
+            "By performing data encryption on all servers",
+            "By enabling HTTP/2 on the web servers"
+          ],
+          "correctAnswer": 1,
+          "explanation": "A reverse proxy can obscure the internal network's architecture and IP addresses of the backend servers, providing an additional layer of security against attacks."
+        },
+        {
+          "question": "Consider the following scenario: A reverse proxy caches certain responses from backend servers. How does this affect the cache-hit ratio?",
+          "options": [
+            "It lowers the cache-hit ratio since more requests will directly access the backend",
+            "It has no effect on the cache-hit ratio",
+            "It increases the cache-hit ratio by serving cached responses",
+            "It makes caching unnecessary"
+          ],
+          "correctAnswer": 2,
+          "explanation": "Caching responses from backend servers increases the likelihood that subsequent requests can be served from cache rather than requiring a new request to the backend, thus improving the cache-hit ratio."
+        },
+        {
+          "question": "Which of the following configurations could lead to a reverse proxy causing a bottleneck in a system design?",
+          "options": [
+            "Multiple reverse proxies configured for redundancy",
+            "A single reverse proxy handling all requests without scaling",
+            "A reverse proxy running on the same server as the backend",
+            "A reverse proxy using HTTP/2 for communication"
+          ],
+          "correctAnswer": 1,
+          "explanation": "If a single reverse proxy is handling all requests and is not scaled appropriately, it can become a performance bottleneck as it processes all incoming traffic to the backend servers."
+        }
+      ]
+    },
+    {
+      "topicId": "694125153f38d3ce12b7f629",
+      "topicName": "CDN",
+      "quizzes": [
+        {
+          "question": "What is the primary purpose of a Content Delivery Network (CDN)?",
+          "options": [
+            "To cache web pages on the server",
+            "To reduce latency through geographically distributed servers",
+            "To secure web applications from DDoS attacks",
+            "To manage domain name resolution"
+          ],
+          "correctAnswer": 1,
+          "explanation": "A CDN is primarily designed to reduce latency by distributing content to servers that are closer to end users, thus speeding up content delivery."
+        },
+        {
+          "question": "Which of the following is a common benefit of using a CDN?",
+          "options": [
+            "Increased data redundancy",
+            "Improved SEO rankings",
+            "Faster content delivery",
+            "Reduced development costs"
+          ],
+          "correctAnswer": 2,
+          "explanation": "One of the key benefits of a CDN is faster content delivery due to reduced distance between the server and the user, resulting in lower latency."
+        },
+        {
+          "question": "What mechanism do CDNs use to select which server will deliver content to a user?",
+          "options": [
+            "Round-robin DNS",
+            "Geolocation routing",
+            "Load balancing algorithms",
+            "Simple request logging"
+          ],
+          "correctAnswer": 1,
+          "explanation": "CDNs often use geolocation routing to determine the closest server to the user for optimal content delivery speed."
+        },
+        {
+          "question": "Which protocol is commonly used to optimize the delivery of video content via a CDN?",
+          "options": [
+            "HTTP/1.1",
+            "UDP",
+            "RTMP",
+            "HTTP/2"
+          ],
+          "correctAnswer": 2,
+          "explanation": "RTMP (Real-Time Messaging Protocol) is widely used for delivering audio, video, and data over the internet, particularly in live streaming scenarios facilitated by CDNs."
+        },
+        {
+          "question": "In a CDN, what is the term for the method of caching content based on dynamic elements of the website, such as user-specific data?",
+          "options": [
+            "Edge caching",
+            "Dynamic site acceleration",
+            "Static content proxying",
+            "Content invalidation"
+          ],
+          "correctAnswer": 1,
+          "explanation": "Dynamic site acceleration allows for caching user-specific data and dynamic elements while still accelarating content delivery across the CDN."
+        }
+      ]
+    }
+  ]
+}
