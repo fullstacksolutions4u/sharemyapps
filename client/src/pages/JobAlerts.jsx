@@ -25,27 +25,14 @@ function CopyButton({ text }) {
   );
 }
 
-// Flatten all sessions into one job list and one link list (newest session first, duplicates removed)
-function flattenAlerts(alerts) {
-  const jobs = [];
-  const links = [];
-  const seenJobs = new Set();
-  const seenLinks = new Set();
-  for (const alert of alerts) {
-    for (const job of alert.jobs || []) {
-      const key = `${job.subject}|${job.emailId}`.toLowerCase();
-      if (seenJobs.has(key)) continue;
-      seenJobs.add(key);
-      jobs.push(job);
-    }
-    for (const link of alert.careerLinks || []) {
-      const key = `${link.company}|${link.url}`.toLowerCase();
-      if (seenLinks.has(key)) continue;
-      seenLinks.add(key);
-      links.push(link);
-    }
-  }
-  return { jobs, links };
+// Only today's latest alert is shown — yesterday's alerts disappear automatically
+function latestTodaysAlert(alerts) {
+  const now = new Date();
+  const sameDay = d =>
+    d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth() && d.getDate() === now.getDate();
+  return alerts
+    .filter(a => sameDay(new Date(a.scheduledAt || a.createdAt)))
+    .sort((a, b) => new Date(b.scheduledAt || b.createdAt) - new Date(a.scheduledAt || a.createdAt))[0] || null;
 }
 
 // Day 1 = the day the user's resume/cover letter was delivered (service activated)
@@ -95,14 +82,16 @@ export default function JobAlerts() {
     );
   }
 
-  const { jobs, links } = flattenAlerts(alerts);
+  const todaysAlert = latestTodaysAlert(alerts);
+  const jobs = todaysAlert?.jobs || [];
+  const links = todaysAlert?.careerLinks || [];
 
   return (
     <div className="max-w-7xl mx-auto px-3 sm:px-4 py-10">
-      {alerts.length === 0 ? (
+      {!todaysAlert ? (
         <div className="text-center py-20">
           <Briefcase size={32} className="text-[#9CA3AF] mx-auto mb-3" />
-          <p className="text-sm text-[#6B7280]">No job alerts yet. Check back soon.</p>
+          <p className="text-sm text-[#6B7280]">No job alerts for today yet. Check back soon.</p>
         </div>
       ) : (
         <>

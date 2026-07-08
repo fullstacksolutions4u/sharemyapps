@@ -35,5 +35,6 @@ Admin panel page ("Job Alert" in the sidebar, section key `job_recommendations`)
 
 - [x] Documented current feature (2026-07-07).
 - [x] Career page links (2026-07-07): admin sends optional `careerLinks` (company + career-page URL) alongside jobs; user Job Alerts page shows jobs (company/email) on the left and "Upload Resume" links on the right.
-- [x] User page redesign (2026-07-07): no per-session dates/day badges. One global **Day N** badge (days since `eligibleSince`, i.e. resume/cover-letter delivery = Day 1). All sessions merged (deduped) into exactly two side-by-side containers: jobs table (left), career links with company + Upload Resume button only (right).
+- [x] User page redesign (2026-07-07): no per-session dates/day badges. One global **Day N** badge (days since `eligibleSince`, i.e. resume/cover-letter delivery = Day 1). Two side-by-side containers: jobs table (left), career links with company + Upload Resume button only (right).
+- [x] Today-only view (2026-07-07): user page shows only the **latest alert sent today** (user's local date, by `scheduledAt`/`createdAt`); older alerts auto-disappear from the user page at midnight. History is only hidden client-side — DB records and admin session history are untouched.
 - [ ] (Add upcoming Job Alert changes here.)
