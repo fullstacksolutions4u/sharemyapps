@@ -120,6 +120,15 @@ const createPlacementOrder = async (req, res) => {
     const existing = await Payment.findOne({ user: req.user._id, status: 'success', pack: `placement_${plan.name.toLowerCase()}` }).lean();
     if (existing) return res.status(409).json({ message: `You have already purchased the ${plan.name} plan.` });
 
+    // Mentorship requires an admin-verified application before payment
+    if (plan.name === 'Mentorship') {
+      const MentorshipApplication = require('../models/MentorshipApplication');
+      const application = await MentorshipApplication.findOne({ user: req.user._id }).lean();
+      if (!application || application.status !== 'approved') {
+        return res.status(403).json({ message: 'Your mentorship application must be verified by our team before payment.' });
+      }
+    }
+
     const amountPaise = plan.price * 100;
     const order = await razorpay.orders.create({
       amount: amountPaise,
@@ -186,7 +195,7 @@ const verifyPlacementPayment = async (req, res) => {
       user:    req.user._id,
       type:    'payment_success',
       title:   'Payment Successful 🎉',
-      message: `Your ₹${plan.price} Placement Service payment was successful. Our HR team will contact you within 2 business days.`,
+      message: `Your ₹${plan.price} ${plan.name === 'Mentorship' ? 'Mentorship Program' : 'Placement Service'} payment was successful. Our HR team will contact you within 2 business days.`,
     });
 
     sendPlacementPaymentEmail({

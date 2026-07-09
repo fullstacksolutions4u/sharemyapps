@@ -131,22 +131,23 @@ exports.sendCollaboratorAddedEmail = async ({ to, name, addedByName, projectTitl
 };
 
 exports.sendPlacementPaymentEmail = async ({ to, name, plan }) => {
-  const allFeatures = [
+  const defaultFeatures = [
     '1:1 Session with Placement Specialist for Job Hunting Guidance',
     'ATS Compatible Resume & Cover letter Optimization',
-    'LinkedIn & Job Portal Profile Optimization',
+    'LinkedIn & Job Portals Profile Optimization',
     'Dedicated Placement Officer Support Until You Get Hired',
-    'Mock Interviews with Industry Experts from our community',
+    'Mock Interviews for freshers with Industry Experts',
     'Personalized daily job recommendations via registered email',
   ];
-  const featureRows = allFeatures.map(f =>
+  const features = plan.features?.length ? plan.features : defaultFeatures;
+  const featureRows = features.map(f =>
     `<tr><td style="padding:6px 0;border-bottom:1px solid #F3F0EB;font-size:13px;color:#374151;">✓ ${f}</td></tr>`
   ).join('');
 
   await api.sendTransacEmail({
     sender: FROM,
     to: [{ email: to, name }],
-    subject: `Payment Confirmed – Premium Plan | ShareMyApps`,
+    subject: `Payment Confirmed – ${plan.name} Plan | ShareMyApps`,
     htmlContent: `
       <div style="font-family:Inter,Arial,sans-serif;max-width:560px;margin:0 auto;background:#fff;border-radius:12px;overflow:hidden;border:1px solid #E5E1DA;">
         <div style="background:#00A693;padding:12px 32px;text-align:center;">
@@ -154,11 +155,11 @@ exports.sendPlacementPaymentEmail = async ({ to, name, plan }) => {
         </div>
         <div style="padding:32px;">
           <h2 style="margin:0 0 6px;font-size:20px;color:#1A1A1A;">Payment Confirmed!</h2>
-          <p style="color:#6B7280;margin:0 0 24px;font-size:14px;">Hi ${name}, thank you for choosing ShareMyApps Premium Plan.</p>
+          <p style="color:#6B7280;margin:0 0 24px;font-size:14px;">Hi ${name}, thank you for choosing the ShareMyApps ${plan.name} Plan.</p>
 
           <!-- Plan summary box -->
           <div style="background:#FFFBF0;border:1px solid #F59E0B;border-radius:12px;padding:20px 24px;margin-bottom:24px;">
-            <p style="margin:0 0 4px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#B45309;">Premium Plan</p>
+            <p style="margin:0 0 4px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#B45309;">${plan.name} Plan</p>
             <p style="margin:0 0 16px;font-size:28px;font-weight:700;color:#1A1A1A;">₹${Number(plan.price).toLocaleString('en-IN')} <span style="font-size:13px;font-weight:400;color:#6B7280;">one-time payment</span></p>
             <p style="margin:0 0 8px;font-size:12px;font-weight:600;color:#6B7280;text-transform:uppercase;letter-spacing:0.06em;">Included services</p>
             <table style="width:100%;border-collapse:collapse;">
@@ -168,7 +169,9 @@ exports.sendPlacementPaymentEmail = async ({ to, name, plan }) => {
 
           <!-- Activation notice -->
           <div style="background:#EFF6FF;border:1px solid #BFDBFE;border-radius:10px;padding:16px 20px;margin-bottom:24px;">
-            <p style="margin:0;font-size:14px;color:#1E40AF;font-weight:600;">🎉 Our executive will contact you shortly</p>
+            <p style="margin:0;font-size:14px;color:#1E40AF;font-weight:600;">🎉 ${plan.name === 'Mentorship'
+              ? 'Our executive will contact you shortly to complete your enrolment in the program'
+              : 'Our executive will contact you shortly'}</p>
           </div>
 
           <!-- Contact block -->
@@ -181,7 +184,36 @@ exports.sendPlacementPaymentEmail = async ({ to, name, plan }) => {
             </tr>
           </table>
         </div>
-        ${FOOTER('You received this email because you purchased a Premium Plan on ShareMyApps.')}
+        ${FOOTER(`You received this email because you purchased the ${plan.name} Plan on ShareMyApps.`)}
+      </div>
+    `,
+  });
+};
+
+exports.sendMentorshipApplicationEmail = async ({ to, name }) => {
+  await api.sendTransacEmail({
+    sender: FROM,
+    to: [{ email: to, name }],
+    subject: `Application Received – Mentorship Program | ShareMyApps`,
+    htmlContent: `
+      <div style="font-family:Inter,Arial,sans-serif;max-width:560px;margin:0 auto;background:#fff;border-radius:12px;overflow:hidden;border:1px solid #E5E1DA;">
+        <div style="background:#00A693;padding:12px 32px;text-align:center;">
+          <img src="${LOGO_URL}" alt="ShareMyApps" style="height:40px;object-fit:contain;" />
+        </div>
+        <div style="padding:32px;">
+          <h2 style="margin:0 0 8px;font-size:20px;color:#1A1A1A;">🎓 Application Received!</h2>
+          <p style="color:#374151;margin:0 0 16px;font-size:14px;">Hi ${name},</p>
+          <p style="color:#374151;margin:0 0 20px;font-size:14px;">
+            Thank you for applying to the <strong>Mentorship Program – Full Stack AI Engineer</strong>. Your application is under review.
+          </p>
+          <div style="background:#EFF6FF;border:1px solid #BFDBFE;border-radius:10px;padding:16px 20px;margin-bottom:24px;">
+            <p style="margin:0;font-size:14px;color:#1E40AF;font-weight:600;">📞 Our executive will contact you shortly</p>
+          </div>
+          <p style="color:#6B7280;font-size:13px;margin:0;">
+            Have questions? Reply to this email or reach us at <a href="mailto:hello@sharemyapps.in" style="color:#00A693;text-decoration:none;">hello@sharemyapps.in</a>.
+          </p>
+        </div>
+        ${FOOTER('You received this email because you applied for the Mentorship Program on ShareMyApps.')}
       </div>
     `,
   });

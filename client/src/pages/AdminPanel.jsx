@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import {
   LayoutDashboard, FolderOpen, ShieldCheck, Menu, LogOut,
-  Users, Briefcase, Megaphone, MessageSquare, Camera, IndianRupee, Crown, BookOpen, Unlock, Mail, Building2, Send,
+  Users, Briefcase, Megaphone, MessageSquare, Camera, IndianRupee, Crown, BookOpen, Unlock, Mail, Building2, Send, GraduationCap,
 } from 'lucide-react';
 import api from '../api/axios';
 import AdminOverview from './admin/AdminOverview';
@@ -21,6 +21,7 @@ import AdminPlansSection from './admin/AdminPlansSection';
 import AdminJobRecommendationsSection from './admin/AdminJobRecommendationsSection';
 import AdminCompaniesSection from './admin/AdminCompaniesSection';
 import AdminEmailSection from './admin/AdminEmailSection';
+import AdminMentorshipApplicationsSection from './admin/AdminMentorshipApplicationsSection';
 
 const NAV = [
   { key: 'overview',       label: 'Overview',        icon: LayoutDashboard },
@@ -33,6 +34,7 @@ const NAV = [
   { key: 'messages',       label: 'Messages',         icon: MessageSquare },
   { key: 'plans_payments',  label: 'Plans & Payments',  icon: IndianRupee },
 { key: 'offers',          label: 'Placement Applicants', icon: Crown },
+  { key: 'mentorship_applications', label: 'Mentorship Applicants', icon: GraduationCap },
   { key: 'service_access', label: 'Services',           icon: Unlock },
   { key: 'job_recommendations', label: 'Job Alert', icon: Mail },
   { key: 'email',          label: 'Email',            icon: Send },
@@ -164,6 +166,7 @@ const { user, setUser, logout } = useAuth();
           {section === 'messages'         && <AdminMessagesSection onUnreadChange={setUnreadMessages} />}
           {section === 'plans_payments'    && <AdminPlansSection />}
           {section === 'offers'           && <AdminOffersSection />}
+          {section === 'mentorship_applications' && <AdminMentorshipApplicationsSection />}
           {section === 'service_access'   && <AdminPremiumServicesSection />}
           {section === 'job_recommendations' && <AdminJobRecommendationsSection />}
           {section === 'email'            && <AdminEmailSection />}

@@ -110,6 +110,52 @@ router.post('/plans', adminCreatePlan);
 router.put('/plans/:id', adminUpdatePlan);
 router.delete('/plans/:id', adminDeletePlan);
 
+// ── Mentorship Program applications ──────────────────────────────────────────
+router.get('/mentorship-applications', async (req, res) => {
+  try {
+    const MentorshipApplication = require('../models/MentorshipApplication');
+    const applications = await MentorshipApplication.find()
+      .sort({ createdAt: -1 })
+      .populate('user', 'name email avatar regNumber')
+      .lean();
+    res.json({ applications });
+  } catch (err) { res.status(500).json({ message: err.message }); }
+});
+
+router.put('/mentorship-applications/:id', async (req, res) => {
+  try {
+    const MentorshipApplication = require('../models/MentorshipApplication');
+    const Notification = require('../models/Notification');
+    const { status } = req.body;
+    if (!['approved', 'rejected', 'pending'].includes(status)) {
+      return res.status(400).json({ message: 'Invalid status.' });
+    }
+    const application = await MentorshipApplication.findByIdAndUpdate(
+      req.params.id,
+      { status, reviewedAt: new Date(), reviewedBy: req.user._id },
+      { new: true }
+    ).populate('user', 'name email avatar regNumber');
+    if (!application) return res.status(404).json({ message: 'Application not found.' });
+
+    if (status === 'approved') {
+      await Notification.create({
+        user:    application.user._id,
+        type:    'mentorship_approved',
+        title:   'Mentorship Application Approved 🎓',
+        message: 'Your Mentorship Program application has been verified. You can now complete the payment from the Mentorship Program page to start your journey.',
+      });
+    } else if (status === 'rejected') {
+      await Notification.create({
+        user:    application.user._id,
+        type:    'mentorship_rejected',
+        title:   'Mentorship Application Update',
+        message: 'Your Mentorship Program application was not approved at this time. You can update your details and apply again.',
+      });
+    }
+    res.json({ application });
+  } catch (err) { res.status(500).json({ message: err.message }); }
+});
+
 // Repair: backfill FreeOffer + premiumServices for payment-only users
 router.post('/offers/repair-payment-users', async (req, res) => {
   try {
