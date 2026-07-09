@@ -1,5 +1,5 @@
 const router = require('express').Router();
-const { protect } = require('../middleware/auth');
+const { protect, optionalAuth } = require('../middleware/auth');
 const { upload } = require('../middleware/upload');
 const {
   getProjects, getProject, getMyProjects, getUserProjects,
@@ -48,7 +48,7 @@ router.post('/', protect, projectUpload, createProject);
 router.put('/:id', protect, projectUpload, updateProject);
 router.delete('/:id', protect, deleteProject);
 
-router.post('/:id/view', recordView);
+router.post('/:id/view', optionalAuth, recordView);
 router.patch('/:id/hide', protect, toggleHidden);
 router.post('/:id/like', protect, toggleLike);
 router.post('/:id/rate', protect, rateProject);

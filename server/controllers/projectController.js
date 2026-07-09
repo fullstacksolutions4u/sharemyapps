@@ -332,6 +332,16 @@ exports.recordView = async (req, res) => {
     if (req.user && project.owner.toString() === req.user._id.toString()) {
       return res.json({ viewCount: project.viewCount });
     }
+    if (req.user) {
+      // logged-in users count once each: only increments when the user isn't in viewedBy yet
+      const updated = await Project.findOneAndUpdate(
+        { _id: req.params.id, viewedBy: { $ne: req.user._id } },
+        { $addToSet: { viewedBy: req.user._id }, $inc: { viewCount: 1 } },
+        { new: true }
+      ).select('viewCount');
+      return res.json({ viewCount: updated ? updated.viewCount : project.viewCount });
+    }
+    // guests: deduped per browser session on the client
     await Project.findByIdAndUpdate(req.params.id, { $inc: { viewCount: 1 } });
     res.json({ viewCount: project.viewCount + 1 });
   } catch (err) { res.status(500).json({ message: err.message }); }

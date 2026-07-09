@@ -157,14 +157,15 @@ export default function ProjectDetail() {
         .then(r => setOtherProjects((r.data.projects || []).filter(op => op._id !== id)))
         .catch(() => {});
     }
-    const key = `viewed_${id}`;
+    // key by user so each account counts its own view (server dedups per user)
+    const key = `viewed_${id}_${user?._id || 'guest'}`;
     if (!sessionStorage.getItem(key)) {
       sessionStorage.setItem(key, '1');
       api.post(`/projects/${id}/view`)
         .then(res => setI('viewCount', res.data.viewCount))
         .catch(() => {});
     }
-  }, [project, id]);
+  }, [project, id, user?._id]);
 
   const handleLike = async () => {
     if (!user) { toast.error('Sign in to like projects'); return; }

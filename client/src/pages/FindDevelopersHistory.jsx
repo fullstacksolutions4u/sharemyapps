@@ -89,7 +89,7 @@ function SkillMultiSelect({ options, selected, onChange }) {
   const filtered = options.filter(o => o.toLowerCase().includes(search.toLowerCase()));
 
   return (
-    <div ref={ref} className="relative flex-1 min-w-44">
+    <div ref={ref} className="relative">
       <button
         type="button"
         onClick={() => setOpen(v => !v)}
@@ -170,6 +170,7 @@ export default function Candidates() {
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
 
+  const [searchQuery, setSearchQuery] = useState('');
   const [designation, setDesignation] = useState('');
   const [stateFilter, setStateFilter] = useState('');
   const [skills, setSkills] = useState([]);
@@ -202,6 +203,20 @@ export default function Candidates() {
 
   const filtered = useMemo(() => {
     let list = candidates;
+
+    if (searchQuery.trim()) {
+      const q = searchQuery.trim().toLowerCase();
+      list = list.filter(d => {
+        const haystack = [
+          d.name,
+          ...(Array.isArray(d.designations) ? d.designations : []),
+          ...(Array.isArray(d.resumeData?.skills) ? d.resumeData.skills : []),
+          ...(Array.isArray(d.mentorshipTech) ? d.mentorshipTech : []),
+          ...(Array.isArray(d.preferredLocations) ? d.preferredLocations : []),
+        ];
+        return haystack.some(v => v && v.toLowerCase().includes(q));
+      });
+    }
 
     if (designation.trim()) {
       const q = designation.toLowerCase();
@@ -260,14 +275,15 @@ export default function Candidates() {
     }
 
     return list;
-  }, [candidates, designation, stateFilter, skills, expRange, salaryRange, joinFilter, gender]);
+  }, [candidates, searchQuery, designation, stateFilter, skills, expRange, salaryRange, joinFilter, gender]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
-  const hasFilters = designation || stateFilter || skills.length > 0 || expRange || salaryRange || joinFilter || gender;
+  const hasFilters = searchQuery || designation || stateFilter || skills.length > 0 || expRange || salaryRange || joinFilter || gender;
 
   const clearFilters = () => {
+    setSearchQuery('');
     setDesignation('');
     setStateFilter('');
     setSkills([]);
@@ -283,8 +299,27 @@ export default function Candidates() {
       {/* Header */}
       {/* Filter bar */}
       <div className="bg-white border border-border rounded-xl p-4 mb-5">
-        <div className="flex flex-wrap gap-3">
-          <div className="relative flex-1 min-w-44">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+          <div className="relative">
+            <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted pointer-events-none" />
+            <input
+              type="text"
+              placeholder="Search by name, designation, skill…"
+              value={searchQuery}
+              onChange={e => { setSearchQuery(e.target.value); setPage(1); }}
+              className="w-full pl-8 pr-8 py-2 text-sm border border-border rounded-lg bg-bg focus:outline-none focus:border-accent text-text placeholder:text-muted"
+            />
+            {searchQuery && (
+              <button
+                type="button"
+                onClick={() => { setSearchQuery(''); setPage(1); }}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted hover:text-text transition-colors"
+              >
+                <X size={13} />
+              </button>
+            )}
+          </div>
+          <div className="relative">
             <select
               value={designation}
               onChange={e => { setDesignation(e.target.value); setPage(1); }}
@@ -297,7 +332,7 @@ export default function Candidates() {
             </select>
             <ChevronDown size={13} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted pointer-events-none" />
           </div>
-          <div className="relative flex-1 min-w-40">
+          <div className="relative">
             <MapPin size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted pointer-events-none" />
             <select
               value={stateFilter}
@@ -316,7 +351,7 @@ export default function Candidates() {
             selected={skills}
             onChange={v => { setSkills(v); setPage(1); }}
           />
-          <div className="relative min-w-36">
+          <div className="relative">
             <select
               value={expRange}
               onChange={e => { setExpRange(e.target.value); setPage(1); }}
@@ -328,7 +363,7 @@ export default function Candidates() {
             </select>
             <ChevronDown size={13} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted pointer-events-none" />
           </div>
-          <div className="relative min-w-36">
+          <div className="relative">
             <select
               value={salaryRange}
               onChange={e => { setSalaryRange(e.target.value); setPage(1); }}
@@ -340,7 +375,7 @@ export default function Candidates() {
             </select>
             <ChevronDown size={13} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted pointer-events-none" />
           </div>
-          <div className="relative min-w-36">
+          <div className="relative">
             <select
               value={joinFilter}
               onChange={e => { setJoinFilter(e.target.value); setPage(1); }}
@@ -352,37 +387,30 @@ export default function Candidates() {
             </select>
             <ChevronDown size={13} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted pointer-events-none" />
           </div>
-          {hasFilters && (
+          <div className="relative">
+            <select
+              value={gender}
+              onChange={e => { setGender(e.target.value); setPage(1); }}
+              className="w-full appearance-none pl-3 pr-8 py-2 text-sm border border-border rounded-lg bg-bg focus:outline-none focus:border-accent text-text"
+            >
+              <option value="">Any gender</option>
+              <option value="male">Male</option>
+              <option value="female">Female</option>
+            </select>
+            <ChevronDown size={13} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted pointer-events-none" />
+          </div>
+        </div>
+
+        {hasFilters && (
+          <div className="flex justify-end pt-3">
             <button
               onClick={clearFilters}
               className="flex items-center gap-1.5 text-xs text-muted hover:text-text px-3 py-2 rounded-lg border border-border hover:border-text transition-colors"
             >
-              <X size={11} /> Clear
+              <X size={11} /> Clear filters
             </button>
-          )}
-        </div>
-
-        {/* Gender chips */}
-        <div className="flex items-center gap-2 pt-1">
-          <span className="text-xs text-muted font-medium mr-1">Gender:</span>
-          {[
-            { label: 'All', value: '' },
-            { label: 'Male', value: 'male' },
-            { label: 'Female', value: 'female' },
-          ].map(opt => (
-            <button
-              key={opt.value}
-              onClick={() => { setGender(opt.value); setPage(1); }}
-              className={`text-xs px-3 py-1 rounded-full border font-medium transition-colors
-                ${gender === opt.value
-                  ? 'bg-accent text-white border-accent'
-                  : 'bg-white text-muted border-border hover:border-accent hover:text-accent'
-                }`}
-            >
-              {opt.label}
-            </button>
-          ))}
-        </div>
+          </div>
+        )}
       </div>
 
       {/* Content */}

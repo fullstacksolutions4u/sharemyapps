@@ -25,6 +25,7 @@ const projectSchema = new mongoose.Schema({
     value: { type: Number, min: 1, max: 5 },
   }],
   viewCount: { type: Number, default: 0 },
+  viewedBy: { type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }], select: false },
   featured: { type: Boolean, default: false },
   hidden: { type: Boolean, default: false },
   forSale: { type: Boolean, default: false },
