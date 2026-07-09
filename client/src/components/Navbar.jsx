@@ -1,7 +1,7 @@
 import { useRef, useState, useEffect } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link, useNavigate } from 'react-router-dom';
-import { Menu, X, ChevronDown, LogOut, Plus, ShieldCheck, Bell, CheckCircle, XCircle, Clock, MessageSquare, AlertCircle, Heart, Star, MessageCircle, Briefcase, LayoutDashboard, Trophy } from 'lucide-react';
+import { Menu, X, ChevronDown, LogOut, Plus, ShieldCheck, Bell, CheckCircle, XCircle, Clock, MessageSquare, AlertCircle, Heart, Star, MessageCircle, Briefcase, LayoutDashboard, Trophy, GraduationCap, Crown } from 'lucide-react';
 import { progressAPI } from '../api/tick2test';
 
 const GeminiIcon = ({ size = 14 }) => (
@@ -205,6 +205,48 @@ function CoinsRankBadge() {
   );
 }
 
+function ServicesMenu() {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+
+  useEffect(() => {
+    const handler = e => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+  return (
+    <div className="relative" ref={ref}>
+      <button
+        onClick={() => setOpen(v => !v)}
+        className="relative inline-flex items-center gap-1 text-base text-muted hover:text-text transition-colors after:absolute after:left-0 after:-bottom-0.5 after:h-[1.5px] after:w-0 after:bg-accent after:transition-[width] after:duration-300 hover:after:w-full"
+      >
+        <Crown size={15} className="text-amber-500" />
+        Premium Services
+        <ChevronDown size={14} className={`transition-transform ${open ? 'rotate-180' : ''}`} />
+      </button>
+      {open && (
+        <div className="absolute left-0 mt-2 w-56 bg-white border border-border rounded-xl shadow-lg py-1 z-50">
+          <Link
+            to="/placement-services"
+            onClick={() => setOpen(false)}
+            className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-text hover:bg-bg transition-colors"
+          >
+            <Briefcase size={15} className="text-accent shrink-0" /> Placement Services
+          </Link>
+          <Link
+            to="/mentorship-program"
+            onClick={() => setOpen(false)}
+            className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-text hover:bg-bg transition-colors"
+          >
+            <GraduationCap size={15} className="text-accent shrink-0" /> Mentorship Program
+          </Link>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function Navbar() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
@@ -240,8 +282,8 @@ export default function Navbar() {
         </Link>
 
         {/* Desktop Nav */}
-        <nav className="hidden md:flex items-center gap-6 mr-24">
-          <Link to="/explore" className="relative text-base text-muted hover:text-text transition-colors after:absolute after:left-0 after:-bottom-0.5 after:h-[1.5px] after:w-0 after:bg-accent after:transition-[width] after:duration-300 hover:after:w-full">Web & Mobile Applications</Link>
+        <nav className="hidden md:flex items-center gap-6 mr-10">
+          <Link to="/explore" className="relative text-base text-muted hover:text-text transition-colors after:absolute after:left-0 after:-bottom-0.5 after:h-[1.5px] after:w-0 after:bg-accent after:transition-[width] after:duration-300 hover:after:w-full">Applications</Link>
           <Link to="/portfolios" className="relative text-base text-muted hover:text-text transition-colors after:absolute after:left-0 after:-bottom-0.5 after:h-[1.5px] after:w-0 after:bg-accent after:transition-[width] after:duration-300 hover:after:w-full">
             Portfolios
           </Link>
@@ -267,6 +309,7 @@ export default function Navbar() {
             <>
               <Link to="/opportunities" className="relative text-base text-muted hover:text-text transition-colors after:absolute after:left-0 after:-bottom-0.5 after:h-[1.5px] after:w-0 after:bg-accent after:transition-[width] after:duration-300 hover:after:w-full">Job Opportunities</Link>
               <Link to="/dashboard/tick2test" className="relative text-base text-muted hover:text-text transition-colors after:absolute after:left-0 after:-bottom-0.5 after:h-[1.5px] after:w-0 after:bg-accent after:transition-[width] after:duration-300 hover:after:w-full">Quiz Zone</Link>
+              <ServicesMenu />
             </>
           )}
 
@@ -345,7 +388,7 @@ export default function Navbar() {
       {/* Mobile menu */}
       {menuOpen && (
         <div className="md:hidden bg-white border-t border-border px-4 py-4 space-y-3">
-          <Link to="/explore" onClick={() => setMenuOpen(false)} className="block text-sm text-muted hover:text-text">Web & Mobile Applications</Link>
+          <Link to="/explore" onClick={() => setMenuOpen(false)} className="block text-sm text-muted hover:text-text">Applications</Link>
           <Link to="/portfolios" onClick={() => setMenuOpen(false)} className="block text-sm text-muted hover:text-text">
             Portfolios
           </Link>
@@ -371,6 +414,8 @@ export default function Navbar() {
             <>
               <Link to="/opportunities" onClick={() => setMenuOpen(false)} className="block text-sm text-muted hover:text-text">Job Opportunities</Link>
               <Link to="/dashboard/tick2test" onClick={() => setMenuOpen(false)} className="block text-sm text-muted hover:text-text">Quiz Zone</Link>
+              <Link to="/placement-services" onClick={() => setMenuOpen(false)} className="block text-sm text-muted hover:text-text">Placement Services</Link>
+              <Link to="/mentorship-program" onClick={() => setMenuOpen(false)} className="block text-sm text-muted hover:text-text">Mentorship Program</Link>
             </>
           )}
           {user ? (

@@ -147,6 +147,8 @@ function AppRoutes() {
             <Route path="/post-vacancy" element={<ProtectedRoute><AddVacancy /></ProtectedRoute>} />
             <Route path="/mentors" element={<ProtectedRoute><Mentors /></ProtectedRoute>} />
             <Route path="/freelance-developers" element={<FreelanceDevelopers />} />
+            <Route path="/placement-services" element={<PaidServices />} />
+            <Route path="/mentorship-program" element={<MentorshipProgram />} />
             <Route path="/career-services" element={<Navigate to="/dashboard/premium" replace />} />
             <Route path="/tick2test" element={<LearningTracker />} />
             <Route path="/portfolio/:userId" element={<PublicPortfolio />} />

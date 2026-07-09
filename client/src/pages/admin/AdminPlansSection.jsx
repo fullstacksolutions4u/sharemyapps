@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { Search, ToggleLeft, ToggleRight, Save, IndianRupee, Gift, ExternalLink, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import { Search, ToggleLeft, ToggleRight, Save, IndianRupee, Gift, ExternalLink, ChevronLeft, ChevronRight, Crown, UserPlus, X } from 'lucide-react';
 import api from '../../api/axios';
 import toast from 'react-hot-toast';
 
@@ -175,6 +175,213 @@ function FreeOfferCard({ config, onSaved }) {
   );
 }
 
+/* ── Free Premium Access card ───────────────────────────────── */
+const FREE_ACCESS_NOTE = 'Free access granted by admin';
+
+function Avatar({ user, size = 32 }) {
+  return user?.avatar ? (
+    <img src={user.avatar} alt="" style={{ width: size, height: size }} className="rounded-full object-cover shrink-0" />
+  ) : (
+    <div
+      style={{ width: size, height: size }}
+      className="rounded-full bg-accent/10 text-accent font-bold text-xs flex items-center justify-center shrink-0"
+    >
+      {user?.name?.[0]?.toUpperCase() || '?'}
+    </div>
+  );
+}
+
+function FreeAccessCard() {
+  const [query, setQuery]         = useState('');
+  const [results, setResults]     = useState([]);
+  const [searching, setSearching] = useState(false);
+  const [open, setOpen]           = useState(false);
+  const [granted, setGranted]     = useState([]);
+  const [loading, setLoading]     = useState(true);
+  const [busyId, setBusyId]       = useState(null);
+  const boxRef = useRef(null);
+  const searchTimer = useRef(null);
+
+  const loadGranted = () => {
+    api.get('/admin/premium-services/free-access')
+      .then(r => setGranted(r.data.users || []))
+      .catch(() => toast.error('Failed to load free-access users.'))
+      .finally(() => setLoading(false));
+  };
+
+  useEffect(loadGranted, []);
+
+  // Close the search dropdown on outside click
+  useEffect(() => {
+    const handler = e => { if (boxRef.current && !boxRef.current.contains(e.target)) setOpen(false); };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+  // Clear any pending search on unmount
+  useEffect(() => () => clearTimeout(searchTimer.current), []);
+
+  // Debounced user search, driven from the input's change handler
+  const handleQueryChange = (value) => {
+    setQuery(value);
+    clearTimeout(searchTimer.current);
+    if (!value.trim()) { setResults([]); setSearching(false); setOpen(false); return; }
+    setSearching(true);
+    setOpen(true);
+    searchTimer.current = setTimeout(() => {
+      api.get(`/admin/premium-services/search-users?q=${encodeURIComponent(value.trim())}`)
+        .then(r => setResults(r.data.users || []))
+        .catch(() => {})
+        .finally(() => setSearching(false));
+    }, 300);
+  };
+
+  const handleGrant = async (u) => {
+    setBusyId(u._id);
+    try {
+      await api.post(`/admin/premium-services/${u._id}/unlock`, {
+        key: 'placement_session',
+        notes: FREE_ACCESS_NOTE,
+      });
+      toast.success(`Free premium access granted to ${u.name}.`);
+      setQuery('');
+      setResults([]);
+      setOpen(false);
+      loadGranted();
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to grant access.');
+    } finally {
+      setBusyId(null);
+    }
+  };
+
+  const handleRevoke = async (u) => {
+    if (!window.confirm(`Revoke free premium access from ${u.name}?`)) return;
+    setBusyId(u._id);
+    try {
+      await api.delete(`/admin/premium-services/${u._id}/revoke/placement_session`);
+      toast.success(`Access revoked for ${u.name}.`);
+      setGranted(prev => prev.filter(g => g._id !== u._id));
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to revoke access.');
+    } finally {
+      setBusyId(null);
+    }
+  };
+
+  return (
+    <div className="bg-white border border-border rounded-2xl overflow-hidden mb-8">
+      <div className="px-5 py-4 border-b border-border flex items-center gap-3">
+        <div className="w-10 h-10 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-center shrink-0">
+          <Crown size={18} className="text-amber-500" />
+        </div>
+        <div>
+          <p className="text-sm font-semibold text-text">Free Premium Access</p>
+          <p className="text-xs text-muted">Selected users get all premium services for free.</p>
+        </div>
+      </div>
+
+      <div className="p-5">
+        {/* User search */}
+        <div ref={boxRef} className="relative max-w-md">
+          <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted pointer-events-none" />
+          <input
+            type="text"
+            placeholder="Search users by name or email…"
+            value={query}
+            onChange={e => handleQueryChange(e.target.value)}
+            onFocus={() => { if (results.length) setOpen(true); }}
+            className="w-full pl-8 pr-8 py-2 text-sm border border-border rounded-lg bg-bg focus:outline-none focus:border-accent text-text placeholder:text-muted"
+          />
+          {query && (
+            <button
+              type="button"
+              onClick={() => { setQuery(''); setResults([]); setOpen(false); }}
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted hover:text-text transition-colors"
+            >
+              <X size={13} />
+            </button>
+          )}
+
+          {open && query.trim() && (
+            <div className="absolute z-50 mt-1 w-full bg-white border border-border rounded-xl shadow-lg overflow-hidden">
+              {searching ? (
+                <p className="text-xs text-muted text-center py-3">Searching…</p>
+              ) : results.length === 0 ? (
+                <p className="text-xs text-muted text-center py-3">No users found</p>
+              ) : (
+                <div className="max-h-64 overflow-y-auto divide-y divide-border">
+                  {results.map(u => (
+                    <div key={u._id} className="flex items-center gap-3 px-3 py-2.5 hover:bg-bg transition-colors">
+                      <Avatar user={u} size={30} />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-semibold text-text truncate">{u.name}</p>
+                        <p className="text-[11px] text-muted truncate">{u.email}</p>
+                      </div>
+                      {u.hasPremium ? (
+                        <span className="text-[10px] font-semibold px-2 py-1 rounded-full bg-emerald-50 text-emerald-700 shrink-0">
+                          Has access
+                        </span>
+                      ) : (
+                        <button
+                          onClick={() => handleGrant(u)}
+                          disabled={busyId === u._id}
+                          className="flex items-center gap-1 text-[11px] font-semibold px-2.5 py-1 rounded-lg bg-accent hover:bg-accent-hover disabled:opacity-40 text-white transition-colors shrink-0"
+                        >
+                          {busyId === u._id
+                            ? <span className="w-3 h-3 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+                            : <UserPlus size={11} />}
+                          Grant Free
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Granted users */}
+        <div className="mt-5">
+          {loading ? (
+            <div className="space-y-2">
+              {[0, 1].map(i => <div key={i} className="h-11 bg-bg rounded-xl animate-pulse" />)}
+            </div>
+          ) : granted.length === 0 ? (
+            <p className="text-xs text-muted">No users have been granted free access yet. Search above to add someone.</p>
+          ) : (
+            <div className="divide-y divide-border border border-border rounded-xl overflow-hidden">
+              {granted.map(u => (
+                <div key={u._id} className="flex items-center gap-3 px-4 py-2.5 bg-white">
+                  <Avatar user={u} />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-semibold text-text truncate">{u.name}</p>
+                    <p className="text-[11px] text-muted truncate">{u.email}</p>
+                  </div>
+                  <span className="text-[10px] font-semibold px-2 py-1 rounded-full bg-amber-50 text-amber-700 border border-amber-200 shrink-0">
+                    Free access
+                  </span>
+                  {u.grantedAt && (
+                    <span className="text-[11px] text-muted shrink-0 hidden sm:block">{timeAgo(u.grantedAt)}</span>
+                  )}
+                  <button
+                    onClick={() => handleRevoke(u)}
+                    disabled={busyId === u._id}
+                    className="text-[11px] font-semibold px-2.5 py-1 rounded-lg border border-border text-muted hover:text-red-600 hover:border-red-300 disabled:opacity-40 transition-colors shrink-0"
+                  >
+                    Revoke
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function packLabel(p) {
   if (p.pack && p.pack.startsWith('placement_')) {
     return p.pack.replace('placement_', '').replace(/\b\w/g, c => c.toUpperCase());
@@ -246,6 +453,9 @@ export default function AdminPlansSection() {
           </div>
         </div>
       </div>
+
+      {/* Free premium access for selected users */}
+      <FreeAccessCard />
 
       {/* Transactions table */}
       <div className="bg-white border border-border rounded-2xl overflow-hidden">

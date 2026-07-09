@@ -615,6 +615,53 @@ router.get('/premium-services/users', async (_req, res) => {
   } catch (err) { res.status(500).json({ message: err.message }); }
 });
 
+const FREE_ACCESS_NOTE = 'Free access granted by admin';
+
+// Search users by name/email (for granting free premium access)
+router.get('/premium-services/search-users', async (req, res) => {
+  try {
+    const q = (req.query.q || '').trim();
+    if (!q) return res.json({ users: [] });
+    const rx = new RegExp(q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i');
+    const users = await User.find({
+      isDeleted: { $ne: true },
+      $or: [{ name: rx }, { email: rx }],
+    })
+      .select('name email avatar userType premiumServices')
+      .limit(10)
+      .lean();
+    res.json({
+      users: users.map(u => ({
+        _id: u._id,
+        name: u.name,
+        email: u.email,
+        avatar: u.avatar,
+        userType: u.userType,
+        hasPremium: (u.premiumServices || []).some(s => s.key === 'placement_session'),
+      })),
+    });
+  } catch (err) { res.status(500).json({ message: err.message }); }
+});
+
+// Users who were granted free premium access by an admin
+router.get('/premium-services/free-access', async (_req, res) => {
+  try {
+    const users = await User.find({
+      isDeleted: { $ne: true },
+      premiumServices: { $elemMatch: { key: 'placement_session', notes: FREE_ACCESS_NOTE } },
+    })
+      .select('name email avatar premiumServices')
+      .lean();
+    const result = users
+      .map(u => {
+        const entry = (u.premiumServices || []).find(s => s.key === 'placement_session');
+        return { _id: u._id, name: u.name, email: u.email, avatar: u.avatar, grantedAt: entry?.unlockedAt || null };
+      })
+      .sort((a, b) => new Date(b.grantedAt || 0) - new Date(a.grantedAt || 0));
+    res.json({ users: result });
+  } catch (err) { res.status(500).json({ message: err.message }); }
+});
+
 router.get('/premium-services/:userId/services', async (req, res) => {
   try {
     const user = await User.findById(req.params.userId).select('premiumServices').lean();
