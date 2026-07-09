@@ -18,9 +18,9 @@ import { useConfirm } from '../context/ConfirmContext';
 const NAV = [
   { key: 'profile',            label: 'Profile',               icon: UserCircle },
   { key: 'projects',           label: 'My Projects',           icon: FolderOpen },
-  { key: 'messages',           label: 'Messages',              icon: MessageSquare },
   { key: 'notifications',      label: 'Notifications',         icon: Bell },
   { key: 'feedback',           label: 'Feedback',              icon: Lightbulb },
+  { key: 'messages',           label: 'Messages',              icon: MessageSquare },
   { key: 'tick2test',          label: 'Quiz Zone',             icon: Gamepad2 },
   { key: 'premium',   label: 'Placement Services', icon: Crown },
   { key: 'mentorship', label: 'Mentorship Program', icon: GraduationCap },
