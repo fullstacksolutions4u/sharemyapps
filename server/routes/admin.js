@@ -824,7 +824,7 @@ router.get('/job-recommendations/premium-users', async (_req, res) => {
 });
 
 const JOB_ALERT_TITLE = 'New Job Openings 🎯';
-const JOB_ALERT_MESSAGE = 'New jobs have been released. Please check out your dashboard and apply.';
+const JOB_ALERT_MESSAGE = 'New hiring opportunities are live! Check your dashboard for company and recruiters email IDs and career page links — share your CV or upload your resume to apply directly.';
 
 // Career-page links where users upload their resume directly; url gets https:// if no protocol given
 function cleanCareerLinks(links) {

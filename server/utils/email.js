@@ -630,7 +630,7 @@ exports.sendJobAlertEmail = async ({ to, name }) => {
           <h2 style="margin:0 0 8px;font-size:20px;color:#1A1A1A;">🎯 New Job Openings</h2>
           <p style="color:#374151;margin:0 0 16px;font-size:14px;">Hi ${name},</p>
           <p style="color:#374151;margin:0 0 20px;font-size:14px;">
-            New jobs have been released. Please check out your dashboard and apply.
+            New hiring opportunities are live on your dashboard. We've shared company and recruiters email IDs and direct links to company career pages — send your CV or upload your resume there to apply directly.
           </p>
           <div style="text-align:center;margin-bottom:24px;">
             <a href="${jobAlertsUrl}" style="display:inline-block;background:#0A7373;color:#fff;text-decoration:none;padding:13px 32px;border-radius:8px;font-weight:700;font-size:14px;">

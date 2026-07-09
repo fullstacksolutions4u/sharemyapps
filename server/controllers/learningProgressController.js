@@ -36,7 +36,7 @@ const toggleTopicCompletion = async (req, res) => {
       return res.status(200).json({
         success: true,
         message: 'Progress tracked locally',
-        progress: { completedTopics: [], completedModules: [] },
+        progress: { completedTopics: [], completedModules: [], attemptedQuizzes: [] },
         _unauthenticated: true
       });
     }
@@ -128,7 +128,8 @@ const toggleTopicCompletion = async (req, res) => {
       firstTopicMessage,
       progress: {
         completedTopics: progressDoc.completedTopics,
-        completedModules: progressDoc.completedModules
+        completedModules: progressDoc.completedModules,
+        attemptedQuizzes: progressDoc.attemptedQuizzes || []
       },
       userStats: user ? { points: user.points || 0, badges: user.badges || [], newBadges: [] } : null
     });
