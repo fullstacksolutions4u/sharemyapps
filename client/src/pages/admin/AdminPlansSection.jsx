@@ -90,7 +90,7 @@ function FreeOfferCard({ config, onSaved }) {
         premiumServicePricePaise: Math.round(Number(price) * 100),
         freeOfferDueDate: dueDate ? new Date(dueDate).toISOString() : null,
       });
-      toast.success('Premium service settings saved.');
+      toast.success('Placement service settings saved.');
       onSaved(res.data);
     } catch {
       toast.error('Failed to save.');
@@ -107,7 +107,7 @@ function FreeOfferCard({ config, onSaved }) {
         <div className="w-10 h-10 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-center shrink-0">
           <Gift size={18} className="text-emerald-600" />
         </div>
-        <p className="text-sm font-semibold text-text">Premium Service</p>
+        <p className="text-sm font-semibold text-text">Placement Service</p>
       </div>
 
       <div className="border-t border-border pt-3 space-y-3">

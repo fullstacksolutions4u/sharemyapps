@@ -147,7 +147,7 @@ router.get('/offers/:id/timeline', async (req, res) => {
     if (offer.user?.createdAt) {
       events.push({ id: 'signup', eventType: 'signup', label: 'Signed Up', note: '', at: offer.user.createdAt });
     }
-    events.push({ id: 'applied', eventType: 'applied', label: 'Applied for Premium Service', note: '', at: offer.createdAt });
+    events.push({ id: 'applied', eventType: 'applied', label: 'Applied for Placement Service', note: '', at: offer.createdAt });
     if (offer.whatsappContacted && offer.whatsappContactedAt) {
       events.push({ id: 'whatsapp', eventType: 'whatsapp', label: 'WhatsApp Contacted', note: '', at: offer.whatsappContactedAt });
     }

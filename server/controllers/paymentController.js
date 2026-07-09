@@ -113,12 +113,12 @@ const createPlacementOrder = async (req, res) => {
     const { planId } = req.body;
     if (!planId) return res.status(400).json({ message: 'planId is required.' });
 
-    // Block re-purchase
-    const existing = await Payment.findOne({ user: req.user._id, status: 'success', pack: /^placement_/ }).lean();
-    if (existing) return res.status(409).json({ message: 'You have already purchased a Premium Plan.' });
-
     const plan = await Plan.findById(planId).lean();
     if (!plan || !plan.active) return res.status(404).json({ message: 'Plan not found.' });
+
+    // Block re-purchase of the same plan (other plans stay purchasable)
+    const existing = await Payment.findOne({ user: req.user._id, status: 'success', pack: `placement_${plan.name.toLowerCase()}` }).lean();
+    if (existing) return res.status(409).json({ message: `You have already purchased the ${plan.name} plan.` });
 
     const amountPaise = plan.price * 100;
     const order = await razorpay.orders.create({
@@ -186,7 +186,7 @@ const verifyPlacementPayment = async (req, res) => {
       user:    req.user._id,
       type:    'payment_success',
       title:   'Payment Successful 🎉',
-      message: `Your ₹${plan.price} Premium Service payment was successful. Our HR team will contact you within 2 business days.`,
+      message: `Your ₹${plan.price} Placement Service payment was successful. Our HR team will contact you within 2 business days.`,
     });
 
     sendPlacementPaymentEmail({

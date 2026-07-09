@@ -290,7 +290,7 @@ export default function AdminPremiumUsersSection() {
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20, flexWrap: 'wrap', gap: 12 }}>
         <div>
-          <h2 style={{ margin: 0, fontSize: 20, fontWeight: 700, color: '#1a1a1a' }}>Premium Service Users</h2>
+          <h2 style={{ margin: 0, fontSize: 20, fontWeight: 700, color: '#1a1a1a' }}>Placement Service Users</h2>
           <p style={{ margin: '4px 0 0', fontSize: 13, color: '#888' }}>
             {data.users.length} enrolled · click Summary for AI analysis
           </p>

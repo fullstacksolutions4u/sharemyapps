@@ -32,7 +32,7 @@ const NAV = [
   { key: 'learning',       label: 'Quiz Zone',        icon: BookOpen },
   { key: 'messages',       label: 'Messages',         icon: MessageSquare },
   { key: 'plans_payments',  label: 'Plans & Payments',  icon: IndianRupee },
-{ key: 'offers',          label: 'Premium Applicants', icon: Crown },
+{ key: 'offers',          label: 'Placement Applicants', icon: Crown },
   { key: 'service_access', label: 'Services',           icon: Unlock },
   { key: 'job_recommendations', label: 'Job Alert', icon: Mail },
   { key: 'email',          label: 'Email',            icon: Send },

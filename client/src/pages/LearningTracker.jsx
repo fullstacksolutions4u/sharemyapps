@@ -313,7 +313,7 @@ const LearningTracker = ({ embedded = false }) => {
                   <button
                     key={index}
                     onClick={() => goToSlide(index)}
-                    className="transition-all duration-300 rounded-lg px-3 py-1.5 text-xs font-semibold"
+                    className="grow whitespace-nowrap transition-all duration-300 rounded-lg px-3 py-1.5 text-xs font-semibold"
                     style={index === currentIndex
                       ? { backgroundColor: '#9B7D43', color: '#FAF7F2', boxShadow: '0 2px 8px rgba(155,125,67,0.4)', border: '1px solid #C9A96E' }
                       : { backgroundColor: '#FAF7F2', color: '#5A5550', border: '1px solid #D4B896' }}
@@ -321,6 +321,13 @@ const LearningTracker = ({ embedded = false }) => {
                     {module.title.replace(/^Module\s+\d+\s*[:\s-]+\s*/i, '')}
                   </button>
                 ))}
+                <button
+                  onClick={() => navigate('/dashboard/mentorship')}
+                  className="grow whitespace-nowrap transition-all duration-300 rounded-lg px-3 py-1.5 text-xs font-bold"
+                  style={{ backgroundColor: '#0A7373', color: '#FAF7F2', border: '1px solid #0c8c8c', boxShadow: '0 2px 8px rgba(10,115,115,0.35)' }}
+                >
+                  🎓 Enroll Mentorship Programm
+                </button>
               </div>
             </div>
 

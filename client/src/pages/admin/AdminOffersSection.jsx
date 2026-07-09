@@ -331,7 +331,7 @@ function SummaryModal({ offer, onClose, onSummaryUpdate, onCommentUpdate }) {
     note:           { label: 'General Note',      tag: '#1a1a1a' },
     other:          { label: 'Stop Services',      tag: '#1a1a1a' },
     signup:         { label: 'Signed Up',         tag: '#1a1a1a' },
-    applied:        { label: 'Applied for Premium Service', tag: '#1a1a1a' },
+    applied:        { label: 'Applied for Placement Service', tag: '#1a1a1a' },
     whatsapp:       { label: 'WhatsApp Contacted', tag: '#1a1a1a' },
     enrolled:       { label: 'Enrolled in Program', tag: '#1a1a1a' },
   };

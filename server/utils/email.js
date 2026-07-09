@@ -359,7 +359,7 @@ exports.sendJobApplicationEmail = async ({ to, name, vacancy }) => {
             <tr>
               <td colspan="3">
                 <a href="${BASE_URL}/dashboard/premium" style="display:block;text-align:center;background:linear-gradient(135deg,#F59E0B 0%,#D97706 100%);color:#fff;text-decoration:none;padding:12px 10px;border-radius:8px;font-weight:700;font-size:13px;">
-                  ✨ Explore Premium Services
+                  ✨ Explore Placement Services
                 </a>
               </td>
             </tr>
@@ -446,7 +446,7 @@ exports.sendResumeReadyEmail = async ({ to, name, serviceLabel, completionLink, 
             If you have any questions or need revisions, please reply to this email.
           </p>
         </div>
-        ${FOOTER('You received this email because you requested a premium service on ShareMyApps.')}
+        ${FOOTER('You received this email because you requested a placement service on ShareMyApps.')}
       </div>
     `,
   });
@@ -468,7 +468,7 @@ exports.sendActivationEmail = async ({ to, name }) => {
           <h2 style="margin:0 0 8px;font-size:20px;color:#1A1A1A;">🎉 You've been activated!</h2>
           <p style="color:#374151;margin:0 0 16px;font-size:14px;">Hi ${name},</p>
           <p style="color:#374151;margin:0 0 16px;font-size:14px;">
-            Great news — our team has reviewed your application and you've been <strong>approved for placement support</strong>. All premium services on ShareMyApps are now unlocked for you.
+            Great news — our team has reviewed your application and you've been <strong>approved for placement support</strong>. All placement services on ShareMyApps are now unlocked for you.
           </p>
 
           <p style="color:#374151;margin:0 0 20px;font-size:14px;">
@@ -582,7 +582,7 @@ exports.sendJobRecommendationsEmail = async ({ to, name, jobs }) => {
             </tbody>
           </table>
         </div>
-        ${FOOTER('You received this email because you have an active premium service on ShareMyApps.')}
+        ${FOOTER('You received this email because you have an active placement service on ShareMyApps.')}
       </div>
     `,
   });
@@ -641,7 +641,7 @@ exports.sendJobAlertEmail = async ({ to, name }) => {
             Have questions? Reply to this email or reach us at <a href="mailto:hello@sharemyapps.in" style="color:#00A693;text-decoration:none;">hello@sharemyapps.in</a>.
           </p>
         </div>
-        ${FOOTER('You received this email because you have an active premium service on ShareMyApps.')}
+        ${FOOTER('You received this email because you have an active placement service on ShareMyApps.')}
       </div>
     `,
   });

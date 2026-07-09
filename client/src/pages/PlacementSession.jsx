@@ -140,7 +140,7 @@ export default function PlacementSession() {
                   <span style={{ fontSize: 14, fontWeight: 700, color: '#9aaca9' }}>Not yet unlocked</span>
                 </div>
                 <p style={{ margin: 0, fontSize: 13, color: '#aab8b5', lineHeight: 1.55 }}>
-                  This session is unlocked individually by our team. If you've applied for premium services, our team will review your profile and unlock this when you're eligible.
+                  This session is unlocked individually by our team. If you've applied for placement services, our team will review your profile and unlock this when you're eligible.
                 </p>
               </div>
             )}

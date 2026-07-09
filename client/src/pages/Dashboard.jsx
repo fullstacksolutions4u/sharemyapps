@@ -7,7 +7,7 @@ import {
   Crown, UserCircle, LogOut, Menu, X, Plus, Share2,
   Pencil, Trash2, ExternalLink, Clock, CheckCircle, XCircle,
   AlertCircle, Copy, Check, Eye, EyeOff, Heart, Star, ChevronRight,
-  Gamepad2, Lock, Briefcase,
+  Gamepad2, Lock, Briefcase, GraduationCap,
 } from 'lucide-react';
 import CoinIcon from '../components/common/AnimatedCoin';
 import api from '../api/axios';
@@ -22,7 +22,8 @@ const NAV = [
   { key: 'notifications',      label: 'Notifications',         icon: Bell },
   { key: 'feedback',           label: 'Feedback',              icon: Lightbulb },
   { key: 'tick2test',          label: 'Quiz Zone',             icon: Gamepad2 },
-  { key: 'premium',   label: 'Premium Services', icon: Crown },
+  { key: 'premium',   label: 'Placement Services', icon: Crown },
+  { key: 'mentorship', label: 'Mentorship Program', icon: GraduationCap },
   { key: 'services',  label: 'Services',         icon: Lock, isPremiumService: true },
   { key: 'job-alerts', label: 'Job Alerts',      icon: Briefcase, isJobAlertEligible: true },
 ];
