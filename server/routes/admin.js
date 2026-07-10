@@ -268,10 +268,29 @@ router.post('/offers/:id/ai-summary', async (req, res) => {
 
     const u = offer.user;
 
-    // Fetch and match form response
     let formResponse = null;
     let formHeaders = [];
-    try {
+
+    // Preferred source: the job-search intake the user submitted in-app
+    const CandidateIntake = require('../models/CandidateIntake');
+    const intake = await CandidateIntake.findOne({ user: u._id }).lean();
+    if (intake) {
+      const intakeFields = [
+        ['Full Name', intake.fullName],
+        ['Current job search status', intake.jobSearchStatus === 'Other' ? intake.jobSearchStatusOther : intake.jobSearchStatus],
+        ['How long actively looking for a job', intake.searchDuration === 'Other' ? intake.searchDurationOther : intake.searchDuration],
+        ['Platforms used to search for jobs', intake.platformsUsed],
+        ['Job applications submitted per day', intake.applicationsPerDay],
+        ['Interview calls received (week/month)', intake.interviewCallsFrequency],
+        ['Interviews scheduled (week/month)', intake.interviewsScheduledPerWeek],
+        ['Available today for a meeting', intake.availableForMeetingToday],
+      ].filter(([, v]) => v && String(v).trim());
+      formResponse = Object.fromEntries(intakeFields);
+      formHeaders = intakeFields.map(([q]) => q);
+    }
+
+    // Fallback for legacy applicants: match the old Google Form responses sheet
+    if (!formResponse) try {
       const SHEET_ID = '10_CRMyhBMV_Ntmb-siPkBvgJRKRhNi3UyNgeycCsWQY';
       const GID = '676388485';
       const r = await fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${GID}`);
