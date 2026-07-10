@@ -6,6 +6,10 @@ import AnimatedCoin from '../components/common/AnimatedCoin';
 import PieChart from '../components/common/PieChart';
 import confetti from 'canvas-confetti';
 import TopicQuizModal from '../components/user/TopicQuizModal';
+import _Lottie from 'lottie-react';
+import modulesAnimation from '../assets/modules.json';
+
+const Lottie = _Lottie.default ?? _Lottie;
 
 const LearningTracker = ({ embedded = false }) => {
   const navigate = useNavigate();
@@ -254,8 +258,7 @@ const LearningTracker = ({ embedded = false }) => {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ paddingTop: embedded ? '24px' : '100px', backgroundColor: '#F5F0E8' }}>
         <div className="text-center">
-          <div className="w-16 h-16 border-4 border-t-transparent rounded-full animate-spin mx-auto mb-4" style={{ borderColor: '#D4B896', borderTopColor: 'transparent' }}></div>
-          <p style={{ color: '#5A5550' }}>Loading learning modules...</p>
+          <Lottie animationData={modulesAnimation} loop style={{ width: 400, height: 400, margin: '0 auto' }} />
         </div>
       </div>
     );

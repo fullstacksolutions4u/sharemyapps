@@ -23,7 +23,7 @@ function PortfolioModal({ offerId, onClose, onContacted }) {
   );
 
   const whatsappMsg = (name) => encodeURIComponent(
-    `Hello ${name}!\n\nI'm Kevin from ShareMyApps Portal. Thank you for applying to Job Hunting Assistance Service!\n\nPlease fill out this quick form to get started the service:\nhttps://forms.gle/DKCift4Pigj48jGP6`
+    `Hello ${name}!\n\nI'm Kevin from ShareMyApps Portal. Thank you for applying to Job Hunting Assistance Service!\n\nI'll get in touch with you shortly for further steps.`
   );
 
   const socialLinks = [
