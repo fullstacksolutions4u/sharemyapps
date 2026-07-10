@@ -504,12 +504,12 @@ exports.sendActivationEmail = async ({ to, name }) => {
           </p>
 
           <p style="color:#374151;margin:0 0 20px;font-size:14px;">
-            To get started, visit the <strong>Services</strong> section in your dashboard page, <strong>fill out the quick intake form</strong>, and <strong>schedule your 1:1 session with a placement officer</strong>.
+            To get started, visit the <strong>Services</strong> section in your dashboard page and <strong>schedule your 1:1 session with a placement officer</strong>.
           </p>
 
           <div style="text-align:center;margin-bottom:24px;">
             <a href="${servicesUrl}" style="display:inline-block;background:#0A7373;color:#fff;text-decoration:none;padding:13px 32px;border-radius:8px;font-weight:700;font-size:14px;">
-              Fill the Form &amp; Schedule Your Session →
+              Schedule Your Session →
             </a>
           </div>
 
