@@ -466,7 +466,7 @@ export default function SelectRole() {
         <button
           onClick={handleContinue}
           disabled={!selected || loading}
-          className="w-full bg-orange-700 hover:bg-orange-800 text-white py-3.5 rounded-xl font-medium text-sm transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+          className="w-full bg-accent hover:bg-accent-hover text-white py-3.5 rounded-xl font-medium text-sm transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
         >
           {loading ? 'Setting up your account…' : 'Continue'}
         </button>

@@ -33,9 +33,10 @@ function RequestForm({ serviceKey, onRequested }) {
       setError('Times must be between 9:00 AM and 8:00 PM.');
       return;
     }
-    const availabilityFrom = `${date}T${timeFrom}`;
-    const availabilityTo   = `${date}T${timeTo}`;
-    if (new Date(availabilityTo) <= new Date(availabilityFrom)) {
+    // Send real instants (with timezone) so server/admin see the same clock time the user picked
+    const availabilityFrom = new Date(`${date}T${timeFrom}`);
+    const availabilityTo   = new Date(`${date}T${timeTo}`);
+    if (availabilityTo <= availabilityFrom) {
       setError('End time must be after start time.');
       return;
     }
@@ -43,8 +44,8 @@ function RequestForm({ serviceKey, onRequested }) {
     setError('');
     try {
       await api.post(`/premium-services/${serviceKey}/session-request`, {
-        availabilityFrom,
-        availabilityTo,
+        availabilityFrom: availabilityFrom.toISOString(),
+        availabilityTo: availabilityTo.toISOString(),
       });
       onRequested();
     } catch (err) {
@@ -56,9 +57,16 @@ function RequestForm({ serviceKey, onRequested }) {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+      <div style={{
+        background: '#f0faf9', border: '1px solid #c9e8e4', borderRadius: 8,
+        padding: '9px 13px', fontSize: 12, color: '#0a5f5f', lineHeight: 1.5,
+      }}>
+        Tell us the <strong>time range you're available</strong> on that day — our specialist will pick a
+        convenient time <strong>within this window</strong> and share the meeting link.
+      </div>
       <div style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr 1fr auto', gap: 10, alignItems: 'flex-end' }}>
         <div>
-          <label style={fieldLabel}>Preferred Date *</label>
+          <label style={fieldLabel}>Date You're Available *</label>
           <input
             type="date"
             value={date}
@@ -68,7 +76,7 @@ function RequestForm({ serviceKey, onRequested }) {
           />
         </div>
         <div>
-          <label style={fieldLabel}>From *</label>
+          <label style={fieldLabel}>Available From *</label>
           <input
             type="time"
             value={timeFrom}
@@ -84,7 +92,7 @@ function RequestForm({ serviceKey, onRequested }) {
           />
         </div>
         <div>
-          <label style={fieldLabel}>To *</label>
+          <label style={fieldLabel}>Available Until *</label>
           <input
             type="time"
             value={timeTo}
@@ -113,7 +121,7 @@ function RequestForm({ serviceKey, onRequested }) {
         </button>
       </div>
       <p style={{ margin: 0, fontSize: 11, color: '#9aaca9' }}>
-        Available time slots: <strong>9:00 AM – 8:00 PM</strong>
+        Sessions are scheduled between <strong>9:00 AM – 8:00 PM</strong>. The wider your availability window, the faster we can find a slot.
       </p>
       {error && <p style={{ margin: 0, fontSize: 12, color: '#c0392b' }}>{error}</p>}
     </div>

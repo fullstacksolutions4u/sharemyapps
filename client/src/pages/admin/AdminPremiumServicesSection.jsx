@@ -74,11 +74,11 @@ function ScheduleModal({ session, onClose, onSaved }) {
                 <Clock size={13} color="#0a7373" />
                 <span>
                   {session.availabilityFrom
-                    ? new Date(session.availabilityFrom).toLocaleString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: 'UTC' })
+                    ? new Date(session.availabilityFrom).toLocaleString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
                     : '—'}
                   {' → '}
                   {session.availabilityTo
-                    ? new Date(session.availabilityTo).toLocaleString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: 'UTC' })
+                    ? new Date(session.availabilityTo).toLocaleString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
                     : '—'}
                 </span>
               </div>
