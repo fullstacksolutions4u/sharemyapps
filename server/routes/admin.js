@@ -23,6 +23,10 @@ const {
   getCompanies,
   getEmailRecipients,
   sendCustomEmail,
+  getEmailTemplates,
+  createEmailTemplate,
+  updateEmailTemplate,
+  deleteEmailTemplate,
 } = require('../controllers/adminController');
 const { adminSendMessage } = require('../controllers/messageController');
 const {
@@ -55,6 +59,10 @@ router.get('/resumes', getResumes);
 router.get('/companies', getCompanies);
 router.get('/email/users', getEmailRecipients);
 router.post('/email/send', sendCustomEmail);
+router.get('/email/templates', getEmailTemplates);
+router.post('/email/templates', createEmailTemplate);
+router.put('/email/templates/:id', updateEmailTemplate);
+router.delete('/email/templates/:id', deleteEmailTemplate);
 router.patch('/users/:id/badge', setBadge);
 router.patch('/users/:id/designation', setDesignation);
 router.put('/users/:id', adminUpdateUser);
@@ -617,19 +625,23 @@ router.get('/premium-services/users', async (_req, res) => {
 
 const FREE_ACCESS_NOTE = 'Free access granted by admin';
 
-// Search users by name/email (for granting free premium access)
+// Users for granting free premium access; optional ?q= filters by name/email
 router.get('/premium-services/search-users', async (req, res) => {
   try {
     const q = (req.query.q || '').trim();
-    if (!q) return res.json({ users: [] });
-    const rx = new RegExp(q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i');
-    const users = await User.find({
-      isDeleted: { $ne: true },
-      $or: [{ name: rx }, { email: rx }],
-    })
-      .select('name email avatar userType premiumServices')
-      .limit(10)
+    const filter = { isDeleted: { $ne: true } };
+    if (q) {
+      const rx = new RegExp(q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i');
+      filter.$or = [{ name: rx }, { email: rx }];
+    }
+    const users = await User.find(filter)
+      .select('name email avatar userType premiumServices freePremiumGrant')
+      .sort({ createdAt: -1 })
       .lean();
+    const FreeOffer = require('../models/FreeOffer');
+    const offerUserIds = new Set(
+      (await FreeOffer.find().select('user').lean()).map(o => String(o.user))
+    );
     res.json({
       users: users.map(u => ({
         _id: u._id,
@@ -638,27 +650,77 @@ router.get('/premium-services/search-users', async (req, res) => {
         avatar: u.avatar,
         userType: u.userType,
         hasPremium: (u.premiumServices || []).some(s => s.key === 'placement_session'),
+        hasOffer: offerUserIds.has(String(u._id)),
+        hasGrant: !!u.freePremiumGrant?.granted,
       })),
     });
   } catch (err) { res.status(500).json({ message: err.message }); }
 });
 
-// Users who were granted free premium access by an admin
+// Users invited to free premium access by an admin, with where they are in the pipeline
 router.get('/premium-services/free-access', async (_req, res) => {
   try {
-    const users = await User.find({
-      isDeleted: { $ne: true },
-      premiumServices: { $elemMatch: { key: 'placement_session', notes: FREE_ACCESS_NOTE } },
-    })
-      .select('name email avatar premiumServices')
+    const FreeOffer = require('../models/FreeOffer');
+    const users = await User.find({ 'freePremiumGrant.granted': true, isDeleted: { $ne: true } })
+      .select('name email avatar freePremiumGrant')
+      .sort({ 'freePremiumGrant.grantedAt': -1 })
       .lean();
-    const result = users
-      .map(u => {
-        const entry = (u.premiumServices || []).find(s => s.key === 'placement_session');
-        return { _id: u._id, name: u.name, email: u.email, avatar: u.avatar, grantedAt: entry?.unlockedAt || null };
-      })
-      .sort((a, b) => new Date(b.grantedAt || 0) - new Date(a.grantedAt || 0));
-    res.json({ users: result });
+    const offers = await FreeOffer.find({ user: { $in: users.map(u => u._id) } }).lean();
+    const offerByUser = {};
+    for (const o of offers) offerByUser[String(o.user)] = o;
+    res.json({
+      users: users.map(u => {
+        const offer = offerByUser[String(u._id)];
+        return {
+          _id: u._id,
+          name: u.name,
+          email: u.email,
+          avatar: u.avatar,
+          grantedAt: u.freePremiumGrant?.grantedAt || null,
+          // pipeline stage: invited → applied → activated
+          stage: !offer ? 'invited' : (offer.status === 'approved' && offer.enrolled) ? 'activated' : 'applied',
+        };
+      }),
+    });
+  } catch (err) { res.status(500).json({ message: err.message }); }
+});
+
+// Grant free premium access: invites the user — they get an Apply button on the
+// Premium page. Applying puts them in Placement Applicants (pending); activation
+// there unlocks services and the Premium Member tag.
+router.post('/premium-services/:userId/grant-free', async (req, res) => {
+  try {
+    const user = await User.findById(req.params.userId).select('premiumServices freePremiumGrant isDeleted');
+    if (!user || user.isDeleted) return res.status(404).json({ message: 'User not found' });
+    if (user.freePremiumGrant?.granted) return res.status(409).json({ message: 'User already has a free access grant' });
+    const FreeOffer = require('../models/FreeOffer');
+    const existing = await FreeOffer.findOne({ user: user._id }).lean();
+    if (existing) return res.status(409).json({ message: 'User already has a placement application' });
+    if (user.premiumServices.some(s => s.key === 'placement_session'))
+      return res.status(409).json({ message: 'User already has premium access' });
+    user.freePremiumGrant = { granted: true, grantedAt: new Date(), grantedBy: req.user._id };
+    await user.save();
+    res.status(201).json({ ok: true });
+  } catch (err) { res.status(500).json({ message: err.message }); }
+});
+
+// Revoke an admin-granted free access: clears the invitation, removes the application
+// it produced, and pulls any services unlocked by its activation.
+router.delete('/premium-services/:userId/revoke-free', async (req, res) => {
+  try {
+    const user = await User.findById(req.params.userId).select('freePremiumGrant');
+    if (!user || !user.freePremiumGrant?.granted)
+      return res.status(404).json({ message: 'No admin-granted free access found for this user' });
+    const FreeOffer = require('../models/FreeOffer');
+    await FreeOffer.deleteOne({ user: user._id });
+    await User.updateOne(
+      { _id: user._id },
+      {
+        $set: { freePremiumGrant: { granted: false, grantedAt: null, grantedBy: null } },
+        $pull: { premiumServices: { notes: { $in: ['Auto-unlocked on activation', FREE_ACCESS_NOTE] } } },
+      }
+    );
+    res.json({ ok: true });
   } catch (err) { res.status(500).json({ message: err.message }); }
 });
 

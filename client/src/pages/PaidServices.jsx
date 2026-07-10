@@ -32,6 +32,8 @@ export default function PaidServices() {
   const [payModal, setPayModal] = useState(null);
   const [planLoading, setPlanLoading] = useState(false);
   const [paidSuccess, setPaidSuccess] = useState(false);
+  const [hasPremiumAccess, setHasPremiumAccess] = useState(false);
+  const [hasFreeGrant, setHasFreeGrant] = useState(false);
   const [checkingPaid, setCheckingPaid] = useState(user != null);
 
   const freeOfferActive = offerConfig?.freeOfferEnabled && (
@@ -48,10 +50,18 @@ export default function PaidServices() {
   useEffect(() => {
     if (!user) return;
     api.get('/offers/my-offer').then(r => setFreeOffer(r.data)).catch(() => {});
-    api.get('/payments/placement/my-purchases')
-      .then(r => { if (r.data?.length > 0) setPaidSuccess(true); })
-      .catch(() => {})
-      .finally(() => setCheckingPaid(false));
+    Promise.allSettled([
+      api.get('/payments/placement/my-purchases'),
+      api.get('/premium-services/my-services'),
+      api.get('/offers/my-grant'),
+    ]).then(([pay, svc, grant]) => {
+      if (pay.status === 'fulfilled' && pay.value.data?.length > 0) setPaidSuccess(true);
+      // covers activated premium access (paid, offer-approved or admin-activated)
+      if (svc.status === 'fulfilled' && (svc.value.data?.services || []).some(s => s.key === 'placement_session')) {
+        setHasPremiumAccess(true);
+      }
+      if (grant.status === 'fulfilled' && grant.value.data?.granted) setHasFreeGrant(true);
+    }).finally(() => setCheckingPaid(false));
   }, [user]);
 
   const handleApplyFreeOffer = async () => {
@@ -61,6 +71,12 @@ export default function PaidServices() {
     try {
       const res = await api.post('/offers/apply');
       setFreeOffer(res.data);
+      if (hasFreeGrant) {
+        // Granted users go straight to the job-search intake form
+        toast.success('Application submitted! Now tell us about your job search.');
+        navigate('/dashboard/services');
+        return;
+      }
       toast.success('You\'re registered! Our executive will contact you within 2 days.');
     } catch (err) {
       const msg = err.response?.data?.message || 'Failed to apply. Please try again.';
@@ -93,6 +109,22 @@ export default function PaidServices() {
       );
     }
 
+    if (hasPremiumAccess) {
+      return (
+        <div style={{
+          marginTop: '26px', width: '100%', background: '#dcefed', color: '#0a7373',
+          borderRadius: '8px', padding: '14px', fontSize: '13.5px',
+          fontWeight: 700, textAlign: 'center', letterSpacing: '.02em',
+          boxSizing: 'border-box',
+        }}>
+          Premium Unlocked for You 🎉
+          <span style={{ display: 'block', fontSize: '11.5px', fontWeight: 500, marginTop: '4px', color: '#2a8a7a' }}>
+            All premium services are free on your account.
+          </span>
+        </div>
+      );
+    }
+
     if (freeOffer) {
       return (
         <div style={{
@@ -104,6 +136,37 @@ export default function PaidServices() {
           <span style={{ display: 'block', fontSize: '11.5px', fontWeight: 500, marginTop: '4px', color: '#2a8a7a' }}>
             Executive will contact you shortly.
           </span>
+        </div>
+      );
+    }
+
+    // Admin-invited user who hasn't applied yet — show the apply button
+    if (hasFreeGrant) {
+      return (
+        <div style={{ marginTop: '26px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+          <div style={{
+            width: '100%', background: '#dcefed', color: '#0a7373',
+            borderRadius: '8px', padding: '12px 14px', fontSize: '12.5px',
+            fontWeight: 700, textAlign: 'center', letterSpacing: '.02em',
+            boxSizing: 'border-box',
+          }}>
+            You've been selected for FREE premium access 🎉
+          </div>
+          <button
+            onClick={handleApplyFreeOffer}
+            disabled={applyLoading}
+            style={{
+              width: '100%', background: '#0c8c8c', color: '#fff', border: 'none',
+              borderRadius: '8px', padding: '14px', fontSize: '13.5px', fontWeight: 700,
+              letterSpacing: '.02em', fontFamily: "'Manrope', sans-serif",
+              cursor: applyLoading ? 'default' : 'pointer', opacity: applyLoading ? 0.6 : 1,
+            }}
+          >
+            {applyLoading ? 'Applying…' : 'Apply for Free Premium Services'}
+          </button>
+          {applyError && (
+            <p style={{ fontSize: '12px', color: '#c0392b', margin: 0, textAlign: 'center' }}>{applyError}</p>
+          )}
         </div>
       );
     }
@@ -247,13 +310,13 @@ export default function PaidServices() {
                 </span>
               </div>
               <span style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
-                {freeOfferActive && priceDisplay && (
+                {(freeOfferActive || hasPremiumAccess || hasFreeGrant) && priceDisplay && (
                   <span style={{ fontFamily: "'Spectral', serif", fontSize: '18px', fontWeight: 600, color: '#9aa6a4', textDecoration: 'line-through' }}>
                     {priceDisplay}
                   </span>
                 )}
-                <span style={{ fontFamily: "'Spectral', serif", fontSize: '22px', fontWeight: 700, color: freeOfferActive ? '#0a7373' : '#243433' }}>
-                  {offerConfig === null ? '…' : freeOfferActive ? '₹0' : priceDisplay}
+                <span style={{ fontFamily: "'Spectral', serif", fontSize: '22px', fontWeight: 700, color: (freeOfferActive || hasPremiumAccess || hasFreeGrant) ? '#0a7373' : '#243433' }}>
+                  {offerConfig === null ? '…' : (freeOfferActive || hasPremiumAccess || hasFreeGrant) ? '₹0' : priceDisplay}
                 </span>
               </span>
             </div>

@@ -17,4 +17,9 @@ router.get('/config', async (_req, res) => {
 router.post('/apply', protect, applyForFreeOffer);
 router.get('/my-offer', protect, getMyOffer);
 
+// Whether an admin granted the calling user free premium access (invitation to apply)
+router.get('/my-grant', protect, (req, res) => {
+  res.json({ granted: !!req.user.freePremiumGrant?.granted });
+});
+
 module.exports = router;

@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { Send, Search, Users, CheckSquare, Square } from 'lucide-react';
+import { Send, Search, Users, CheckSquare, Square, FileText, Pencil, Trash2, Save, X } from 'lucide-react';
 import api from '../../api/axios';
 import toast from 'react-hot-toast';
 
@@ -16,12 +16,76 @@ export default function AdminEmailSection() {
   const [sending, setSending] = useState(false);
   const [lastResult, setLastResult] = useState(null);
 
+  const [templates, setTemplates] = useState([]);
+  const [templateName, setTemplateName] = useState('');
+  const [editingTemplateId, setEditingTemplateId] = useState(null);
+  const [savingTemplate, setSavingTemplate] = useState(false);
+
   useEffect(() => {
     api.get('/admin/email/users')
       .then(res => setUsers(res.data.users || []))
       .catch(() => toast.error('Failed to load users'))
       .finally(() => setLoadingUsers(false));
+    api.get('/admin/email/templates')
+      .then(res => setTemplates(res.data.templates || []))
+      .catch(() => {});
   }, []);
+
+  const handleSaveTemplate = async () => {
+    if (!templateName.trim()) { toast.error('Template name is required'); return; }
+    if (!subject.trim()) { toast.error('Subject is required'); return; }
+    if (!body.trim()) { toast.error('Body is required'); return; }
+    setSavingTemplate(true);
+    try {
+      if (editingTemplateId) {
+        const res = await api.put(`/admin/email/templates/${editingTemplateId}`, {
+          name: templateName, subject, body,
+        });
+        setTemplates(prev => prev.map(t => t._id === editingTemplateId ? res.data.template : t));
+        toast.success('Template updated');
+      } else {
+        const res = await api.post('/admin/email/templates', { name: templateName, subject, body });
+        setTemplates(prev => [res.data.template, ...prev]);
+        toast.success('Template saved');
+      }
+      setTemplateName('');
+      setEditingTemplateId(null);
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to save template');
+    } finally {
+      setSavingTemplate(false);
+    }
+  };
+
+  const handleUseTemplate = (t) => {
+    setSubject(t.subject);
+    setBody(t.body);
+    toast.success(`Template "${t.name}" loaded into compose`);
+  };
+
+  const handleEditTemplate = (t) => {
+    setSubject(t.subject);
+    setBody(t.body);
+    setTemplateName(t.name);
+    setEditingTemplateId(t._id);
+  };
+
+  const cancelEditTemplate = () => {
+    setTemplateName('');
+    setEditingTemplateId(null);
+  };
+
+  const handleDeleteTemplate = async (t) => {
+    if (!window.confirm(`Delete template "${t.name}"?`)) return;
+    try {
+      await api.delete(`/admin/email/templates/${t._id}`);
+      setTemplates(prev => prev.filter(x => x._id !== t._id));
+      if (editingTemplateId === t._id) cancelEditTemplate();
+      toast.success('Template deleted');
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to delete template');
+    }
+  };
 
   const filteredUsers = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -104,10 +168,41 @@ export default function AdminEmailSection() {
             <textarea
               value={body}
               onChange={e => setBody(e.target.value)}
-              placeholder={'Write your message…\n\nEach recipient gets a personalized greeting ("Hi <name>,") followed by this message inside the ShareMyApps email template.'}
+              placeholder={'Write your message…\n\nEach recipient gets a personalized greeting ("Hi <name>,") followed by this message inside the ShareMyApps email template. Use {{name}} anywhere to insert the recipient\'s name.'}
               rows={12}
               className={`${inp} resize-y`}
             />
+          </div>
+
+          {/* Save as template */}
+          <div className="border-t border-border pt-3">
+            <label className="block text-xs font-medium text-muted mb-1.5">
+              {editingTemplateId ? 'Editing template' : 'Save this email as a template'}
+            </label>
+            <div className="flex items-center gap-2">
+              <input
+                value={templateName}
+                onChange={e => setTemplateName(e.target.value)}
+                placeholder="Template name (e.g. Free Premium Access)"
+                className={inp}
+              />
+              <button
+                onClick={handleSaveTemplate}
+                disabled={savingTemplate}
+                className="flex items-center gap-1.5 px-3.5 py-2 bg-accent hover:bg-accent-hover text-white text-xs font-semibold rounded-lg transition-colors disabled:opacity-50 shrink-0"
+              >
+                <Save size={13} />
+                {savingTemplate ? 'Saving…' : editingTemplateId ? 'Update' : 'Save'}
+              </button>
+              {editingTemplateId && (
+                <button
+                  onClick={cancelEditTemplate}
+                  className="flex items-center gap-1 px-2.5 py-2 border border-border text-muted hover:text-text text-xs font-medium rounded-lg transition-colors shrink-0"
+                >
+                  <X size={12} /> Cancel
+                </button>
+              )}
+            </div>
           </div>
         </div>
 
@@ -182,6 +277,49 @@ export default function AdminEmailSection() {
             </>
           )}
         </div>
+      </div>
+
+      {/* ── Templates ── */}
+      <div className="bg-white border border-border rounded-2xl p-5 space-y-3">
+        <h3 className="text-sm font-semibold text-text flex items-center gap-1.5">
+          <FileText size={14} className="text-[#9CA3AF]" />
+          Email Templates
+          <span className="text-xs font-normal text-[#9CA3AF]">— reusable in flows like free premium access grants</span>
+        </h3>
+        {templates.length === 0 ? (
+          <p className="text-sm text-[#9CA3AF]">No templates yet. Compose an email above and save it as a template.</p>
+        ) : (
+          <div className="divide-y divide-border border border-[#F3F0EB] rounded-xl overflow-hidden">
+            {templates.map(t => (
+              <div key={t._id} className="flex items-center gap-3 px-4 py-2.5 hover:bg-bg transition-colors">
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold text-text truncate">{t.name}</p>
+                  <p className="text-xs text-[#9CA3AF] truncate">{t.subject}</p>
+                </div>
+                <button
+                  onClick={() => handleUseTemplate(t)}
+                  className="text-xs font-semibold px-2.5 py-1 rounded-lg bg-accent/10 text-accent hover:bg-accent hover:text-white transition-colors shrink-0"
+                >
+                  Use
+                </button>
+                <button
+                  onClick={() => handleEditTemplate(t)}
+                  title="Edit template"
+                  className="p-1.5 text-muted hover:text-text transition-colors shrink-0"
+                >
+                  <Pencil size={13} />
+                </button>
+                <button
+                  onClick={() => handleDeleteTemplate(t)}
+                  title="Delete template"
+                  className="p-1.5 text-muted hover:text-red-500 transition-colors shrink-0"
+                >
+                  <Trash2 size={13} />
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* ── Send bar ── */}

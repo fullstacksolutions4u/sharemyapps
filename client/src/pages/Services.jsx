@@ -145,9 +145,25 @@ function CandidateIntakeForm({ intake, defaultName, onSubmitted }) {
   const [applicationsPerDay, setApplicationsPerDay] = useState(intake?.applicationsPerDay || '');
   const [interviewCallsFrequency, setInterviewCallsFrequency] = useState(intake?.interviewCallsFrequency || '');
   const [interviewsScheduledPerWeek, setInterviewsScheduledPerWeek] = useState(intake?.interviewsScheduledPerWeek || '');
-  const [availableForMeetingToday, setAvailableForMeetingToday] = useState(intake?.availableForMeetingToday || '');
+  const [availableForMeetingToday, setAvailableForMeetingToday] = useState(() => {
+    const v = (intake?.availableForMeetingToday || '').toLowerCase();
+    if (v.startsWith('yes')) return 'Yes';
+    if (v.startsWith('no')) return 'No';
+    return '';
+  });
+  const [availableDateTime, setAvailableDateTime] = useState('');
+  const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
+  const handleNext = () => {
+    if (!fullName.trim() || !searchDuration || !platformsUsed.trim()) {
+      setError('Please fill in all required fields.');
+      return;
+    }
+    setError('');
+    setStep(2);
+  };
 
   const handleSubmit = async () => {
     if (!fullName.trim() || !searchDuration || !platformsUsed.trim() || !interviewsScheduledPerWeek.trim()) {
@@ -167,7 +183,9 @@ function CandidateIntakeForm({ intake, defaultName, onSubmitted }) {
         applicationsPerDay,
         interviewCallsFrequency,
         interviewsScheduledPerWeek,
-        availableForMeetingToday,
+        availableForMeetingToday: availableForMeetingToday === 'No' && availableDateTime
+          ? `No — available on ${new Date(availableDateTime).toLocaleString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}`
+          : availableForMeetingToday,
       });
       onSubmitted(res.data.intake);
     } catch (err) {
@@ -185,87 +203,154 @@ function CandidateIntakeForm({ intake, defaultName, onSubmitted }) {
       <h2 style={{ margin: '0 0 4px', fontSize: 19, fontWeight: 800, color: '#1a2120', textAlign: 'center' }}>
         Tell us about your job search
       </h2>
-      <p style={{ margin: '0 0 22px', fontSize: 13, color: '#7c8b88', textAlign: 'center' }}>
+      <p style={{ margin: '0 0 18px', fontSize: 13, color: '#7c8b88', textAlign: 'center' }}>
         A quick intake so our placement team can help you faster. This only takes a minute.
       </p>
 
+      {/* Progress bar */}
+      <div style={{ marginBottom: 22 }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 7 }}>
+          <span style={{ fontSize: 11, fontWeight: 800, color: '#0a7373', letterSpacing: '0.04em', textTransform: 'uppercase' }}>
+            Step {step} of 2
+          </span>
+          <span style={{ fontSize: 11, fontWeight: 600, color: '#9aaca9' }}>
+            {step === 1 ? 'About your job search' : 'Your application activity'}
+          </span>
+        </div>
+        <div style={{ height: 6, background: '#f0ece6', borderRadius: 999, overflow: 'hidden' }}>
+          <div style={{
+            height: '100%', width: step === 1 ? '50%' : '100%',
+            background: '#0a7373', borderRadius: 999, transition: 'width 0.3s ease',
+          }} />
+        </div>
+      </div>
+
       <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-        <div>
-          <label style={fieldLabel}>Full Name *</label>
-          <input value={fullName} onChange={e => setFullName(e.target.value)} style={fieldStyle} />
-        </div>
+        {step === 1 ? (
+          <>
+            <div>
+              <label style={fieldLabel}>Full Name *</label>
+              <input value={fullName} onChange={e => setFullName(e.target.value)} style={fieldStyle} />
+            </div>
 
-        <div>
-          <label style={fieldLabel}>What is your current job search status?</label>
-          <select value={jobSearchStatus} onChange={e => setJobSearchStatus(e.target.value)} style={fieldStyle}>
-            <option value="">Select an option</option>
-            {JOB_STATUS_OPTIONS.map(o => <option key={o} value={o}>{o}</option>)}
-          </select>
-          {jobSearchStatus === 'Other' && (
-            <input
-              value={jobSearchStatusOther}
-              onChange={e => setJobSearchStatusOther(e.target.value)}
-              placeholder="Please specify"
-              style={{ ...fieldStyle, marginTop: 8 }}
-            />
-          )}
-        </div>
+            <div>
+              <label style={fieldLabel}>What is your current job search status?</label>
+              <select value={jobSearchStatus} onChange={e => setJobSearchStatus(e.target.value)} style={fieldStyle}>
+                <option value="">Select an option</option>
+                {JOB_STATUS_OPTIONS.map(o => <option key={o} value={o}>{o}</option>)}
+              </select>
+              {jobSearchStatus === 'Other' && (
+                <input
+                  value={jobSearchStatusOther}
+                  onChange={e => setJobSearchStatusOther(e.target.value)}
+                  placeholder="Please specify"
+                  style={{ ...fieldStyle, marginTop: 8 }}
+                />
+              )}
+            </div>
 
-        <div>
-          <label style={fieldLabel}>How long have you been actively looking for a job? *</label>
-          <select value={searchDuration} onChange={e => setSearchDuration(e.target.value)} style={fieldStyle}>
-            <option value="">Select an option</option>
-            {DURATION_OPTIONS.map(o => <option key={o} value={o}>{o}</option>)}
-          </select>
-          {searchDuration === 'Other' && (
-            <input
-              value={searchDurationOther}
-              onChange={e => setSearchDurationOther(e.target.value)}
-              placeholder="Please specify"
-              style={{ ...fieldStyle, marginTop: 8 }}
-            />
-          )}
-        </div>
+            <div>
+              <label style={fieldLabel}>How long have you been actively looking for a job? *</label>
+              <select value={searchDuration} onChange={e => setSearchDuration(e.target.value)} style={fieldStyle}>
+                <option value="">Select an option</option>
+                {DURATION_OPTIONS.map(o => <option key={o} value={o}>{o}</option>)}
+              </select>
+              {searchDuration === 'Other' && (
+                <input
+                  value={searchDurationOther}
+                  onChange={e => setSearchDurationOther(e.target.value)}
+                  placeholder="Please specify"
+                  style={{ ...fieldStyle, marginTop: 8 }}
+                />
+              )}
+            </div>
 
-        <div>
-          <label style={fieldLabel}>What platforms are you currently using to search for jobs? *</label>
-          <input value={platformsUsed} onChange={e => setPlatformsUsed(e.target.value)} placeholder="e.g. LinkedIn, Naukri, Indeed" style={fieldStyle} />
-        </div>
+            <div>
+              <label style={fieldLabel}>What platforms are you currently using to search for jobs? *</label>
+              <input value={platformsUsed} onChange={e => setPlatformsUsed(e.target.value)} placeholder="e.g. LinkedIn, Naukri, Indeed" style={fieldStyle} />
+            </div>
 
-        <div>
-          <label style={fieldLabel}>On average, how many job applications do you submit per day through all platforms?</label>
-          <input value={applicationsPerDay} onChange={e => setApplicationsPerDay(e.target.value)} style={fieldStyle} />
-        </div>
+            {error && <p style={{ margin: 0, fontSize: 12, color: '#c0392b' }}>{error}</p>}
 
-        <div>
-          <label style={fieldLabel}>How many interview calls have you received in a week/month?</label>
-          <input value={interviewCallsFrequency} onChange={e => setInterviewCallsFrequency(e.target.value)} style={fieldStyle} />
-        </div>
+            <button
+              onClick={handleNext}
+              style={{
+                background: '#0a7373', color: '#fff', border: 'none', borderRadius: 8,
+                padding: '12px 18px', fontSize: 13.5, fontWeight: 700,
+                cursor: 'pointer', fontFamily: 'inherit', marginTop: 4,
+              }}
+            >
+              Next →
+            </button>
+          </>
+        ) : (
+          <>
+            <div>
+              <label style={fieldLabel}>On average, how many <span style={{ color: '#1a2120' }}>job applications</span> do you submit per day through all platforms?</label>
+              <input value={applicationsPerDay} onChange={e => setApplicationsPerDay(e.target.value)} style={fieldStyle} />
+            </div>
 
-        <div>
-          <label style={fieldLabel}>How many interviews scheduled per week/month? *</label>
-          <input value={interviewsScheduledPerWeek} onChange={e => setInterviewsScheduledPerWeek(e.target.value)} style={fieldStyle} />
-        </div>
+            <div>
+              <label style={fieldLabel}>How many <span style={{ color: '#1a2120' }}>interview calls</span> have you received in a week/month?</label>
+              <input value={interviewCallsFrequency} onChange={e => setInterviewCallsFrequency(e.target.value)} style={fieldStyle} />
+            </div>
 
-        <div>
-          <label style={fieldLabel}>Are you available today for a meeting to know more about you?</label>
-          <input value={availableForMeetingToday} onChange={e => setAvailableForMeetingToday(e.target.value)} style={fieldStyle} />
-        </div>
+            <div>
+              <label style={fieldLabel}>How many <span style={{ color: '#1a2120' }}>interviews scheduled</span> per week/month? *</label>
+              <input value={interviewsScheduledPerWeek} onChange={e => setInterviewsScheduledPerWeek(e.target.value)} style={fieldStyle} />
+            </div>
 
-        {error && <p style={{ margin: 0, fontSize: 12, color: '#c0392b' }}>{error}</p>}
+            <div>
+              <label style={fieldLabel}>Are you available today for a meeting to know more about you?</label>
+              <select value={availableForMeetingToday} onChange={e => setAvailableForMeetingToday(e.target.value)} style={fieldStyle}>
+                <option value="">Select an option</option>
+                <option value="Yes">Yes</option>
+                <option value="No">No</option>
+              </select>
+              {availableForMeetingToday === 'No' && (
+                <div style={{ marginTop: 8 }}>
+                  <label style={fieldLabel}>When would you be available for the meeting?</label>
+                  <input
+                    type="datetime-local"
+                    value={availableDateTime}
+                    min={new Date().toISOString().slice(0, 16)}
+                    onChange={e => setAvailableDateTime(e.target.value)}
+                    style={fieldStyle}
+                  />
+                </div>
+              )}
+            </div>
 
-        <button
-          onClick={handleSubmit}
-          disabled={loading}
-          style={{
-            background: '#0a7373', color: '#fff', border: 'none', borderRadius: 8,
-            padding: '12px 18px', fontSize: 13.5, fontWeight: 700,
-            cursor: loading ? 'default' : 'pointer', opacity: loading ? 0.7 : 1,
-            fontFamily: 'inherit', marginTop: 4,
-          }}
-        >
-          {loading ? 'Submitting…' : 'Submit'}
-        </button>
+            {error && <p style={{ margin: 0, fontSize: 12, color: '#c0392b' }}>{error}</p>}
+
+            <div style={{ display: 'flex', gap: 10, marginTop: 4 }}>
+              <button
+                onClick={() => { setError(''); setStep(1); }}
+                disabled={loading}
+                style={{
+                  flex: '0 0 auto', background: '#fff', color: '#3f4948',
+                  border: '1.5px solid #eae6df', borderRadius: 8,
+                  padding: '12px 20px', fontSize: 13.5, fontWeight: 700,
+                  cursor: loading ? 'default' : 'pointer', fontFamily: 'inherit',
+                }}
+              >
+                ← Back
+              </button>
+              <button
+                onClick={handleSubmit}
+                disabled={loading}
+                style={{
+                  flex: 1, background: '#0a7373', color: '#fff', border: 'none', borderRadius: 8,
+                  padding: '12px 18px', fontSize: 13.5, fontWeight: 700,
+                  cursor: loading ? 'default' : 'pointer', opacity: loading ? 0.7 : 1,
+                  fontFamily: 'inherit',
+                }}
+              >
+                {loading ? 'Submitting…' : 'Submit'}
+              </button>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
@@ -350,7 +435,7 @@ function CandidateIntakeSummary({ intake, onEdit }) {
   );
 }
 
-function ServiceRow({ service, unlockEntry, session: activeSession, onSessionRequested }) {
+function ServiceRow({ service, unlockEntry, session: activeSession, onSessionRequested, awaitingApproval }) {
   const unlocked = !!unlockEntry;
   const [showForm, setShowForm] = useState(false);
 
@@ -477,6 +562,21 @@ function ServiceRow({ service, unlockEntry, session: activeSession, onSessionReq
           </div>
         )}
 
+        {/* Awaiting admin approval: dim disabled button */}
+        {!unlocked && awaitingApproval && !activeSession && !isDocumentService && (
+          <button
+            disabled
+            style={{
+              flexShrink: 0, background: '#ede9e1', color: '#9aaca9',
+              border: 'none', borderRadius: 8, padding: '7px 14px',
+              fontSize: 12, fontWeight: 700, cursor: 'not-allowed',
+              fontFamily: 'inherit', whiteSpace: 'nowrap',
+            }}
+          >
+            Request Session once admin approves
+          </button>
+        )}
+
         {/* Request Session button */}
         {unlocked && !activeSession && !isDocumentService && (
           <button
@@ -522,6 +622,7 @@ export default function Services() {
   const [intake, setIntake] = useState(null);
   const [intakeLoading, setIntakeLoading] = useState(true);
   const [editingIntake, setEditingIntake] = useState(false);
+  const [myOffer, setMyOffer] = useState(null);
 
   useEffect(() => {
     api.get('/premium-services/catalog')
@@ -536,6 +637,7 @@ export default function Services() {
   useEffect(() => {
     if (!user) return;
     api.get('/premium-services/my-services').then(r => setUnlockedServices(r.data.services || [])).catch(() => {});
+    api.get('/offers/my-offer').then(r => setMyOffer(r.data)).catch(() => {});
     fetchSessions();
     api.get('/premium-services/candidate-intake')
       .then(r => setIntake(r.data.intake))
@@ -566,7 +668,8 @@ export default function Services() {
     );
   }
 
-  if (!intakeLoading && unlockedServices.length > 0 && (!intake || editingIntake)) {
+  // Entitled users and placement applicants (incl. admin-granted, pre-activation) fill the intake first
+  if (!intakeLoading && (unlockedServices.length > 0 || myOffer) && (!intake || editingIntake)) {
     return (
       <div style={{ flex: 1, overflowY: 'auto', padding: '28px 24px', fontFamily: "'Manrope', system-ui, sans-serif", background: '#f2efe8' }}>
         <CandidateIntakeForm
@@ -596,6 +699,7 @@ export default function Services() {
             unlockEntry={getUnlockEntry(service.key)}
             session={getSession(service.key)}
             onSessionRequested={fetchSessions}
+            awaitingApproval={!!myOffer && unlockedServices.length === 0}
           />
         ))}
       </div>

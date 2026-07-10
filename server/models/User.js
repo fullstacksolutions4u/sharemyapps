@@ -70,6 +70,13 @@ const userSchema = new mongoose.Schema({
   // Tick2Test learning tracker fields
   points: { type: Number, default: 0 },
   badges: [{ type: String }],
+  // Admin invitation to premium services for free — user still applies, then gets
+  // activated from Placement Applicants
+  freePremiumGrant: {
+    granted:   { type: Boolean, default: false },
+    grantedAt: { type: Date, default: null },
+    grantedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
+  },
   // Premium services unlocked per user by admin
   premiumServices: [{
     key:        { type: String, required: true },

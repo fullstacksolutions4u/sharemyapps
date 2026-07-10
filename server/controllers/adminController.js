@@ -477,12 +477,24 @@ exports.getEmailRecipients = async (req, res) => {
   }
 };
 
-// POST /api/admin/email/send — send a custom email via Brevo to selected users
+// POST /api/admin/email/send — send a custom email via Brevo to selected users.
+// Accepts either subject+body or a templateId; {{name}} in either is replaced per recipient.
 exports.sendCustomEmail = async (req, res) => {
   try {
-    const { subject, body, userIds } = req.body;
-    if (!subject?.trim()) return res.status(400).json({ message: 'Subject is required' });
-    if (!body?.trim()) return res.status(400).json({ message: 'Body is required' });
+    const { subject, body, userIds, templateId } = req.body;
+
+    let emailSubject = subject?.trim();
+    let emailBody = body?.trim();
+    if (templateId) {
+      const EmailTemplate = require('../models/EmailTemplate');
+      const template = await EmailTemplate.findById(templateId).lean();
+      if (!template) return res.status(404).json({ message: 'Email template not found' });
+      emailSubject = template.subject;
+      emailBody = template.body;
+    }
+
+    if (!emailSubject) return res.status(400).json({ message: 'Subject is required' });
+    if (!emailBody) return res.status(400).json({ message: 'Body is required' });
     if (!Array.isArray(userIds) || userIds.length === 0)
       return res.status(400).json({ message: 'Select at least one user' });
 
@@ -494,6 +506,8 @@ exports.sendCustomEmail = async (req, res) => {
     if (users.length === 0)
       return res.status(404).json({ message: 'No valid recipients found' });
 
+    const fillName = (text, name) => text.replace(/\{\{\s*name\s*\}\}/gi, name || 'there');
+
     const { sendAdminCustomEmail } = require('../utils/email');
     let sent = 0;
     const failed = [];
@@ -502,8 +516,8 @@ exports.sendCustomEmail = async (req, res) => {
         await sendAdminCustomEmail({
           to: u.email,
           name: u.name,
-          subject: subject.trim(),
-          body: body.trim(),
+          subject: fillName(emailSubject, u.name),
+          body: fillName(emailBody, u.name),
         });
         sent++;
       } catch (err) {
@@ -513,6 +527,69 @@ exports.sendCustomEmail = async (req, res) => {
     }
 
     res.json({ sent, failed, total: users.length });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+// ── Email templates (reusable on the Email page and in other admin flows) ─────
+
+exports.getEmailTemplates = async (_req, res) => {
+  try {
+    const EmailTemplate = require('../models/EmailTemplate');
+    const templates = await EmailTemplate.find().sort({ updatedAt: -1 }).lean();
+    res.json({ templates });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+exports.createEmailTemplate = async (req, res) => {
+  try {
+    const { name, subject, body } = req.body;
+    if (!name?.trim()) return res.status(400).json({ message: 'Template name is required' });
+    if (!subject?.trim()) return res.status(400).json({ message: 'Subject is required' });
+    if (!body?.trim()) return res.status(400).json({ message: 'Body is required' });
+    const EmailTemplate = require('../models/EmailTemplate');
+    const template = await EmailTemplate.create({
+      name: name.trim(),
+      subject: subject.trim(),
+      body: body.trim(),
+      createdBy: req.user._id,
+    });
+    res.status(201).json({ template });
+  } catch (err) {
+    if (err.code === 11000) return res.status(409).json({ message: 'A template with this name already exists' });
+    res.status(500).json({ message: err.message });
+  }
+};
+
+exports.updateEmailTemplate = async (req, res) => {
+  try {
+    const { name, subject, body } = req.body;
+    if (!name?.trim()) return res.status(400).json({ message: 'Template name is required' });
+    if (!subject?.trim()) return res.status(400).json({ message: 'Subject is required' });
+    if (!body?.trim()) return res.status(400).json({ message: 'Body is required' });
+    const EmailTemplate = require('../models/EmailTemplate');
+    const template = await EmailTemplate.findByIdAndUpdate(
+      req.params.id,
+      { name: name.trim(), subject: subject.trim(), body: body.trim() },
+      { new: true, runValidators: true }
+    );
+    if (!template) return res.status(404).json({ message: 'Template not found' });
+    res.json({ template });
+  } catch (err) {
+    if (err.code === 11000) return res.status(409).json({ message: 'A template with this name already exists' });
+    res.status(500).json({ message: err.message });
+  }
+};
+
+exports.deleteEmailTemplate = async (req, res) => {
+  try {
+    const EmailTemplate = require('../models/EmailTemplate');
+    const template = await EmailTemplate.findByIdAndDelete(req.params.id);
+    if (!template) return res.status(404).json({ message: 'Template not found' });
+    res.json({ message: 'Template deleted' });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
