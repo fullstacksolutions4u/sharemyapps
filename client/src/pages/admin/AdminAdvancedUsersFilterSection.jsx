@@ -1,6 +1,6 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { 
-  Search, Filter, Users, Mail, Phone, Briefcase, MapPin, ExternalLink,
+  Search, Filter,
   ChevronLeft, ChevronRight, Copy
 } from 'lucide-react';
 import api from '../../api/axios';
@@ -100,10 +100,6 @@ export default function AdminAdvancedUsersFilterSection() {
   const [page, setPage] = useState(1);
   const PER_PAGE = 20;
 
-  const copyToClipboard = (text) => {
-    navigator.clipboard.writeText(text);
-    toast.success('Copied to clipboard');
-  };
 
   const toggleUserSelection = (userId) => {
     setSelectedUsers(prev => {
@@ -127,9 +123,9 @@ export default function AdminAdvancedUsersFilterSection() {
       .then(res => setUsers(res.data))
       .catch(() => toast.error('Failed to load users'))
       .finally(() => setLoading(false));
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, []);
 
-  const uniqueCompanies = useMemo(() => {
+  const uniqueCompanies = (() => {
     const comps = new Set();
     users.forEach(u => {
       if (u.resumeData?.experience && Array.isArray(u.resumeData.experience)) {
@@ -139,9 +135,9 @@ export default function AdminAdvancedUsersFilterSection() {
       }
     });
     return Array.from(comps).sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
-  }, [users]);
+  })();
 
-  const uniqueDesignations = useMemo(() => {
+  const uniqueDesignations = (() => {
     const desigs = new Set();
     users.forEach(u => {
       const d = u.designations?.[0] || u.resumeData?.experience?.[0]?.role;
@@ -150,9 +146,9 @@ export default function AdminAdvancedUsersFilterSection() {
       }
     });
     return Array.from(desigs).sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
-  }, [users]);
+  })();
 
-  const filteredUsers = useMemo(() => {
+  const filteredUsers = (() => {
     return users.filter(u => {
       if (u.isDeleted) return false;
 
@@ -181,11 +177,14 @@ export default function AdminAdvancedUsersFilterSection() {
 
       return true;
     });
-  }, [users, search, designation, company]);
+  })();
 
-  useEffect(() => {
+  const [prevFilters, setPrevFilters] = useState({ search: '', designation: '', company: '' });
+
+  if (search !== prevFilters.search || designation !== prevFilters.designation || company !== prevFilters.company) {
     setPage(1);
-  }, [search, designation, company]);
+    setPrevFilters({ search, designation, company });
+  }
 
   const totalPages = Math.max(1, Math.ceil(filteredUsers.length / PER_PAGE));
   const paginatedUsers = filteredUsers.slice((page - 1) * PER_PAGE, page * PER_PAGE);

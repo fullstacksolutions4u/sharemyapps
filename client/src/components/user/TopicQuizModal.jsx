@@ -52,7 +52,7 @@ const TopicQuizModal = ({
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     resetState(currentQuizIndex);
-  }, [currentQuizIndex, localAttempts, resetState]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [currentQuizIndex, localAttempts, resetState]);
 
   const currentQuiz = quizzes && quizzes[currentQuizIndex];
 
