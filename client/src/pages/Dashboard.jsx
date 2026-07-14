@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate, useOutlet, useLocation } from 'react-router-dom';
 import {
-  LayoutDashboard, FolderOpen, MessageSquare, Bell, Lightbulb,
+  LayoutDashboard, FolderOpen,
   Crown, UserCircle, LogOut, Menu, X, Plus, Share2,
   Pencil, Trash2, ExternalLink, Clock, CheckCircle, XCircle,
   AlertCircle, Copy, Check, Eye, EyeOff, Heart, Star, ChevronRight,

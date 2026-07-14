@@ -192,7 +192,7 @@ export default function AdminSessionRequestsSection() {
     finally { setLoading(false); }
   };
 
-  useEffect(() => { fetchSessions(); }, []); // eslint-disable-line react-hooks/exhaustive-deps, react-hooks/set-state-in-effect
+  useEffect(() => { fetchSessions(); }, []); // eslint-disable-line react-hooks/set-state-in-effect
 
   const handleSaved = () => { fetchSessions(); };
 

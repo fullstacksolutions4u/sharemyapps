@@ -651,7 +651,7 @@ export default function Services() {
       .then(r => setIntake(r.data.intake))
       .catch(() => setIntake(undefined))
       .finally(() => setIntakeLoading(false));
-  }, [user]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [user]);
 
   const getUnlockEntry = key => unlockedServices.find(s => s.key === key) || null;
 

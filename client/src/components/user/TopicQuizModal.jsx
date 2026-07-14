@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { progressAPI } from '../../api/tick2test';
 import AnimatedCoin from '../common/AnimatedCoin';
@@ -25,23 +25,7 @@ const TopicQuizModal = ({
   const [earnedPoints, setEarnedPoints] = useState(null);
   const [showCode, setShowCode] = useState(false);
 
-  useEffect(() => {
-    if (isOpen) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setCurrentQuizIndex(0);
-      // eslint-disable-next-line react-hooks/immutability
-      resetState(0);
-    }
-  }, [isOpen]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/immutability
-    resetState(currentQuizIndex);
-  }, [currentQuizIndex, localAttempts]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  const currentQuiz = quizzes && quizzes[currentQuizIndex];
-
-  const resetState = (index) => {
+  const resetState = useCallback((index) => {
     if (!quizzes || !quizzes[index]) return;
     const quizId = quizzes[index]._id;
     const attempt = localAttempts.find(a => a.quizId.toString() === quizId.toString());
@@ -55,7 +39,23 @@ const TopicQuizModal = ({
       setShowCode(false);
       setIsCorrect(false);
     }
-  };
+  }, [quizzes, localAttempts]);
+
+  useEffect(() => {
+    if (isOpen) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setCurrentQuizIndex(0);
+      resetState(0);
+    }
+  }, [isOpen]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    resetState(currentQuizIndex);
+  }, [currentQuizIndex, localAttempts, resetState]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const currentQuiz = quizzes && quizzes[currentQuizIndex];
+
 
   if (!isOpen || !currentQuiz) return null;
 

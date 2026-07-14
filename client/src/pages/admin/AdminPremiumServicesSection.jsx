@@ -214,7 +214,7 @@ export default function AdminPremiumServicesSection() {
     finally { setLoading(false); }
   };
 
-  useEffect(() => { fetchSessions(); }, []); // eslint-disable-line react-hooks/exhaustive-deps, react-hooks/set-state-in-effect
+  useEffect(() => { fetchSessions(); }, []); // eslint-disable-line react-hooks/set-state-in-effect
 
   const SERVICE_ORDER = ['placement_session', 'ats_compatible_resume_cover_letter_optimization'];
 

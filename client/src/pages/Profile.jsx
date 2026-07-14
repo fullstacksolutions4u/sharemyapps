@@ -265,7 +265,7 @@ export default function Profile() {
 
   useEffect(() => {
     api.get('/auth/me').then(r => setUser(r.data.user)).catch(() => {});
-  }, []);
+  }, [setUser]);
 
   const handle = e => setForm(f => ({ ...f, [e.target.name]: e.target.value }));
 
