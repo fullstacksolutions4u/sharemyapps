@@ -25,14 +25,18 @@ function CopyButton({ text }) {
   );
 }
 
-// Only today's latest alert is shown — yesterday's alerts disappear automatically
-function latestTodaysAlert(alerts) {
+// Combine all of today's alerts into one — yesterday's alerts disappear automatically
+function combineTodaysAlerts(alerts) {
   const now = new Date();
   const sameDay = d =>
     d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth() && d.getDate() === now.getDate();
-  return alerts
-    .filter(a => sameDay(new Date(a.scheduledAt || a.createdAt)))
-    .sort((a, b) => new Date(b.scheduledAt || b.createdAt) - new Date(a.scheduledAt || a.createdAt))[0] || null;
+  const todays = alerts.filter(a => sameDay(new Date(a.scheduledAt || a.createdAt)));
+  if (todays.length === 0) return null;
+
+  return {
+    jobs: todays.flatMap(a => a.jobs || []),
+    careerLinks: todays.flatMap(a => a.careerLinks || []),
+  };
 }
 
 // Day 1 = the day the user's resume/cover letter was delivered (service activated)
@@ -82,7 +86,7 @@ export default function JobAlerts() {
     );
   }
 
-  const todaysAlert = latestTodaysAlert(alerts);
+  const todaysAlert = combineTodaysAlerts(alerts);
   const jobs = todaysAlert?.jobs || [];
   const links = todaysAlert?.careerLinks || [];
 
