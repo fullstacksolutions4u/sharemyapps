@@ -30,6 +30,7 @@ export default function AdminJobRecommendationsSection() {
   const [loadingSessions, setLoadingSessions] = useState(true);
   const [editingSessionId, setEditingSessionId] = useState(null);
   const [editingSessionSent, setEditingSessionSent] = useState(false);
+  const [editingSessionRecipients, setEditingSessionRecipients] = useState([]);
   const [sessionPage, setSessionPage] = useState(1);
   const SESSIONS_PER_PAGE = 5;
 
@@ -57,6 +58,7 @@ export default function AdminJobRecommendationsSection() {
   const handleReuseSession = (session) => {
     setEditingSessionId(null);
     setEditingSessionSent(false);
+    setEditingSessionRecipients([]);
     setJobs(session.jobs.length ? session.jobs.map(j => ({ emailId: j.emailId, subject: j.subject })) : emptyJobs());
     setLinks(sessionLinks(session));
     setSelectedIds(new Set());
@@ -70,9 +72,14 @@ export default function AdminJobRecommendationsSection() {
     setEditingSessionSent(!!session.notified);
     setJobs(session.jobs.length ? session.jobs.map(j => ({ emailId: j.emailId, subject: j.subject })) : emptyJobs());
     setLinks(sessionLinks(session));
-    // Filter recipients to only include users that are currently visible in the list
-    const validRecipients = (session.recipients || []).filter(id => users.some(u => u._id === id));
-    setSelectedIds(new Set(validRecipients));
+    if (session.notified) {
+      setEditingSessionRecipients(session.recipients || []);
+      setSelectedIds(new Set((session.recipients || []).map(r => r._id)));
+    } else {
+      setEditingSessionRecipients([]);
+      const validRecipients = (session.recipients || []).filter(r => users.some(u => u._id === r._id));
+      setSelectedIds(new Set(validRecipients.map(r => r._id)));
+    }
     setScheduledAt(session.notified ? '' : toDatetimeLocal(session.scheduledAt));
     toast.success(`Editing Session ${session.sessionNumber}`);
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -96,6 +103,7 @@ export default function AdminJobRecommendationsSection() {
   const cancelEdit = () => {
     setEditingSessionId(null);
     setEditingSessionSent(false);
+    setEditingSessionRecipients([]);
     setJobs(emptyJobs());
     setLinks(emptyLinks());
     setSelectedIds(new Set());
@@ -247,16 +255,16 @@ export default function AdminJobRecommendationsSection() {
         <div className="bg-white border border-[#E5E1DA] rounded-2xl p-5 space-y-4">
           {loadingUsers ? (
             <div className="text-center py-8 text-sm text-[#9CA3AF]">Loading premium users…</div>
-          ) : users.length === 0 ? (
+          ) : users.length === 0 && !editingSessionSent ? (
             <div className="text-center py-8 text-sm text-[#9CA3AF]">
               No users with resume &amp; cover letter delivered yet.
             </div>
           ) : (
             <div className="max-h-72 overflow-y-auto space-y-1 border border-[#F3F0EB] rounded-xl p-2">
-              {users.map(u => (
+              {(editingSessionSent ? editingSessionRecipients : users).map(u => (
                 <label
                   key={u._id}
-                  className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-[#F3F0EB] cursor-pointer transition-colors"
+                  className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${editingSessionSent ? 'opacity-70 cursor-not-allowed' : 'hover:bg-[#F3F0EB] cursor-pointer'}`}
                 >
                   <input
                     type="checkbox"

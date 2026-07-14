@@ -1089,6 +1089,7 @@ router.get('/job-recommendations/sessions', async (_req, res) => {
       .sort({ sessionNumber: -1 })
       .limit(50)
       .select('sessionNumber jobs careerLinks recipients scheduledAt notified createdAt')
+      .populate('recipients', 'name email')
       .lean();
     res.json({
       sessions: sessions.map(s => ({
@@ -1096,7 +1097,7 @@ router.get('/job-recommendations/sessions', async (_req, res) => {
         sessionNumber: s.sessionNumber,
         jobs: s.jobs,
         careerLinks: s.careerLinks || [],
-        recipients: (s.recipients || []).map(String),
+        recipients: s.recipients ? s.recipients.map(u => ({ _id: u._id, name: u.name, email: u.email })) : [],
         recipientCount: s.recipients?.length || 0,
         scheduledAt: s.scheduledAt,
         notified: s.notified,

@@ -24,7 +24,7 @@ const CATEGORIES = [
   'Environment & Sustainability', 'Non-Profit & Social Impact',
   'Personal Finance & Budgeting', 'Job Board & Freelancing',
   'News & Blogging', 'Sports & Recreation', 'Fashion & Lifestyle',
-  'Open Source Project', 'Portfolios', 'Company Website', 'Others',
+  'Open Source Project', 'Portfolios', 'Company Website',
 ];
 
 export default function ProjectForm() {
@@ -35,6 +35,7 @@ export default function ProjectForm() {
 
   const [step, setStep] = useState(1);
   const [form, setForm] = useState({ title: '', description: '', liveUrl: '', techTags: '', appType: 'web', category: '' });
+  const [isCustomCategory, setIsCustomCategory] = useState(false);
   const [githubUrls, setGithubUrls] = useState(['']);
   const [githubVisible, setGithubVisible] = useState(true);
   const [loading, setLoading] = useState(false);
@@ -55,7 +56,10 @@ export default function ProjectForm() {
     api.get(`/projects/${id}`)
       .then(res => {
         const p = res.data;
-        setForm({ title: p.title, description: p.description, liveUrl: p.liveUrl, techTags: p.techTags?.join(', ') || '', appType: p.appType || 'web', category: p.category || '' });
+        const cat = p.category || '';
+        const isCustom = cat && !CATEGORIES.includes(cat);
+        setForm({ title: p.title, description: p.description, liveUrl: p.liveUrl, techTags: p.techTags?.join(', ') || '', appType: p.appType || 'web', category: cat });
+        setIsCustomCategory(isCustom);
         setProjectStatus(p.status || '');
         const urls = p.githubUrls?.length ? p.githubUrls : (p.githubUrl ? [p.githubUrl] : ['']);
         setGithubUrls(urls);
@@ -217,15 +221,45 @@ export default function ProjectForm() {
             {/* Category + Title row */}
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-text mb-2">Category <span className="text-red-400">*</span></label>
-                <select
-                  value={form.category}
-                  onChange={e => setForm(f => ({ ...f, category: e.target.value }))}
-                  className="w-full px-3.5 py-2.5 border border-[#E5E1DA] rounded-xl text-sm text-text bg-white focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/10 transition"
-                >
-                  <option value="">Select a category</option>
-                  {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
-                </select>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="block text-sm font-medium text-text">Category <span className="text-red-400">*</span></label>
+                  {isCustomCategory && (
+                    <button
+                      type="button"
+                      onClick={() => { setIsCustomCategory(false); setForm(f => ({ ...f, category: '' })); }}
+                      className="text-xs text-accent hover:underline font-medium"
+                    >
+                      Select from list
+                    </button>
+                  )}
+                </div>
+                {isCustomCategory ? (
+                  <input
+                    type="text"
+                    value={form.category}
+                    onChange={e => setForm(f => ({ ...f, category: e.target.value }))}
+                    placeholder="e.g. Developer Tools"
+                    className="w-full px-3.5 py-2.5 border border-[#E5E1DA] rounded-xl text-sm text-text placeholder-[#9CA3AF] focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/10 transition"
+                    autoFocus
+                  />
+                ) : (
+                  <select
+                    value={form.category}
+                    onChange={e => {
+                      if (e.target.value === 'new_category') {
+                        setIsCustomCategory(true);
+                        setForm(f => ({ ...f, category: '' }));
+                      } else {
+                        setForm(f => ({ ...f, category: e.target.value }));
+                      }
+                    }}
+                    className="w-full px-3.5 py-2.5 border border-[#E5E1DA] rounded-xl text-sm text-text bg-white focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/10 transition"
+                  >
+                    <option value="">Select a category</option>
+                    {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+                    <option value="new_category" className="font-semibold text-accent">+ Add New Category</option>
+                  </select>
+                )}
               </div>
               <div>
                 <label className="block text-sm font-medium text-text mb-2">Project title <span className="text-red-400">*</span></label>

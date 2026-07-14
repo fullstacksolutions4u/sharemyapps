@@ -26,7 +26,7 @@ const CATEGORIES = [
   'Environment & Sustainability', 'Non-Profit & Social Impact',
   'Personal Finance & Budgeting', 'Job Board & Freelancing',
   'News & Blogging', 'Sports & Recreation', 'Fashion & Lifestyle',
-  'Open Source Project', 'Portfolios', 'Company Website', 'Others',
+  'Open Source Project', 'Portfolios', 'Company Website',
 ];
 
 const DEFAULT_APPROVE_NOTE = `Complete your profile with your contact details and social links (LinkedIn, GitHub, portfolio, etc.), and showcase your best live projects. Clients often prefer reviewing real projects over resumes, so highlight projects with unique features and ensure they work flawlessly in production.
@@ -118,10 +118,17 @@ function ProjectReviewPage({ project: initial, onBack, onSave, onApprove, onReje
               </div>
               <div className="flex-1">
                 <label className="block text-xs font-medium text-[#6B7280] mb-1.5">Category</label>
-                <select value={form.category} onChange={e => setForm(f => ({ ...f, category: e.target.value }))} className={input}>
-                  <option value="">Select category</option>
-                  {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
-                </select>
+                <input 
+                  type="text" 
+                  list="admin-category-options"
+                  value={form.category} 
+                  onChange={e => setForm(f => ({ ...f, category: e.target.value }))} 
+                  className={input} 
+                  placeholder="e.g. Developer Tools"
+                />
+                <datalist id="admin-category-options">
+                  {CATEGORIES.map(c => <option key={c} value={c} />)}
+                </datalist>
               </div>
             </div>
             <div>
