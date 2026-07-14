@@ -1106,6 +1106,27 @@ router.get('/job-recommendations/sessions', async (_req, res) => {
   } catch (err) { res.status(500).json({ message: err.message }); }
 });
 
+// Detailed history of job-alert sessions populated with user names, grouped by day in frontend
+router.get('/job-recommendations/history', async (_req, res) => {
+  try {
+    const JobAlert = require('../models/JobAlert');
+    const sessions = await JobAlert.find()
+      .populate('recipients', 'name email')
+      .sort({ scheduledAt: -1, createdAt: -1 })
+      .lean();
+    res.json({
+      sessions: sessions.map(s => ({
+        _id: s._id,
+        sessionNumber: s.sessionNumber,
+        scheduledAt: s.scheduledAt,
+        createdAt: s.createdAt,
+        notified: s.notified,
+        recipients: s.recipients ? s.recipients.map(u => ({ _id: u._id, name: u.name, email: u.email })) : [],
+      })),
+    });
+  } catch (err) { res.status(500).json({ message: err.message }); }
+});
+
 // Modify a job-alert session. Scheduled sessions can change jobs, recipients, and send time;
 // sent sessions can only change the job/link list (e.g. removing rejected emails) — recipients
 // are not re-notified.

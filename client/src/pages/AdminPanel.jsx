@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import {
   LayoutDashboard, FolderOpen, ShieldCheck, Menu, LogOut,
-  Users, Briefcase, Megaphone, MessageSquare, Camera, IndianRupee, Crown, BookOpen, Unlock, Mail, Building2, Send, GraduationCap,
+  Users, Briefcase, Megaphone, MessageSquare, Camera, IndianRupee, Crown, BookOpen, Unlock, Mail, Building2, Send, GraduationCap, History,
 } from 'lucide-react';
 import api from '../api/axios';
 import AdminOverview from './admin/AdminOverview';
@@ -22,6 +22,7 @@ import AdminJobRecommendationsSection from './admin/AdminJobRecommendationsSecti
 import AdminCompaniesSection from './admin/AdminCompaniesSection';
 import AdminEmailSection from './admin/AdminEmailSection';
 import AdminMentorshipApplicationsSection from './admin/AdminMentorshipApplicationsSection';
+import AdminJobAlertHistorySection from './admin/AdminJobAlertHistorySection';
 
 const NAV = [
   { key: 'overview',       label: 'Overview',        icon: LayoutDashboard },
@@ -37,6 +38,7 @@ const NAV = [
   { key: 'mentorship_applications', label: 'Mentorship Applicants', icon: GraduationCap },
   { key: 'service_access', label: 'Services',           icon: Unlock },
   { key: 'job_recommendations', label: 'Job Alert', icon: Mail },
+  { key: 'job_alert_history', label: 'Job Alert History', icon: History },
   { key: 'email',          label: 'Email',            icon: Send },
 ];
 
@@ -167,9 +169,10 @@ const { user, setUser, logout } = useAuth();
           {section === 'plans_payments'    && <AdminPlansSection />}
           {section === 'offers'           && <AdminOffersSection />}
           {section === 'mentorship_applications' && <AdminMentorshipApplicationsSection />}
-          {section === 'service_access'   && <AdminPremiumServicesSection />}
-          {section === 'job_recommendations' && <AdminJobRecommendationsSection />}
-          {section === 'email'            && <AdminEmailSection />}
+          { section === 'service_access'   && <AdminPremiumServicesSection /> }
+          { section === 'job_recommendations' && <AdminJobRecommendationsSection /> }
+          { section === 'job_alert_history' && <AdminJobAlertHistorySection /> }
+          { section === 'email'            && <AdminEmailSection /> }
           {section === 'learning'         && <AdminLearningSection />}
         </div>
       </div>
