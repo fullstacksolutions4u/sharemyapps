@@ -1,9 +1,9 @@
-import { useState, useEffect, useCallback } from 'react';
-import { Plus, Trash2, Send, CalendarClock, RotateCcw, Pencil, X } from 'lucide-react';
+import { useState, useEffect, useCallback, Fragment } from 'react';
+import { Plus, Trash2, Send, CalendarClock, RotateCcw, Pencil, X, CheckCircle2, MessageSquare } from 'lucide-react';
 import api from '../../api/axios';
 import toast from 'react-hot-toast';
 
-const EMPTY_JOB = { emailId: '', subject: '' };
+const EMPTY_JOB = { emailId: '', subject: '', gotResponse: false, comment: '', showComment: false };
 const EMPTY_LINK = { company: '', url: '' };
 const DEFAULT_ROWS = 10;
 const DEFAULT_LINK_ROWS = 3;
@@ -59,7 +59,13 @@ export default function AdminJobRecommendationsSection() {
     setEditingSessionId(null);
     setEditingSessionSent(false);
     setEditingSessionRecipients([]);
-    setJobs(session.jobs.length ? session.jobs.map(j => ({ emailId: j.emailId, subject: j.subject })) : emptyJobs());
+    setJobs(session.jobs.length ? session.jobs.map(j => ({ 
+      emailId: j.emailId, 
+      subject: j.subject, 
+      gotResponse: !!j.gotResponse, 
+      comment: j.comment || '', 
+      showComment: !!j.comment 
+    })) : emptyJobs());
     setLinks(sessionLinks(session));
     setSelectedIds(new Set());
     setScheduledAt('');
@@ -70,7 +76,13 @@ export default function AdminJobRecommendationsSection() {
   const handleEditSession = (session) => {
     setEditingSessionId(session._id);
     setEditingSessionSent(!!session.notified);
-    setJobs(session.jobs.length ? session.jobs.map(j => ({ emailId: j.emailId, subject: j.subject })) : emptyJobs());
+    setJobs(session.jobs.length ? session.jobs.map(j => ({ 
+      emailId: j.emailId, 
+      subject: j.subject, 
+      gotResponse: !!j.gotResponse, 
+      comment: j.comment || '', 
+      showComment: !!j.comment 
+    })) : emptyJobs());
     setLinks(sessionLinks(session));
     if (session.notified) {
       setEditingSessionRecipients(session.recipients || []);
@@ -210,35 +222,77 @@ export default function AdminJobRecommendationsSection() {
             <table className="w-full text-sm">
               <tbody>
                 {jobs.map((job, i) => (
-                  <tr key={i} className="border-b border-[#F3F0EB] last:border-0">
-                    <td className="py-2 pr-3 text-[#6B7280] text-center">{i + 1}</td>
-                    <td className="py-2 pr-3">
-                      <input
-                        value={job.subject}
-                        onChange={e => handleJobChange(i, 'subject', e.target.value)}
-                        placeholder="Company name"
-                        className={inp}
-                      />
-                    </td>
-                    <td className="py-2 pr-3">
-                      <input
-                        type="email"
-                        value={job.emailId}
-                        onChange={e => handleJobChange(i, 'emailId', e.target.value)}
-                        placeholder="Email id to send CV"
-                        className={inp}
-                      />
-                    </td>
-                    <td className="py-2">
-                      <button
-                        onClick={() => removeRow(i)}
-                        disabled={jobs.length === 1}
-                        className="p-2 rounded-lg border border-[#E5E1DA] text-[#9CA3AF] hover:text-red-500 hover:bg-red-50 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
-                      >
-                        <Trash2 size={14} />
-                      </button>
-                    </td>
-                  </tr>
+                  <Fragment key={i}>
+                    <tr className="border-b border-[#F3F0EB] last:border-0">
+                      <td className="py-2 pr-3 text-[#6B7280] text-center">{i + 1}</td>
+                      <td className="py-2 pr-3">
+                        <input
+                          value={job.subject}
+                          onChange={e => handleJobChange(i, 'subject', e.target.value)}
+                          placeholder="Company name"
+                          className={inp}
+                        />
+                      </td>
+                      <td className="py-2 pr-3">
+                        <input
+                          type="email"
+                          value={job.emailId}
+                          onChange={e => handleJobChange(i, 'emailId', e.target.value)}
+                          placeholder="Email id to send CV"
+                          className={inp}
+                        />
+                      </td>
+                      <td className="py-2">
+                        <div className="flex items-center gap-1.5 justify-end">
+                          <button
+                            onClick={() => handleJobChange(i, 'gotResponse', !job.gotResponse)}
+                            className={`p-2 rounded-lg border transition-colors ${
+                              job.gotResponse 
+                                ? 'bg-green-100 border-green-200 text-green-700' 
+                                : 'border-[#E5E1DA] text-[#9CA3AF] hover:text-green-500 hover:bg-green-50'
+                            }`}
+                            title="Applicant got interview call/response"
+                          >
+                            <CheckCircle2 size={14} />
+                          </button>
+                          <button
+                            onClick={() => handleJobChange(i, 'showComment', !job.showComment)}
+                            className={`p-2 rounded-lg border transition-colors ${
+                              job.comment || job.showComment
+                                ? 'bg-blue-100 border-blue-200 text-blue-700' 
+                                : 'border-[#E5E1DA] text-[#9CA3AF] hover:text-blue-500 hover:bg-blue-50'
+                            }`}
+                            title="Add comment"
+                          >
+                            <MessageSquare size={14} />
+                          </button>
+                          <button
+                            onClick={() => removeRow(i)}
+                            disabled={jobs.length === 1}
+                            className="p-2 rounded-lg border border-[#E5E1DA] text-[#9CA3AF] hover:text-red-500 hover:bg-red-50 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                    {job.showComment && (
+                      <tr className="border-b border-[#F3F0EB]">
+                        <td colSpan={4} className="pb-3 pt-1">
+                          <div className="flex gap-2 items-start bg-blue-50/50 p-2 rounded-lg border border-blue-100/50">
+                            <MessageSquare size={14} className="text-blue-400 mt-2 shrink-0 ml-1" />
+                            <textarea
+                              value={job.comment}
+                              onChange={e => handleJobChange(i, 'comment', e.target.value)}
+                              placeholder="Add comment..."
+                              className="w-full px-3 py-1.5 border border-[#E5E1DA] rounded-lg text-sm text-[#1A1A1A] bg-white placeholder-[#9CA3AF] focus:outline-none focus:border-blue-300 focus:ring-2 focus:ring-blue-300/10 transition resize-none"
+                              rows={1}
+                            />
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </Fragment>
                 ))}
               </tbody>
             </table>

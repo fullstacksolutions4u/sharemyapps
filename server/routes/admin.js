@@ -1022,6 +1022,8 @@ router.post('/job-recommendations/send', async (req, res) => {
       .map(j => ({
         emailId: j.emailId?.trim() || '',
         subject: j.subject?.trim() || '',
+        gotResponse: !!j.gotResponse,
+        comment: j.comment?.trim() || '',
       }))
       .filter(j => j.emailId && j.subject);
     const cleanLinks = cleanCareerLinks(careerLinks);
@@ -1145,6 +1147,8 @@ router.put('/job-recommendations/sessions/:id', async (req, res) => {
             .map(j => ({
               emailId: j.emailId?.trim() || '',
               subject: j.subject?.trim() || '',
+              gotResponse: !!j.gotResponse,
+              comment: j.comment?.trim() || '',
             }))
             .filter(j => j.emailId && j.subject)
         : alert.jobs;

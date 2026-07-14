@@ -4,6 +4,8 @@ const jobAlertSchema = new mongoose.Schema({
   jobs: [{
     emailId: { type: String, default: '' },
     subject: { type: String, default: '' },
+    gotResponse: { type: Boolean, default: false },
+    comment: { type: String, default: '' },
   }],
   careerLinks: [{
     company: { type: String, default: '' },
