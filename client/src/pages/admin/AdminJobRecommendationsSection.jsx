@@ -70,8 +70,9 @@ export default function AdminJobRecommendationsSection() {
     setEditingSessionSent(!!session.notified);
     setJobs(session.jobs.length ? session.jobs.map(j => ({ emailId: j.emailId, subject: j.subject })) : emptyJobs());
     setLinks(sessionLinks(session));
-    // Sent sessions: recipients and schedule are locked — only the company/email list can change
-    setSelectedIds(new Set(session.recipients || []));
+    // Filter recipients to only include users that are currently visible in the list
+    const validRecipients = (session.recipients || []).filter(id => users.some(u => u._id === id));
+    setSelectedIds(new Set(validRecipients));
     setScheduledAt(session.notified ? '' : toDatetimeLocal(session.scheduledAt));
     toast.success(`Editing Session ${session.sessionNumber}`);
     window.scrollTo({ top: 0, behavior: 'smooth' });
