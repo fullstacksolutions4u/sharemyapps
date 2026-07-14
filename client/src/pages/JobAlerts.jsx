@@ -25,18 +25,13 @@ function CopyButton({ text }) {
   );
 }
 
-// Combine all of today's alerts into one — yesterday's alerts disappear automatically
-function combineTodaysAlerts(alerts) {
+// Get all of today's alerts — yesterday's alerts disappear automatically
+function getTodaysAlerts(alerts) {
   const now = new Date();
   const sameDay = d =>
     d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth() && d.getDate() === now.getDate();
   const todays = alerts.filter(a => sameDay(new Date(a.scheduledAt || a.createdAt)));
-  if (todays.length === 0) return null;
-
-  return {
-    jobs: todays.flatMap(a => a.jobs || []),
-    careerLinks: todays.flatMap(a => a.careerLinks || []),
-  };
+  return todays.length > 0 ? todays : null;
 }
 
 // Day 1 = the day the user's resume/cover letter was delivered (service activated)
@@ -86,13 +81,11 @@ export default function JobAlerts() {
     );
   }
 
-  const todaysAlert = combineTodaysAlerts(alerts);
-  const jobs = todaysAlert?.jobs || [];
-  const links = todaysAlert?.careerLinks || [];
+  const todaysAlerts = getTodaysAlerts(alerts);
 
   return (
     <div className="max-w-7xl mx-auto px-3 sm:px-4 py-10">
-      {!todaysAlert ? (
+      {!todaysAlerts ? (
         <div className="text-center py-20">
           <Briefcase size={32} className="text-[#9CA3AF] mx-auto mb-3" />
           <p className="text-sm text-[#6B7280]">No job alerts for today yet. Check back soon.</p>
@@ -107,62 +100,76 @@ export default function JobAlerts() {
             </div>
           </div>
 
-          <div className={`grid grid-cols-1 gap-4 items-start ${jobs.length > 0 && links.length > 0 ? 'md:grid-cols-5' : ''}`}>
-            {jobs.length > 0 && (
-              <div className={`bg-white border border-[#E5E1DA] rounded-2xl p-5 overflow-x-auto ${links.length > 0 ? 'md:col-span-3' : ''}`}>
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="text-xs text-[#9CA3AF] border-b border-[#F3F0EB]">
-                      <th className="py-2 pr-3 font-medium w-12 text-center whitespace-nowrap">Sl No</th>
-                      <th className="py-2 pr-3 font-medium text-left w-1/2">Company Name</th>
-                      <th className="py-2 font-medium text-left">Email Id</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {jobs.map((job, i) => (
-                      <tr key={i} className="border-b border-[#F3F0EB] last:border-0">
-                        <td className="py-2.5 pr-3 text-[#6B7280] text-center">{i + 1}</td>
-                        <td className="py-2.5 pr-3 align-middle">
-                          <div className="flex items-center gap-2">
-                            <span className="text-[#1A1A1A] font-medium truncate">{job.subject}</span>
-                            <CopyButton text={job.subject} />
-                          </div>
-                        </td>
-                        <td className="py-2.5 align-middle">
-                          <div className="flex items-center gap-2">
-                            <span className="text-[#374151] truncate">{job.emailId}</span>
-                            <CopyButton text={job.emailId} />
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
+          <div className="space-y-8">
+            {todaysAlerts.map((alert, sessionIndex) => {
+              const jobs = alert.jobs || [];
+              const links = alert.careerLinks || [];
+              if (jobs.length === 0 && links.length === 0) return null;
 
-            {links.length > 0 && (
-              <div className={`bg-white border border-[#E5E1DA] rounded-2xl p-5 ${jobs.length > 0 ? 'md:col-span-2' : ''}`}>
-                <p className="text-xs text-[#9CA3AF] font-medium border-b border-[#F3F0EB] pb-2 mb-1">
-                  Apply Directly — Upload Your Resume Through Career Page
-                </p>
-                <ul>
-                  {links.map((link, i) => (
-                    <li key={i} className="flex items-center justify-between gap-3 py-2.5 border-b border-[#F3F0EB] last:border-0">
-                      <span className="text-sm text-[#1A1A1A] font-medium truncate">{link.company}</span>
-                      <a
-                        href={link.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1.5 text-xs font-medium text-[#00A693] hover:text-[#007D6F] border border-[#00A693]/30 hover:bg-[#F0FBF9] px-3 py-1.5 rounded-lg transition-colors shrink-0"
-                      >
-                        <ExternalLink size={12} /> Upload Resume
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
+              return (
+                <div key={alert._id || sessionIndex} className="bg-[#F9FAFB] border border-[#E5E1DA] rounded-3xl p-5 shadow-sm">
+                  <h2 className="text-sm font-semibold text-[#374151] mb-4">Session {alert.sessionNumber}</h2>
+                  
+                  <div className={`grid grid-cols-1 gap-4 items-start ${jobs.length > 0 && links.length > 0 ? 'md:grid-cols-5' : ''}`}>
+                    {jobs.length > 0 && (
+                      <div className={`bg-white border border-[#E5E1DA] rounded-2xl p-5 overflow-x-auto ${links.length > 0 ? 'md:col-span-3' : ''}`}>
+                        <table className="w-full text-sm">
+                          <thead>
+                            <tr className="text-xs text-[#9CA3AF] border-b border-[#F3F0EB]">
+                              <th className="py-2 pr-3 font-medium w-12 text-center whitespace-nowrap">Sl No</th>
+                              <th className="py-2 pr-3 font-medium text-left w-1/2">Company Name</th>
+                              <th className="py-2 font-medium text-left">Email Id</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {jobs.map((job, i) => (
+                              <tr key={i} className="border-b border-[#F3F0EB] last:border-0">
+                                <td className="py-2.5 pr-3 text-[#6B7280] text-center">{i + 1}</td>
+                                <td className="py-2.5 pr-3 align-middle">
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-[#1A1A1A] font-medium truncate">{job.subject}</span>
+                                    <CopyButton text={job.subject} />
+                                  </div>
+                                </td>
+                                <td className="py-2.5 align-middle">
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-[#374151] truncate">{job.emailId}</span>
+                                    <CopyButton text={job.emailId} />
+                                  </div>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
+
+                    {links.length > 0 && (
+                      <div className={`bg-white border border-[#E5E1DA] rounded-2xl p-5 ${jobs.length > 0 ? 'md:col-span-2' : ''}`}>
+                        <p className="text-xs text-[#9CA3AF] font-medium border-b border-[#F3F0EB] pb-2 mb-1">
+                          Apply Directly — Upload Your Resume Through Career Page
+                        </p>
+                        <ul>
+                          {links.map((link, i) => (
+                            <li key={i} className="flex items-center justify-between gap-3 py-2.5 border-b border-[#F3F0EB] last:border-0">
+                              <span className="text-sm text-[#1A1A1A] font-medium truncate">{link.company}</span>
+                              <a
+                                href={link.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-1.5 text-xs font-medium text-[#00A693] hover:text-[#007D6F] border border-[#00A693]/30 hover:bg-[#F0FBF9] px-3 py-1.5 rounded-lg transition-colors shrink-0"
+                              >
+                                <ExternalLink size={12} /> Upload Resume
+                              </a>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </>
       )}
