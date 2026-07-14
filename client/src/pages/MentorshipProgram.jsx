@@ -12,7 +12,6 @@ const MENTORSHIP_FEATURES = [
   'Placement support',
   '24×7 tech support',
   'Earn during the program with client freelance projects',
-  'Experience certificate on completion',
 ];
 
 const inputStyle = {
@@ -242,6 +241,9 @@ export default function MentorshipProgram() {
               Mentorship Program
               <span style={{ fontFamily: "'Manrope', sans-serif", fontSize: '16px', fontWeight: 700, letterSpacing: '.04em', color: '#7fd1c7' }}>Full Stack AI Engineer</span>
             </h1>
+            <p style={{ marginTop: '12px', marginBottom: 0, color: '#f5efe2', fontSize: '15px', fontWeight: 500 }}>
+              Program Fee: <span style={{ fontWeight: 700, color: '#F5A623' }}>Rs. 15,000/-</span>
+            </p>
           </div>
 
           {/* Body */}

@@ -93,7 +93,9 @@ export default function JobAlerts() {
       ) : (
         <>
           <div className="flex items-center justify-between mb-5">
-            <h1 className="text-lg font-semibold text-[#1A1A1A]">Job Alerts</h1>
+            <h1 className="text-lg font-semibold text-[#1A1A1A]">
+              Job Alerts - {new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}
+            </h1>
             <div className="flex flex-col items-center justify-center bg-[#0a7373] text-white rounded-xl px-4 py-1.5 leading-none shrink-0 shadow-sm">
               <span className="text-[9px] font-bold tracking-[0.2em] uppercase opacity-80">Day</span>
               <span className="text-2xl font-bold font-mono tabular-nums">{dayCount(eligibleSince)}</span>

@@ -7,9 +7,8 @@ import {
   Crown, UserCircle, LogOut, Menu, X, Plus, Share2,
   Pencil, Trash2, ExternalLink, Clock, CheckCircle, XCircle,
   AlertCircle, Copy, Check, Eye, EyeOff, Heart, Star, ChevronRight,
-  Gamepad2, Lock, Briefcase, GraduationCap,
+  Lock, Briefcase, GraduationCap, Inbox
 } from 'lucide-react';
-import CoinIcon from '../components/common/AnimatedCoin';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
@@ -18,14 +17,11 @@ import { useConfirm } from '../context/ConfirmContext';
 const NAV = [
   { key: 'profile',            label: 'Profile',               icon: UserCircle },
   { key: 'projects',           label: 'My Projects',           icon: FolderOpen },
-  { key: 'notifications',      label: 'Notifications',         icon: Bell },
-  { key: 'feedback',           label: 'Feedback',              icon: Lightbulb },
-  { key: 'messages',           label: 'Messages',              icon: MessageSquare },
-  { key: 'tick2test',          label: 'Quiz Zone',             icon: Gamepad2 },
-  { key: 'premium',   label: 'Placement Services', icon: Crown },
-  { key: 'mentorship', label: 'Mentorship Program', icon: GraduationCap },
-  { key: 'services',  label: 'Services',         icon: Lock, isPremiumService: true },
-  { key: 'job-alerts', label: 'Job Alerts',      icon: Briefcase, isJobAlertEligible: true },
+  { key: 'inbox',              label: 'Inbox',                 icon: Inbox },
+  { key: 'premium',            label: 'Placement Services', icon: Crown, isGolden: true },
+  { key: 'mentorship',         label: 'Mentorship Program', icon: GraduationCap, isGolden: true },
+  { key: 'services',           label: 'Services',         icon: Lock, isPremiumService: true, isGolden: true },
+  { key: 'job-alerts',         label: 'Job Alerts',      icon: Briefcase, isJobAlertEligible: true, isGolden: true },
 ];
 
 const PLACEHOLDER = 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=400&q=80';
@@ -387,7 +383,7 @@ export default function Dashboard() {
         </div>
 
         <nav className="flex-1 px-3 py-4 space-y-1.5 overflow-y-auto">
-          {NAV.filter(item => (!item.isPremiumService || offerApproved) && (!item.isJobAlertEligible || jobAlertsEligible)).map(({ key, label, icon: Icon }) => (
+          {NAV.filter(item => (!item.isPremiumService || offerApproved) && (!item.isJobAlertEligible || jobAlertsEligible)).map(({ key, label, icon: Icon, isGolden }) => (
             <button
               key={key}
               onClick={() => handleNav(key)}
@@ -398,11 +394,9 @@ export default function Dashboard() {
               }`}
             >
               <Icon size={15} className={
-                key === 'premium' || key === 'services' ? (activeSection === key ? '' : 'text-amber-500') :
-                key === 'tick2test' ? 'text-green-600' : ''
+                isGolden ? (activeSection === key ? '' : 'text-amber-500') : ''
               } />
               {label}
-              {key === 'tick2test' && <CoinIcon className="w-3.5 h-3.5" />}
             </button>
           ))}
         </nav>

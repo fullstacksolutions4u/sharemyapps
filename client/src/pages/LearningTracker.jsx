@@ -26,6 +26,7 @@ const LearningTracker = ({ embedded = false }) => {
   });
   const [showDailyLimitModal, setShowDailyLimitModal] = useState(false);
   const [dailyLimitMessage, setDailyLimitMessage] = useState('');
+  const [showLoginModal, setShowLoginModal] = useState(false);
   const [selectedQuiz, setSelectedQuiz] = useState(null);
   const [loadingQuizTopicId, setLoadingQuizTopicId] = useState(null);
   const sliderRef = useRef(null);
@@ -157,6 +158,10 @@ const LearningTracker = ({ embedded = false }) => {
 
   const handleToggleTopic = async (moduleId, topicId, currentStatus, moduleIndex) => {
     try {
+      if (!isAuthenticated) {
+        setShowLoginModal(true);
+        return;
+      }
       if (moduleIndex >= 3 && !isAuthenticated) {
         return;
       }
@@ -256,7 +261,7 @@ const LearningTracker = ({ embedded = false }) => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ paddingTop: embedded ? '24px' : '100px', backgroundColor: '#F5F0E8' }}>
+      <div className="min-h-screen flex items-center justify-center" style={{ paddingTop: embedded ? '24px' : '24px', backgroundColor: '#F5F0E8' }}>
         <div className="text-center">
           <Lottie animationData={modulesAnimation} loop style={{ width: 400, height: 400, margin: '0 auto' }} />
         </div>
@@ -266,7 +271,7 @@ const LearningTracker = ({ embedded = false }) => {
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ paddingTop: embedded ? '24px' : '100px', backgroundColor: '#F5F0E8' }}>
+      <div className="min-h-screen flex items-center justify-center" style={{ paddingTop: embedded ? '24px' : '24px', backgroundColor: '#F5F0E8' }}>
         <div className="text-center">
           <p className="text-red-500 mb-4">{error}</p>
           <button onClick={fetchModulesAndProgress} className="px-4 py-2 text-white rounded-lg" style={{ backgroundColor: '#9B7D43' }}>Retry</button>
@@ -300,7 +305,7 @@ const LearningTracker = ({ embedded = false }) => {
   })();
 
   return (
-    <div className="min-h-screen" style={{ paddingTop: embedded ? '24px' : '100px', paddingBottom: '48px', backgroundColor: '#F5F0E8' }}>
+    <div className="min-h-screen" style={{ paddingTop: embedded ? '24px' : '24px', paddingBottom: '48px', backgroundColor: '#F5F0E8' }}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {modules.length === 0 ? (
           <div className="rounded-xl shadow-md p-12 text-center" style={{ backgroundColor: '#FAF7F2', border: '1px solid #E0D8CC' }}>
@@ -397,8 +402,12 @@ const LearningTracker = ({ embedded = false }) => {
                                           {(topic.hasQuiz || topic.quizzes?.length > 0 || topic.quiz?.question) && (
                                             <button
                                               onClick={async (e) => {
-                                                if (!topic.completed || loadingQuizTopicId === topic._id) return;
                                                 e.stopPropagation();
+                                                if (!isAuthenticated) {
+                                                  setShowLoginModal(true);
+                                                  return;
+                                                }
+                                                if (!topic.completed || loadingQuizTopicId === topic._id) return;
                                                 if (!topic.quizzes || topic.quizzes.length === 0) {
                                                   setLoadingQuizTopicId(topic._id);
                                                   try {
@@ -598,6 +607,25 @@ const LearningTracker = ({ embedded = false }) => {
                 {dailyLimitMessage.split('\n\n').map((para, idx) => <p key={idx} className="leading-relaxed">{para}</p>)}
               </div>
               <button onClick={() => setShowDailyLimitModal(false)} className="w-full px-6 py-3 bg-gradient-to-r from-orange-500 to-red-600 text-white rounded-xl font-semibold">Got it! 💪</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Login Modal */}
+      {showLoginModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+          <div className="rounded-2xl p-8 max-w-md w-full shadow-2xl relative overflow-hidden" style={{ backgroundColor: '#FAF7F2', border: '1px solid #E0D8CC' }}>
+            <div className="relative z-10 flex flex-col items-center text-center">
+              <div className="w-20 h-20 rounded-full flex items-center justify-center mb-6 bg-amber-100 shadow-lg">
+                <svg className="w-10 h-10 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+              </div>
+              <h3 className="text-2xl font-bold mb-2" style={{ color: '#1C1A17', fontFamily: "'Playfair Display', Georgia, serif" }}>Login Required</h3>
+              <p className="mb-6" style={{ color: '#5A5550' }}>Please log in or create an account to track your progress and play quizzes.</p>
+              <div className="flex gap-3 w-full">
+                <button onClick={() => navigate('/login')} className="flex-1 px-4 py-3 text-white rounded-xl font-semibold transition-transform hover:scale-105" style={{ backgroundColor: '#1C1A17' }}>Log In</button>
+                <button onClick={() => setShowLoginModal(false)} className="flex-1 px-4 py-3 rounded-xl font-semibold transition-transform hover:scale-105" style={{ backgroundColor: 'transparent', color: '#1C1A17', border: '2px solid #D4B896' }}>Cancel</button>
+              </div>
             </div>
           </div>
         </div>

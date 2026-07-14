@@ -17,12 +17,10 @@ const Dashboard          = lazy(() => import('./pages/Dashboard'));
 const ProjectForm        = lazy(() => import('./pages/ProjectForm'));
 const NotFound           = lazy(() => import('./pages/NotFound'));
 const AdminPanel         = lazy(() => import('./pages/AdminPanel'));
-const Messages           = lazy(() => import('./pages/Messages'));
-const Notifications      = lazy(() => import('./pages/Notifications'));
+const Inbox              = lazy(() => import('./pages/Inbox'));
 const PublicPortfolio    = lazy(() => import('./pages/PublicPortfolio'));
 const ClientProfile      = lazy(() => import('./pages/ClientProfile'));
 const ChatAdmin          = lazy(() => import('./pages/ChatAdmin'));
-const Feedback           = lazy(() => import('./pages/Feedback'));
 const Vacancies          = lazy(() => import('./pages/Vacancies'));
 const Portfolios         = lazy(() => import('./pages/Portfolios'));
 const SelectRole         = lazy(() => import('./pages/SelectRole'));
@@ -122,21 +120,19 @@ function AppRoutes() {
               <Route path="add" element={<ProjectForm />} />
               <Route path="edit/:id" element={<ProjectForm />} />
               <Route path="profile" element={<Profile />} />
-              <Route path="messages" element={<Messages />} />
-              <Route path="notifications" element={<Notifications />} />
-              <Route path="feedback" element={<Feedback />} />
+              <Route path="inbox" element={<Inbox />} />
               <Route path="premium" element={<PaidServices />} />
               <Route path="mentorship" element={<MentorshipProgram />} />
               <Route path="services" element={<Services />} />
               <Route path="job-alerts" element={<JobAlerts />} />
-              <Route path="tick2test" element={<LearningTracker embedded />} />
             </Route>
-            <Route path="/messages" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
-            <Route path="/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
+            <Route path="/inbox" element={<ProtectedRoute><Inbox /></ProtectedRoute>} />
+            <Route path="/messages" element={<Navigate to="/dashboard/inbox" state={{ tab: 'messages' }} replace />} />
+            <Route path="/notifications" element={<Navigate to="/dashboard/inbox" state={{ tab: 'notifications' }} replace />} />
+            <Route path="/feedback" element={<Navigate to="/dashboard/inbox" state={{ tab: 'feedback' }} replace />} />
             <Route path="/profile" element={<ProtectedRoute><Navigate to="/dashboard/profile" replace /></ProtectedRoute>} />
             <Route path="/client-profile" element={<ProtectedRoute><ClientProfile /></ProtectedRoute>} />
             <Route path="/chat-admin" element={<ProtectedRoute><ChatAdmin /></ProtectedRoute>} />
-            <Route path="/feedback" element={<ProtectedRoute><Feedback /></ProtectedRoute>} />
             <Route path="/opportunities" element={<Vacancies />} />
             <Route path="/vacancies" element={<Vacancies />} />
             <Route path="/portfolios" element={<Portfolios />} />
@@ -150,7 +146,7 @@ function AppRoutes() {
             <Route path="/placement-services" element={<PaidServices />} />
             <Route path="/mentorship-program" element={<MentorshipProgram />} />
             <Route path="/career-services" element={<Navigate to="/dashboard/premium" replace />} />
-            <Route path="/tick2test" element={<LearningTracker />} />
+            <Route path="/quiz-zone" element={<LearningTracker />} />
             <Route path="/portfolio/:userId" element={<PublicPortfolio />} />
             <Route path="/admin" element={<AdminRoute><AdminPanel /></AdminRoute>} />
             <Route path="*" element={<NotFound />} />
