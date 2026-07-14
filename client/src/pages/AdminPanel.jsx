@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import {
   LayoutDashboard, FolderOpen, ShieldCheck, Menu, LogOut,
-  Users, Briefcase, Megaphone, MessageSquare, Camera, IndianRupee, Crown, BookOpen, Unlock, Mail, Building2, Send, GraduationCap, History,
+  Users, Briefcase, Megaphone, MessageSquare, Camera, IndianRupee, Crown, BookOpen, Unlock, Mail, Building2, Send, GraduationCap, History, Filter
 } from 'lucide-react';
 import api from '../api/axios';
 import AdminOverview from './admin/AdminOverview';
@@ -23,11 +23,13 @@ import AdminCompaniesSection from './admin/AdminCompaniesSection';
 import AdminEmailSection from './admin/AdminEmailSection';
 import AdminMentorshipApplicationsSection from './admin/AdminMentorshipApplicationsSection';
 import AdminJobAlertHistorySection from './admin/AdminJobAlertHistorySection';
+import AdminAdvancedUsersFilterSection from './admin/AdminAdvancedUsersFilterSection';
 
 const NAV = [
   { key: 'overview',       label: 'Overview',        icon: LayoutDashboard },
   { key: 'projects',       label: 'Projects',         icon: FolderOpen },
   { key: 'users',          label: 'Users',            icon: Users },
+  { key: 'advanced_user_filter', label: 'Advanced Filter', icon: Filter },
   { key: 'companies',      label: 'Companies',        icon: Building2 },
   { key: 'opportunities',  label: 'Opportunities',    icon: Briefcase },
   { key: 'announcements',  label: 'Announcements',    icon: Megaphone },
@@ -160,6 +162,7 @@ const { user, setUser, logout } = useAuth();
           {section === 'overview'         && <AdminOverview stats={stats} onNavigate={navigate} />}
           {section === 'projects'         && <AdminProjectsSection stats={stats} />}
           {section === 'users'            && <AdminUsersSection initialTab="developers" />}
+          {section === 'advanced_user_filter' && <AdminAdvancedUsersFilterSection />}
           {section === 'companies'        && <AdminCompaniesSection />}
           {section === 'vacancies'        && <AdminVacanciesSection />}
           {section === 'opportunities'    && <AdminOpportunitiesSection />}
