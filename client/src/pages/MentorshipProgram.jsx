@@ -42,11 +42,11 @@ function ApplyModal({ user, onClose, onSubmitted }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
       <div style={{ background: '#fbfcfb', borderRadius: '18px', width: '100%', maxWidth: '400px', padding: '26px 26px 24px', border: '1px solid #e8edeb', boxShadow: '0 24px 60px -28px rgba(20,40,38,0.35)' }}>
-        <h3 style={{ margin: '0 0 4px', fontFamily: "'Spectral', serif", fontSize: '20px', fontWeight: 600, color: '#243433' }}>
+        <h3 style={{ margin: '0 0 4px', fontFamily: "'Spectral', serif", fontSize: '20px', fontWeight: 600, color: '#243433', textAlign: 'center' }}>
           Enroll in Mentorship Program
         </h3>
-        <p style={{ margin: '0 0 18px', fontSize: '12.5px', color: '#7b8a87', lineHeight: 1.5 }}>
-          Share your details — our team will verify your application and unlock the payment for you.
+        <p style={{ margin: '0 0 18px', fontSize: '12.5px', color: '#7b8a87', lineHeight: 1.5, textAlign: 'center' }}>
+          Our executive will contact you shortly for further steps.
         </p>
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
           <div>
@@ -186,7 +186,7 @@ export default function MentorshipProgram() {
         onClick={() => { if (!user) { navigate('/register'); return; } setApplyOpen(true); }}
         style={{ width: '100%', background: '#0c8c8c', color: '#fff', border: 'none', borderRadius: '8px', padding: '14px', fontSize: '13.5px', fontWeight: 700, letterSpacing: '.02em', cursor: 'pointer', fontFamily: "'Manrope', sans-serif" }}
       >
-        Enroll Now
+        Apply for Mentorship Program
       </button>
     );
   };
@@ -213,13 +213,15 @@ export default function MentorshipProgram() {
         />
       )}
       <div style={{
-        minHeight: 'calc(100vh - 64px)',
+        height: 'calc(100vh - 64px)',
+        overflow: 'hidden',
+        boxSizing: 'border-box',
         background: '#e9e6df',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-        justifyContent: 'center',
-        padding: '24px',
+        justifyContent: 'flex-start',
+        padding: '60px 24px 24px',
         fontFamily: "'Manrope', system-ui, sans-serif",
       }}>
         <div style={{
@@ -273,9 +275,11 @@ export default function MentorshipProgram() {
 
                 {renderAction()}
 
-                <p style={{ margin: '14px 0 0', fontSize: '11.5px', color: '#9aa6a4', textAlign: 'center' }}>
-                  Secured by Razorpay · UPI, Cards, Net Banking accepted
-                </p>
+                {status === 'approved' && (
+                  <p style={{ margin: '14px 0 0', fontSize: '11.5px', color: '#9aa6a4', textAlign: 'center' }}>
+                    Secured by Razorpay · UPI, Cards, Net Banking accepted
+                  </p>
+                )}
               </>
             )}
           </div>
