@@ -17,14 +17,18 @@ const normalizeCompany = (name) => {
   return name.trim();
 };
 
-const CompanyList = ({ experience }) => {
+const CompanyList = ({ experience, userName }) => {
   const [expanded, setExpanded] = useState(false);
   
-  if (!experience || experience.length === 0 || !experience[0]?.company) {
+  if (!experience || experience.length === 0) {
     return <span className="text-[#D1D5DB]">-</span>;
   }
   
-  const validCompanies = experience.map(e => normalizeCompany(e.company)).filter(Boolean);
+  const validCompanies = experience
+    .map(e => normalizeCompany(e.company))
+    .filter(Boolean)
+    .filter(c => userName ? c.toLowerCase() !== userName.toLowerCase() : true);
+    
   if (validCompanies.length === 0) return <span className="text-[#D1D5DB]">-</span>;
   
   const first = validCompanies[0];
@@ -128,9 +132,14 @@ export default function AdminAdvancedUsersFilterSection() {
   const uniqueCompanies = (() => {
     const comps = new Set();
     users.forEach(u => {
-      if (u.resumeData?.experience && Array.isArray(u.resumeData.experience)) {
-        u.resumeData.experience.forEach(exp => {
-          if (exp.company) comps.add(normalizeCompany(exp.company));
+      const exp = u.resumeData?.experience || u.resumeData?.workExperience;
+      if (exp && Array.isArray(exp)) {
+        exp.forEach(e => {
+          if (e.company) {
+            const c = normalizeCompany(e.company);
+            if (u.name && c.toLowerCase() === u.name.toLowerCase()) return;
+            comps.add(c);
+          }
         });
       }
     });
@@ -140,7 +149,8 @@ export default function AdminAdvancedUsersFilterSection() {
   const uniqueDesignations = (() => {
     const desigs = new Set();
     users.forEach(u => {
-      const d = u.designations?.[0] || u.resumeData?.experience?.[0]?.role;
+      const exp = u.resumeData?.experience || u.resumeData?.workExperience;
+      const d = u.designations?.[0] || exp?.[0]?.role;
       if (d) {
         desigs.add(d.trim());
       }
@@ -162,16 +172,22 @@ export default function AdminAdvancedUsersFilterSection() {
         if (!matchName && !matchEmail && !matchPhone && !matchReg) return false;
       }
 
+      const exp = u.resumeData?.experience || u.resumeData?.workExperience;
+
       // 2. Designation
       if (designation) {
-        const d = u.designations?.[0] || u.resumeData?.experience?.[0]?.role;
+        const d = u.designations?.[0] || exp?.[0]?.role;
         if (!d || d.trim() !== designation) return false;
       }
 
       // 3. Company
       if (company) {
-        if (!u.resumeData?.experience || !Array.isArray(u.resumeData.experience)) return false;
-        const hasCompany = u.resumeData.experience.some(exp => normalizeCompany(exp.company) === company);
+        if (!exp || !Array.isArray(exp)) return false;
+        const hasCompany = exp.some(e => {
+          const c = normalizeCompany(e.company);
+          if (u.name && c.toLowerCase() === u.name.toLowerCase()) return false;
+          return c === company;
+        });
         if (!hasCompany) return false;
       }
 
@@ -305,11 +321,15 @@ export default function AdminAdvancedUsersFilterSection() {
                             </div>
                             <div>
                               <div className="font-medium text-[#1A1A1A]">{user.name}</div>
-                              {(user.designations?.[0] || user.resumeData?.experience?.[0]?.role) && (
-                                <div className="text-[11px] text-[#9CA3AF] capitalize truncate max-w-[150px]">
-                                  {user.designations?.[0] || user.resumeData?.experience?.[0]?.role}
-                                </div>
-                              )}
+                              {(() => {
+                                const exp = user.resumeData?.experience || user.resumeData?.workExperience;
+                                const role = user.designations?.[0] || exp?.[0]?.role;
+                                return role ? (
+                                  <div className="text-[11px] text-[#9CA3AF] capitalize truncate max-w-[150px]">
+                                    {role}
+                                  </div>
+                                ) : null;
+                              })()}
                             </div>
                           </div>
                         </td>
@@ -326,7 +346,7 @@ export default function AdminAdvancedUsersFilterSection() {
                           ) : <span className="text-[#D1D5DB]">-</span>}
                         </td>
                         <td className="px-4 py-3 text-[#6B7280] text-xs">
-                          <CompanyList experience={user.resumeData?.experience} />
+                          <CompanyList experience={user.resumeData?.experience || user.resumeData?.workExperience} userName={user.name} />
                         </td>
                       </tr>
                     ))}
