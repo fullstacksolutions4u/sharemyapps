@@ -164,6 +164,15 @@ router.put('/mentorship-applications/:id', async (req, res) => {
   } catch (err) { res.status(500).json({ message: err.message }); }
 });
 
+router.delete('/mentorship-applications/:id', async (req, res) => {
+  try {
+    const MentorshipApplication = require('../models/MentorshipApplication');
+    const application = await MentorshipApplication.findByIdAndDelete(req.params.id);
+    if (!application) return res.status(404).json({ message: 'Application not found.' });
+    res.json({ message: 'Deleted' });
+  } catch (err) { res.status(500).json({ message: err.message }); }
+});
+
 // Repair: backfill FreeOffer + premiumServices for payment-only users
 router.post('/offers/repair-payment-users', async (req, res) => {
   try {

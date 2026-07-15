@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { GraduationCap, Check, X, Phone, Mail, RotateCcw } from 'lucide-react';
+import { GraduationCap, Check, X, Phone, Mail, RotateCcw, Trash2 } from 'lucide-react';
 import api from '../../api/axios';
 import toast from 'react-hot-toast';
 
@@ -30,6 +30,20 @@ export default function AdminMentorshipApplicationsSection() {
       toast.success(status === 'approved' ? 'Application approved — payment unlocked for user.' : `Application marked ${status}.`);
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to update application');
+    } finally {
+      setUpdating(null);
+    }
+  };
+
+  const handleDelete = async (id) => {
+    if (!window.confirm('Are you sure you want to delete this application?')) return;
+    setUpdating(id);
+    try {
+      await api.delete(`/admin/mentorship-applications/${id}`);
+      setApplications(prev => prev.filter(a => a._id !== id));
+      toast.success('Application deleted successfully');
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to delete application');
     } finally {
       setUpdating(null);
     }
@@ -128,6 +142,14 @@ export default function AdminMentorshipApplicationsSection() {
                     <RotateCcw size={12} /> Reset
                   </button>
                 )}
+                <button
+                  onClick={() => handleDelete(a._id)}
+                  disabled={updating === a._id}
+                  title="Delete Application"
+                  className="p-1.5 rounded-lg text-red-400 hover:text-red-600 hover:bg-red-50 transition-colors disabled:opacity-50 ml-1"
+                >
+                  <Trash2 size={15} />
+                </button>
               </div>
             </div>
           ))}

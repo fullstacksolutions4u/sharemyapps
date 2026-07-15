@@ -19,7 +19,6 @@ import AdminLearningSection from './admin/AdminLearningSection';
 import AdminPremiumServicesSection from './admin/AdminPremiumServicesSection';
 import AdminPlansSection from './admin/AdminPlansSection';
 import AdminJobRecommendationsSection from './admin/AdminJobRecommendationsSection';
-import AdminCompaniesSection from './admin/AdminCompaniesSection';
 import AdminEmailSection from './admin/AdminEmailSection';
 import AdminMentorshipApplicationsSection from './admin/AdminMentorshipApplicationsSection';
 import AdminJobAlertHistorySection from './admin/AdminJobAlertHistorySection';
@@ -29,7 +28,6 @@ const NAV = [
   { key: 'overview',       label: 'Overview',        icon: LayoutDashboard },
   { key: 'projects',       label: 'Projects',         icon: FolderOpen },
   { key: 'users',          label: 'Users',            icon: Users },
-  { key: 'advanced_user_filter', label: 'Advanced Filter', icon: Filter },
   { key: 'companies',      label: 'Companies',        icon: Building2 },
   { key: 'opportunities',  label: 'Opportunities',    icon: Briefcase },
   { key: 'announcements',  label: 'Announcements',    icon: Megaphone },
@@ -162,8 +160,7 @@ const { user, setUser, logout } = useAuth();
           {section === 'overview'         && <AdminOverview stats={stats} onNavigate={navigate} />}
           {section === 'projects'         && <AdminProjectsSection stats={stats} />}
           {section === 'users'            && <AdminUsersSection initialTab="developers" />}
-          {section === 'advanced_user_filter' && <AdminAdvancedUsersFilterSection />}
-          {section === 'companies'        && <AdminCompaniesSection />}
+          {section === 'companies'        && <AdminAdvancedUsersFilterSection />}
           {section === 'vacancies'        && <AdminVacanciesSection />}
           {section === 'opportunities'    && <AdminOpportunitiesSection />}
           {section === 'resumes'          && <AdminResumesSection />}
