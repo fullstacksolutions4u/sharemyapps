@@ -33,6 +33,7 @@ export default function AdminJobRecommendationsSection() {
   const [editingSessionRecipients, setEditingSessionRecipients] = useState([]);
   const [sessionPage, setSessionPage] = useState(1);
   const SESSIONS_PER_PAGE = 5;
+  const [searchQuery, setSearchQuery] = useState('');
 
   const loadUsers = useCallback(() => {
     setLoadingUsers(true);
@@ -139,9 +140,27 @@ export default function AdminJobRecommendationsSection() {
   const validJobs = jobs.filter(j => j.emailId.trim() && j.subject.trim());
   const validLinks = links.filter(l => l.company.trim() && l.url.trim());
 
-  const sessionPageCount = Math.max(1, Math.ceil(sessions.length / SESSIONS_PER_PAGE));
+  const filteredSessions = sessions.filter(session => {
+    if (!searchQuery.trim()) return true;
+    const q = searchQuery.toLowerCase();
+    const companies = [...session.jobs.map(j => j.subject), ...(session.careerLinks || []).map(l => l.company)];
+    return companies.some(c => c.toLowerCase().includes(q));
+  });
+
+  const sessionPageCount = Math.max(1, Math.ceil(filteredSessions.length / SESSIONS_PER_PAGE));
   const currentSessionPage = Math.min(sessionPage, sessionPageCount);
-  const paginatedSessions = sessions.slice((currentSessionPage - 1) * SESSIONS_PER_PAGE, currentSessionPage * SESSIONS_PER_PAGE);
+  const paginatedSessions = filteredSessions.slice((currentSessionPage - 1) * SESSIONS_PER_PAGE, currentSessionPage * SESSIONS_PER_PAGE);
+
+  const renderHighlightedCompanies = (session, query) => {
+    const companies = [...session.jobs.map(j => j.subject), ...(session.careerLinks || []).map(l => l.company)];
+    const joined = companies.join(', ');
+    if (!query.trim()) return joined;
+    
+    const parts = joined.split(new RegExp(`(${query.trim()})`, 'gi'));
+    return parts.map((part, i) => 
+      part.toLowerCase() === query.trim().toLowerCase() ? <span key={i} className="bg-amber-200 text-amber-900 font-medium px-0.5 rounded">{part}</span> : part
+    );
+  };
 
   const toggleUser = (id) => {
     setSelectedIds(prev => {
@@ -436,11 +455,23 @@ export default function AdminJobRecommendationsSection() {
       </div>
 
       <div className="bg-white border border-[#E5E1DA] rounded-2xl p-5 space-y-3">
+        <div className="flex justify-between items-center mb-2">
+          <h3 className="font-semibold text-sm text-[#1A1A1A]">Session History</h3>
+          <input
+            type="text"
+            placeholder="Search company..."
+            value={searchQuery}
+            onChange={(e) => { setSearchQuery(e.target.value); setSessionPage(1); }}
+            className="px-3 py-1.5 border border-[#E5E1DA] rounded-lg text-xs text-[#1A1A1A] placeholder-[#9CA3AF] focus:outline-none focus:border-[#00A693] transition w-48"
+          />
+        </div>
 
         {loadingSessions ? (
           <div className="text-center py-8 text-sm text-[#9CA3AF]">Loading sessions…</div>
         ) : sessions.length === 0 ? (
           <div className="text-center py-8 text-sm text-[#9CA3AF]">No sessions sent yet.</div>
+        ) : filteredSessions.length === 0 ? (
+          <div className="text-center py-8 text-sm text-[#9CA3AF]">No matching companies found in any session.</div>
         ) : (
           <div className="max-h-96 overflow-y-auto space-y-2">
             {paginatedSessions.map(session => (
@@ -469,7 +500,7 @@ export default function AdminJobRecommendationsSection() {
                     {' · '}{session.recipientCount} recipient{session.recipientCount === 1 ? '' : 's'}
                   </p>
                   <p className="text-xs text-[#6B7280] mt-1 truncate">
-                    {[...session.jobs.map(j => j.subject), ...(session.careerLinks || []).map(l => l.company)].join(', ')}
+                    {renderHighlightedCompanies(session, searchQuery)}
                   </p>
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
@@ -497,7 +528,7 @@ export default function AdminJobRecommendationsSection() {
           </div>
         )}
 
-        {!loadingSessions && sessions.length > 0 && (
+        {!loadingSessions && filteredSessions.length > 0 && (
           <div className="flex items-center justify-between pt-1">
             <p className="text-xs text-[#9CA3AF]">
               Page {currentSessionPage} of {sessionPageCount}
