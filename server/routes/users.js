@@ -190,15 +190,35 @@ router.get('/developers', async (req, res) => {
       },
     };
 
+    // Job alert eligibility
+    const jobAlertLookup = {
+      $lookup: {
+        from: 'sessionrequests',
+        let: { uid: '$_id' },
+        pipeline: [
+          { $match: { 
+              $expr: { $eq: ['$user', '$$uid'] },
+              serviceKey: 'ats_compatible_resume_cover_letter_optimization',
+              status: 'completed',
+              completionLink: { $nin: ['', null] }
+          }},
+          { $project: { _id: 1 } },
+        ],
+        as: '_jobAlertSessions',
+      }
+    };
+
     const [result] = await User.aggregate([
       { $match: matchStage },
       ownProjectsLookup,
       likedProjectsLookup,
       ratedProjectsLookup,
       commentsLookup,
+      jobAlertLookup,
       {
         $addFields: {
           hasProjects:    { $gt: [{ $size: '$projects' }, 0] },
+          isPremium:      { $gt: [{ $size: { $ifNull: ['$premiumServices', []] } }, 0] },
           lastProjectAt:  { $max: '$projects.createdAt' },
           likesGiven:     { $size: '$_likedProjects' },
           ratingsGiven:   { $size: '$_ratedProjects' },
@@ -210,9 +230,75 @@ router.get('/developers', async (req, res) => {
               { $multiply: [{ $size: '$_userComments' }, 3] },
             ],
           },
+          isComplete: {
+            $cond: [
+              {
+                $and: [
+                  { $gt: [{ $strLenCP: { $ifNull: ['$phone', ''] } }, 0] },
+                  { $gte: [
+                    {
+                      $add: [
+                        { $cond: [{ $gt: [{ $strLenCP: { $ifNull: ['$linkedinUrl', ''] } }, 0] }, 1, 0] },
+                        { $cond: [{ $gt: [{ $strLenCP: { $ifNull: ['$githubUrl', ''] } }, 0] }, 1, 0] },
+                        { $cond: [{ $gt: [{ $strLenCP: { $ifNull: ['$leetcodeUrl', ''] } }, 0] }, 1, 0] },
+                        { $cond: [{ $gt: [{ $strLenCP: { $ifNull: ['$portfolioUrl', ''] } }, 0] }, 1, 0] },
+                      ]
+                    },
+                    2
+                  ]}
+                ]
+              },
+              1, 0
+            ]
+          }
         },
       },
-      { $sort: { lastProjectAt: -1, hasProjects: -1, createdAt: -1 } },
+      {
+        $addFields: {
+          displayCategory: {
+            $switch: {
+              branches: [
+                { case: '$isPremium', then: 0 },
+                { case: { $in: ['$badge', ['active', 'top', 'champion']] }, then: 1 }
+              ],
+              default: 2
+            }
+          },
+          isJobAlertPremium: {
+            $cond: [
+              { $gt: [{ $size: '$_jobAlertSessions' }, 0] },
+              1, 0
+            ]
+          },
+        }
+      },
+      {
+        $addFields: {
+          sortString: {
+            $concat: [
+              { $toString: "$isJobAlertPremium" },
+              "_",
+              { $dateToString: { date: "$lastProjectAt", format: "%Y-%m-%dT%H:%M:%S.%LZ", onNull: "0000-01-01T00:00:00.000Z" } },
+              "_",
+              { $toString: "$hasProjects" },
+              "_",
+              { $dateToString: { date: "$createdAt", format: "%Y-%m-%dT%H:%M:%S.%LZ", onNull: "0000-01-01T00:00:00.000Z" } }
+            ]
+          }
+        }
+      },
+      {
+        $setWindowFields: {
+          partitionBy: '$displayCategory',
+          sortBy: { sortString: -1 },
+          output: {
+            categoryRank: {
+              $documentNumber: {}
+            }
+          }
+        }
+      },
+      { $sort: { isComplete: -1, categoryRank: 1, displayCategory: 1 } },
       {
         $facet: {
           total: [{ $count: 'n' }],
@@ -223,7 +309,7 @@ router.get('/developers', async (req, res) => {
               $project: {
                 password: 0, googleId: 0, companyName: 0, companyWebsite: 0,
                 industry: 0, requirements: 0, adminNote: 0,
-                _likedProjects: 0, _ratedProjects: 0, _userComments: 0, hasProjects: 0,
+                _likedProjects: 0, _ratedProjects: 0, _userComments: 0, _jobAlertSessions: 0, hasProjects: 0,
               },
             },
           ],
