@@ -14,7 +14,7 @@ export default function AdminJobAlertHistorySection() {
         const sessions = res.data.sessions || [];
         const grouped = {};
 
-        sessions.forEach(session => {
+        [...sessions].reverse().forEach(session => {
           const d = new Date(session.scheduledAt || session.createdAt);
           const dateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 
