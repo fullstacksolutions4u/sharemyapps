@@ -398,7 +398,7 @@ const LearningTracker = ({ embedded = false }) => {
                                               <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: '#C9A96E' }}><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
                                             )}
                                           </button>
-                                          <span className="flex-1 text-sm font-medium" style={{ color: topic.completed ? '#9A8A7A' : '#1C1A17', textDecoration: topic.completed ? 'line-through' : 'none' }}>{topic.name}</span>
+                                          <span className="flex-1 text-sm font-medium" style={{ color: topic.completed ? '#9A8A7A' : '#1C1A17' }}>{topic.name}</span>
                                           {(topic.hasQuiz || topic.quizzes?.length > 0 || topic.quiz?.question) && (
                                             <button
                                               onClick={async (e) => {
@@ -448,7 +448,7 @@ const LearningTracker = ({ embedded = false }) => {
                                               {topic.completed && <svg className="w-2.5 h-2.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>}
                                             </button>
                                             <div className="flex-1 min-w-0 flex items-center justify-between gap-2">
-                                              <span className="text-sm font-medium truncate" style={{ color: topic.completed ? '#9A8A7A' : '#1C1A17', textDecoration: topic.completed ? 'line-through' : 'none' }}>{topic.name}</span>
+                                              <span className="text-sm font-medium truncate" style={{ color: topic.completed ? '#9A8A7A' : '#1C1A17' }}>{topic.name}</span>
                                               {topic.problemUrl && (
                                                 <a href={topic.problemUrl} target="_blank" rel="noopener noreferrer" className="flex-shrink-0 flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-semibold" style={topic.completed ? { backgroundColor: '#E0D8CC', color: '#5A5550' } : { backgroundColor: 'rgba(201,169,110,0.15)', color: '#9B7D43', border: '1px solid rgba(201,169,110,0.5)' }}>
                                                   <span>Solve</span>
@@ -473,7 +473,7 @@ const LearningTracker = ({ embedded = false }) => {
               </div>
               {/* Progress Panel */}
               <div className="flex-shrink-0 w-full lg:w-[400px] lg:sticky lg:top-32">
-                <div className="rounded-2xl shadow-xl p-5 flex flex-col overflow-y-auto custom-scrollbar" style={{ maxHeight: '800px', backgroundColor: '#FAF7F2', border: '2px solid #E0D8CC' }}>
+                <div className="rounded-2xl shadow-xl p-5 flex flex-col overflow-y-auto custom-scrollbar" style={{ height: '800px', backgroundColor: '#FAF7F2', border: '2px solid #E0D8CC' }}>
                   {/* Streak / Points */}
                   <div className="flex flex-wrap items-center justify-center gap-2 mb-4">
                     <div className="px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-sm" style={{ backgroundColor: '#FFF8F0', border: '1px solid rgba(192,122,58,0.3)' }}>
@@ -523,7 +523,7 @@ const LearningTracker = ({ embedded = false }) => {
                   </div>
 
                   {/* Calendar */}
-                  <div className="rounded-xl p-3 mb-4" style={{ backgroundColor: '#F0E8DC', border: '1px solid #D4B896' }}>
+                  <div className="rounded-xl p-3 mb-4 flex-shrink-0" style={{ backgroundColor: '#F0E8DC', border: '1px solid #D4B896' }}>
                     <div className="flex items-center justify-between mb-2">
                       <h4 className="text-xs font-bold" style={{ color: '#1C1A17' }}>{calendarDate.toLocaleString('default', { month: 'long', year: 'numeric' })}</h4>
                       <div className="flex gap-1.5 text-xs font-medium" style={{ color: '#5A5550' }}>
@@ -532,18 +532,17 @@ const LearningTracker = ({ embedded = false }) => {
                         <div className="flex items-center gap-1"><div className="w-1.5 h-1.5 rounded-full bg-green-500"></div><span>Goal</span></div>
                       </div>
                     </div>
-                    <div className="grid grid-cols-7 gap-1 text-center mb-1">
-                      {['S','M','T','W','T','F','S'].map((d, i) => <div key={i} className="text-xs font-bold" style={{ color: '#5A5550' }}>{d}</div>)}
-                    </div>
+
                     <div className="grid grid-cols-7 gap-1">
                       {(() => {
                         const year = calendarDate.getFullYear();
                         const month = calendarDate.getMonth();
                         const daysInMonth = new Date(year, month + 1, 0).getDate();
                         const firstDay = new Date(year, month, 1).getDay();
+                        const emptyCells = (firstDay + 6) % 7;
                         const actualToday = new Date();
                         const days = [];
-                        for (let i = 0; i < firstDay; i++) days.push(<div key={`e-${i}`} className="aspect-square"></div>);
+                        for (let i = 0; i < emptyCells; i++) days.push(<div key={`e-${i}`} className="aspect-square"></div>);
                         for (let i = 1; i <= daysInMonth; i++) {
                           const dateStr = getLocalDateString(new Date(year, month, i));
                           const count = dailyProgressMap[dateStr] || 0;
@@ -570,10 +569,10 @@ const LearningTracker = ({ embedded = false }) => {
                   </div>
 
                   {/* Pie Chart + Totals */}
-                  <div className="pt-4" style={{ borderTop: '1px solid #E0D8CC' }}>
-                    <div className="flex flex-col items-center justify-center">
-                      <PieChart percentage={overallProgress.percentage} size={160} strokeWidth={18} color="#9B7D43" backgroundColor="#E0D8CC" showPercentage={true}>
-                        <span className="text-xs mt-1 font-medium text-center" style={{ color: '#5A5550' }}>{overallProgress.completedModules} / {overallProgress.totalModules} Modules</span>
+                  <div className="pt-4 mt-auto flex-shrink-0">
+                    <div className="flex flex-col items-center justify-center pb-2">
+                      <PieChart percentage={overallProgress.percentage} size={220} strokeWidth={24} color="#9B7D43" backgroundColor="#E0D8CC" showPercentage={true}>
+                        <span className="text-sm mt-1 font-semibold text-center" style={{ color: '#5A5550' }}>{overallProgress.completedModules} / {overallProgress.totalModules} Modules</span>
                       </PieChart>
                     </div>
                   </div>
