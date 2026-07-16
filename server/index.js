@@ -30,8 +30,23 @@ const learningFeedbackRoutes = require('./routes/learningFeedback');
 const premiumServicesRoutes = require('./routes/premiumServices');
 const { startJobAlertScheduler } = require('./jobs/jobAlertScheduler');
 const { task: thumbnailTask } = require('./cron/thumbnails');
+const { startMetricsPusher } = require('./utils/metricsPusher');
+
+const promBundle = require('express-prom-bundle');
+const metricsMiddleware = promBundle({
+  includeMethod: true,
+  includePath: true,
+  includeStatusCode: true,
+  includeUp: true,
+  customLabels: { project_name: 'sharemyapps' },
+  promClient: {
+    collectDefaultMetrics: {
+    }
+  }
+});
 
 const app = express();
+app.use(metricsMiddleware);
 
 app.use(compression());
 app.use(helmet({ contentSecurityPolicy: false }));
@@ -82,6 +97,7 @@ mongoose.connect(process.env.MONGO_URI, { maxPoolSize: 10 })
     console.log('MongoDB connected');
     startJobAlertScheduler();
     thumbnailTask.start();
+    startMetricsPusher();
     const PORT = process.env.PORT || 5000;
     app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
   })
