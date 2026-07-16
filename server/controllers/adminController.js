@@ -3,6 +3,7 @@ const User = require('../models/User');
 const Notification = require('../models/Notification');
 const FreeOffer = require('../models/FreeOffer');
 const { sendProjectApprovedEmail, sendProjectRejectedEmail } = require('../utils/email');
+const { generateAndUploadThumbnail } = require('../utils/thumbnailGenerator');
 
 exports.getPendingProjects = async (req, res) => {
   try {
@@ -69,6 +70,16 @@ exports.updateProjectStatus = async (req, res) => {
     project.status = status;
     if (adminNote !== undefined) project.adminNote = adminNote || '';
     await project.save();
+
+    // Trigger background thumbnail generation if approved and no banner image
+    if (status === 'approved' && project.liveUrl && !project.bannerImage) {
+      generateAndUploadThumbnail(project.liveUrl).then(async (url) => {
+        if (url) {
+          project.bannerImage = url;
+          await project.save();
+        }
+      }).catch(err => console.error('Background thumbnail failed:', err.message));
+    }
 
     // Create in-app notification + send email to project owner
     const owner = project.owner;
