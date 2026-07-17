@@ -186,7 +186,7 @@ export default function MentorshipProgram() {
         onClick={() => { if (!user) { navigate('/register'); return; } setApplyOpen(true); }}
         style={{ width: '100%', background: '#0c8c8c', color: '#fff', border: 'none', borderRadius: '8px', padding: '14px', fontSize: '13.5px', fontWeight: 700, letterSpacing: '.02em', cursor: 'pointer', fontFamily: "'Manrope', sans-serif" }}
       >
-        Apply for Mentorship Program
+        Apply for Mentorship Program — Starting July 27, Enroll Now!
       </button>
     );
   };
@@ -263,18 +263,37 @@ export default function MentorshipProgram() {
         }}>
           {/* Banner */}
           <div style={{
+            position: 'relative',
             background: 'linear-gradient(135deg, #1c2b29 0%, #0a7373 100%)',
             padding: '28px 32px',
             textAlign: 'center',
           }}>
-            <h1 style={{ margin: 0, display: 'flex', flexWrap: 'wrap', alignItems: 'baseline', justifyContent: 'center', columnGap: '12px', fontFamily: "'Spectral', serif", fontSize: '26px', fontWeight: 600, color: '#f5efe2' }}>
-              Mentorship Program
-              <span style={{ fontFamily: "'Manrope', sans-serif", fontSize: '16px', fontWeight: 700, letterSpacing: '.04em', color: '#7fd1c7' }}>Full Stack AI Engineer</span>
+            {/* Price badge — top right corner */}
+            <div style={{
+              position: 'absolute',
+              top: '14px',
+              right: '16px',
+              background: 'rgba(245,166,35,0.15)',
+              border: '1px solid rgba(245,166,35,0.5)',
+              borderRadius: '8px',
+              padding: '4px 10px',
+              fontSize: '13px',
+              fontWeight: 700,
+              color: '#F5A623',
+              fontFamily: "'Manrope', sans-serif",
+              letterSpacing: '.02em',
+            }}>
+              ₹15,000/-
+            </div>
+
+            <h1 style={{ margin: 0, fontFamily: "'Spectral', serif", fontSize: '26px', fontWeight: 600, color: '#f5efe2' }}>
+              Mentorship Program with Placement
             </h1>
-            <p style={{ marginTop: '12px', marginBottom: 0, color: '#f5efe2', fontSize: '15px', fontWeight: 500 }}>
-              Program Fee: <span style={{ fontWeight: 700, color: '#F5A623' }}>Rs. 15,000/-</span>
+            <p style={{ margin: '8px 0 0', fontFamily: "'Manrope', sans-serif", fontSize: '15px', fontWeight: 700, letterSpacing: '.04em', color: '#7fd1c7' }}>
+              MERN Full Stack AI Engineer
             </p>
           </div>
+
 
           {/* Body */}
           <div style={{ padding: '30px 32px' }}>
