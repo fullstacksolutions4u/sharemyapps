@@ -1,7 +1,7 @@
 import { useRef, useState, useEffect } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link, useNavigate } from 'react-router-dom';
-import { Menu, X, ChevronDown, LogOut, Plus, ShieldCheck, Bell, CheckCircle, XCircle, Clock, MessageSquare, AlertCircle, Heart, Star, MessageCircle, Briefcase, LayoutDashboard, Trophy, GraduationCap, Crown } from 'lucide-react';
+import { Menu, X, ChevronDown, LogOut, Plus, ShieldCheck, Bell, CheckCircle, XCircle, Clock, MessageSquare, AlertCircle, Heart, Star, MessageCircle, Briefcase, LayoutDashboard, Trophy, GraduationCap, Crown, ChevronRight } from 'lucide-react';
 import { progressAPI } from '../api/tick2test';
 
 const GeminiIcon = ({ size = 14 }) => (
@@ -21,165 +21,15 @@ import toast from 'react-hot-toast';
 import logo from '../assets/logo.png';
 
 const typeIcon = {
-  approved:  <CheckCircle size={14} className="text-green-500 shrink-0" />,
-  rejected:  <XCircle size={14} className="text-red-500 shrink-0" />,
-  resubmit:  <Clock size={14} className="text-yellow-500 shrink-0" />,
-  like:      <Heart size={14} className="text-pink-500 shrink-0" />,
-  rated:     <Star size={14} className="text-amber-400 shrink-0" />,
+  approved:      <CheckCircle size={14} className="text-green-500 shrink-0" />,
+  rejected:      <XCircle size={14} className="text-red-500 shrink-0" />,
+  resubmit:      <Clock size={14} className="text-yellow-500 shrink-0" />,
+  like:          <Heart size={14} className="text-pink-500 shrink-0" />,
+  rated:         <Star size={14} className="text-amber-400 shrink-0" />,
   commented:     <MessageCircle size={14} className="text-blue-400 shrink-0" />,
   vacancy_reply: <Briefcase size={14} className="text-accent shrink-0" />,
   job_alert:     <Briefcase size={14} className="text-emerald-500 shrink-0" />,
 };
-
-function MessagesBadge() {
-  const { data } = useQuery({
-    queryKey: ['messages'],
-    queryFn: async () => { const res = await api.get('/messages'); return res.data; },
-    staleTime: 1000 * 60,
-    refetchInterval: 1000 * 30,
-    refetchIntervalInBackground: false,
-  });
-  const unread = data?.unreadCount || 0;
-
-  return (
-    <Link to="/dashboard/inbox" state={{ tab: 'messages' }} className="relative p-1.5 text-muted hover:text-text transition-colors">
-      <MessageSquare size={18} />
-      {unread > 0 && (
-        <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-accent text-white text-[10px] font-bold flex items-center justify-center rounded-full">
-          {unread > 9 ? '9+' : unread}
-        </span>
-      )}
-    </Link>
-  );
-}
-
-function NotificationBell() {
-  const { user } = useAuth();
-  const queryClient = useQueryClient();
-  const navigate = useNavigate();
-  const [open, setOpen] = useState(false);
-  const ref = useRef();
-
-  const devLinks = [user?.linkedinUrl, user?.githubUrl, user?.leetcodeUrl, user?.portfolioUrl];
-  const showProfileWarning = user?.userType === 'developer' && devLinks.filter(Boolean).length < 2;
-
-  const { data } = useQuery({
-    queryKey: ['notifications'],
-    queryFn: async () => { const res = await api.get('/notifications'); return res.data; },
-    staleTime: 1000 * 60,
-    refetchInterval: 1000 * 30,
-    refetchIntervalInBackground: false,
-  });
-
-  const notifications = data?.notifications || [];
-  const unread = data?.unreadCount || 0;
-
-  const handleClickOutside = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
-  useEffect(() => {
-    if (!open) return;
-    document.addEventListener('mousedown', handleClickOutside, { once: true });
-  }, [open]);
-
-  const markAllRead = async () => {
-    try {
-      await api.patch('/notifications/read-all');
-      queryClient.setQueryData(['notifications'], prev => ({
-        ...prev,
-        notifications: prev.notifications.map(x => ({ ...x, read: true })),
-        unreadCount: 0,
-      }));
-    } catch { /* silently ignore */ }
-  };
-
-  const markRead = async (id) => {
-    try {
-      await api.patch(`/notifications/${id}/read`);
-      queryClient.setQueryData(['notifications'], prev => ({
-        ...prev,
-        notifications: prev.notifications.map(x => x._id === id ? { ...x, read: true } : x),
-        unreadCount: Math.max(0, prev.unreadCount - 1),
-      }));
-    } catch { /* silently ignore */ }
-  };
-
-  return (
-    <div className="relative" ref={ref}>
-      <button
-        onClick={() => setOpen(v => !v)}
-        className="relative p-1.5 text-muted hover:text-text transition-colors"
-      >
-        <Bell size={18} />
-        {(unread + (showProfileWarning ? 1 : 0)) > 0 && (
-          <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-red-500 text-white text-[10px] font-bold flex items-center justify-center rounded-full">
-            {(unread + (showProfileWarning ? 1 : 0)) > 9 ? '9+' : (unread + (showProfileWarning ? 1 : 0))}
-          </span>
-        )}
-      </button>
-
-      {open && (
-        <div className="absolute right-0 mt-2 w-80 bg-white border border-border rounded-2xl shadow-xl overflow-hidden z-50">
-          <div className="flex items-center justify-between px-4 py-3 border-b border-border">
-            <span className="text-sm font-semibold text-text">Notifications</span>
-            {unread > 0 && (
-              <button onClick={markAllRead} className="text-xs text-accent hover:text-accent-hover font-medium transition-colors">
-                Mark all read
-              </button>
-            )}
-          </div>
-
-          <div className="max-h-80 overflow-y-auto divide-y divide-[#F3F0EB]">
-            {showProfileWarning && (
-              <Link
-                to="/profile"
-                onClick={() => setOpen(false)}
-                className="px-4 py-3 flex items-start gap-3 bg-amber-50 hover:bg-amber-100 transition-colors"
-              >
-                <AlertCircle size={14} className="text-amber-500 shrink-0 mt-0.5" />
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-amber-800 leading-snug">Complete your profile</p>
-                </div>
-                <span className="w-2 h-2 bg-amber-400 rounded-full mt-1.5 shrink-0" />
-              </Link>
-            )}
-            {notifications.length === 0 && !showProfileWarning ? (
-              <div className="px-4 py-8 text-center text-sm text-muted">No notifications yet</div>
-            ) : (
-              notifications.map(n => (
-                <div
-                  key={n._id}
-                  onClick={() => {
-                    if (!n.read) markRead(n._id);
-                    if (n.type === 'job_alert') { setOpen(false); navigate('/dashboard/job-alerts'); }
-                  }}
-                  className={`px-4 py-3 flex items-start gap-3 cursor-pointer hover:bg-bg transition-colors ${!n.read ? 'bg-[#F0FBF9]' : ''}`}
-                >
-                  <div className="mt-0.5">{typeIcon[n.type] || <Bell size={14} className="text-muted shrink-0" />}</div>
-                  <div className="flex-1 min-w-0">
-                    <p className={`text-sm leading-snug ${!n.read ? 'font-semibold text-text' : 'text-text'}`}>{n.title}</p>
-                    <p className="text-xs text-muted mt-0.5 leading-snug line-clamp-2">{n.message}</p>
-                    <p className="text-xs text-[#9CA3AF] mt-1">{new Date(n.createdAt).toLocaleDateString()}</p>
-                  </div>
-                  {!n.read && <span className="w-2 h-2 bg-accent rounded-full mt-1.5 shrink-0" />}
-                </div>
-              ))
-            )}
-          </div>
-
-          <div className="px-4 py-2.5 border-t border-border">
-            <Link
-              to="/dashboard/inbox"
-              state={{ tab: 'notifications' }}
-              onClick={() => setOpen(false)}
-              className="block text-center text-xs text-accent hover:text-accent-hover font-medium transition-colors"
-            >
-              View all notifications
-            </Link>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
 
 function CoinsRankBadge() {
   const { user } = useAuth();
@@ -248,22 +98,280 @@ function ServicesMenu() {
   );
 }
 
+/* ── User dropdown with embedded notifications + messages ── */
+function UserDropdown({ user, onLogout }) {
+  const { user: authUser } = useAuth();
+  const queryClient = useQueryClient();
+  const navigate = useNavigate();
+  const [open, setOpen] = useState(false);
+  const [section, setSection] = useState(null); // null | 'notifications' | 'messages'
+  const ref = useRef();
+
+  /* ── notifications ── */
+  const devLinks = [authUser?.linkedinUrl, authUser?.githubUrl, authUser?.leetcodeUrl, authUser?.portfolioUrl];
+  const showProfileWarning = authUser?.userType === 'developer' && devLinks.filter(Boolean).length < 2;
+
+  const { data: notifData } = useQuery({
+    queryKey: ['notifications'],
+    queryFn: async () => { const res = await api.get('/notifications'); return res.data; },
+    staleTime: 1000 * 60,
+    refetchInterval: 1000 * 30,
+    refetchIntervalInBackground: false,
+    enabled: !!user,
+  });
+  const notifications = notifData?.notifications || [];
+  const unreadNotif = (notifData?.unreadCount || 0) + (showProfileWarning ? 1 : 0);
+
+  /* ── messages ── */
+  const { data: msgData } = useQuery({
+    queryKey: ['messages'],
+    queryFn: async () => { const res = await api.get('/messages'); return res.data; },
+    staleTime: 1000 * 60,
+    refetchInterval: 1000 * 30,
+    refetchIntervalInBackground: false,
+    enabled: !!user,
+  });
+  const unreadMsg = msgData?.unreadCount || 0;
+
+  const totalUnread = unreadNotif + unreadMsg;
+
+  /* ── mark helpers ── */
+  const markAllRead = async () => {
+    try {
+      await api.patch('/notifications/read-all');
+      queryClient.setQueryData(['notifications'], prev => ({
+        ...prev,
+        notifications: prev.notifications.map(x => ({ ...x, read: true })),
+        unreadCount: 0,
+      }));
+    } catch { /* silently ignore */ }
+  };
+
+  const markRead = async (id) => {
+    try {
+      await api.patch(`/notifications/${id}/read`);
+      queryClient.setQueryData(['notifications'], prev => ({
+        ...prev,
+        notifications: prev.notifications.map(x => x._id === id ? { ...x, read: true } : x),
+        unreadCount: Math.max(0, prev.unreadCount - 1),
+      }));
+    } catch { /* silently ignore */ }
+  };
+
+  /* ── close on outside click ── */
+  useEffect(() => {
+    if (!open) return;
+    const handler = e => { if (ref.current && !ref.current.contains(e.target)) { setOpen(false); setSection(null); } };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [open]);
+
+  const close = () => { setOpen(false); setSection(null); };
+
+  return (
+    <div className="relative" ref={ref}>
+      {/* Trigger button */}
+      <button
+        onClick={() => { setOpen(v => !v); if (open) setSection(null); }}
+        className="relative flex items-center gap-2 text-sm text-text hover:text-accent transition-colors"
+      >
+        {user.avatar
+          ? <img src={user.avatar} alt={user.name} className="w-7 h-7 rounded-full object-cover" />
+          : <span className="w-7 h-7 rounded-full bg-accent text-white text-xs flex items-center justify-center font-medium">{user.name[0].toUpperCase()}</span>
+        }
+        <span>{user.name.split(' ')[0]}</span>
+        <ChevronDown size={14} className={`transition-transform ${open ? 'rotate-180' : ''}`} />
+
+        {/* combined unread badge on username */}
+        {totalUnread > 0 && (
+          <span className="absolute -top-1.5 -right-2 min-w-[16px] h-4 px-1 bg-red-500 text-white text-[10px] font-bold flex items-center justify-center rounded-full leading-none">
+            {totalUnread > 9 ? '9+' : totalUnread}
+          </span>
+        )}
+      </button>
+
+      {open && (
+        <div className="absolute right-0 mt-2 w-72 bg-white border border-border rounded-2xl shadow-xl overflow-hidden z-50">
+
+          {/* ── Main menu ── */}
+          {section === null && (
+            <>
+              {user.role !== 'admin' && (
+                <Link
+                  to="/dashboard"
+                  onClick={close}
+                  className="flex items-center gap-2 px-4 py-2.5 text-sm text-text hover:bg-bg transition-colors"
+                >
+                  <LayoutDashboard size={14} /> Dashboard
+                </Link>
+              )}
+              {user.role === 'admin' && (
+                <Link to="/admin" onClick={close} className="flex items-center gap-2 px-4 py-2.5 text-sm text-accent hover:bg-bg transition-colors">
+                  <ShieldCheck size={14} /> Admin Panel
+                </Link>
+              )}
+
+              <div className="border-t border-[#F3F0EB]" />
+
+              {/* Notifications row */}
+              <button
+                onClick={() => setSection('notifications')}
+                className="w-full flex items-center justify-between px-4 py-2.5 text-sm text-text hover:bg-bg transition-colors"
+              >
+                <span className="flex items-center gap-2">
+                  <Bell size={14} className="text-muted" />
+                  Notifications
+                  {unreadNotif > 0 && (
+                    <span className="min-w-[18px] h-[18px] px-1 bg-red-500 text-white text-[10px] font-bold flex items-center justify-center rounded-full leading-none">
+                      {unreadNotif > 9 ? '9+' : unreadNotif}
+                    </span>
+                  )}
+                </span>
+                <ChevronRight size={13} className="text-muted" />
+              </button>
+
+              {/* Messages row */}
+              <button
+                onClick={() => setSection('messages')}
+                className="w-full flex items-center justify-between px-4 py-2.5 text-sm text-text hover:bg-bg transition-colors"
+              >
+                <span className="flex items-center gap-2">
+                  <MessageSquare size={14} className="text-muted" />
+                  Messages
+                  {unreadMsg > 0 && (
+                    <span className="min-w-[18px] h-[18px] px-1 bg-accent text-white text-[10px] font-bold flex items-center justify-center rounded-full leading-none">
+                      {unreadMsg > 9 ? '9+' : unreadMsg}
+                    </span>
+                  )}
+                </span>
+                <ChevronRight size={13} className="text-muted" />
+              </button>
+
+              <div className="border-t border-[#F3F0EB]" />
+              <button onClick={onLogout} className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-red-500 hover:bg-bg transition-colors">
+                <LogOut size={14} /> Logout
+              </button>
+            </>
+          )}
+
+          {/* ── Notifications panel ── */}
+          {section === 'notifications' && (
+            <>
+              <div className="flex items-center gap-2 px-4 py-3 border-b border-border">
+                <button onClick={() => setSection(null)} className="text-muted hover:text-text transition-colors">
+                  <ChevronDown size={15} className="rotate-90" />
+                </button>
+                <span className="text-sm font-semibold text-text flex-1">Notifications</span>
+                {(notifData?.unreadCount || 0) > 0 && (
+                  <button onClick={markAllRead} className="text-xs text-accent hover:text-accent-hover font-medium transition-colors">
+                    Mark all read
+                  </button>
+                )}
+              </div>
+
+              <div className="max-h-72 overflow-y-auto divide-y divide-[#F3F0EB]">
+                {showProfileWarning && (
+                  <Link
+                    to="/profile"
+                    onClick={close}
+                    className="px-4 py-3 flex items-start gap-3 bg-amber-50 hover:bg-amber-100 transition-colors"
+                  >
+                    <AlertCircle size={14} className="text-amber-500 shrink-0 mt-0.5" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold text-amber-800 leading-snug">Complete your profile</p>
+                    </div>
+                    <span className="w-2 h-2 bg-amber-400 rounded-full mt-1.5 shrink-0" />
+                  </Link>
+                )}
+                {notifications.length === 0 && !showProfileWarning ? (
+                  <div className="px-4 py-8 text-center text-sm text-muted">No notifications yet</div>
+                ) : (
+                  notifications.map(n => (
+                    <div
+                      key={n._id}
+                      onClick={() => {
+                        if (!n.read) markRead(n._id);
+                        if (n.type === 'job_alert') { close(); navigate('/dashboard/job-alerts'); }
+                      }}
+                      className={`px-4 py-3 flex items-start gap-3 cursor-pointer hover:bg-bg transition-colors ${!n.read ? 'bg-[#F0FBF9]' : ''}`}
+                    >
+                      <div className="mt-0.5">{typeIcon[n.type] || <Bell size={14} className="text-muted shrink-0" />}</div>
+                      <div className="flex-1 min-w-0">
+                        <p className={`text-sm leading-snug ${!n.read ? 'font-semibold text-text' : 'text-text'}`}>{n.title}</p>
+                        <p className="text-xs text-muted mt-0.5 leading-snug line-clamp-2">{n.message}</p>
+                        <p className="text-xs text-[#9CA3AF] mt-1">{new Date(n.createdAt).toLocaleDateString()}</p>
+                      </div>
+                      {!n.read && <span className="w-2 h-2 bg-accent rounded-full mt-1.5 shrink-0" />}
+                    </div>
+                  ))
+                )}
+              </div>
+
+              <div className="px-4 py-2.5 border-t border-border">
+                <Link
+                  to="/dashboard/inbox"
+                  state={{ tab: 'notifications' }}
+                  onClick={close}
+                  className="block text-center text-xs text-accent hover:text-accent-hover font-medium transition-colors"
+                >
+                  View all notifications
+                </Link>
+              </div>
+            </>
+          )}
+
+          {/* ── Messages panel ── */}
+          {section === 'messages' && (
+            <>
+              <div className="flex items-center gap-2 px-4 py-3 border-b border-border">
+                <button onClick={() => setSection(null)} className="text-muted hover:text-text transition-colors">
+                  <ChevronDown size={15} className="rotate-90" />
+                </button>
+                <span className="text-sm font-semibold text-text flex-1">Messages</span>
+                {unreadMsg > 0 && (
+                  <span className="min-w-[18px] h-[18px] px-1 bg-accent text-white text-[10px] font-bold flex items-center justify-center rounded-full leading-none">
+                    {unreadMsg > 9 ? '9+' : unreadMsg}
+                  </span>
+                )}
+              </div>
+
+              <div className="px-4 py-8 text-center text-sm text-muted">
+                <MessageSquare size={28} className="mx-auto mb-2 text-[#D1D5DB]" />
+                <p>Open inbox to read messages</p>
+              </div>
+
+              <div className="px-4 py-2.5 border-t border-border">
+                <Link
+                  to="/dashboard/inbox"
+                  state={{ tab: 'messages' }}
+                  onClick={close}
+                  className="block text-center text-xs text-accent hover:text-accent-hover font-medium transition-colors"
+                >
+                  Open inbox →
+                </Link>
+              </div>
+            </>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function Navbar() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
-  const [dropOpen, setDropOpen] = useState(false);
 
   const isRecruiter = user?.userType === 'recruiter';
-  const isClient = user?.userType === 'client';
-  const isMentee = user?.userType === 'mentee';
-  const isMentor = user?.userType === 'mentor';
+  const isClient    = user?.userType === 'client';
+  const isMentee    = user?.userType === 'mentee';
+  const isMentor    = user?.userType === 'mentor';
 
   const handleLogout = async () => {
     await logout();
     toast.success('Logged out');
     navigate('/');
-    setDropOpen(false);
   };
 
   return (
@@ -325,45 +433,8 @@ export default function Navbar() {
                 </Link>
               )}
 
-              <MessagesBadge />
-              <NotificationBell />
               <CoinsRankBadge />
-
-              <div className="relative">
-                <button
-                  onClick={() => setDropOpen(v => !v)}
-                  className="flex items-center gap-2 text-sm text-text hover:text-accent transition-colors"
-                >
-                  {user.avatar
-                    ? <img src={user.avatar} alt={user.name} className="w-7 h-7 rounded-full object-cover" />
-                    : <span className="w-7 h-7 rounded-full bg-accent text-white text-xs flex items-center justify-center font-medium">{user.name[0].toUpperCase()}</span>
-                  }
-                  <span>{user.name.split(' ')[0]}</span>
-                  <ChevronDown size={14} />
-                </button>
-                {dropOpen && (
-                  <div className="absolute right-0 mt-2 w-44 bg-white border border-border rounded-xl shadow-lg py-1 z-50">
-                    {user.role !== 'admin' && (
-                      <Link
-                        to="/dashboard"
-                        onClick={() => setDropOpen(false)}
-                        className="flex items-center gap-2 px-4 py-2 text-sm text-text hover:bg-bg"
-                      >
-                        <LayoutDashboard size={14} /> Dashboard
-                      </Link>
-                    )}
-                    {user.role === 'admin' && (
-                      <Link to="/admin" onClick={() => setDropOpen(false)} className="flex items-center gap-2 px-4 py-2 text-sm text-accent hover:bg-bg">
-                        <ShieldCheck size={14} /> Admin Panel
-                      </Link>
-                    )}
-                    <div className="border-t border-[#F3F0EB] my-1" />
-                    <button onClick={handleLogout} className="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-500 hover:bg-bg">
-                      <LogOut size={14} /> Logout
-                    </button>
-                  </div>
-                )}
-              </div>
+              <UserDropdown user={user} onLogout={handleLogout} />
             </div>
           ) : (
             <div className="flex items-center gap-2">
@@ -379,7 +450,7 @@ export default function Navbar() {
 
         {/* Mobile toggle */}
         <div className="md:hidden flex items-center gap-2">
-          {user && <NotificationBell />}
+          {user && <UserDropdown user={user} onLogout={handleLogout} />}
           <button className="text-muted" onClick={() => setMenuOpen(v => !v)}>
             {menuOpen ? <X size={20} /> : <Menu size={20} />}
           </button>

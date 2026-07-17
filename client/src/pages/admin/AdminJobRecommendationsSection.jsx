@@ -235,7 +235,7 @@ export default function AdminJobRecommendationsSection() {
         </div>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-6">
         <div className="bg-white border border-[#E5E1DA] rounded-2xl p-5 space-y-4">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
@@ -244,7 +244,7 @@ export default function AdminJobRecommendationsSection() {
                   <Fragment key={i}>
                     <tr className="border-b border-[#F3F0EB] last:border-0">
                       <td className="py-2 pr-3 text-[#6B7280] text-center">{i + 1}</td>
-                      <td className="py-2 pr-3">
+                      <td className="py-2 pr-3 w-72">
                         <input
                           value={job.subject}
                           onChange={e => handleJobChange(i, 'subject', e.target.value)}
@@ -252,7 +252,7 @@ export default function AdminJobRecommendationsSection() {
                           className={inp}
                         />
                       </td>
-                      <td className="py-2 pr-3">
+                      <td className="py-2 pr-3 w-[32rem]">
                         <input
                           type="email"
                           value={job.emailId}
@@ -347,7 +347,6 @@ export default function AdminJobRecommendationsSection() {
                     className="accent-[#00A693] w-4 h-4 disabled:opacity-40 disabled:cursor-not-allowed"
                   />
                   <span className="text-sm font-medium text-[#1A1A1A]">{u.name}</span>
-                  <span className="text-xs text-[#9CA3AF]">{u.email}</span>
                 </label>
               ))}
             </div>

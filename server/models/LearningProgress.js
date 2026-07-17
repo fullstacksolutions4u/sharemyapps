@@ -25,7 +25,6 @@ const progressSchema = new mongoose.Schema({
   }]
 }, { timestamps: true });
 
-progressSchema.index({ userId: 1 });
 progressSchema.index({ 'completedTopics.moduleId': 1, 'completedTopics.topicId': 1 });
 
 module.exports = mongoose.model('LearningProgress', progressSchema);

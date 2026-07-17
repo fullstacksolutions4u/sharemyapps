@@ -39,7 +39,6 @@ const moduleSchema = new mongoose.Schema({
   isActive: { type: Boolean, default: true }
 }, { timestamps: true });
 
-moduleSchema.index({ title: 1 });
 moduleSchema.index({ order: 1 });
 moduleSchema.index({ isActive: 1 });
 
