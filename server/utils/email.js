@@ -349,7 +349,7 @@ exports.sendMarketingCampaignEmail = async ({ to, name }) => {
 };
 
 exports.sendJobApplicationEmail = async ({ to, name, vacancy }) => {
-  const vacanciesUrl = `${BASE_URL}/vacancies`;
+  const vacanciesUrl = `${BASE_URL}/opportunities`;
 
   await api.sendTransacEmail({
     sender: FROM,
@@ -377,12 +377,12 @@ exports.sendJobApplicationEmail = async ({ to, name, vacancy }) => {
                 </a>
               </td>
               <td style="padding:0 6px;">
-                <a href="${BASE_URL}/vacancies" style="display:block;text-align:center;background:#1D4ED8;color:#fff;text-decoration:none;padding:11px 10px;border-radius:8px;font-weight:600;font-size:13px;">
+                <a href="${BASE_URL}/opportunities" style="display:block;text-align:center;background:#1D4ED8;color:#fff;text-decoration:none;padding:11px 10px;border-radius:8px;font-weight:600;font-size:13px;">
                   More Opportunities
                 </a>
               </td>
               <td style="padding:0 0 0 6px;">
-                <a href="${BASE_URL}/dashboard/tick2test" style="display:block;text-align:center;background:#7C3AED;color:#fff;text-decoration:none;padding:11px 10px;border-radius:8px;font-weight:600;font-size:13px;">
+                <a href="${BASE_URL}/quiz-zone" style="display:block;text-align:center;background:#7C3AED;color:#fff;text-decoration:none;padding:11px 10px;border-radius:8px;font-weight:600;font-size:13px;">
                   Quiz Zone
                 </a>
               </td>

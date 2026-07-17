@@ -25,19 +25,16 @@ async function pushMetrics() {
   const username = process.env.GRAFANA_USERNAME;
   const token    = process.env.GRAFANA_TOKEN;
 
-  // Silently skip if credentials are not configured
-  if (!url || !username || !token) return;
+  // Only push in production with full credentials configured
+  if (!url || !username || !token || process.env.NODE_ENV !== 'production') return;
 
   try {
-    const metricsText  = await register.metrics();
-    const contentType  = register.contentType;
-    const credentials  = Buffer.from(`${username}:${token}`).toString('base64');
+    const metricsText = await register.metrics();
+    const contentType = register.contentType;
+    const credentials = Buffer.from(`${username}:${token}`).toString('base64');
 
-    // Grafana Cloud Prometheus accepts text-format metrics via the
-    // Pushgateway-compatible endpoint with Basic Auth
-    const pushUrl = `${url}/job/sharemyapps`;
-
-    const response = await fetch(pushUrl, {
+    // Grafana Cloud remote_write endpoint — use the URL as-is from env var
+    const response = await fetch(url, {
       method: 'POST',
       headers: {
         'Content-Type': contentType,
@@ -51,7 +48,6 @@ async function pushMetrics() {
       console.warn(`[metrics-pusher] Push failed (${response.status}): ${body}`);
     }
   } catch (err) {
-    // Never throw — a failed push should never crash the server
     console.warn('[metrics-pusher] Error pushing metrics:', err.message);
   }
 }
@@ -62,14 +58,18 @@ async function pushMetrics() {
  */
 function startMetricsPusher() {
   const url = process.env.GRAFANA_REMOTE_WRITE_URL;
+
+  if (process.env.NODE_ENV !== 'production') {
+    console.log('[metrics-pusher] Disabled in development. Use docker-compose for local monitoring.');
+    return;
+  }
+
   if (!url) {
     console.log('[metrics-pusher] GRAFANA_REMOTE_WRITE_URL not set — metrics push disabled.');
     return;
   }
 
   console.log('[metrics-pusher] Starting Grafana Cloud metrics pusher (every 15s)...');
-  
-  // Push immediately on start, then on interval
   pushMetrics();
   setInterval(pushMetrics, PUSH_INTERVAL_MS);
 }
