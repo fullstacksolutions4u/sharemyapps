@@ -18,7 +18,7 @@ const NAV = [
   { key: 'profile',            label: 'Profile',               icon: UserCircle },
   { key: 'projects',           label: 'My Projects',           icon: FolderOpen },
   { key: 'inbox',              label: 'Inbox',                 icon: Inbox },
-  { key: 'premium',            label: 'Placement Services', icon: Crown, isGolden: true },
+  { key: 'premium',            label: 'Job Assistance Services', icon: Crown, isGolden: true },
   { key: 'mentorship',         label: 'Mentorship Program', icon: GraduationCap, isGolden: true },
   { key: 'services',           label: 'Services',         icon: Lock, isPremiumService: true, isGolden: true },
   { key: 'job-alerts',         label: 'Job Alerts',      icon: Briefcase, isJobAlertEligible: true, isGolden: true },

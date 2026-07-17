@@ -8,10 +8,10 @@ import PlacementPaymentModal from '../components/PlacementPaymentModal';
 const MENTORSHIP_FEATURES = [
   '30 structured learning modules',
   '10-month program duration',
-  'Tech review by experienced developers',
-  'Placement support',
+  'Weekly Tech review by experienced developers',
   '24×7 tech support',
   'Earn during the program with client freelance projects',
+  'Job Assistance Plan included FREE — exclusive for mentorship students',
 ];
 
 const inputStyle = {

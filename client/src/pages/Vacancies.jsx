@@ -202,7 +202,7 @@ export default function Vacancies() {
             ))}
           </div>
           <a href="/career-services" className="flex items-center gap-1.5 bg-amber-50 border border-amber-200 hover:bg-amber-100 text-amber-600 text-xs font-semibold px-3 py-1.5 rounded-full transition-colors shrink-0 mb-1">
-            <Crown size={12} /> Placement Services
+            <Crown size={12} /> Job Assistance Services
           </a>
         </div>
       </div>

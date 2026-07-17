@@ -83,7 +83,7 @@ function ServicesMenu() {
             onClick={() => setOpen(false)}
             className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-text hover:bg-bg transition-colors"
           >
-            <Briefcase size={15} className="text-accent shrink-0" /> Placement Services
+            <Briefcase size={15} className="text-accent shrink-0" /> Job Assistance Services
           </Link>
           <Link
             to="/mentorship-program"
@@ -486,7 +486,7 @@ export default function Navbar() {
             <>
               <Link to="/opportunities" onClick={() => setMenuOpen(false)} className="block text-sm text-muted hover:text-text">Job Opportunities</Link>
               <Link to="/quiz-zone" onClick={() => setMenuOpen(false)} className="block text-sm text-muted hover:text-text">Quiz Zone</Link>
-              <Link to="/placement-services" onClick={() => setMenuOpen(false)} className="block text-sm text-muted hover:text-text">Placement Services</Link>
+              <Link to="/placement-services" onClick={() => setMenuOpen(false)} className="block text-sm text-muted hover:text-text">Job Assistance Services</Link>
               <Link to="/mentorship-program" onClick={() => setMenuOpen(false)} className="block text-sm text-muted hover:text-text">Mentorship Program</Link>
             </>
           )}
