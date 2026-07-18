@@ -256,7 +256,13 @@ const getProgressStats = async (req, res) => {
 
 const getLeaderboard = async (req, res) => {
   try {
-    const devFilter = { role: { $ne: 'admin' }, userType: 'developer', isDeleted: { $ne: true }, hidden: { $ne: true } };
+    const devFilter = { 
+      role: { $ne: 'admin' }, 
+      userType: 'developer', 
+      isDeleted: { $ne: true }, 
+      hidden: { $ne: true },
+      _id: { $nin: ['6a225bdd9c1fca63c9154a8d', '6a5b3f5c36d9511e20e8058d'] }
+    };
 
     const topUsers = await User.find(devFilter)
       .select('name avatar points')

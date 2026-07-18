@@ -7,7 +7,7 @@ exports.getFeed = async (req, res) => {
     const limit = parseInt(req.query.limit) || 40;
     const skip = (page - 1) * limit;
 
-    let activities = await Activity.find({ user: { $ne: '6a225bdd9c1fca63c9154a8d' } })
+    let activities = await Activity.find({ user: { $nin: ['6a225bdd9c1fca63c9154a8d', '6a5b3f5c36d9511e20e8058d'] } })
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit)
