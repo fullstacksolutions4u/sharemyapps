@@ -7,15 +7,15 @@ exports.getFeed = async (req, res) => {
     const limit = parseInt(req.query.limit) || 40;
     const skip = (page - 1) * limit;
 
-    let activities = await Activity.find()
+    let activities = await Activity.find({ user: { $ne: '6a225bdd9c1fca63c9154a8d' } })
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit)
-      .populate('user', 'name profileImage avatar')
+      .populate('user', 'name profileImage avatar designations')
       .populate({
         path: 'project',
         select: 'title bannerImage liveUrl _id owner status',
-        populate: { path: 'owner', select: 'name profileImage avatar' }
+        populate: { path: 'owner', select: 'name profileImage avatar designations' }
       })
       .populate('module', 'title _id')
       .lean();
@@ -26,7 +26,7 @@ exports.getFeed = async (req, res) => {
       const recentProjects = await Project.find({ status: 'approved' })
         .sort({ createdAt: -1 })
         .limit(40)
-        .populate('owner', 'name profileImage avatar')
+        .populate('owner', 'name profileImage avatar designations')
         .lean();
       
       activities = recentProjects.map(p => ({

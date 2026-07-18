@@ -98,6 +98,7 @@ exports.updateProjectStatus = async (req, res) => {
         user: owner._id,
         type: 'PROJECT_APPROVED',
         project: project._id,
+        createdAt: project.createdAt,
       }).catch(err => console.error('Activity creation failed:', err.message));
 
       sendProjectApprovedEmail({

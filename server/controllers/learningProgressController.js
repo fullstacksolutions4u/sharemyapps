@@ -259,7 +259,7 @@ const getLeaderboard = async (req, res) => {
     const devFilter = { role: { $ne: 'admin' }, userType: 'developer', isDeleted: { $ne: true }, hidden: { $ne: true } };
 
     const topUsers = await User.find(devFilter)
-      .select('name profileImage points')
+      .select('name avatar points')
       .sort({ points: -1, createdAt: 1 })
       .limit(10)
       .lean();
@@ -267,7 +267,7 @@ const getLeaderboard = async (req, res) => {
     const leaderboard = topUsers.map((u, i) => ({
       rank: i + 1,
       name: u.name,
-      profileImage: u.profileImage,
+      profileImage: u.avatar,
       points: u.points || 0,
       userId: u._id,
     }));

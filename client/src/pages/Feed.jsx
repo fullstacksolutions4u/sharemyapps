@@ -1,24 +1,45 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import axios from '../api/axios';
 import AppSpinner from '../components/AppSpinner';
 import { formatDistanceToNow } from 'date-fns';
-import { Trophy, CheckCircle, Code, MessageCircle, Heart, Star, TrendingUp } from 'lucide-react';
+import { Trophy, CheckCircle, Code, MessageCircle, Heart, Star, TrendingUp, Loader2 } from 'lucide-react';
 
 export default function Feed() {
   const [activities, setActivities] = useState([]);
   const [leaderboard, setLeaderboard] = useState([]);
   const [loading, setLoading] = useState(true);
+  
+  // Infinite scroll state
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
 
+  const observer = useRef();
+  const lastActivityElementRef = useCallback(node => {
+    if (loading || loadingMore) return;
+    if (observer.current) observer.current.disconnect();
+    
+    observer.current = new IntersectionObserver(entries => {
+      if (entries[0].isIntersecting && hasMore) {
+        setPage(prevPage => prevPage + 1);
+      }
+    });
+    
+    if (node) observer.current.observe(node);
+  }, [loading, loadingMore, hasMore]);
+
+  // Initial load
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchInitialData = async () => {
       try {
         const [feedRes, leaderRes] = await Promise.all([
-          axios.get('/feed'),
+          axios.get('/feed?page=1'),
           axios.get('/learning-progress/leaderboard')
         ]);
         if (feedRes.data.success) {
           setActivities(feedRes.data.data);
+          setHasMore(feedRes.data.hasMore);
         }
         if (leaderRes.data.success) {
           setLeaderboard(leaderRes.data.leaderboard);
@@ -29,8 +50,29 @@ export default function Feed() {
         setLoading(false);
       }
     };
-    fetchData();
+    fetchInitialData();
   }, []);
+
+  // Load more data when page changes
+  useEffect(() => {
+    if (page === 1) return; // handled by initial load
+    
+    const fetchMoreData = async () => {
+      setLoadingMore(true);
+      try {
+        const feedRes = await axios.get(`/feed?page=${page}`);
+        if (feedRes.data.success) {
+          setActivities(prev => [...prev, ...feedRes.data.data]);
+          setHasMore(feedRes.data.hasMore);
+        }
+      } catch (err) {
+        console.error('Failed to load more feed data', err);
+      } finally {
+        setLoadingMore(false);
+      }
+    };
+    fetchMoreData();
+  }, [page]);
 
   if (loading) return <AppSpinner />;
 
@@ -44,9 +86,28 @@ export default function Feed() {
           </div>
         ) : (
           <div className="space-y-6">
-            {activities.map(activity => (
-              <ActivityCard key={activity._id} activity={activity} />
-            ))}
+            {activities.map((activity, index) => {
+              if (activities.length === index + 1) {
+                return (
+                  <div ref={lastActivityElementRef} key={activity._id}>
+                    <ActivityCard activity={activity} />
+                  </div>
+                );
+              } else {
+                return <ActivityCard key={activity._id} activity={activity} />;
+              }
+            })}
+            
+            {loadingMore && (
+              <div className="flex justify-center py-6">
+                <Loader2 className="w-8 h-8 text-primary animate-spin" />
+              </div>
+            )}
+            {!hasMore && activities.length > 0 && (
+              <div className="text-center py-6 text-muted text-sm">
+                You've reached the end of the feed!
+              </div>
+            )}
           </div>
         )}
       </div>
@@ -67,7 +128,7 @@ export default function Feed() {
             </Link>
           </div>
           
-          <div className="p-0">
+          <div className="p-0 max-h-[calc(100vh-180px)] overflow-y-auto custom-scrollbar">
             {leaderboard.length === 0 ? (
               <div className="p-6 text-center text-muted">No data available</div>
             ) : (
@@ -114,135 +175,145 @@ export default function Feed() {
 
 // Sub-component for individual activity feed items
 function ActivityCard({ activity }) {
-  const { type, project, module, createdAt, meta } = activity;
+  const { type, user, project, module, createdAt, meta } = activity;
   const timeAgo = formatDistanceToNow(new Date(createdAt), { addSuffix: true });
   
-  let content = null;
+  if (!user) return null;
+
+  const designation = user.designations && user.designations.length > 0 ? user.designations[0] : 'Developer';
+  const avatarUrl = user.profileImage || user.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=random`;
+  
+  let innerContent = null;
+  let wrapperClass = "bg-white rounded-xl shadow-sm border border-border p-4 transition hover:shadow-md mb-4";
   
   if (type === 'PROJECT_APPROVED' && project) {
-    content = (
-      <div className="bg-white rounded-xl shadow-sm border border-border overflow-hidden transition hover:shadow-md">
-        <div className="p-4 flex items-start gap-4">
-          <div className="bg-green-100 text-green-600 p-2 rounded-full mt-1 shrink-0">
-            <CheckCircle size={20} />
+    innerContent = (
+      <div className="mt-3">
+        <div className="flex items-start gap-3">
+          <div className="bg-green-100 text-green-600 p-1.5 rounded-full shrink-0">
+            <CheckCircle size={16} />
           </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-sm text-text">
-              Application <Link to={`/project/${project._id}`} className="font-semibold text-primary hover:underline transition">{project.title}</Link> by <Link to={`/portfolio/${project.owner?._id}`} className="font-medium text-accent hover:underline">{project.owner?.name}</Link> was published!
-            </p>
-            <p className="text-xs text-muted mt-1">{timeAgo}</p>
-            
-            <Link to={`/project/${project._id}`} className="mt-3 block group">
-              <div className="rounded-lg border border-border overflow-hidden bg-bg group-hover:border-primary transition">
-                {project.bannerImage ? (
-                  <img src={project.bannerImage} alt={project.title} className="w-full h-40 object-cover" />
-                ) : (
-                  <div className="w-full h-40 bg-gradient-to-r from-gray-200 to-gray-300 flex items-center justify-center">
-                    <Code size={40} className="text-gray-400" />
-                  </div>
-                )}
-                <div className="p-3 bg-white">
-                  <h3 className="font-bold text-text truncate group-hover:text-primary transition">{project.title}</h3>
-                </div>
-              </div>
-            </Link>
-          </div>
+          <p className="text-sm text-text">
+            Published a new application: <Link to={`/project/${project._id}`} className="font-semibold text-primary hover:underline transition">{project.title}</Link>
+          </p>
         </div>
+        
+        <Link to={`/project/${project._id}`} className="mt-3 block group ml-9">
+          <div className="rounded-lg border border-border overflow-hidden bg-bg group-hover:border-primary transition">
+            {project.bannerImage ? (
+              <img src={project.bannerImage} alt={project.title} className="w-full h-40 object-cover" />
+            ) : (
+              <div className="w-full h-40 bg-gradient-to-r from-gray-200 to-gray-300 flex items-center justify-center">
+                <Code size={40} className="text-gray-400" />
+              </div>
+            )}
+            <div className="p-3 bg-white">
+              <h3 className="font-bold text-text truncate group-hover:text-primary transition">{project.title}</h3>
+            </div>
+          </div>
+        </Link>
       </div>
     );
   }
   else if (type === 'MODULE_STARTED' && module) {
-    content = (
-      <div className="bg-white rounded-xl shadow-sm border border-border p-4 flex gap-4 items-center transition hover:shadow-md">
-        <div className="bg-blue-100 text-blue-600 p-2 rounded-full shrink-0">
-          <TrendingUp size={20} />
+    innerContent = (
+      <div className="mt-3 flex items-start gap-3">
+        <div className="bg-blue-100 text-blue-600 p-1.5 rounded-full shrink-0">
+          <TrendingUp size={16} />
         </div>
-        <div className="flex-1 min-w-0">
-          <p className="text-sm text-text">
-            Participation in quiz zone module <span className="font-semibold text-primary">{module.title}</span> started.
-          </p>
-          <p className="text-xs text-muted mt-1">{timeAgo}</p>
-        </div>
+        <p className="text-sm text-text">
+          Started learning the quiz zone module: <span className="font-semibold text-primary">{module.title}</span>.
+        </p>
       </div>
     );
   }
   else if (type === 'MODULE_COMPLETED' && module) {
-    content = (
-      <div className="bg-gradient-to-r from-yellow-50 to-orange-50 rounded-xl shadow-sm border border-yellow-200 p-4 transition hover:shadow-md">
-        <div className="flex gap-4">
-          <div className="bg-yellow-400 text-white p-2 rounded-full shrink-0 h-10 w-10 flex items-center justify-center">
-            <Trophy size={20} />
+    wrapperClass = "bg-gradient-to-r from-yellow-50 to-orange-50 rounded-xl shadow-sm border border-yellow-200 p-4 transition hover:shadow-md mb-4";
+    innerContent = (
+      <div className="mt-3">
+        <div className="flex items-start gap-3">
+          <div className="bg-yellow-400 text-white p-1.5 rounded-full shrink-0">
+            <Trophy size={16} />
           </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-sm text-text">
-              Participation in quiz zone module <span className="font-semibold text-primary">{module.title}</span> was successfully completed! 🎉
-            </p>
-            <p className="text-xs text-muted mt-1">{timeAgo}</p>
-            
-            {(meta?.score !== undefined || meta?.rank) && (
-              <div className="mt-3 flex items-center gap-4 text-sm font-medium">
-                {meta?.score !== undefined && (
-                  <div className="bg-white px-3 py-1 rounded-full text-primary shadow-sm border border-border">
-                    Score: {meta.score} pts
-                  </div>
-                )}
-                {meta?.rank && (
-                  <div className="bg-white px-3 py-1 rounded-full text-accent shadow-sm border border-border">
-                    Current Rank: #{meta.rank}
-                  </div>
-                )}
+          <p className="text-sm text-text">
+            Successfully completed the quiz zone module: <span className="font-semibold text-primary">{module.title}</span>! 🎉
+          </p>
+        </div>
+        
+        {(meta?.score !== undefined || meta?.rank) && (
+          <div className="mt-3 ml-9 flex items-center gap-4 text-sm font-medium">
+            {meta?.score !== undefined && (
+              <div className="bg-white px-3 py-1 rounded-full text-primary shadow-sm border border-border">
+                Score: {meta.score} pts
+              </div>
+            )}
+            {meta?.rank && (
+              <div className="bg-white px-3 py-1 rounded-full text-accent shadow-sm border border-border">
+                Current Rank: #{meta.rank}
               </div>
             )}
           </div>
-        </div>
+        )}
       </div>
     );
   }
   else if (type === 'PROJECT_LIKED' && project) {
-    content = (
-      <div className="bg-white rounded-xl shadow-sm border border-border p-4 flex gap-4 items-center transition hover:shadow-md">
-        <div className="bg-red-50 text-red-500 p-2 rounded-full shrink-0">
-          <Heart size={20} fill="currentColor" />
+    innerContent = (
+      <div className="mt-3 flex items-start gap-3">
+        <div className="bg-red-50 text-red-500 p-1.5 rounded-full shrink-0">
+          <Heart size={16} fill="currentColor" />
         </div>
-        <div className="flex-1 min-w-0">
-          <p className="text-sm text-text">
-            Application <Link to={`/project/${project._id}`} className="font-semibold text-primary hover:underline transition">{project.title}</Link> by <Link to={`/portfolio/${project.owner?._id}`} className="font-medium text-accent hover:underline">{project.owner?.name}</Link> got a like.
-          </p>
-          <p className="text-xs text-muted mt-1">{timeAgo}</p>
-        </div>
+        <p className="text-sm text-text">
+          Liked the application <Link to={`/project/${project._id}`} className="font-semibold text-primary hover:underline transition">{project.title}</Link>.
+        </p>
       </div>
     );
   }
   else if (type === 'PROJECT_COMMENTED' && project) {
-    content = (
-      <div className="bg-white rounded-xl shadow-sm border border-border p-4 flex gap-4 items-center transition hover:shadow-md">
-        <div className="bg-gray-100 text-gray-600 p-2 rounded-full shrink-0">
-          <MessageCircle size={20} />
+    innerContent = (
+      <div className="mt-3 flex items-start gap-3">
+        <div className="bg-gray-100 text-gray-600 p-1.5 rounded-full shrink-0">
+          <MessageCircle size={16} />
         </div>
-        <div className="flex-1 min-w-0">
-          <p className="text-sm text-text">
-            Application <Link to={`/project/${project._id}`} className="font-semibold text-primary hover:underline transition">{project.title}</Link> by <Link to={`/portfolio/${project.owner?._id}`} className="font-medium text-accent hover:underline">{project.owner?.name}</Link> got a comment.
-          </p>
-          <p className="text-xs text-muted mt-1">{timeAgo}</p>
-        </div>
+        <p className="text-sm text-text">
+          Commented on the application <Link to={`/project/${project._id}`} className="font-semibold text-primary hover:underline transition">{project.title}</Link>.
+        </p>
       </div>
     );
   }
   else if (type === 'PROJECT_RATED' && project) {
-    content = (
-      <div className="bg-white rounded-xl shadow-sm border border-border p-4 flex gap-4 items-center transition hover:shadow-md">
-        <div className="bg-yellow-50 text-yellow-500 p-2 rounded-full shrink-0">
-          <Star size={20} fill="currentColor" />
+    innerContent = (
+      <div className="mt-3 flex items-start gap-3">
+        <div className="bg-yellow-50 text-yellow-500 p-1.5 rounded-full shrink-0">
+          <Star size={16} fill="currentColor" />
         </div>
-        <div className="flex-1 min-w-0">
-          <p className="text-sm text-text">
-            Application <Link to={`/project/${project._id}`} className="font-semibold text-primary hover:underline transition">{project.title}</Link> by <Link to={`/portfolio/${project.owner?._id}`} className="font-medium text-accent hover:underline">{project.owner?.name}</Link> got a rating {meta?.rating && <span className="font-bold">({meta.rating} stars)</span>}.
-          </p>
-          <p className="text-xs text-muted mt-1">{timeAgo}</p>
-        </div>
+        <p className="text-sm text-text">
+          Rated the application <Link to={`/project/${project._id}`} className="font-semibold text-primary hover:underline transition">{project.title}</Link> {meta?.rating && <span className="font-bold">({meta.rating} stars)</span>}.
+        </p>
       </div>
     );
   }
   
-  return content;
+  if (!innerContent) return null;
+
+  return (
+    <div className={wrapperClass}>
+      <div className="flex items-center gap-3">
+        <Link to={`/portfolio/${user._id}`}>
+          <img src={avatarUrl} alt={user.name} className="w-10 h-10 rounded-full object-cover border border-border" />
+        </Link>
+        <div className="flex flex-col">
+          <Link to={`/portfolio/${user._id}`} className="font-bold text-sm text-text hover:text-primary transition">
+            {user.name}
+          </Link>
+          <div className="flex items-center gap-1.5 text-xs text-muted mt-0.5">
+            <span className="font-medium text-gray-500">{designation}</span>
+            <span>•</span>
+            <span>{timeAgo}</span>
+          </div>
+        </div>
+      </div>
+      {innerContent}
+    </div>
+  );
 }
