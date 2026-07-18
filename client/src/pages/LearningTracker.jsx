@@ -305,7 +305,8 @@ const LearningTracker = ({ embedded = false }) => {
   })();
 
   return (
-    <div className="min-h-screen" style={{ paddingTop: embedded ? '24px' : '24px', paddingBottom: '48px', backgroundColor: '#F5F0E8' }}>
+    <div className="min-h-screen relative" style={{ paddingTop: embedded ? '24px' : '24px', paddingBottom: '48px', background: 'linear-gradient(to bottom right, rgba(0,166,147,0.10), #ffffff, #f5f3ff)' }}>
+      <div className="absolute inset-0 opacity-20 pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle, #00A693 1px, transparent 1px)', backgroundSize: '28px 28px' }} />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {modules.length === 0 ? (
           <div className="rounded-xl shadow-md p-12 text-center" style={{ backgroundColor: '#FAF7F2', border: '1px solid #E0D8CC' }}>
@@ -525,12 +526,13 @@ const LearningTracker = ({ embedded = false }) => {
                   {/* Calendar */}
                   <div className="rounded-xl p-3 mb-4 flex-shrink-0" style={{ backgroundColor: '#F0E8DC', border: '1px solid #D4B896' }}>
                     <div className="flex items-center justify-between mb-2">
-                      <h4 className="text-xs font-bold" style={{ color: '#1C1A17' }}>{calendarDate.toLocaleString('default', { month: 'long', year: 'numeric' })}</h4>
-                      <div className="flex gap-1.5 text-xs font-medium" style={{ color: '#5A5550' }}>
-                        <div className="flex items-center gap-1"><div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: '#E8DDD0' }}></div><span>0</span></div>
-                        <div className="flex items-center gap-1"><div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: '#D4B896' }}></div><span>&gt;0</span></div>
-                        <div className="flex items-center gap-1"><div className="w-1.5 h-1.5 rounded-full bg-green-500"></div><span>Goal</span></div>
-                      </div>
+                      <button onClick={() => setCalendarDate(new Date(calendarDate.getFullYear(), calendarDate.getMonth() - 1, 1))} className="rounded-full p-1.5 shadow-sm" style={{ backgroundColor: '#FAF7F2', border: '1px solid #D4B896' }}>
+                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: '#1C1A17' }}><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
+                      </button>
+                      <h4 className="text-xs font-bold text-center" style={{ color: '#1C1A17' }}>{calendarDate.toLocaleString('default', { month: 'long', year: 'numeric' })}</h4>
+                      <button onClick={() => setCalendarDate(new Date(calendarDate.getFullYear(), calendarDate.getMonth() + 1, 1))} className="rounded-full p-1.5 shadow-sm" style={{ backgroundColor: '#FAF7F2', border: '1px solid #D4B896' }}>
+                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: '#1C1A17' }}><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+                      </button>
                     </div>
 
                     <div className="grid grid-cols-7 gap-1">
@@ -558,14 +560,7 @@ const LearningTracker = ({ embedded = false }) => {
                         return days;
                       })()}
                     </div>
-                    <div className="flex justify-between mt-2">
-                      <button onClick={() => setCalendarDate(new Date(calendarDate.getFullYear(), calendarDate.getMonth() - 1, 1))} className="rounded-full p-1.5 shadow-sm" style={{ backgroundColor: '#FAF7F2', border: '1px solid #D4B896' }}>
-                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: '#1C1A17' }}><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
-                      </button>
-                      <button onClick={() => setCalendarDate(new Date(calendarDate.getFullYear(), calendarDate.getMonth() + 1, 1))} className="rounded-full p-1.5 shadow-sm" style={{ backgroundColor: '#FAF7F2', border: '1px solid #D4B896' }}>
-                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: '#1C1A17' }}><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
-                      </button>
-                    </div>
+
                   </div>
 
                   {/* Pie Chart + Totals */}
