@@ -89,7 +89,7 @@ export default function Feed() {
   );
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 w-full flex flex-col md:flex-row gap-8">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 w-full flex flex-col md:flex-row gap-4">
       {/* LEFT: Activity Stream */}
       <div className="flex-[2] md:max-w-[70%]">
         {activities.length === 0 ? (
@@ -126,7 +126,7 @@ export default function Feed() {
 
       {/* RIGHT: Leaderboard */}
       <div className="flex-1 md:max-w-[30%]">
-        <div className="sticky top-24 bg-white rounded-xl shadow-sm border border-border overflow-hidden">
+        <div className="sticky top-20 bg-white rounded-xl shadow-sm border border-border overflow-hidden">
           <div className="p-4 border-b border-border bg-white flex items-center justify-between">
             <div className="flex items-center gap-2 font-bold text-lg text-text">
               <Trophy size={20} className="text-primary" />
@@ -192,7 +192,7 @@ function ActivityCard({ activity }) {
   
   if (!user) return null;
 
-  const displayUser = (type === 'PROJECT_LIKED' || type === 'PROJECT_COMMENTED' || type === 'PROJECT_RATED') && project?.owner 
+  const displayUser = (type === 'PROJECT_LIKED' || type === 'PROJECT_RATED') && project?.owner 
     ? project.owner 
     : user;
 
@@ -254,7 +254,7 @@ function ActivityCard({ activity }) {
           <Heart size={16} fill="currentColor" />
         </div>
         <p className="text-sm text-text">
-          Project <Link to={`/project/${project._id}`} className="font-semibold text-primary hover:underline transition">{project.title}</Link> received a new like from someone!
+          Project <Link to={`/project/${project._id}`} className="font-semibold text-primary hover:underline transition">{project.title}</Link> received a new like from a {user?.role || 'someone'}!
         </p>
       </div>
     );
@@ -266,7 +266,7 @@ function ActivityCard({ activity }) {
           <MessageCircle size={16} />
         </div>
         <p className="text-sm text-text">
-          Project <Link to={`/project/${project._id}`} className="font-semibold text-primary hover:underline transition">{project.title}</Link> received a new comment from someone!
+          Commented on the application <Link to={`/project/${project._id}`} className="font-semibold text-primary hover:underline transition">{project.title}</Link>.
         </p>
       </div>
     );
@@ -278,7 +278,7 @@ function ActivityCard({ activity }) {
           <Star size={16} fill="currentColor" />
         </div>
         <p className="text-sm text-text">
-          Project <Link to={`/project/${project._id}`} className="font-semibold text-primary hover:underline transition">{project.title}</Link> received a new rating from someone!
+          Project <Link to={`/project/${project._id}`} className="font-semibold text-primary hover:underline transition">{project.title}</Link> received a new rating from a {user?.role || 'someone'}!
         </p>
       </div>
     );
