@@ -1,6 +1,7 @@
 const Project = require('../models/Project');
 const User = require('../models/User');
 const Notification = require('../models/Notification');
+const Activity = require('../models/Activity');
 const FreeOffer = require('../models/FreeOffer');
 const { sendProjectApprovedEmail, sendProjectRejectedEmail } = require('../utils/email');
 const { generateAndUploadThumbnail } = require('../utils/thumbnailGenerator');
@@ -93,6 +94,12 @@ exports.updateProjectStatus = async (req, res) => {
           : `Your project "${project.title}" has been approved and is now live.`,
         project: project._id,
       });
+      await Activity.create({
+        user: owner._id,
+        type: 'PROJECT_APPROVED',
+        project: project._id,
+      }).catch(err => console.error('Activity creation failed:', err.message));
+
       sendProjectApprovedEmail({
         to: owner.email,
         name: owner.name,

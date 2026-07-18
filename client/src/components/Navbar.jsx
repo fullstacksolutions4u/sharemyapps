@@ -391,7 +391,8 @@ export default function Navbar() {
         </Link>
 
         {/* Desktop Nav */}
-        <nav className="hidden md:flex items-center gap-6 mr-10">
+        <nav className="hidden md:flex items-center gap-6 lg:gap-10 mr-10">
+          <Link to="/feed" className="relative text-base text-muted hover:text-text transition-colors after:absolute after:left-0 after:-bottom-0.5 after:h-[1.5px] after:w-0 after:bg-accent after:transition-[width] after:duration-300 hover:after:w-full">Feed</Link>
           <Link to="/explore" className="relative text-base text-muted hover:text-text transition-colors after:absolute after:left-0 after:-bottom-0.5 after:h-[1.5px] after:w-0 after:bg-accent after:transition-[width] after:duration-300 hover:after:w-full">Applications</Link>
           <Link to="/portfolios" className="relative text-base text-muted hover:text-text transition-colors after:absolute after:left-0 after:-bottom-0.5 after:h-[1.5px] after:w-0 after:bg-accent after:transition-[width] after:duration-300 hover:after:w-full">
             Portfolios
@@ -424,15 +425,6 @@ export default function Navbar() {
 
           {user ? (
             <div className="flex items-center gap-3">
-              {!isRecruiter && !isClient && !isMentee && !isMentor && (
-                <Link
-                  to="/dashboard/add"
-                  className="flex items-center gap-1.5 text-sm bg-accent hover:bg-accent-hover text-white px-3.5 py-2 rounded-lg font-medium transition-colors"
-                >
-                  <Plus size={14} /> Add Project
-                </Link>
-              )}
-
               <CoinsRankBadge />
               <UserDropdown user={user} onLogout={handleLogout} />
             </div>
@@ -460,6 +452,7 @@ export default function Navbar() {
       {/* Mobile menu */}
       {menuOpen && (
         <div className="md:hidden bg-white border-t border-border px-4 py-4 space-y-3">
+          <Link to="/feed" onClick={() => setMenuOpen(false)} className="block text-sm text-muted hover:text-text">Feed</Link>
           <Link to="/explore" onClick={() => setMenuOpen(false)} className="block text-sm text-muted hover:text-text">Applications</Link>
           <Link to="/portfolios" onClick={() => setMenuOpen(false)} className="block text-sm text-muted hover:text-text">
             Portfolios

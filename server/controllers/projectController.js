@@ -2,6 +2,7 @@ const Project = require('../models/Project');
 const Comment = require('../models/Comment');
 const User = require('../models/User');
 const Notification = require('../models/Notification');
+const Activity = require('../models/Activity');
 const { cloudinary } = require('../middleware/upload');
 const { sendCollaboratorAddedEmail } = require('../utils/email');
 
@@ -357,6 +358,14 @@ exports.toggleLike = async (req, res) => {
       project.likes.splice(idx, 1);
     } else {
       project.likes.push(req.user._id);
+      
+      // Log feed activity
+      await Activity.create({
+        user: req.user._id,
+        type: 'PROJECT_LIKED',
+        project: project._id,
+      }).catch(() => {});
+
       // notify owner once per user per project (not if they liked their own project)
       if (project.owner.toString() !== uid) {
         const already = await Notification.exists({ user: project.owner, fromUser: req.user._id, type: 'like', project: project._id });
@@ -390,7 +399,17 @@ exports.rateProject = async (req, res) => {
     const idx = project.ratings.findIndex(r => r.user.toString() === uid);
     const isNew = idx < 0;
     if (idx >= 0) project.ratings[idx].value = value;
-    else project.ratings.push({ user: req.user._id, value });
+    else {
+      project.ratings.push({ user: req.user._id, value });
+      
+      // Log feed activity only on first rating
+      await Activity.create({
+        user: req.user._id,
+        type: 'PROJECT_RATED',
+        project: project._id,
+        meta: { rating: value }
+      }).catch(() => {});
+    }
     await project.save();
     // notify owner only on first-time rating, not updates
     if (isNew && project.owner.toString() !== uid) {
@@ -429,6 +448,14 @@ exports.addComment = async (req, res) => {
     if (!project) return res.status(404).json({ message: 'Project not found' });
     const comment = await Comment.create({ project: req.params.id, user: req.user._id, text });
     await comment.populate('user', 'name avatar');
+    
+    // Log feed activity
+    await Activity.create({
+      user: req.user._id,
+      type: 'PROJECT_COMMENTED',
+      project: project._id,
+    }).catch(() => {});
+
     // notify owner, not if they commented on their own project
     if (project.owner.toString() !== req.user._id.toString()) {
       await Notification.create({

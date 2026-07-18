@@ -1,7 +1,7 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
-import { useSearchParams, useLocation } from 'react-router-dom';
+import { useSearchParams, useLocation, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { Search, X, Megaphone } from 'lucide-react';
+import { Search, X, Plus } from 'lucide-react';
 import api from '../api/axios';
 import ProjectCard from '../components/ProjectCard';
 import ProjectSkeleton from '../components/ProjectSkeleton';
@@ -40,10 +40,7 @@ const fetchProjects = async ({ page, search, tag, category, type }) => {
   return res.data;
 };
 
-const fetchFeed = async () => {
-  const res = await api.get('/announcements/feed');
-  return res.data;
-};
+
 
 export default function Explore() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -62,22 +59,7 @@ export default function Explore() {
     staleTime: 1000 * 60,
   });
 
-  const feedQuery = useQuery({
-    queryKey: ['feed'],
-    queryFn: fetchFeed,
-    staleTime: 1000 * 60,
-    refetchInterval: 1000 * 60,
-    refetchIntervalInBackground: false,
-  });
 
-  const announcements = feedQuery.data || [];
-  const [tickerIdx, setTickerIdx] = useState(0);
-
-  useEffect(() => {
-    if (announcements.length <= 1) return;
-    const t = setInterval(() => setTickerIdx(i => (i + 1) % announcements.length), 4000);
-    return () => clearInterval(t);
-  }, [announcements.length]);
   const projects = projectsQuery.data?.projects || [];
   const newlyAdded = projectsQuery.data?.newlyAdded || [];
   const pages = projectsQuery.data?.pages || 1;
@@ -118,65 +100,54 @@ export default function Explore() {
   const hasFilters = search || activeTag || activeCategory || activeType;
 
   return (
-    <div className="w-full px-4 sm:px-6 pb-8">
+    <div className="max-w-[1400px] mx-auto px-4 sm:px-6 pb-8">
 
       {/* ── Sticky top bar: search + announcement + category ── */}
-      <div className="sticky top-16 z-20 bg-white -mx-4 sm:-mx-6 px-4 sm:px-6">
-      <div className="flex items-stretch gap-0 mb-0">
-        {/* Search bar */}
-        <form onSubmit={handleSearch} className="relative flex-[0.8]">
-          <Search size={16} className="absolute left-0 top-1/2 -translate-y-1/2 text-muted" />
-          <input
-            type="text"
-            placeholder="Search projects..."
-            value={search}
-            onChange={handleSearchInput}
-            className="w-full pl-6 pr-8 py-3 bg-transparent border-0 border-b border-border text-sm text-text placeholder-muted focus:outline-none focus:border-text transition"
-          />
-          {search && (
-            <button type="button" onClick={() => { setSearch(''); setPage(1); }} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted hover:text-text">
-              <X size={14} />
-            </button>
-          )}
-        </form>
+      <div className="sticky top-20 z-20 bg-white rounded-xl shadow-sm border border-border mt-6 mb-8 overflow-hidden transition-shadow hover:shadow-md">
+        <div className="flex flex-col md:flex-row items-stretch md:items-center">
+          {/* Search bar */}
+          <form onSubmit={handleSearch} className="relative flex-[1.5] border-b md:border-b-0 md:border-r border-border">
+            <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted" />
+            <input
+              type="text"
+              placeholder="Search projects..."
+              value={search}
+              onChange={handleSearchInput}
+              className="w-full pl-12 pr-8 py-3.5 bg-transparent border-0 text-sm text-text placeholder-muted focus:outline-none focus:ring-0 transition"
+            />
+            {search && (
+              <button type="button" onClick={() => { setSearch(''); setPage(1); }} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted hover:text-text bg-gray-100 rounded-full p-1 transition-colors">
+                <X size={14} />
+              </button>
+            )}
+          </form>
 
-        {/* Announcement ticker (centre) */}
-        {announcements.length > 0 ? (
-          <div className="flex items-center gap-2 flex-4 overflow-hidden border-b border-border px-3">
-            <Megaphone size={15} className="text-orange-500 shrink-0" />
-            <div className="flex-1 overflow-hidden h-full flex items-center gap-1.5">
-
-              <span
-                className={`animate-ticker-up text-sm truncate block ${
-                  announcements[tickerIdx]?.kind === 'activity' ? 'text-violet-500' : 'text-accent'
-                }`}
-              >
-                {announcements[tickerIdx]?.text}
-              </span>
-            </div>
+          {/* Category dropdown (Centered) */}
+          <div className="relative flex-1 border-b md:border-b-0 md:border-r border-border flex items-center justify-center bg-gray-50/50 hover:bg-gray-50 transition-colors">
+            <select
+              value={activeCategory}
+              onChange={e => handleCategory(e.target.value)}
+              className="appearance-none w-full px-4 py-3.5 bg-transparent border-0 text-sm text-text font-medium focus:outline-none transition cursor-pointer text-center"
+            >
+              <option value="">All Categories</option>
+              {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+            </select>
+            <svg className="absolute right-[calc(50%-85px)] top-1/2 -translate-y-1/2 pointer-events-none text-muted" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="6 9 12 15 18 9" />
+            </svg>
           </div>
-        ) : (
-          <div className="flex-4 border-b border-border" />
-        )}
 
-        {/* Category dropdown */}
-        <div className="relative flex-1">
-          <select
-            value={activeCategory}
-            onChange={e => handleCategory(e.target.value)}
-            className="w-full appearance-none pl-4 pr-8 py-3 bg-transparent border-0 border-b border-border text-sm text-text focus:outline-none focus:border-text transition cursor-pointer"
-          >
-            <option value="">All Categories</option>
-            {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
-          </select>
-          <svg className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-muted" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <polyline points="6 9 12 15 18 9" />
-          </svg>
+          {/* Add Project Button (Right side) */}
+          <div className="flex-1 flex justify-center md:justify-end items-center px-4 py-3 md:py-0 bg-gray-50/30">
+            <Link 
+              to="/dashboard/add" 
+              className="w-full md:w-auto justify-center bg-accent hover:bg-accent-hover text-white px-5 py-2.5 rounded-lg text-sm font-semibold shadow-sm transition-all hover:-translate-y-0.5 flex items-center gap-2"
+            >
+              <Plus size={18} />
+              List your project
+            </Link>
+          </div>
         </div>
-      </div>
-
-      {/* Full-width divider */}
-      <div className="h-px bg-border" />
       </div>{/* end sticky bar */}
 
       <div className="mt-4" />

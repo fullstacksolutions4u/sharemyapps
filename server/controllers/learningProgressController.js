@@ -1,6 +1,7 @@
 const LearningProgress = require('../models/LearningProgress');
 const LearningModule = require('../models/LearningModule');
 const User = require('../models/User');
+const Activity = require('../models/Activity');
 
 const DAILY_LIMIT = 40;
 
@@ -79,8 +80,19 @@ const toggleTopicCompletion = async (req, res) => {
         });
       }
 
+      // Check if this is the first topic in the module
+      const isFirstTopicInModule = progressDoc.completedTopics.filter(t => t.moduleId.toString() === moduleId).length === 0;
+
       progressDoc.completedTopics.push({ moduleId, topicId, completedAt: new Date() });
       isCompleted = true;
+
+      if (isFirstTopicInModule) {
+        Activity.create({
+          user: req.user._id,
+          type: 'MODULE_STARTED',
+          module: moduleId,
+        }).catch(() => {});
+      }
     } else {
       // Deduct points earned from quizzes for this topic
       const topicAttempts = (progressDoc.attemptedQuizzes || []).filter(
@@ -109,6 +121,21 @@ const toggleTopicCompletion = async (req, res) => {
     if (completedModuleTopics.length === module.topics.length) {
       if (!progressDoc.completedModules.find(m => m.moduleId.toString() === moduleId)) {
         progressDoc.completedModules.push({ moduleId, completedAt: new Date() });
+        
+        // Fetch leaderboard info asynchronously to include in Activity
+        (async () => {
+          try {
+            const topUsers = await User.find({ role: { $ne: 'admin' }, userType: 'developer', isDeleted: { $ne: true }, hidden: { $ne: true } })
+              .select('points').sort({ points: -1, createdAt: 1 }).lean();
+            const rank = topUsers.findIndex(u => u._id.toString() === req.user._id.toString()) + 1;
+            await Activity.create({
+              user: req.user._id,
+              type: 'MODULE_COMPLETED',
+              module: moduleId,
+              meta: { score: user?.points || 0, rank: rank > 0 ? rank : null }
+            });
+          } catch (e) { console.error('Error logging module completion', e); }
+        })();
       }
     } else {
       const idx = progressDoc.completedModules.findIndex(m => m.moduleId.toString() === moduleId);
@@ -234,7 +261,7 @@ const getLeaderboard = async (req, res) => {
     const topUsers = await User.find(devFilter)
       .select('name profileImage points')
       .sort({ points: -1, createdAt: 1 })
-      .limit(20)
+      .limit(10)
       .lean();
 
     const leaderboard = topUsers.map((u, i) => ({

@@ -10,6 +10,7 @@ import AppSpinner from './components/AppSpinner';
 
 const Home               = lazy(() => import('./pages/Home'));
 const Explore            = lazy(() => import('./pages/Explore'));
+const Feed               = lazy(() => import('./pages/Feed'));
 const ProjectDetail      = lazy(() => import('./pages/ProjectDetail'));
 const Login              = lazy(() => import('./pages/Login'));
 const Register           = lazy(() => import('./pages/Register'));
@@ -112,6 +113,7 @@ function AppRoutes() {
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/explore" element={<Explore />} />
+            <Route path="/feed" element={<Feed />} />
             <Route path="/project/:id" element={<ProjectDetail />} />
             <Route path="/login" element={<GuestRoute><Login /></GuestRoute>} />
             <Route path="/register" element={<GuestRoute><Register /></GuestRoute>} />
