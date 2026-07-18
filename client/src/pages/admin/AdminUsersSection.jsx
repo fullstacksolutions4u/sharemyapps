@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
 import {
-  ArrowLeft, Plus, X, Save, Check, Mail, Tag, Clock, Link as LinkIcon, Phone,
+  ArrowLeft, Plus, X, Save, Check, Mail, Link as LinkIcon,
   AlertCircle, FileText, Briefcase, Pencil, Trash2, Eye, EyeOff,
   UserCircle2, Search, Zap, FolderOpen as FolderOpenIcon,
   Heart, Star, Users, History, ChevronDown, ChevronUp, ExternalLink,
-  MapPin, Calendar, IndianRupee, Monitor, Languages, MessageSquare,
+  MessageSquare,
 } from 'lucide-react';
 import api from '../../api/axios';
 import toast from 'react-hot-toast';
@@ -74,27 +74,24 @@ function UserEditPage({ user: initial, onBack, onSaved, allDesignations = [] }) 
 
   const [saving, setSaving] = useState(false);
   const [designationInput, setDesignationInput] = useState('');
-  const [skillInput, setSkillInput] = useState('');
   const [designationDropdownOpen, setDesignationDropdownOpen] = useState(false);
   const [resumeJson, setResumeJson] = useState(initial.resumeData ? JSON.stringify(initial.resumeData, null, 2) : '');
   const [resumeJsonError, setResumeJsonError] = useState('');
   const [savingResume, setSavingResume] = useState(false);
-  const [showDelete, setShowDelete] = useState(false);
 
   // Tab State
   const [activeTab, setActiveTab] = useState(0);
-  const [completed, setCompleted] = useState(new Set());
 
-  // Calculate completed tabs dynamically
-  useEffect(() => {
+  // Calculate completed tabs dynamically during render
+  const completed = (() => {
     const newCompleted = new Set();
     if (form.name.trim()) newCompleted.add(0);
     if (form.bio || form.linkedinUrl || form.githubUrl || form.cvUrl) newCompleted.add(1);
     if (form.mentorshipAvailable || form.freelanceAvailable || form.yearsOfExperience) newCompleted.add(2);
     if (initial.resumeData) newCompleted.add(3);
     newCompleted.add(4);
-    setCompleted(newCompleted);
-  }, [form, initial.resumeData]);
+    return newCompleted;
+  })();
 
   const TABS = [
     { id: 'basic', label: 'Basic Info', icon: UserCircle2 },
@@ -551,17 +548,6 @@ function UserEditPage({ user: initial, onBack, onSaved, allDesignations = [] }) 
                       <span className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-transform ${form.hidden ? 'translate-x-1' : 'translate-x-5'}`} />
                     </div>
                   </label>
-                </div>
-
-                <div className="pt-8 border-t border-[#E5E1DA]">
-                  <div className="bg-red-50/50 border border-red-100 rounded-2xl p-5">
-                    <h3 className="text-sm font-semibold text-red-600 mb-1">Danger Zone</h3>
-                    <p className="text-xs text-red-500/80 mb-4">Permanently delete this user account. This action cannot be undone.</p>
-                    <button onClick={() => setShowDelete(true)}
-                      className="flex items-center gap-2 border border-red-200 text-red-500 hover:bg-red-500 hover:text-white px-4 py-2 rounded-xl text-sm font-medium transition-colors">
-                      <Trash2 size={13} /> Delete Account
-                    </button>
-                  </div>
                 </div>
 
               </div>
