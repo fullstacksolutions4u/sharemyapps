@@ -11,7 +11,7 @@ exports.getFeed = async (req, res) => {
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit)
-      .populate('user', 'name profileImage avatar designations role')
+      .populate('user', 'name profileImage avatar designations userType')
       .populate({
         path: 'project',
         select: 'title description bannerImage liveUrl _id owner status likes ratings',

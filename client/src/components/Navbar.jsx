@@ -392,7 +392,7 @@ export default function Navbar() {
 
         {/* Desktop Nav */}
         <nav className="hidden md:flex items-center gap-6 lg:gap-10 mr-10">
-          <Link to="/feed" className="relative text-base text-muted hover:text-text transition-colors after:absolute after:left-0 after:-bottom-0.5 after:h-[1.5px] after:w-0 after:bg-accent after:transition-[width] after:duration-300 hover:after:w-full">Dev Feeds</Link>
+          <Link to="/feed" className="relative text-base text-muted hover:text-text transition-colors after:absolute after:left-0 after:-bottom-0.5 after:h-[1.5px] after:w-0 after:bg-accent after:transition-[width] after:duration-300 hover:after:w-full">Timeline</Link>
           <Link to="/explore" className="relative text-base text-muted hover:text-text transition-colors after:absolute after:left-0 after:-bottom-0.5 after:h-[1.5px] after:w-0 after:bg-accent after:transition-[width] after:duration-300 hover:after:w-full">Applications</Link>
           <Link to="/portfolios" className="relative text-base text-muted hover:text-text transition-colors after:absolute after:left-0 after:-bottom-0.5 after:h-[1.5px] after:w-0 after:bg-accent after:transition-[width] after:duration-300 hover:after:w-full">
             Portfolios
@@ -452,7 +452,7 @@ export default function Navbar() {
       {/* Mobile menu */}
       {menuOpen && (
         <div className="md:hidden bg-white border-t border-border px-4 py-4 space-y-3">
-          <Link to="/feed" onClick={() => setMenuOpen(false)} className="block text-sm text-muted hover:text-text">Dev Feeds</Link>
+          <Link to="/feed" onClick={() => setMenuOpen(false)} className="block text-sm text-muted hover:text-text">Timeline</Link>
           <Link to="/explore" onClick={() => setMenuOpen(false)} className="block text-sm text-muted hover:text-text">Applications</Link>
           <Link to="/portfolios" onClick={() => setMenuOpen(false)} className="block text-sm text-muted hover:text-text">
             Portfolios

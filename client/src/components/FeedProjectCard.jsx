@@ -126,7 +126,7 @@ export default function FeedProjectCard({ activity }) {
               <CheckCircle size={16} className="text-green-500 shrink-0 mt-0.5" />
               <p>
                 Published a new application:{' '}
-                <Link to={`/project/${project._id}`} className="font-semibold text-primary hover:underline transition">
+                <Link to={`/project/${project._id}`} className="text-blue-500 hover:underline transition">
                   {project.title}
                 </Link>
               </p>

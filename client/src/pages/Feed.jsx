@@ -65,10 +65,7 @@ export default function Feed() {
     const fetchMoreData = async () => {
       setLoadingMore(true);
       try {
-        const [feedRes] = await Promise.all([
-          axios.get(`/feed?page=${page}`),
-          new Promise(resolve => setTimeout(resolve, 2000)) // ensure spinner shows for at least 2 seconds
-        ]);
+        const feedRes = await axios.get(`/feed?page=${page}`);
         if (feedRes.data.success) {
           setActivities(prev => [...prev, ...feedRes.data.data]);
           setHasMore(feedRes.data.hasMore);
@@ -254,7 +251,7 @@ function ActivityCard({ activity }) {
           <Heart size={16} fill="currentColor" />
         </div>
         <p className="text-sm text-text">
-          Project <Link to={`/project/${project._id}`} className="font-semibold text-primary hover:underline transition">{project.title}</Link> received a new like from a {user?.role || 'someone'}!
+          Project <Link to={`/project/${project._id}`} className="text-blue-500 hover:underline transition">{project.title}</Link> received a new <span className="font-semibold text-rose-500">like</span> from a {user?.userType || 'developer'}!
         </p>
       </div>
     );
@@ -266,7 +263,7 @@ function ActivityCard({ activity }) {
           <MessageCircle size={16} />
         </div>
         <p className="text-sm text-text">
-          Commented on the application <Link to={`/project/${project._id}`} className="font-semibold text-primary hover:underline transition">{project.title}</Link>.
+          Commented on the application <Link to={`/project/${project._id}`} className="text-blue-500 hover:underline transition">{project.title}</Link>.
         </p>
       </div>
     );
@@ -278,7 +275,7 @@ function ActivityCard({ activity }) {
           <Star size={16} fill="currentColor" />
         </div>
         <p className="text-sm text-text">
-          Project <Link to={`/project/${project._id}`} className="font-semibold text-primary hover:underline transition">{project.title}</Link> received a new rating from a {user?.role || 'someone'}!
+          Project <Link to={`/project/${project._id}`} className="text-blue-500 hover:underline transition">{project.title}</Link> received a new <span className="font-semibold text-amber-500">rating</span> from a {user?.userType || 'developer'}!
         </p>
       </div>
     );

@@ -103,10 +103,10 @@ export default function Explore() {
     <div className="max-w-[1400px] mx-auto px-4 sm:px-6 pb-8">
 
       {/* ── Sticky top bar: search + announcement + category ── */}
-      <div className="sticky top-20 z-20 bg-white rounded-xl shadow-sm border border-border mt-6 mb-8 overflow-hidden transition-shadow hover:shadow-md">
+      <div className="sticky top-20 z-20 bg-white rounded-xl shadow-sm border border-border mt-3 mb-4 overflow-hidden transition-shadow hover:shadow-md">
         <div className="flex flex-col md:flex-row items-stretch md:items-center">
-          {/* Search bar */}
-          <form onSubmit={handleSearch} className="relative flex-[1.5] border-b md:border-b-0 md:border-r border-border">
+          {/* Search */}
+          <form onSubmit={handleSearch} className="relative flex-1 border-b md:border-b-0 md:border-r border-border bg-white flex items-center">
             <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted" />
             <input
               type="text"
@@ -138,7 +138,7 @@ export default function Explore() {
           </div>
 
           {/* Add Project Button (Right side) */}
-          <div className="flex-1 flex justify-center md:justify-end items-center px-4 py-3 md:py-0 bg-gray-50/30">
+          <div className="flex-1 flex justify-center items-center px-4 py-3 md:py-0 bg-gray-50/30">
             <Link 
               to="/dashboard/add" 
               className="w-full md:w-auto justify-center bg-accent hover:bg-accent-hover text-white px-5 py-2.5 rounded-lg text-sm font-semibold shadow-sm transition-all hover:-translate-y-0.5 flex items-center gap-2"
