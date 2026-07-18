@@ -171,7 +171,7 @@ export default function Vacancies() {
           : v
         )
       );
-      toast.success(isWithdraw ? 'Application withdrawn.' : "Applied successfully. Recruiter will directly contact you if you're shortlisted.", { duration: 7000 });
+      toast.success(isWithdraw ? 'Application withdrawn.' : "Application forwarded to client successfully. Client will directly contact you if your profile is shortlisted.", { duration: 7000 });
     } catch (err) {
       toast.error(err.response?.data?.message || 'Something went wrong');
     } finally {

@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import axios from '../api/axios';
 import AppSpinner from '../components/AppSpinner';
 import { formatDistanceToNow } from 'date-fns';
-import { Trophy, CheckCircle, Code, MessageCircle, Heart, Star, Sparkles, TrendingUp } from 'lucide-react';
+import { Trophy, CheckCircle, Code, MessageCircle, Heart, Star, TrendingUp } from 'lucide-react';
 
 export default function Feed() {
   const [activities, setActivities] = useState([]);
@@ -114,7 +114,7 @@ export default function Feed() {
 
 // Sub-component for individual activity feed items
 function ActivityCard({ activity }) {
-  const { type, user, project, module, createdAt, meta } = activity;
+  const { type, project, module, createdAt, meta } = activity;
   const timeAgo = formatDistanceToNow(new Date(createdAt), { addSuffix: true });
   
   let content = null;

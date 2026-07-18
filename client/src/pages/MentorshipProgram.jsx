@@ -249,8 +249,7 @@ export default function MentorshipProgram() {
           onMouseOver={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 6px 18px rgba(245, 166, 35, 0.4)'; }}
           onMouseOut={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 14px rgba(245, 166, 35, 0.3)'; }}
         >
-          Modules
-          <span style={{ fontSize: '16px' }}>🎓</span>
+          Quiz Zone
         </button>
         <div style={{
           width: '100%',
