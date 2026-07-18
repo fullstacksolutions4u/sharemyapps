@@ -44,6 +44,10 @@ export default function FeedProjectCard({ activity }) {
       } else {
         setLikes(likes.filter(id => (id._id || id).toString() !== authUser._id.toString()));
       }
+      
+      if (res.data.awardedCoins) {
+        toast.success(`You earned ${res.data.awardedCoins} coins!`, { icon: '🪙', duration: 2000 });
+      }
     } catch {
       toast.error('Failed to like');
     } finally {
@@ -55,7 +59,7 @@ export default function FeedProjectCard({ activity }) {
     if (!authUser) return toast.error('Sign in to rate');
     setRatingLoading(true);
     try {
-      await axios.post(`/projects/${project._id}/rate`, { value });
+      const res = await axios.post(`/projects/${project._id}/rate`, { value });
       // Update local ratings
       const existing = ratings.findIndex(r => (r.user?._id || r.user)?.toString() === authUser._id.toString());
       const newRatings = [...ratings];
@@ -63,7 +67,12 @@ export default function FeedProjectCard({ activity }) {
       else newRatings.push({ user: authUser._id, value });
       setRatings(newRatings);
       setShowRating(false);
-      toast.success('Rating saved!');
+      
+      if (res.data.awardedCoins) {
+        toast.success(`Rating saved & earned ${res.data.awardedCoins} coins!`, { icon: '🪙', duration: 2000 });
+      } else {
+        toast.success('Rating saved!');
+      }
     } catch {
       toast.error('Failed to rate');
     } finally {
@@ -93,6 +102,10 @@ export default function FeedProjectCard({ activity }) {
       const res = await axios.post(`/projects/${project._id}/comments`, { text: commentText });
       setComments([res.data, ...comments]);
       setCommentText('');
+      
+      if (res.data.awardedCoins) {
+        toast.success(`You earned ${res.data.awardedCoins} coins!`, { icon: '🪙', duration: 2000 });
+      }
     } catch {
       toast.error('Failed to post comment');
     } finally {
