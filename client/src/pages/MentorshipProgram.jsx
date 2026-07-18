@@ -7,8 +7,8 @@ import PlacementPaymentModal from '../components/PlacementPaymentModal';
 
 const MENTORSHIP_FEATURES = [
   '30 structured learning modules',
-  '10-month program duration',
-  'Weekly Tech review by experienced developers',
+  '8-month program duration',
+  'Weekly Tech review by experienced developer from community',
   '24×7 tech support',
   'Earn during the program with client freelance projects',
   'Job Assistance Plan included FREE — exclusive for mentorship students',
@@ -186,7 +186,7 @@ export default function MentorshipProgram() {
         onClick={() => { if (!user) { navigate('/register'); return; } setApplyOpen(true); }}
         style={{ width: '100%', background: '#0c8c8c', color: '#fff', border: 'none', borderRadius: '8px', padding: '14px', fontSize: '13.5px', fontWeight: 700, letterSpacing: '.02em', cursor: 'pointer', fontFamily: "'Manrope', sans-serif" }}
       >
-        Apply for Mentorship Program — Starting July 27, Enroll Now!
+        Apply for Mentorship Program — starting next batch on july 27, Enroll Now!
       </button>
     );
   };

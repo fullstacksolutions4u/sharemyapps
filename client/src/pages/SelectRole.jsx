@@ -27,7 +27,7 @@ const ROLES = [
   {
     key: 'client',
     icon: Handshake,
-    label: 'Hire a Freelancer',
+    label: 'Client for Hire a Freelancer',
     desc: 'Post your project, define your requirements, and connect with skilled freelance developers.',
     color: 'text-teal-600',
     bg: 'bg-teal-50',
@@ -111,6 +111,7 @@ export default function SelectRole() {
   const { user, loading: authLoading, selectRole } = useAuth();
   const navigate = useNavigate();
   const [selected, setSelected] = useState(null);
+  const [showForm, setShowForm] = useState(false);
   const [loading, setLoading] = useState(false);
   const completingRef = useRef(false);
 
@@ -161,6 +162,12 @@ export default function SelectRole() {
 
   const handleContinue = async () => {
     if (!selected) { toast.error('Please select a role to continue'); return; }
+
+    const needsForm = selected === 'mentee' || selected === 'client';
+    if (needsForm && !showForm) {
+      setShowForm(true);
+      return;
+    }
 
     if (selected === 'mentee') {
       if (menteeForm.lookingToLearnTags.length === 0) {
@@ -215,61 +222,100 @@ export default function SelectRole() {
   };
 
   return (
-    <div className="min-h-screen bg-bg flex flex-col items-center justify-start px-4 pt-2 pb-6">
+    <div className="min-h-screen bg-bg flex flex-col items-center justify-start px-4 pt-2 pb-6 relative">
+      {/* Absolute Back Button */}
+      {selected && !showForm && (
+        <button
+          onClick={() => { setSelected(null); setShowForm(false); }}
+          className="absolute top-4 left-4 sm:top-6 sm:left-6 text-sm font-semibold text-muted hover:text-text bg-white border border-border hover:border-[#C5C0B8] px-4 py-2 rounded-xl transition-all shadow-sm flex items-center gap-2 animate-in fade-in zoom-in-95 duration-300 z-10"
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
+          Back
+        </button>
+      )}
+      
       <div className="w-full max-w-4xl">
         {/* Header */}
-        <div className="text-center mb-4">
-          <img src={logo} alt="ShareMyApps" className="h-10 w-auto mx-auto mb-3" />
-          <h1 className="text-3xl font-bold text-text tracking-tight mb-2">
-            Welcome, {user.name.split(' ')[0]}!
-          </h1>
-          <p className="text-muted text-sm">
-            Tell us who you are so we can tailor your experience.
-          </p>
-        </div>
+        {!showForm && (
+          <div className="text-center mb-4 animate-in fade-in slide-in-from-bottom-2 duration-500">
+            <img src={logo} alt="ShareMyApps" className="h-10 w-auto mx-auto mb-3" />
+            <h1 className="text-3xl font-bold text-text tracking-tight mb-2">
+              Welcome, {user.name.split(' ')[0]}!
+            </h1>
+            <div className={`transition-all duration-[3000ms] ease-in-out overflow-hidden ${selected ? 'max-h-0 opacity-0' : 'max-h-[100px] opacity-100'}`}>
+              <p className="text-muted text-sm">
+                Tell us who you are so we can tailor your experience.
+              </p>
+            </div>
+          </div>
+        )}
 
         {/* Role cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-          {ROLES.map(({ key, icon: Icon, label, desc, color, bg, border }) => {
-            const isSelected = selected === key;
-            return (
-              <button
-                key={key}
-                type="button"
-                onClick={() => setSelected(key)}
-                className={`flex flex-col items-center text-center gap-4 p-6 rounded-2xl border-2 transition-all duration-150 ${
-                  isSelected
-                    ? `${border} ${bg} shadow-md`
-                    : 'border-border bg-white hover:border-[#C5C0B8] hover:shadow-sm'
-                }`}
-              >
-                <div className={`w-14 h-14 rounded-2xl ${isSelected ? bg : 'bg-[#F3F0EB]'} flex items-center justify-center transition-colors`}>
-                  <Icon size={26} className={isSelected ? color : 'text-muted'} />
-                </div>
-                <div>
-                  <p className={`font-semibold text-sm mb-1.5 ${isSelected ? color : 'text-text'}`}>
-                    {label}
-                  </p>
-                  <p className="text-xs text-muted leading-relaxed">{desc}</p>
-                </div>
-                <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${
-                  isSelected ? `${border} ${bg}` : 'border-[#C5C0B8]'
-                }`}>
-                  {isSelected && <div className={`w-2.5 h-2.5 rounded-full ${color.replace('text-', 'bg-')}`} />}
-                </div>
-              </button>
-            );
-          })}
-        </div>
+        {!showForm && (
+          <div className="flex flex-col sm:flex-row sm:flex-wrap justify-center items-stretch -mx-2 mb-6 transition-all duration-[3000ms] ease-in-out animate-in fade-in slide-in-from-bottom-4">
+            {ROLES.map(({ key, icon: Icon, label, desc, color, bg, border }) => {
+              const isSelected = selected === key;
+              const isHidden = selected && !isSelected;
+              return (
+                <div
+                  key={key}
+                  className={`transition-all duration-[3000ms] ease-in-out flex origin-center overflow-hidden ${
+                    isHidden
+                      ? 'opacity-0 max-w-0 max-h-0 px-0 pb-0 m-0 scale-75'
+                      : 'opacity-100 w-full sm:w-1/2 lg:w-[45%] max-w-[500px] max-h-[500px] px-2 pb-4 scale-100'
+                  }`}
+                >
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSelected(isSelected ? null : key);
+                      setShowForm(false);
+                    }}
+                    className={`w-full min-w-[300px] h-full flex flex-row items-start text-left gap-4 p-5 rounded-2xl border-2 transition-all duration-300 ${
+                      isSelected
+                        ? `${border} ${bg} shadow-md`
+                        : 'border-border bg-white hover:border-[#C5C0B8] hover:shadow-sm'
+                    }`}
+                  >
+                    <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all shrink-0 ${
+                      isSelected ? `${border} ${bg}` : 'border-[#C5C0B8]'
+                    }`}>
+                      {isSelected && <div className={`w-2.5 h-2.5 rounded-full ${color.replace('text-', 'bg-')}`} />}
+                    </div>
+                    
+                    <div className="flex-1">
+                      <p className={`font-semibold text-sm mb-1 ${isSelected ? color : 'text-text'}`}>
+                        {label}
+                      </p>
+                      <p className="text-[12px] text-muted leading-relaxed">{desc}</p>
+                    </div>
 
-        {/* Mentee profile form — shown when "Looking for Mentor" is selected */}
-        {selected === 'mentee' && (
-          <div className="bg-white border border-violet-200 rounded-2xl p-6 mb-6 shadow-sm">
-            <div className="flex items-center gap-2 mb-5">
-              <div className="w-7 h-7 rounded-lg bg-violet-50 flex items-center justify-center">
-                <GraduationCap size={14} className="text-violet-500" />
+                    <div className={`w-12 h-12 rounded-2xl ${isSelected ? bg : 'bg-[#F3F0EB]'} flex items-center justify-center transition-colors shrink-0`}>
+                      <Icon size={24} className={isSelected ? color : 'text-muted'} />
+                    </div>
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        {/* Mentee profile form — shown when "Looking for Mentor" is selected AND Continue is clicked */}
+        {selected === 'mentee' && showForm && (
+          <div className="bg-white border border-violet-200 rounded-2xl p-6 mb-6 shadow-sm animate-in fade-in zoom-in-95 duration-300">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-5">
+              <div className="flex items-center gap-2">
+                <div className="w-7 h-7 rounded-lg bg-violet-50 flex items-center justify-center">
+                  <GraduationCap size={14} className="text-violet-500" />
+                </div>
+                <h2 className="text-sm font-bold text-text">Tell us a bit about yourself</h2>
               </div>
-              <h2 className="text-sm font-bold text-text">Tell us a bit about yourself</h2>
+              <button
+                onClick={() => { setShowForm(false); setSelected(null); }}
+                className="text-xs font-semibold text-muted hover:text-text bg-[#F3F0EB] hover:bg-[#E5E1DA] px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5"
+              >
+                <X size={14} /> Back
+              </button>
             </div>
 
             <div className="space-y-5">
@@ -352,14 +398,22 @@ export default function SelectRole() {
           </div>
         )}
 
-        {/* Client profile form — shown when "Hire a Freelancer" is selected */}
-        {selected === 'client' && (
-          <div className="bg-white border border-teal-200 rounded-2xl p-6 mb-6 shadow-sm">
-            <div className="flex items-center gap-2 mb-5">
-              <div className="w-7 h-7 rounded-lg bg-teal-50 flex items-center justify-center">
-                <Handshake size={14} className="text-teal-600" />
+        {/* Client profile form — shown when "Hire a Freelancer" is selected AND Continue is clicked */}
+        {selected === 'client' && showForm && (
+          <div className="bg-white border border-teal-200 rounded-2xl p-6 mb-6 shadow-sm animate-in fade-in zoom-in-95 duration-300">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-5">
+              <div className="flex items-center gap-2">
+                <div className="w-7 h-7 rounded-lg bg-teal-50 flex items-center justify-center">
+                  <Handshake size={14} className="text-teal-600" />
+                </div>
+                <h2 className="text-sm font-bold text-text">Tell us about your project</h2>
               </div>
-              <h2 className="text-sm font-bold text-text">Tell us about your project</h2>
+              <button
+                onClick={() => { setShowForm(false); setSelected(null); }}
+                className="text-xs font-semibold text-muted hover:text-text bg-[#F3F0EB] hover:bg-[#E5E1DA] px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5"
+              >
+                <X size={14} /> Back
+              </button>
             </div>
 
             <div className="space-y-5">
@@ -462,14 +516,18 @@ export default function SelectRole() {
           </div>
         )}
 
-        {/* Continue button */}
-        <button
-          onClick={handleContinue}
-          disabled={!selected || loading}
-          className="w-full bg-accent hover:bg-accent-hover text-white py-3.5 rounded-xl font-medium text-sm transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-        >
-          {loading ? 'Setting up your account…' : 'Continue'}
-        </button>
+        {/* Action Buttons */}
+        <div className={`mx-auto transition-all duration-[3000ms] ease-in-out flex gap-4 ${
+          selected && !showForm ? 'w-full sm:w-1/2 lg:w-[45%] max-w-[500px] px-2' : 'w-full max-w-4xl px-0'
+        }`}>
+          <button
+            onClick={handleContinue}
+            disabled={!selected || loading}
+            className="w-full bg-accent hover:bg-accent-hover text-white py-3.5 rounded-xl font-medium text-sm transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            {loading ? 'Setting up your account…' : 'Continue'}
+          </button>
+        </div>
       </div>
     </div>
   );
