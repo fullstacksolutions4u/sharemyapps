@@ -192,8 +192,12 @@ function ActivityCard({ activity }) {
   
   if (!user) return null;
 
-  const designation = user.designations && user.designations.length > 0 ? user.designations[0] : 'Developer';
-  const avatarUrl = user.profileImage || user.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=random`;
+  const displayUser = (type === 'PROJECT_LIKED' || type === 'PROJECT_COMMENTED' || type === 'PROJECT_RATED') && project?.owner 
+    ? project.owner 
+    : user;
+
+  const designation = displayUser.designations && displayUser.designations.length > 0 ? displayUser.designations[0] : 'Developer';
+  const avatarUrl = displayUser.profileImage || displayUser.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(displayUser.name)}&background=random`;
   
   let innerContent = null;
   let wrapperClass = "bg-white rounded-xl shadow-sm border border-border p-4 transition hover:shadow-md mb-4";
@@ -250,7 +254,7 @@ function ActivityCard({ activity }) {
           <Heart size={16} fill="currentColor" />
         </div>
         <p className="text-sm text-text">
-          Liked the application <Link to={`/project/${project._id}`} className="font-semibold text-primary hover:underline transition">{project.title}</Link>.
+          Project <Link to={`/project/${project._id}`} className="font-semibold text-primary hover:underline transition">{project.title}</Link> received a new like from someone!
         </p>
       </div>
     );
@@ -262,7 +266,7 @@ function ActivityCard({ activity }) {
           <MessageCircle size={16} />
         </div>
         <p className="text-sm text-text">
-          Commented on the application <Link to={`/project/${project._id}`} className="font-semibold text-primary hover:underline transition">{project.title}</Link>.
+          Project <Link to={`/project/${project._id}`} className="font-semibold text-primary hover:underline transition">{project.title}</Link> received a new comment from someone!
         </p>
       </div>
     );
@@ -274,7 +278,7 @@ function ActivityCard({ activity }) {
           <Star size={16} fill="currentColor" />
         </div>
         <p className="text-sm text-text">
-          Rated the application <Link to={`/project/${project._id}`} className="font-semibold text-primary hover:underline transition">{project.title}</Link> {meta?.rating && <span className="font-bold">({meta.rating} stars)</span>}.
+          Project <Link to={`/project/${project._id}`} className="font-semibold text-primary hover:underline transition">{project.title}</Link> received a new rating from someone!
         </p>
       </div>
     );
@@ -285,12 +289,12 @@ function ActivityCard({ activity }) {
   return (
     <div className={wrapperClass}>
       <div className="flex items-center gap-3">
-        <Link to={`/portfolio/${user._id}`}>
-          <img src={avatarUrl} alt={user.name} className="w-10 h-10 rounded-full object-cover border border-border" />
+        <Link to={`/portfolio/${displayUser._id || displayUser}`}>
+          <img src={avatarUrl} alt={displayUser.name} className="w-10 h-10 rounded-full object-cover border border-border" />
         </Link>
         <div className="flex flex-col">
-          <Link to={`/portfolio/${user._id}`} className="font-bold text-sm text-text hover:text-primary transition">
-            {user.name}
+          <Link to={`/portfolio/${displayUser._id || displayUser}`} className="font-bold text-sm text-text hover:text-primary transition">
+            {displayUser.name}
           </Link>
           <div className="flex items-center gap-1.5 text-xs text-muted mt-0.5">
             <span className="font-medium text-gray-500">{designation}</span>
