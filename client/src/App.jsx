@@ -10,7 +10,7 @@ import AppSpinner from './components/AppSpinner';
 
 const Home               = lazy(() => import('./pages/Home'));
 const Explore            = lazy(() => import('./pages/Explore'));
-const Feed               = lazy(() => import('./pages/Feed'));
+import Feed from './pages/Feed';
 const ProjectDetail      = lazy(() => import('./pages/ProjectDetail'));
 const Login              = lazy(() => import('./pages/Login'));
 const Register           = lazy(() => import('./pages/Register'));

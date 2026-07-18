@@ -4,6 +4,11 @@ import axios from '../api/axios';
 import AppSpinner from '../components/AppSpinner';
 import { formatDistanceToNow } from 'date-fns';
 import { Trophy, CheckCircle, Code, MessageCircle, Heart, Star, TrendingUp, Loader2 } from 'lucide-react';
+import _Lottie from 'lottie-react';
+import feedAnimation from '../assets/feed.json';
+import FeedProjectCard from '../components/FeedProjectCard';
+
+const Lottie = _Lottie.default ?? _Lottie;
 
 export default function Feed() {
   const [activities, setActivities] = useState([]);
@@ -35,7 +40,8 @@ export default function Feed() {
       try {
         const [feedRes, leaderRes] = await Promise.all([
           axios.get('/feed?page=1'),
-          axios.get('/learning-progress/leaderboard')
+          axios.get('/learning-progress/leaderboard'),
+          new Promise(resolve => setTimeout(resolve, 2000)) // ensure spinner shows for at least 2 seconds
         ]);
         if (feedRes.data.success) {
           setActivities(feedRes.data.data);
@@ -60,7 +66,10 @@ export default function Feed() {
     const fetchMoreData = async () => {
       setLoadingMore(true);
       try {
-        const feedRes = await axios.get(`/feed?page=${page}`);
+        const [feedRes] = await Promise.all([
+          axios.get(`/feed?page=${page}`),
+          new Promise(resolve => setTimeout(resolve, 2000)) // ensure spinner shows for at least 2 seconds
+        ]);
         if (feedRes.data.success) {
           setActivities(prev => [...prev, ...feedRes.data.data]);
           setHasMore(feedRes.data.hasMore);
@@ -74,7 +83,11 @@ export default function Feed() {
     fetchMoreData();
   }, [page]);
 
-  if (loading) return <AppSpinner />;
+  if (loading) return (
+    <div className="flex justify-center items-center h-[70vh] w-full">
+      <Lottie animationData={feedAnimation} loop={true} className="w-40 h-40" />
+    </div>
+  );
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 w-full flex flex-col md:flex-row gap-8">
@@ -99,8 +112,8 @@ export default function Feed() {
             })}
             
             {loadingMore && (
-              <div className="flex justify-center py-6">
-                <Loader2 className="w-8 h-8 text-primary animate-spin" />
+              <div className="flex justify-center py-2">
+                <Lottie animationData={feedAnimation} loop={true} className="w-16 h-16" />
               </div>
             )}
             {!hasMore && activities.length > 0 && (
@@ -187,33 +200,7 @@ function ActivityCard({ activity }) {
   let wrapperClass = "bg-white rounded-xl shadow-sm border border-border p-4 transition hover:shadow-md mb-4";
   
   if (type === 'PROJECT_APPROVED' && project) {
-    innerContent = (
-      <div className="mt-3">
-        <div className="flex items-start gap-3">
-          <div className="bg-green-100 text-green-600 p-1.5 rounded-full shrink-0">
-            <CheckCircle size={16} />
-          </div>
-          <p className="text-sm text-text">
-            Published a new application: <Link to={`/project/${project._id}`} className="font-semibold text-primary hover:underline transition">{project.title}</Link>
-          </p>
-        </div>
-        
-        <Link to={`/project/${project._id}`} className="mt-3 block group ml-9">
-          <div className="rounded-lg border border-border overflow-hidden bg-bg group-hover:border-primary transition">
-            {project.bannerImage ? (
-              <img src={project.bannerImage} alt={project.title} className="w-full h-40 object-cover" />
-            ) : (
-              <div className="w-full h-40 bg-gradient-to-r from-gray-200 to-gray-300 flex items-center justify-center">
-                <Code size={40} className="text-gray-400" />
-              </div>
-            )}
-            <div className="p-3 bg-white">
-              <h3 className="font-bold text-text truncate group-hover:text-primary transition">{project.title}</h3>
-            </div>
-          </div>
-        </Link>
-      </div>
-    );
+    return <FeedProjectCard activity={activity} />;
   }
   else if (type === 'MODULE_STARTED' && module) {
     innerContent = (

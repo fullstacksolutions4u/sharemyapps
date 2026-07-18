@@ -14,7 +14,7 @@ exports.getFeed = async (req, res) => {
       .populate('user', 'name profileImage avatar designations')
       .populate({
         path: 'project',
-        select: 'title bannerImage liveUrl _id owner status',
+        select: 'title description bannerImage liveUrl _id owner status likes ratings',
         populate: { path: 'owner', select: 'name profileImage avatar designations' }
       })
       .populate('module', 'title _id')
