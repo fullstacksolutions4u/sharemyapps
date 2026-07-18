@@ -1,9 +1,8 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import axios from '../api/axios';
-import AppSpinner from '../components/AppSpinner';
 import { formatDistanceToNow } from 'date-fns';
-import { Trophy, CheckCircle, Code, MessageCircle, Heart, Star, TrendingUp, Loader2 } from 'lucide-react';
+import { Trophy, MessageCircle, Heart, Star, TrendingUp } from 'lucide-react';
 import _Lottie from 'lottie-react';
 import feedAnimation from '../assets/feed.json';
 import FeedProjectCard from '../components/FeedProjectCard';
