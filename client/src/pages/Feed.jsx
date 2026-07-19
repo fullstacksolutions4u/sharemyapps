@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import axios from '../api/axios';
 import { formatDistanceToNow } from 'date-fns';
-import { Trophy, MessageCircle, Heart, Star, TrendingUp } from 'lucide-react';
+import { Trophy, MessageCircle, Heart, Star, TrendingUp, Briefcase, ChevronRight } from 'lucide-react';
 import _Lottie from 'lottie-react';
 import feedAnimation from '../assets/feed.json';
 import FeedProjectCard from '../components/FeedProjectCard';
@@ -12,6 +12,7 @@ const Lottie = _Lottie.default ?? _Lottie;
 export default function Feed() {
   const [activities, setActivities] = useState([]);
   const [leaderboard, setLeaderboard] = useState([]);
+  const [opportunities, setOpportunities] = useState([]);
   const [loading, setLoading] = useState(true);
   
   // Infinite scroll state
@@ -37,9 +38,10 @@ export default function Feed() {
   useEffect(() => {
     const fetchInitialData = async () => {
       try {
-        const [feedRes, leaderRes] = await Promise.all([
+        const [feedRes, leaderRes, oppRes] = await Promise.all([
           axios.get('/feed?page=1'),
           axios.get('/learning-progress/leaderboard'),
+          axios.get('/vacancies').catch(() => ({ data: [] })),
           new Promise(resolve => setTimeout(resolve, 2000)) // ensure spinner shows for at least 2 seconds
         ]);
         if (feedRes.data.success) {
@@ -48,6 +50,10 @@ export default function Feed() {
         }
         if (leaderRes.data.success) {
           setLeaderboard(leaderRes.data.leaderboard);
+        }
+        if (oppRes.data) {
+          const rawOpps = Array.isArray(oppRes.data) ? oppRes.data : oppRes.data.data || [];
+          setOpportunities(rawOpps.filter(job => job.status === 'active'));
         }
       } catch (err) {
         console.error('Failed to load feed', err);
@@ -86,7 +92,9 @@ export default function Feed() {
   );
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 w-full flex flex-col md:flex-row gap-4">
+    <div className="min-h-screen bg-linear-to-br from-accent/10 via-white to-violet-50 relative">
+      <div className="absolute inset-0 opacity-20 pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle, #00A693 1px, transparent 1px)', backgroundSize: '28px 28px' }} />
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 py-4 w-full flex flex-col md:flex-row gap-4">
       {/* LEFT: Activity Stream */}
       <div className="flex-[2] md:max-w-[70%]">
         {activities.length === 0 ? (
@@ -121,9 +129,11 @@ export default function Feed() {
         )}
       </div>
 
-      {/* RIGHT: Leaderboard */}
-      <div className="flex-1 md:max-w-[30%]">
-        <div className="sticky top-20 bg-white rounded-xl shadow-sm border border-border overflow-hidden">
+      {/* RIGHT: Leaderboard & Opportunities */}
+      <div className="flex-1 md:max-w-[30%] flex flex-col gap-6 sticky top-20 h-[calc(100vh-100px)]">
+        
+        {/* LEADERBOARD (Top 5) */}
+        <div className="bg-white rounded-xl shadow-sm border border-border overflow-hidden shrink-0">
           <div className="p-4 border-b border-border bg-white flex items-center justify-between">
             <div className="flex items-center gap-2 font-bold text-lg text-text">
               <Trophy size={20} className="text-primary" />
@@ -137,12 +147,12 @@ export default function Feed() {
             </Link>
           </div>
           
-          <div className="p-0 max-h-[calc(100vh-180px)] overflow-y-auto custom-scrollbar">
+          <div className="p-0">
             {leaderboard.length === 0 ? (
               <div className="p-6 text-center text-muted">No data available</div>
             ) : (
               <div className="divide-y divide-border">
-                {leaderboard.map((user, idx) => (
+                {leaderboard.slice(0, 5).map((user, idx) => (
                   <Link 
                     key={user.userId} 
                     to={`/portfolio/${user.userId}`}
@@ -177,6 +187,53 @@ export default function Feed() {
             )}
           </div>
         </div>
+
+        {/* OPPORTUNITIES (Jobs) */}
+        <div className="bg-white rounded-xl shadow-sm border border-border overflow-hidden flex flex-col flex-1 min-h-0">
+          <div className="p-4 border-b border-border bg-white flex items-center justify-between shrink-0">
+            <div className="flex items-center gap-2 font-bold text-lg text-text">
+              <TrendingUp size={20} className="text-primary" />
+              Active Job Opportunities
+            </div>
+            <Link 
+              to="/vacancies" 
+              className="text-xs bg-primary hover:bg-primary-hover text-white px-3 py-1.5 rounded-lg transition-colors font-medium flex items-center gap-1"
+            >
+              View All
+            </Link>
+          </div>
+          <div className="p-0 overflow-y-auto custom-scrollbar flex-1 relative">
+            {opportunities.length === 0 ? (
+               <div className="p-10 flex flex-col items-center justify-center text-muted">
+                 <Briefcase size={32} className="opacity-20 mb-3" />
+                 <p className="text-sm">No active opportunities</p>
+               </div>
+            ) : (
+               <div className="divide-y divide-border">
+                 {opportunities.map(job => (
+                    <Link 
+                      key={job._id} 
+                      to="/vacancies" 
+                      className="group flex items-center justify-between p-4 hover:bg-primary/5 transition-all duration-300 relative overflow-hidden"
+                    >
+                      <div className="flex items-start gap-3 relative z-10 w-full pr-6">
+                        <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center shrink-0 group-hover:bg-primary/20 transition-colors shadow-sm">
+                          <Briefcase size={16} className="text-primary" />
+                        </div>
+                        <div className="flex flex-col flex-1 min-w-0">
+                          <p className="text-sm font-bold text-text line-clamp-1 group-hover:text-primary transition-colors leading-tight">{job.title}</p>
+                          <p className="text-xs text-muted mt-1 font-medium truncate">{job.company || 'Confidential'}</p>
+                        </div>
+                      </div>
+                      <ChevronRight size={16} className="text-primary opacity-0 -translate-x-3 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300 absolute right-4 z-10" />
+                    </Link>
+                 ))}
+               </div>
+            )}
+          </div>
+        </div>
+
+      </div>
       </div>
     </div>
   );
