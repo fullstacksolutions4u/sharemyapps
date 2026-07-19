@@ -32,6 +32,7 @@ const feedRoutes = require('./routes/feed');
 const { startJobAlertScheduler } = require('./jobs/jobAlertScheduler');
 const { task: thumbnailTask } = require('./cron/thumbnails');
 const { startMetricsPusher } = require('./utils/metricsPusher');
+require('./utils/customMetrics'); // Initialize custom metrics on startup
 
 const promBundle = require('express-prom-bundle');
 const metricsMiddleware = promBundle({
