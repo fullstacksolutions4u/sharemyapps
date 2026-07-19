@@ -6,7 +6,7 @@ import { useAuth } from '../context/AuthContext';
 import axios from '../api/axios';
 import toast from 'react-hot-toast';
 
-export default function FeedProjectCard({ activity }) {
+export default function FeedProjectCard({ activity, index = 0 }) {
   const { user: activityUser, project, createdAt } = activity;
   const { user: authUser } = useAuth();
   
@@ -113,8 +113,23 @@ export default function FeedProjectCard({ activity }) {
     }
   };
 
+  const STICKY_COLORS = [
+    { bg: '#fdf7df', fold: '#e8dfb8' }, // Yellow
+    { bg: '#dffdf0', fold: '#b8e8d5' }, // Emerald
+    { bg: '#dfeafd', fold: '#b8cde8' }, // Blue
+    { bg: '#fddfef', fold: '#e8b8d4' }, // Pink
+    { bg: '#eedffd', fold: '#cdb8e8' }, // Purple
+    { bg: '#fdf0df', fold: '#e8d2b8' }, // Orange
+  ];
+  const ROTATIONS = ['-rotate-1', 'rotate-1', 'rotate-0', '-rotate-1', 'rotate-1', 'rotate-0'];
+  const colorObj = STICKY_COLORS[index % STICKY_COLORS.length];
+  const rotClass = ROTATIONS[index % ROTATIONS.length];
+
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-border p-5 mb-6 transition hover:shadow-md">
+    <div 
+      className={`sticky-curly ${rotClass} p-5 mb-8 transition-transform hover:scale-[1.01] hover:z-10`}
+      style={{ '--sticky-bg': colorObj.bg, '--sticky-fold': colorObj.fold }}
+    >
       {/* 2-Column Layout */}
       <div className="flex flex-col md:flex-row gap-6">
         

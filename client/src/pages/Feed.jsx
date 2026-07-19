@@ -107,11 +107,11 @@ export default function Feed() {
               if (activities.length === index + 1) {
                 return (
                   <div ref={lastActivityElementRef} key={activity._id}>
-                    <ActivityCard activity={activity} />
+                    <ActivityCard activity={activity} index={index} />
                   </div>
                 );
               } else {
-                return <ActivityCard key={activity._id} activity={activity} />;
+                return <ActivityCard key={activity._id} activity={activity} index={index} />;
               }
             })}
             
@@ -133,10 +133,10 @@ export default function Feed() {
       <div className="flex-1 md:max-w-[30%] flex flex-col gap-6 sticky top-20 h-[calc(100vh-100px)]">
         
         {/* LEADERBOARD (Top 5) */}
-        <div className="bg-white rounded-xl shadow-sm border border-border overflow-hidden shrink-0">
-          <div className="p-4 border-b border-border bg-white flex items-center justify-between">
+        <div className="bg-linear-to-br from-violet-50/80 to-purple-50/50 rounded-xl shadow-sm border border-black/5 overflow-hidden shrink-0">
+          <div className="p-4 border-b border-black/5 bg-transparent flex items-center justify-between">
             <div className="flex items-center gap-2 font-bold text-lg text-text">
-              <Trophy size={20} className="text-primary" />
+              <Trophy size={20} className="text-violet-600" />
               Leaderboard
             </div>
             <Link 
@@ -151,12 +151,12 @@ export default function Feed() {
             {leaderboard.length === 0 ? (
               <div className="p-6 text-center text-muted">No data available</div>
             ) : (
-              <div className="divide-y divide-border">
+              <div className="divide-y divide-black/5">
                 {leaderboard.slice(0, 5).map((user, idx) => (
                   <Link 
                     key={user.userId} 
                     to={`/portfolio/${user.userId}`}
-                    className="flex items-center gap-3 p-3 hover:bg-bg transition"
+                    className="flex items-center gap-3 p-3 hover:bg-violet-100/50 transition"
                   >
                     <div className={`w-6 h-6 flex items-center justify-center rounded-full text-xs font-bold ${
                       idx === 0 ? 'bg-yellow-100 text-yellow-600' :
@@ -189,15 +189,21 @@ export default function Feed() {
         </div>
 
         {/* OPPORTUNITIES (Jobs) */}
-        <div className="bg-white rounded-xl shadow-sm border border-border overflow-hidden flex flex-col flex-1 min-h-0">
-          <div className="p-4 border-b border-border bg-white flex items-center justify-between shrink-0">
+        <div 
+          className="sticky-curly flex flex-col flex-1 min-h-0 rotate-1"
+          style={{ '--sticky-bg': '#fdf7df', '--sticky-fold': '#e8dfb8' }}
+        >
+          {/* Pushpin */}
+          <div className="absolute -top-3 -right-2 text-2xl z-20 drop-shadow-md rotate-12 select-none">📌</div>
+          
+          <div className="p-4 border-b border-black/5 bg-transparent flex items-center justify-between shrink-0">
             <div className="flex items-center gap-2 font-bold text-lg text-text">
               <TrendingUp size={20} className="text-primary" />
               Active Job Opportunities
             </div>
             <Link 
               to="/vacancies" 
-              className="text-xs bg-primary hover:bg-primary-hover text-white px-3 py-1.5 rounded-lg transition-colors font-medium flex items-center gap-1"
+              className="text-xs bg-primary hover:bg-primary-hover text-white px-3 py-1.5 rounded-lg transition-colors font-medium flex items-center gap-1 relative z-10"
             >
               View All
             </Link>
@@ -209,12 +215,12 @@ export default function Feed() {
                  <p className="text-sm">No active opportunities</p>
                </div>
             ) : (
-               <div className="divide-y divide-border">
+               <div className="divide-y divide-black/5">
                  {opportunities.map(job => (
                     <Link 
                       key={job._id} 
                       to="/vacancies" 
-                      className="group flex items-center justify-between p-4 hover:bg-primary/5 transition-all duration-300 relative overflow-hidden"
+                      className="group flex items-center justify-between p-4 hover:bg-black/5 transition-all duration-300 relative overflow-hidden"
                     >
                       <div className="flex items-start gap-3 relative z-10 w-full pr-6">
                         <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center shrink-0 group-hover:bg-primary/20 transition-colors shadow-sm">
@@ -240,7 +246,7 @@ export default function Feed() {
 }
 
 // Sub-component for individual activity feed items
-function ActivityCard({ activity }) {
+function ActivityCard({ activity, index = 0 }) {
   const { type, user, project, module, createdAt, meta } = activity;
   const timeAgo = formatDistanceToNow(new Date(createdAt), { addSuffix: true });
   
@@ -254,10 +260,22 @@ function ActivityCard({ activity }) {
   const avatarUrl = displayUser.profileImage || displayUser.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(displayUser.name)}&background=random`;
   
   let innerContent = null;
-  let wrapperClass = "bg-white rounded-xl shadow-sm border border-border p-4 transition hover:shadow-md mb-4";
+  const STICKY_COLORS = [
+    { bg: '#fdf7df', fold: '#e8dfb8' }, // Yellow
+    { bg: '#dffdf0', fold: '#b8e8d5' }, // Emerald
+    { bg: '#dfeafd', fold: '#b8cde8' }, // Blue
+    { bg: '#fddfef', fold: '#e8b8d4' }, // Pink
+    { bg: '#eedffd', fold: '#cdb8e8' }, // Purple
+    { bg: '#fdf0df', fold: '#e8d2b8' }, // Orange
+  ];
+  const ROTATIONS = ['-rotate-1', 'rotate-1', 'rotate-0', '-rotate-1', 'rotate-1', 'rotate-0'];
+  const colorObj = STICKY_COLORS[index % STICKY_COLORS.length];
+  const rotClass = ROTATIONS[index % ROTATIONS.length];
+  
+  let wrapperClass = `sticky-curly ${rotClass} p-4 transition-transform hover:scale-[1.01] hover:z-10 mb-8`;
   
   if (type === 'PROJECT_APPROVED' && project) {
-    return <FeedProjectCard activity={activity} />;
+    return <FeedProjectCard activity={activity} index={index} />;
   }
   else if (type === 'MODULE_STARTED' && module) {
     innerContent = (
@@ -341,7 +359,7 @@ function ActivityCard({ activity }) {
   if (!innerContent) return null;
 
   return (
-    <div className={wrapperClass}>
+    <div className={wrapperClass} style={{ '--sticky-bg': colorObj.bg, '--sticky-fold': colorObj.fold }}>
       <div className="flex items-center gap-3">
         <Link to={`/portfolio/${displayUser._id || displayUser}`}>
           <img src={avatarUrl} alt={displayUser.name} className="w-10 h-10 rounded-full object-cover border border-border" />

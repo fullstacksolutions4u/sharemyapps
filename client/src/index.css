@@ -159,3 +159,42 @@ body {
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background: rgba(0, 0, 0, 0.2);
 }
+
+/* Curly Sticky Note Style */
+.sticky-curly {
+  --sticky-bg: #fdf7df;
+  --sticky-fold: #e8dfb8;
+  background: 
+    linear-gradient(45deg, transparent 16px, var(--sticky-bg) 0) bottom left,
+    linear-gradient(-45deg, transparent 16px, var(--sticky-bg) 0) bottom right,
+    linear-gradient(to bottom, var(--sticky-bg), var(--sticky-bg)) top center;
+  background-size: 50.1% 50.1%, 50.1% 50.1%, 100% 50.1%;
+  background-repeat: no-repeat;
+  position: relative;
+  border-radius: 4px 4px 0 0;
+  filter: drop-shadow(0 4px 6px rgba(0,0,0,0.06));
+}
+
+.sticky-curly::before {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 23px;
+  height: 23px;
+  background: linear-gradient(to top right, transparent 50%, var(--sticky-fold) 50%);
+  border-radius: 0 4px 0 0;
+  filter: drop-shadow(3px -3px 4px rgba(0,0,0,0.3));
+}
+
+.sticky-curly::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 23px;
+  height: 23px;
+  background: linear-gradient(to top left, transparent 50%, var(--sticky-fold) 50%);
+  border-radius: 4px 0 0 0;
+  filter: drop-shadow(-3px -3px 4px rgba(0,0,0,0.3));
+}
