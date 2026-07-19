@@ -245,6 +245,14 @@ exports.selectRole = async (req, res) => {
       return res.status(400).json({ message: 'Invalid role' });
     const user = await User.findById(req.user._id);
     if (!user) return res.status(404).json({ message: 'User not found' });
+    
+    // Only track the duration the very first time they complete onboarding
+    if (!user.onboardingComplete) {
+      const { onboardingDuration } = require('../utils/customMetrics');
+      const timeTakenSeconds = (Date.now() - new Date(user.createdAt).getTime()) / 1000;
+      onboardingDuration.observe({ userType: userType }, timeTakenSeconds);
+    }
+    
     user.userType = userType;
     user.onboardingComplete = true;
 

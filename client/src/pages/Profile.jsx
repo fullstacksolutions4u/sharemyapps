@@ -76,7 +76,7 @@ const LeetCodeIcon = () => (
 const TABS = [
   { id: 'basic', label: 'Basic Info', icon: User },
   { id: 'links', label: 'Developer Links', icon: Link2 },
-  { id: 'opportunities', label: 'Job Opportunities', icon: Briefcase },
+  { id: 'opportunities', label: 'Opportunities', icon: Briefcase },
   { id: 'resume', label: 'Resume / CV', icon: FileText },
 ];
 
@@ -360,7 +360,7 @@ export default function Profile() {
     { label: 'GitHub',           done: !!form.githubUrl },
     { label: 'Portfolio URL',    done: !!form.portfolioUrl },
     { label: 'CV / Resume',        done: !!form.cvUrl },
-    { label: 'Job Opportunities',      done: form.freelanceAvailable || form.mentorshipAvailable || !!form.joiningAvailability },
+    { label: 'Opportunities',      done: form.freelanceAvailable || form.mentorshipAvailable || !!form.joiningAvailability },
     { label: 'Mode of Job',        done: form.jobMode.length > 0 },
     { label: 'Years of Experience', done: !!form.yearsOfExperience },
   ];

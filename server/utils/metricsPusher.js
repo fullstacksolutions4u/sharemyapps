@@ -13,6 +13,7 @@
  */
 
 const { register } = require('prom-client');
+const { pushTimeseries } = require('prometheus-remote-write');
 
 const PUSH_INTERVAL_MS = 15 * 1000; // Push every 15 seconds
 
@@ -25,27 +26,38 @@ async function pushMetrics() {
   const username = process.env.GRAFANA_USERNAME;
   const token    = process.env.GRAFANA_TOKEN;
 
-  // Only push in production with full credentials configured
-  if (!url || !username || !token || process.env.NODE_ENV !== 'production') return;
+  if (!url || !username || !token) return;
 
   try {
-    const metricsText = await register.metrics();
-    const contentType = register.contentType;
-    const credentials = Buffer.from(`${username}:${token}`).toString('base64');
+    const metrics = await register.getMetricsAsJSON();
+    const timeseriesArr = [];
+    const now = Date.now();
 
-    // Grafana Cloud remote_write endpoint — use the URL as-is from env var
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': contentType,
-        'Authorization': `Basic ${credentials}`,
-      },
-      body: metricsText,
+    for (const metric of metrics) {
+      for (const val of metric.values) {
+        const labels = {
+          __name__: val.metricName || metric.name,
+          instance: 'sharemyapps-server',
+        };
+        if (val.labels) {
+          for (const [k, v] of Object.entries(val.labels)) {
+            labels[k] = String(v);
+          }
+        }
+        timeseriesArr.push({
+          labels,
+          samples: [{ value: val.value, timestamp: now }]
+        });
+      }
+    }
+
+    const response = await pushTimeseries(timeseriesArr, {
+      url,
+      auth: { username, password: token }
     });
 
-    if (!response.ok) {
-      const body = await response.text();
-      console.warn(`[metrics-pusher] Push failed (${response.status}): ${body}`);
+    if (response.status !== 200 && response.status !== 204) {
+      console.warn(`[metrics-pusher] Push failed (${response.status}): ${response.statusText}`);
     }
   } catch (err) {
     console.warn('[metrics-pusher] Error pushing metrics:', err.message);
@@ -59,11 +71,6 @@ async function pushMetrics() {
 function startMetricsPusher() {
   const url = process.env.GRAFANA_REMOTE_WRITE_URL;
 
-  if (process.env.NODE_ENV !== 'production') {
-    console.log('[metrics-pusher] Disabled in development. Use docker-compose for local monitoring.');
-    return;
-  }
-
   if (!url) {
     console.log('[metrics-pusher] GRAFANA_REMOTE_WRITE_URL not set — metrics push disabled.');
     return;
@@ -75,3 +82,4 @@ function startMetricsPusher() {
 }
 
 module.exports = { startMetricsPusher };
+

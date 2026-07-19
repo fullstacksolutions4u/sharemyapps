@@ -96,7 +96,7 @@ function UserEditPage({ user: initial, onBack, onSaved, allDesignations = [] }) 
   const TABS = [
     { id: 'basic', label: 'Basic Info', icon: UserCircle2 },
     { id: 'links', label: 'Developer Links', icon: LinkIcon },
-    { id: 'opportunities', label: 'Job Opportunities', icon: Briefcase },
+    { id: 'opportunities', label: 'Opportunities', icon: Briefcase },
     { id: 'resume', label: 'Resume Data', icon: FileText },
     { id: 'admin', label: 'Admin Controls', icon: Zap },
   ];
@@ -381,7 +381,7 @@ function UserEditPage({ user: initial, onBack, onSaved, allDesignations = [] }) 
               </div>
             )}
 
-            {/* Tab 2 — Job Opportunities */}
+            {/* Tab 2 — Opportunities */}
             {activeTab === 2 && (
               <div className="space-y-6">
                 <div className="flex items-center gap-2">
