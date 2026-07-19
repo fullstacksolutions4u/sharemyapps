@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { IndianRupee, TrendingUp, CreditCard, ChevronLeft, ChevronRight, ExternalLink } from 'lucide-react';
+import { IndianRupee, TrendingUp, CreditCard, ChevronLeft, ChevronRight, ExternalLink, Trash2 } from 'lucide-react';
 import api from '../../api/axios';
 
 function fmt(paise) {
@@ -32,6 +32,21 @@ export default function AdminPaymentsSection() {
       .then(r => { setData(r.data); setPage(p); })
       .catch(() => {})
       .finally(() => setLoading(false));
+  };
+
+  const handleDelete = async (id) => {
+    if (!window.confirm('Delete this payment?')) return;
+    try {
+      await api.delete(`/admin/payments/${id}`);
+      setData(prev => ({
+        ...prev,
+        payments: prev.payments.filter(p => p._id !== id),
+        total: prev.total - 1,
+        totalTransactions: prev.totalTransactions - 1
+      }));
+    } catch (err) {
+      alert(err.response?.data?.message || 'Error deleting payment');
+    }
   };
 
   useEffect(() => {
@@ -104,6 +119,7 @@ export default function AdminPaymentsSection() {
                     <th className="text-left px-5 py-3">Payment ID</th>
                     <th className="text-left px-5 py-3">Date</th>
                     <th className="text-left px-5 py-3">Status</th>
+                    <th className="px-5 py-3 text-right"></th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border">
@@ -137,6 +153,11 @@ export default function AdminPaymentsSection() {
                         <span className="text-[11px] font-semibold px-2 py-1 rounded-full bg-emerald-50 text-emerald-700">
                           Success
                         </span>
+                      </td>
+                      <td className="px-5 py-3.5 text-right">
+                        <button onClick={() => handleDelete(p._id)} className="text-muted hover:text-red-500 transition-colors" title="Delete Payment">
+                          <Trash2 size={16} />
+                        </button>
                       </td>
                     </tr>
                   ))}

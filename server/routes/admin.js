@@ -38,7 +38,7 @@ const {
   toggleVacancyStatus,
 } = require('../controllers/vacancyController');
 const { adminGetUserJDHistory } = require('../controllers/jdAnalysisController');
-const { adminGetPayments } = require('../controllers/paymentController');
+const { adminGetPayments, adminDeletePayment } = require('../controllers/paymentController');
 const { getAdminConfig, updateAdminConfig } = require('../controllers/configController');
 const freelance = require('../controllers/freelanceOpportunityController');
 const mentorship = require('../controllers/mentorshipOpportunityController');
@@ -110,6 +110,7 @@ router.patch('/mentorship/:id/toggle-status', mentorship.toggleStatus);
 router.post('/mentorship/:id/reply', mentorship.replyToInterest);
 
 router.get('/payments', adminGetPayments);
+router.delete('/payments/:id', adminDeletePayment);
 router.get('/config', getAdminConfig);
 router.put('/config', updateAdminConfig);
 

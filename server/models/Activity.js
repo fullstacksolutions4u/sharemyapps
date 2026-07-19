@@ -10,7 +10,8 @@ const activitySchema = new mongoose.Schema({
       'PROJECT_COMMENTED',
       'PROJECT_RATED',
       'MODULE_STARTED',
-      'MODULE_COMPLETED'
+      'MODULE_COMPLETED',
+      'USER_JOINED'
     ],
     required: true
   },

@@ -99,12 +99,23 @@ const adminGetPayments = async (req, res) => {
       total,
       page,
       pages: Math.ceil(total / limit),
-      totalRevenuePaise: revenueResult?.total ?? 0,
-      totalTransactions:  revenueResult?.count ?? 0,
+      totalRevenuePaise: revenueResult?.total || 0,
+      totalTransactions: revenueResult?.count || 0,
     });
   } catch (err) {
     console.error('adminGetPayments error:', err);
-    res.status(500).json({ message: err.message });
+    res.status(500).json({ message: 'Server Error' });
+  }
+};
+
+const adminDeletePayment = async (req, res) => {
+  try {
+    const payment = await Payment.findByIdAndDelete(req.params.id);
+    if (!payment) return res.status(404).json({ message: 'Payment not found' });
+    res.json({ message: 'Payment deleted' });
+  } catch (err) {
+    console.error('adminDeletePayment error:', err);
+    res.status(500).json({ message: 'Server Error' });
   }
 };
 
@@ -224,4 +235,4 @@ const getPlacementPurchases = async (req, res) => {
   }
 };
 
-module.exports = { createJDPackOrder, verifyJDPackPayment, adminGetPayments, createPlacementOrder, verifyPlacementPayment, getPlacementPurchases };
+module.exports = { createJDPackOrder, verifyJDPackPayment, adminGetPayments, adminDeletePayment, createPlacementOrder, verifyPlacementPayment, getPlacementPurchases };

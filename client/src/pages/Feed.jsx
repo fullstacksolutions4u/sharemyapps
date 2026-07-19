@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import axios from '../api/axios';
 import { formatDistanceToNow } from 'date-fns';
-import { Trophy, MessageCircle, Heart, Star, TrendingUp, Briefcase, ChevronRight } from 'lucide-react';
+import { Trophy, MessageCircle, Heart, Star, TrendingUp, Briefcase, ChevronRight, UserPlus } from 'lucide-react';
 import _Lottie from 'lottie-react';
 import feedAnimation from '../assets/feed.json';
 import FeedProjectCard from '../components/FeedProjectCard';
@@ -351,6 +351,18 @@ function ActivityCard({ activity, index = 0 }) {
         </div>
         <p className="text-sm text-black font-medium">
           Project <Link to={`/project/${project._id}`} className="text-blue-500 hover:underline transition">{project.title}</Link> received a new <span className="font-semibold text-amber-500">rating</span> from a {user?.userType || 'developer'}!
+        </p>
+      </div>
+    );
+  }
+  else if (type === 'USER_JOINED') {
+    innerContent = (
+      <div className="mt-3 flex items-start gap-3">
+        <div className="bg-emerald-50 text-emerald-500 p-1.5 rounded-full shrink-0">
+          <UserPlus size={16} />
+        </div>
+        <p className="text-sm text-black font-medium">
+          <span className="font-semibold">{displayUser.name}</span> {designation ? <span className="font-medium text-slate-700">{designation}</span> : ''} joined sharemyapps community . welcome
         </p>
       </div>
     );

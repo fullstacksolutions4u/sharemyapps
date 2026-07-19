@@ -3,6 +3,7 @@ const crypto = require('crypto');
 const User = require('../models/User');
 const Project = require('../models/Project');
 const Comment = require('../models/Comment');
+const Activity = require('../models/Activity');
 const { cloudinary } = require('../middleware/upload');
 const { sendOtpEmail } = require('../utils/email');
 
@@ -177,7 +178,18 @@ exports.updateProfile = async (req, res) => {
     if (state !== undefined) user.state = state.trim();
     if (country !== undefined) user.country = country.trim();
     if (dateOfBirth !== undefined) user.dateOfBirth = dateOfBirth ? new Date(dateOfBirth) : null;
-    if (designations !== undefined) user.designations = (Array.isArray(designations) ? designations : [designations]).map(d => String(d).trim()).filter(Boolean);
+    if (designations !== undefined) {
+      const hadDesignations = user.designations && user.designations.length > 0;
+      user.designations = (Array.isArray(designations) ? designations : [designations]).map(d => String(d).trim()).filter(Boolean);
+      const hasDesignationsNow = user.designations.length > 0;
+
+      if (!hadDesignations && hasDesignationsNow) {
+        const existingActivity = await Activity.findOne({ user: user._id, type: 'USER_JOINED' });
+        if (!existingActivity) {
+          await Activity.create({ user: user._id, type: 'USER_JOINED' });
+        }
+      }
+    }
 
     const { clientProfile } = req.body;
     if (clientProfile !== undefined && clientProfile && typeof clientProfile === 'object') {

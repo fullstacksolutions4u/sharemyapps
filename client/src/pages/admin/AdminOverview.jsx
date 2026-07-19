@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { CheckCircle, AlertCircle, ArrowRight, Users, IndianRupee, ExternalLink } from 'lucide-react';
+import { CheckCircle, AlertCircle, ArrowRight, Users, IndianRupee, ExternalLink, Trash2 } from 'lucide-react';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   LabelList, Rectangle,
@@ -36,10 +36,21 @@ function timeAgo(date) {
 }
 
 export default function AdminOverview({ stats, onNavigate }) {
+  const [deletedIds, setDeletedIds] = useState(new Set());
   const [growth, setGrowth] = useState([]);
   const [growthDays, setGrowthDays] = useState(7);
   const [growthLoading, setGrowthLoading] = useState(true);
   const [payments, setPayments] = useState(null);
+
+  const handleDelete = async (id) => {
+    if (!window.confirm('Delete this payment?')) return;
+    try {
+      await api.delete(`/admin/payments/${id}`);
+      setDeletedIds(prev => new Set(prev).add(id));
+    } catch (err) {
+      alert(err.response?.data?.message || 'Error deleting payment');
+    }
+  };
 
   useEffect(() => {
     let cancelled = false;
@@ -193,7 +204,7 @@ export default function AdminOverview({ stats, onNavigate }) {
             </button>
           </div>
           <div className="divide-y divide-border">
-            {payments.payments.slice(0, 5).map(p => (
+            {payments.payments.filter(p => !deletedIds.has(p._id)).slice(0, 5).map(p => (
               <div key={p._id} className="flex items-center justify-between px-5 py-3 hover:bg-bg transition-colors">
                 <div className="min-w-0">
                   <p className="text-sm font-medium text-text truncate">{p.user?.name || '—'}</p>
@@ -212,6 +223,9 @@ export default function AdminOverview({ stats, onNavigate }) {
                   >
                     <ExternalLink size={12} />
                   </a>
+                  <button onClick={() => handleDelete(p._id)} className="text-muted hover:text-red-500 transition-colors" title="Delete Payment">
+                    <Trash2 size={12} />
+                  </button>
                   <p className="text-[11px] text-muted w-16 text-right">{timeAgo(p.createdAt)}</p>
                 </div>
               </div>
