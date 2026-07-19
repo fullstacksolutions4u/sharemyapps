@@ -283,7 +283,7 @@ function ActivityCard({ activity, index = 0 }) {
         <div className="bg-blue-100 text-blue-600 p-1.5 rounded-full shrink-0">
           <TrendingUp size={16} />
         </div>
-        <p className="text-sm text-slate-900 font-medium">
+        <p className="text-sm text-black font-medium">
           Started learning the quiz zone module: <span className="font-semibold text-primary">{module.title}</span>.
         </p>
       </div>
@@ -297,7 +297,7 @@ function ActivityCard({ activity, index = 0 }) {
           <div className="bg-yellow-400 text-white p-1.5 rounded-full shrink-0">
             <Trophy size={16} />
           </div>
-          <p className="text-sm text-slate-900 font-medium">
+          <p className="text-sm text-black font-medium">
             Successfully completed the quiz zone module: <span className="font-semibold text-primary">{module.title}</span>! 🎉
           </p>
         </div>
@@ -325,7 +325,7 @@ function ActivityCard({ activity, index = 0 }) {
         <div className="bg-red-50 text-red-500 p-1.5 rounded-full shrink-0">
           <Heart size={16} fill="currentColor" />
         </div>
-        <p className="text-sm text-slate-900 font-medium">
+        <p className="text-sm text-black font-medium">
           Project <Link to={`/project/${project._id}`} className="text-blue-500 hover:underline transition">{project.title}</Link> received a new <span className="font-semibold text-rose-500">like</span> from a {user?.userType || 'developer'}!
         </p>
       </div>
@@ -337,7 +337,7 @@ function ActivityCard({ activity, index = 0 }) {
         <div className="bg-gray-100 text-gray-600 p-1.5 rounded-full shrink-0">
           <MessageCircle size={16} />
         </div>
-        <p className="text-sm text-slate-900 font-medium">
+        <p className="text-sm text-black font-medium">
           Commented on the application <Link to={`/project/${project._id}`} className="text-blue-500 hover:underline transition">{project.title}</Link>.
         </p>
       </div>
@@ -349,7 +349,7 @@ function ActivityCard({ activity, index = 0 }) {
         <div className="bg-yellow-50 text-yellow-500 p-1.5 rounded-full shrink-0">
           <Star size={16} fill="currentColor" />
         </div>
-        <p className="text-sm text-slate-900 font-medium">
+        <p className="text-sm text-black font-medium">
           Project <Link to={`/project/${project._id}`} className="text-blue-500 hover:underline transition">{project.title}</Link> received a new <span className="font-semibold text-amber-500">rating</span> from a {user?.userType || 'developer'}!
         </p>
       </div>
@@ -365,11 +365,11 @@ function ActivityCard({ activity, index = 0 }) {
           <img src={avatarUrl} alt={displayUser.name} className="w-10 h-10 rounded-full object-cover border border-border" />
         </Link>
         <div className="flex flex-col">
-          <Link to={`/portfolio/${displayUser._id || displayUser}`} className="font-bold text-sm text-slate-900 hover:text-primary transition">
+          <Link to={`/portfolio/${displayUser._id || displayUser}`} className="font-bold text-sm text-black hover:text-primary transition">
             {displayUser.name}
           </Link>
-          <div className="flex items-center gap-1.5 text-xs text-slate-700 mt-0.5">
-            <span className="font-medium text-slate-600">{designation}</span>
+          <div className="flex items-center gap-1.5 text-xs text-gray-900 mt-0.5">
+            <span className="font-medium text-gray-900">{designation}</span>
             <span>•</span>
             <span>{timeAgo}</span>
           </div>
