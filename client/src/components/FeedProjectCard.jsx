@@ -138,19 +138,19 @@ export default function FeedProjectCard({ activity, index = 0 }) {
           <div>
             {/* User Header */}
             <div className="flex items-center gap-3 mb-4">
-              <img src={avatarUrl} alt={activityUser.name} className="w-10 h-10 rounded-full object-cover shrink-0 border border-border" />
+              <img src={avatarUrl} alt={activityUser.name} className="w-10 h-10 rounded-full object-cover shrink-0 border border-black/5" />
               <div className="flex flex-col">
-                <Link to={`/portfolio/${activityUser._id}`} className="font-bold text-text hover:text-primary transition leading-tight">
+                <Link to={`/portfolio/${activityUser._id}`} className="font-bold text-slate-900 hover:text-primary transition leading-tight">
                   {activityUser.name}
                 </Link>
-                <span className="text-xs text-muted">
+                <span className="text-xs font-medium text-slate-700">
                   {designation} • {timeAgo}
                 </span>
               </div>
             </div>
             
             {/* Activity Text */}
-            <div className="flex items-start gap-2 mb-2 text-sm text-text">
+            <div className="flex items-start gap-2 mb-2 text-sm text-slate-900 font-medium">
               <CheckCircle size={16} className="text-green-500 shrink-0 mt-0.5" />
               <p>
                 Published a new application:{' '}
@@ -160,7 +160,7 @@ export default function FeedProjectCard({ activity, index = 0 }) {
               </p>
             </div>
             {project.description && (
-              <p className="text-sm text-muted line-clamp-2 pl-6">
+              <p className="text-sm text-slate-700 line-clamp-2 pl-6">
                 {project.description}
               </p>
             )}
@@ -171,7 +171,7 @@ export default function FeedProjectCard({ activity, index = 0 }) {
             <button 
               disabled={liking}
               onClick={handleLike}
-              className={`flex items-center gap-1.5 text-sm font-medium transition ${isLiked ? 'text-rose-500' : 'text-muted hover:text-rose-500'}`}
+              className={`flex items-center gap-1.5 text-sm font-medium transition ${isLiked ? 'text-rose-500' : 'text-slate-700 hover:text-rose-500'}`}
             >
               <Heart size={18} className={isLiked ? 'fill-current' : ''} />
               {likes.length}
@@ -179,7 +179,7 @@ export default function FeedProjectCard({ activity, index = 0 }) {
             
             <button 
               onClick={toggleComments}
-              className="flex items-center gap-1.5 text-sm font-medium text-muted hover:text-primary transition"
+              className="flex items-center gap-1.5 text-sm font-medium text-slate-700 hover:text-primary transition"
             >
               <MessageCircle size={18} />
               {commentsLoaded ? comments.length : 'Comment'}
@@ -188,7 +188,7 @@ export default function FeedProjectCard({ activity, index = 0 }) {
             <div className="relative">
               <button 
                 onClick={() => setShowRating(!showRating)}
-                className={`flex items-center gap-1.5 text-sm font-medium transition ${userRating ? 'text-amber-500' : 'text-muted hover:text-amber-500'}`}
+                className={`flex items-center gap-1.5 text-sm font-medium transition ${userRating ? 'text-amber-500' : 'text-slate-700 hover:text-amber-500'}`}
               >
                 <Star size={18} className={userRating ? 'fill-amber-400 text-amber-400' : ''} />
                 {avgRating || 'Rate'}
@@ -249,16 +249,16 @@ export default function FeedProjectCard({ activity, index = 0 }) {
           
           <div className="space-y-4 max-h-60 overflow-y-auto custom-scrollbar pr-2">
             {!commentsLoaded ? (
-              <div className="text-center text-sm text-muted py-4">Loading comments...</div>
+              <div className="text-center text-sm text-slate-700 py-4">Loading comments...</div>
             ) : comments.length === 0 ? (
-              <div className="text-center text-sm text-muted py-4">No comments yet. Be the first!</div>
+              <div className="text-center text-sm text-slate-700 py-4">No comments yet. Be the first!</div>
             ) : (
               comments.map(c => (
                 <div key={c._id} className="flex gap-3">
                   <img src={c.user?.profileImage || c.user?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(c.user?.name || 'User')}&background=random`} className="w-8 h-8 rounded-full border border-border shrink-0" />
                   <div className="bg-bg rounded-2xl rounded-tl-none p-3 flex-1">
-                    <p className="text-xs font-bold text-text mb-0.5">{c.user?.name}</p>
-                    <p className="text-sm text-text whitespace-pre-wrap leading-relaxed">{c.text}</p>
+                    <p className="text-xs font-bold text-slate-900 mb-0.5">{c.user?.name}</p>
+                    <p className="text-sm text-slate-900 whitespace-pre-wrap leading-relaxed">{c.text}</p>
                   </div>
                 </div>
               ))
