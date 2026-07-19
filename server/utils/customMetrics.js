@@ -9,6 +9,14 @@ const onboardingDuration = new promClient.Histogram({
   buckets: [30, 60, 300, 600, 1800, 3600]
 });
 
+// Counter to track total user signups and logins
+const userActivityCounter = new promClient.Counter({
+  name: 'sharemyapps_user_activity_total',
+  help: 'Total number of user logins and signups',
+  labelNames: ['action'] // action can be 'signup' or 'login'
+});
+
 module.exports = {
-  onboardingDuration
+  onboardingDuration,
+  userActivityCounter
 };
