@@ -425,6 +425,10 @@ exports.deleteProject = async (req, res) => {
   try {
     const project = await Project.findByIdAndDelete(req.params.id);
     if (!project) return res.status(404).json({ message: 'Project not found' });
+    
+    // Also delete any associated activities from the timeline feed
+    await Activity.deleteMany({ project: req.params.id });
+
     res.json({ message: 'Project deleted successfully' });
   } catch (err) { res.status(500).json({ message: err.message }); }
 };

@@ -198,12 +198,12 @@ export default function FeedProjectCard({ activity }) {
         </div>
         
         {/* Right Side: Thumbnail */}
-        <div className="w-full md:w-64 shrink-0">
-          <Link to={`/project/${project._id}`} className="block group rounded-lg overflow-hidden border border-border shadow-sm">
+        <div className="w-full md:w-64 shrink-0 flex flex-col">
+          <Link to={`/project/${project._id}`} className="block flex-1 group rounded-lg overflow-hidden border border-border shadow-sm">
             {project.bannerImage ? (
-              <img src={project.bannerImage} alt={project.title} className="w-full h-32 md:h-full min-h-[140px] object-cover group-hover:scale-105 transition duration-300" />
+              <img src={project.bannerImage} alt={project.title} className="w-full h-full min-h-[140px] object-cover group-hover:scale-105 transition duration-300" />
             ) : (
-              <div className="w-full h-32 md:h-full min-h-[140px] bg-gradient-to-r from-gray-200 to-gray-300 flex items-center justify-center group-hover:scale-105 transition duration-300">
+              <div className="w-full h-full min-h-[140px] bg-gradient-to-r from-gray-200 to-gray-300 flex items-center justify-center group-hover:scale-105 transition duration-300">
                 <Code size={40} className="text-gray-400" />
               </div>
             )}

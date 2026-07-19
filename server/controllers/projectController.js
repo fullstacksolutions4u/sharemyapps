@@ -542,6 +542,10 @@ exports.deleteProject = async (req, res) => {
     }
 
     await project.deleteOne();
+
+    // Also delete any associated activities from the timeline feed
+    await Activity.deleteMany({ project: req.params.id });
+
     res.json({ message: 'Project deleted' });
   } catch (err) {
     res.status(500).json({ message: err.message });
