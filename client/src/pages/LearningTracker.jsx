@@ -46,7 +46,7 @@ const LearningTracker = ({ embedded = false }) => {
   useEffect(() => {
     // eslint-disable-next-line react-hooks/immutability
     if (userProgress) calculateWeeklyProgress();
-  }, [userProgress, dailyTarget, weekOffset]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [userProgress, dailyTarget]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     localStorage.setItem('lastModuleIndex', currentIndex.toString());
