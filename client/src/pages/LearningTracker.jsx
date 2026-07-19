@@ -4,7 +4,6 @@ import { Trophy } from 'lucide-react';
 import { moduleAPI, progressAPI } from '../api/tick2test';
 import { useAuth } from '../context/AuthContext';
 import AnimatedCoin from '../components/common/AnimatedCoin';
-import PieChart from '../components/common/PieChart';
 import confetti from 'canvas-confetti';
 import TopicQuizModal from '../components/user/TopicQuizModal';
 import _Lottie from 'lottie-react';
@@ -37,7 +36,6 @@ const LearningTracker = ({ embedded = false }) => {
     return saved ? parseInt(saved, 10) : 10;
   });
   const [weeklyProgress, setWeeklyProgress] = useState([]);
-  const [weekOffset, setWeekOffset] = useState(0);
   const [calendarDate, setCalendarDate] = useState(new Date());
 
   useEffect(() => {
@@ -75,7 +73,6 @@ const LearningTracker = ({ embedded = false }) => {
   const calculateWeeklyProgress = () => {
     const actualToday = new Date();
     const viewDate = new Date();
-    viewDate.setDate(viewDate.getDate() + (weekOffset * 7));
     const startOfWeek = new Date(viewDate);
     const day = startOfWeek.getDay();
     const diff = startOfWeek.getDate() - day + (day === 0 ? -6 : 1);
@@ -257,17 +254,6 @@ const LearningTracker = ({ embedded = false }) => {
     }
   }, [currentIndex, modules.length]);
 
-
-  const overallProgress = useMemo(() => {
-    if (modules.length === 0) return { completedModules: 0, totalModules: 0, percentage: 0 };
-    const completedModules = modules.filter(m => {
-      const total = m.topics?.length || 0;
-      const completed = m.topics?.filter(t => t.completed).length || 0;
-      return total > 0 && completed === total;
-    }).length;
-    const totalModules = modules.length;
-    return { completedModules, totalModules, percentage: totalModules > 0 ? (completedModules / totalModules) * 100 : 0 };
-  }, [modules]);
 
 
   if (loading) {
