@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
+import { Trophy } from 'lucide-react';
 import { moduleAPI, progressAPI } from '../api/tick2test';
 import { useAuth } from '../context/AuthContext';
 import AnimatedCoin from '../components/common/AnimatedCoin';
@@ -18,6 +19,7 @@ const LearningTracker = ({ embedded = false }) => {
   const [modules, setModules] = useState([]);
   const [userProgress, setUserProgress] = useState(null);
   const [userPoints, setUserPoints] = useState(0);
+  const [leaderboard, setLeaderboard] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [currentIndex, setCurrentIndex] = useState(() => {
@@ -135,6 +137,15 @@ const LearningTracker = ({ embedded = false }) => {
         setUserProgress(progress);
         if (progressData.userStats) {
           setUserPoints(progressData.userStats.points || 0);
+        }
+
+        try {
+          const leaderRes = await progressAPI.getLeaderboard();
+          if (leaderRes.data.success) {
+            setLeaderboard(leaderRes.data.leaderboard);
+          }
+        } catch (err) {
+          console.error('Failed to load leaderboard', err);
         }
         const modulesWithProgress = fetchedModules.map(module => ({
           ...module,
@@ -475,6 +486,43 @@ const LearningTracker = ({ embedded = false }) => {
               {/* Progress Panel */}
               <div className="flex-shrink-0 w-full lg:w-[400px] lg:sticky lg:top-32">
                 <div className="rounded-2xl shadow-xl p-5 flex flex-col overflow-y-auto custom-scrollbar" style={{ height: '800px', backgroundColor: '#FAF7F2', border: '2px solid #E0D8CC' }}>
+                  
+                  {/* Leaderboard */}
+                  <div className="flex-shrink-0 flex flex-col gap-2 mb-6">
+                    <div className="flex items-center gap-2 mb-1 pl-1 text-[#9B7D43]">
+                      <Trophy size={16} />
+                      <h4 className="text-sm font-bold uppercase tracking-wider text-[#5A5550]">Top Learners</h4>
+                    </div>
+                    {leaderboard.length === 0 ? (
+                      <div className="text-center text-xs py-4 text-[#5A5550]">No data available</div>
+                    ) : (
+                      <div className="flex flex-col gap-2">
+                        {leaderboard.slice(0, 5).map((u, idx) => (
+                          <Link 
+                            key={u.userId} 
+                            to={`/portfolio/${u.userId}`}
+                            className="flex items-center gap-3 p-2 rounded-lg transition-colors hover:bg-black/5"
+                            style={{ backgroundColor: idx < 3 ? 'rgba(255,248,240,0.5)' : 'transparent', border: '1px solid rgba(212,184,150,0.3)' }}
+                          >
+                            <div className="w-5 h-5 flex items-center justify-center rounded-full text-[10px] font-bold"
+                              style={{ 
+                                backgroundColor: idx === 0 ? '#FEF08A' : idx === 1 ? '#E5E7EB' : idx === 2 ? '#FFEDD5' : 'transparent',
+                                color: idx === 0 ? '#CA8A04' : idx === 1 ? '#4B5563' : idx === 2 ? '#C2410C' : '#9B7D43',
+                                border: idx > 2 ? 'none' : '1px solid transparent'
+                              }}>
+                              {idx + 1}
+                            </div>
+                            <img src={u.profileImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(u.name)}&background=random`} alt={u.name} className="w-6 h-6 rounded-full object-cover" />
+                            <div className="flex-1 min-w-0">
+                              <p className="text-xs font-bold text-[#1C1A17] truncate">{u.name}</p>
+                            </div>
+                            <span className="text-xs font-bold text-[#9B7D43]">{u.points} pts</span>
+                          </Link>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
                   {/* Streak / Points */}
                   <div className="flex flex-wrap items-center justify-center gap-2 mb-4">
                     <div className="px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-sm" style={{ backgroundColor: '#FFF8F0', border: '1px solid rgba(192,122,58,0.3)' }}>
@@ -488,11 +536,8 @@ const LearningTracker = ({ embedded = false }) => {
                   </div>
 
                   {/* Weekly Progress */}
-                  <div className="relative px-8 mb-4">
-                    <button onClick={() => setWeekOffset(prev => prev - 1)} className="absolute left-0 top-1/2 -translate-y-1/2 z-10 rounded-full p-1.5 shadow-sm" style={{ backgroundColor: '#FAF7F2', border: '1px solid #D4B896' }}>
-                      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: '#1C1A17' }}><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
-                    </button>
-                    <div className="flex items-center justify-between gap-1 pb-1">
+                  <div className="relative mb-4">
+                    <div className="flex items-center justify-between gap-1 pb-1 px-4">
                       {weeklyProgress.map((day, idx) => {
                         const progress = Math.min(100, (day.completedCount / dailyTarget) * 100);
                         const isCompleted = day.completedCount >= dailyTarget;
@@ -518,13 +563,10 @@ const LearningTracker = ({ embedded = false }) => {
                         );
                       })}
                     </div>
-                    <button onClick={() => setWeekOffset(prev => prev + 1)} className="absolute right-0 top-1/2 -translate-y-1/2 z-10 rounded-full p-1.5 shadow-sm" style={{ backgroundColor: '#FAF7F2', border: '1px solid #D4B896' }}>
-                      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: '#1C1A17' }}><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
-                    </button>
                   </div>
 
                   {/* Calendar */}
-                  <div className="rounded-xl p-3 mb-4 flex-shrink-0" style={{ backgroundColor: '#F0E8DC', border: '1px solid #D4B896' }}>
+                  <div className="rounded-xl p-3 flex-shrink-0" style={{ backgroundColor: '#F0E8DC', border: '1px solid #D4B896' }}>
                     <div className="flex items-center justify-between mb-2">
                       <button onClick={() => setCalendarDate(new Date(calendarDate.getFullYear(), calendarDate.getMonth() - 1, 1))} className="rounded-full p-1.5 shadow-sm" style={{ backgroundColor: '#FAF7F2', border: '1px solid #D4B896' }}>
                         <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: '#1C1A17' }}><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
@@ -559,16 +601,6 @@ const LearningTracker = ({ embedded = false }) => {
                         }
                         return days;
                       })()}
-                    </div>
-
-                  </div>
-
-                  {/* Pie Chart + Totals */}
-                  <div className="pt-4 mt-auto flex-shrink-0">
-                    <div className="flex flex-col items-center justify-center pb-2">
-                      <PieChart percentage={overallProgress.percentage} size={220} strokeWidth={24} color="#9B7D43" backgroundColor="#E0D8CC" showPercentage={true}>
-                        <span className="text-sm mt-1 font-semibold text-center" style={{ color: '#5A5550' }}>{overallProgress.completedModules} / {overallProgress.totalModules} Modules</span>
-                      </PieChart>
                     </div>
                   </div>
                 </div>
