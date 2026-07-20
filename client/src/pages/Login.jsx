@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
@@ -28,15 +28,11 @@ export default function Login() {
   const navigate = useNavigate();
   const [params] = useSearchParams();
   const [tab, setTab] = useState(params.get('signup') === '1' ? 'signup' : 'signin');
-  const [isInAppBrowser, setIsInAppBrowser] = useState(false);
-
-  useEffect(() => {
+  const [isInAppBrowser] = useState(() => {
     // Detect in-app browsers and standard Android WebViews which block Google OAuth
     const ua = navigator.userAgent || navigator.vendor || window.opera;
-    if (/FB_IAB|FB4A|FBAV|FBAN|Instagram|LinkedInApp|Line|snapchat|TikTok|wv/i.test(ua)) {
-      setIsInAppBrowser(true);
-    }
-  }, []);
+    return /FB_IAB|FB4A|FBAV|FBAN|Instagram|LinkedInApp|Line|snapchat|TikTok|wv/i.test(ua);
+  });
 
   // Sign in state
   const [signInForm, setSignInForm] = useState({ email: '', password: '' });
