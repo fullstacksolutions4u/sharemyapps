@@ -48,6 +48,7 @@ const metricsMiddleware = promBundle({
 });
 
 const app = express();
+app.set('trust proxy', 1); // Trust first proxy (Cloud Run load balancer)
 app.use(metricsMiddleware);
 
 app.use(compression());
