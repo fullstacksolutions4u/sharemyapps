@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
@@ -28,6 +28,15 @@ export default function Login() {
   const navigate = useNavigate();
   const [params] = useSearchParams();
   const [tab, setTab] = useState(params.get('signup') === '1' ? 'signup' : 'signin');
+  const [isInAppBrowser, setIsInAppBrowser] = useState(false);
+
+  useEffect(() => {
+    // Detect in-app browsers and standard Android WebViews which block Google OAuth
+    const ua = navigator.userAgent || navigator.vendor || window.opera;
+    if (/FB_IAB|FB4A|FBAV|FBAN|Instagram|LinkedInApp|Line|snapchat|TikTok|wv/i.test(ua)) {
+      setIsInAppBrowser(true);
+    }
+  }, []);
 
   // Sign in state
   const [signInForm, setSignInForm] = useState({ email: '', password: '' });
@@ -84,13 +93,22 @@ export default function Login() {
           <Link to="/">
             <img src={logo} alt="ShareMyApps" className="h-64 w-auto" />
           </Link>
-          <a
-            href={`${import.meta.env.VITE_API_URL || ''}/api/auth/google`}
-            className="flex items-center justify-center gap-3 w-full border border-border hover:border-text bg-white px-4 py-2.5 rounded-xl text-sm font-medium text-text transition-colors"
-          >
-            <GoogleIcon />
-            Continue with Google
-          </a>
+          {isInAppBrowser ? (
+            <div className="text-center p-3 border border-yellow-200 bg-yellow-50 rounded-xl w-full">
+              <p className="text-sm text-yellow-800 font-medium mb-1">In-app browser detected</p>
+              <p className="text-xs text-yellow-700">
+                Google Sign-In is blocked here. Tap the menu icon (•••) and select <strong>Open in Browser / Chrome</strong> to sign in with Google.
+              </p>
+            </div>
+          ) : (
+            <a
+              href={`${import.meta.env.VITE_API_URL || ''}/api/auth/google`}
+              className="flex items-center justify-center gap-3 w-full border border-border hover:border-text bg-white px-4 py-2.5 rounded-xl text-sm font-medium text-text transition-colors"
+            >
+              <GoogleIcon />
+              Continue with Google
+            </a>
+          )}
         </div>
 
         {/* Right: tabs + form */}
@@ -220,13 +238,22 @@ export default function Login() {
                 <span className="text-xs text-muted">or</span>
                 <div className="flex-1 h-px bg-border" />
               </div>
-              <a
-                href={`${import.meta.env.VITE_API_URL || ''}/api/auth/google`}
-                className="flex items-center justify-center gap-3 w-full border border-border hover:border-text bg-white px-4 py-2.5 rounded-xl text-sm font-medium text-text transition-colors"
-              >
-                <GoogleIcon />
-                Continue with Google
-              </a>
+              {isInAppBrowser ? (
+                <div className="text-center p-3 border border-yellow-200 bg-yellow-50 rounded-xl w-full mt-2">
+                  <p className="text-sm text-yellow-800 font-medium mb-1">In-app browser detected</p>
+                  <p className="text-xs text-yellow-700">
+                    Google Sign-In is blocked here. Tap the menu icon (•••) and select <strong>Open in Browser / Chrome</strong>.
+                  </p>
+                </div>
+              ) : (
+                <a
+                  href={`${import.meta.env.VITE_API_URL || ''}/api/auth/google`}
+                  className="flex items-center justify-center gap-3 w-full border border-border hover:border-text bg-white px-4 py-2.5 rounded-xl text-sm font-medium text-text transition-colors"
+                >
+                  <GoogleIcon />
+                  Continue with Google
+                </a>
+              )}
             </div>
           </div>
 
