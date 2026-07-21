@@ -1093,13 +1093,13 @@ export default function Profile() {
                   </div>
 
                   {/* Instructions */}
-                  <p className="mb-3 text-[10.5px] text-red-500 leading-snug whitespace-nowrap overflow-x-auto">
+                  <p className="mb-3 text-[10.5px] text-yellow-500 leading-snug whitespace-nowrap overflow-x-auto">
                     Upload your CV to Google Drive →&nbsp;
                     {[<><span className="text-blue-500 font-black">⋮</span> Menu</>, 'Share', 'Share', 'Anyone with link', 'Viewer'].map((label, i) => (
-                      <span key={i} className="inline-flex items-center gap-0.5">
-                        <span className="inline-flex items-center justify-center w-3 h-3 rounded-full bg-red-500 text-white font-bold" style={{fontSize:'7px',flexShrink:0}}>{i+1}</span>
+                      <span key={i} className={`inline-flex items-center gap-0.5 ${i >= 3 ? 'text-red-500' : ''}`}>
+                        <span className={`inline-flex items-center justify-center w-3 h-3 rounded-full text-white font-bold ${i >= 3 ? 'bg-red-500' : 'bg-yellow-500'}`} style={{fontSize:'7px',flexShrink:0}}>{i+1}</span>
                         <span className="font-semibold">{label}</span>
-                        {i < 4 ? <span className="mx-0.75">→</span> : <span className="font-normal ml-0.75">(role) → copy link &amp; paste below.</span>}
+                        {i < 4 ? <span className="mx-0.75">→</span> : <span className="font-normal ml-0.75">(role) <span className="text-yellow-500">→ copy link &amp; paste below.</span></span>}
                       </span>
                     ))}
                   </p>

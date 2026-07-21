@@ -195,6 +195,23 @@ export default function AdminAdvancedUsersFilterSection() {
     });
   })();
 
+  const filteredCompaniesCount = (() => {
+    const comps = new Set();
+    filteredUsers.forEach(u => {
+      const exp = u.resumeData?.experience || u.resumeData?.workExperience;
+      if (exp && Array.isArray(exp)) {
+        exp.forEach(e => {
+          if (e.company) {
+            const c = normalizeCompany(e.company);
+            if (u.name && c.toLowerCase() === u.name.toLowerCase()) return;
+            comps.add(c);
+          }
+        });
+      }
+    });
+    return comps.size;
+  })();
+
   const [prevFilters, setPrevFilters] = useState({ search: '', designation: '', company: '' });
 
   if (search !== prevFilters.search || designation !== prevFilters.designation || company !== prevFilters.company) {
@@ -264,6 +281,9 @@ export default function AdminAdvancedUsersFilterSection() {
           </div>
           
           <div className="flex items-center gap-2 shrink-0">
+            <div className="text-[12px] font-medium text-[#6B7280] bg-[#F3F0EB] px-2.5 py-1.5 rounded-full">
+              {filteredCompaniesCount} Companies Found
+            </div>
             <div className="text-[12px] font-medium text-[#00A693] bg-[#E6F6F4] px-2.5 py-1.5 rounded-full">
               {filteredUsers.length} Users Found
             </div>

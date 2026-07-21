@@ -321,7 +321,7 @@ function ActivityCard({ activity, index = 0 }) {
           <Heart size={16} fill="currentColor" />
         </div>
         <p className="text-sm text-black font-medium">
-          Project <Link to={`/project/${project._id}`} className="text-blue-500 hover:underline transition">{project.title}</Link> received a new <span className="font-semibold text-rose-500">like</span> from a {user?.userType || 'developer'}!
+          Project <Link to={`/project/${project._id}`} className="text-blue-500 hover:underline transition">{project.title}</Link> received a new <span className="font-semibold text-rose-500">like</span> from a community member!
         </p>
       </div>
     );
@@ -345,7 +345,7 @@ function ActivityCard({ activity, index = 0 }) {
           <Star size={16} fill="currentColor" />
         </div>
         <p className="text-sm text-black font-medium">
-          Project <Link to={`/project/${project._id}`} className="text-blue-500 hover:underline transition">{project.title}</Link> received a new <span className="font-semibold text-amber-500">rating</span> from a {user?.userType || 'developer'}!
+          Project <Link to={`/project/${project._id}`} className="text-blue-500 hover:underline transition">{project.title}</Link> received a new <span className="font-semibold text-amber-500">rating</span> from a community member!
         </p>
       </div>
     );

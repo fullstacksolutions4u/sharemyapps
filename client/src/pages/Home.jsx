@@ -17,7 +17,7 @@ const defaultAvatar = name => {
 };
 
 const LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-const PLACEHOLDER_USERS = Array.from({ length: 200 }, (_, i) => ({
+const PLACEHOLDER_USERS = Array.from({ length: 100 }, (_, i) => ({
   _id: `ph-${i}`,
   name: LETTERS[i % LETTERS.length],
   avatar: null,
@@ -207,7 +207,7 @@ export default function Home() {
   const [showcaseDevs, setShowcaseDevs] = useState([]);
 
   useEffect(() => {
-    api.get('/users/recent?limit=200')
+    api.get('/users/recent?limit=100')
       .then(res => setNetworkUsers(res.data))
       .catch(() => {})
       .finally(() => setNetworkLoading(false));
