@@ -42,6 +42,9 @@ const metricsMiddleware = promBundle({
   includeStatusCode: true,
   includeUp: true,
   customLabels: { project_name: 'sharemyapps' },
+  normalizePath: (req, opts) => {
+    return req.route ? req.route.path : '#fallback';
+  },
   promClient: {
     collectDefaultMetrics: {
     }

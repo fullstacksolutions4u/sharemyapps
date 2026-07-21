@@ -15,7 +15,7 @@
 const { register } = require('prom-client');
 const { pushTimeseries } = require('prometheus-remote-write');
 
-const PUSH_INTERVAL_MS = 15 * 1000; // Push every 15 seconds
+const PUSH_INTERVAL_MS = 60 * 60 * 1000; // Push every 1 hour
 
 /**
  * Pushes all current prom-client metrics to Grafana Cloud
@@ -76,7 +76,7 @@ function startMetricsPusher() {
     return;
   }
 
-  console.log('[metrics-pusher] Starting Grafana Cloud metrics pusher (every 15s)...');
+  console.log('[metrics-pusher] Starting Grafana Cloud metrics pusher (every 1h)...');
   pushMetrics();
   setInterval(pushMetrics, PUSH_INTERVAL_MS);
 }
