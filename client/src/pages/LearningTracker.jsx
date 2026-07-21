@@ -304,7 +304,7 @@ const LearningTracker = ({ embedded = false }) => {
   return (
     <div className="min-h-screen relative" style={{ paddingTop: embedded ? '24px' : '24px', paddingBottom: '48px', background: 'linear-gradient(to bottom right, rgba(0,166,147,0.10), #ffffff, #f5f3ff)' }}>
       <div className="absolute inset-0 opacity-20 pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle, #00A693 1px, transparent 1px)', backgroundSize: '28px 28px' }} />
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="w-full px-2 xl:px-4">
         {modules.length === 0 ? (
           <div className="rounded-xl shadow-md p-12 text-center" style={{ backgroundColor: '#FAF7F2', border: '1px solid #E0D8CC' }}>
             <p className="text-lg font-semibold" style={{ color: '#1C1A17' }}>No modules available</p>
@@ -312,34 +312,93 @@ const LearningTracker = ({ embedded = false }) => {
           </div>
         ) : (
           <>
-            {/* Module navigation */}
-            <div className="mb-6">
-              <div className="flex flex-wrap items-center justify-center gap-2 w-full px-2">
-                {modules.map((module, index) => (
-                  <button
-                    key={index}
-                    onClick={() => goToSlide(index)}
-                    className="grow whitespace-nowrap transition-all duration-300 rounded-lg px-3 py-1.5 text-xs font-semibold"
-                    style={index === currentIndex
-                      ? { backgroundColor: '#9B7D43', color: '#FAF7F2', boxShadow: '0 2px 8px rgba(155,125,67,0.4)', border: '1px solid #C9A96E' }
-                      : { backgroundColor: '#FAF7F2', color: '#5A5550', border: '1px solid #D4B896' }}
-                  >
-                    {module.title.replace(/^Module\s+\d+\s*[:\s-]+\s*/i, '')}
-                  </button>
-                ))}
-                <button
-                  onClick={() => navigate('/dashboard/mentorship')}
-                  className="grow whitespace-nowrap transition-all duration-300 rounded-lg px-3 py-1.5 text-xs font-bold"
-                  style={{ backgroundColor: '#0A7373', color: '#FAF7F2', border: '1px solid #0c8c8c', boxShadow: '0 2px 8px rgba(10,115,115,0.35)' }}
-                >
-                  🎓 Enroll Mentorship Programm
-                </button>
-              </div>
-            </div>
+            {/* ── Compute 4-side splits ── */}
+            {(() => {
+              const mentorship = modules.filter(m => (m.order ?? 0) < 100);
+              const additional = modules.filter(m => (m.order ?? 0) >= 100);
+              const n = mentorship.length;
+              const topCount  = Math.ceil(n / 3);
+              const leftCount = Math.ceil((n - topCount) / 2);
+              const topMods    = mentorship.slice(0, topCount);
+              const leftMods   = mentorship.slice(topCount, topCount + leftCount);
+              const bottomMods = mentorship.slice(topCount + leftCount);
 
-            <div className="flex flex-col lg:flex-row gap-6 items-stretch justify-center mb-8">
-              <div className="flex-shrink-0 w-full lg:w-[700px]">
-                <div className="flex-1 relative w-full">
+              const mkGoldBtn = (module) => {
+                const gi = modules.indexOf(module);
+                const label = module.title.replace(/^Module\s+\d+\s*[:\s-]+\s*/i, '');
+                return (
+                  <button key={gi} onClick={() => goToSlide(gi)} title={label}
+                    className="whitespace-nowrap text-left transition-all duration-200 rounded-lg px-2.5 py-1.5 text-xs font-semibold"
+                    style={gi === currentIndex
+                      ? { backgroundColor: '#9B7D43', color: '#FAF7F2', boxShadow: '0 2px 6px rgba(155,125,67,0.4)', border: '1px solid #C9A96E' }
+                      : { backgroundColor: '#FAF7F2', color: '#5A5550', border: '1px solid #D4B896' }}>
+                    {label}
+                  </button>
+                );
+              };
+
+              const mkGoldSideBtn = (module) => {
+                const gi = modules.indexOf(module);
+                const label = module.title.replace(/^Module\s+\d+\s*[:\s-]+\s*/i, '');
+                return (
+                  <button key={gi} onClick={() => goToSlide(gi)} title={label}
+                    className="w-full whitespace-nowrap text-left transition-all duration-200 rounded-lg px-2.5 py-1.5 text-xs font-semibold"
+                    style={gi === currentIndex
+                      ? { backgroundColor: '#9B7D43', color: '#FAF7F2', boxShadow: '0 2px 6px rgba(155,125,67,0.4)', border: '1px solid #C9A96E' }
+                      : { backgroundColor: '#FAF7F2', color: '#5A5550', border: '1px solid #D4B896' }}>
+                    {label}
+                  </button>
+                );
+              };
+
+              const mkPurpleSideBtn = (module) => {
+                const gi = modules.indexOf(module);
+                const label = module.title.replace(/^Module\s+\d+\s*[:\s-]+\s*/i, '');
+                return (
+                  <button key={gi} onClick={() => goToSlide(gi)} title={label}
+                    className="w-full whitespace-nowrap text-left transition-all duration-200 rounded-lg px-2.5 py-1.5 text-xs font-semibold"
+                    style={gi === currentIndex
+                      ? { backgroundColor: '#7C5CBF', color: '#FAF7F2', boxShadow: '0 2px 6px rgba(124,92,191,0.4)', border: '1px solid #A07DD6' }
+                      : { backgroundColor: '#F3EEFF', color: '#5A4080', border: '1px solid #C4B0E8' }}>
+                    {label}
+                  </button>
+                );
+              };
+
+              const mkPurpleBtn = (module) => {
+                const gi = modules.indexOf(module);
+                const label = module.title.replace(/^Module\s+\d+\s*[:\s-]+\s*/i, '');
+                return (
+                  <button key={gi} onClick={() => goToSlide(gi)} title={label}
+                    className="whitespace-nowrap text-left transition-all duration-200 rounded-lg px-2.5 py-1.5 text-xs font-semibold"
+                    style={gi === currentIndex
+                      ? { backgroundColor: '#7C5CBF', color: '#FAF7F2', boxShadow: '0 2px 6px rgba(124,92,191,0.4)', border: '1px solid #A07DD6' }
+                      : { backgroundColor: '#F3EEFF', color: '#5A4080', border: '1px solid #C4B0E8' }}>
+                    {label}
+                  </button>
+                );
+              };
+
+              return (
+                <div className="flex flex-col gap-2 mb-8">
+
+                  {/* ── TOP ROW ── */}
+                  <div className="flex flex-wrap justify-center gap-1.5">
+                    {topMods.map(mkGoldBtn)}
+                  </div>
+
+                  {/* ── MIDDLE ROW: left | cards | right ── */}
+                  <div className="flex gap-1 items-stretch">
+
+                    {/* LEFT column */}
+                    <div className="hidden xl:flex flex-col gap-1 flex-shrink-0">
+                      {leftMods.map(mkGoldSideBtn)}
+                    </div>
+
+                    {/* CENTER: two main cards */}
+                    <div className="flex-1 flex flex-col lg:flex-row gap-4 items-stretch min-w-0">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex-1 relative w-full">
                   <button onClick={goToPrevious} className="absolute left-0 top-1/2 -translate-y-1/2 z-10 rounded-full p-3 shadow-md" style={{ backgroundColor: '#FAF7F2', border: '2px solid #D4B896' }} aria-label="Previous module">
                     <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: '#1C1A17' }}><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
                   </button>
@@ -469,8 +528,8 @@ const LearningTracker = ({ embedded = false }) => {
                   </div>
                 </div>
               </div>
-              {/* Progress Panel */}
-              <div className="flex-shrink-0 w-full lg:w-[400px] lg:sticky lg:top-32">
+                {/* Progress Panel */}
+                <div className="flex-shrink-0 w-full lg:w-[360px] lg:sticky lg:top-28">
                 <div className="rounded-2xl shadow-xl p-5 flex flex-col overflow-y-auto custom-scrollbar" style={{ height: '800px', backgroundColor: '#FAF7F2', border: '2px solid #E0D8CC' }}>
                   
                   {/* Leaderboard */}
@@ -588,10 +647,35 @@ const LearningTracker = ({ embedded = false }) => {
                         return days;
                       })()}
                     </div>
+                    </div>
+                   </div>
+                      </div>
+                      </div>
+
+                    {/* RIGHT column — additional courses */}
+                    <div className="hidden xl:flex flex-col gap-1 flex-shrink-0">
+                      {additional.map(mkPurpleSideBtn)}
+                    </div>
+
+                  </div>{/* end middle row */}
+
+                  {/* ── BOTTOM ROW ── */}
+                  <div className="flex flex-wrap justify-center gap-1.5">
+                    {bottomMods.map(mkGoldBtn)}
+                    <button onClick={() => navigate('/dashboard/mentorship')}
+                      className="whitespace-normal text-left transition-all duration-200 rounded-lg px-2.5 py-1.5 text-xs font-bold"
+                      style={{ backgroundColor: '#0A7373', color: '#FAF7F2', border: '1px solid #0c8c8c', boxShadow: '0 2px 6px rgba(10,115,115,0.3)' }}>
+                      🎓 Enroll Mentorship Programm
+                    </button>
+                    {/* Mobile only: show additional modules in bottom row too */}
+                    <div className="xl:hidden flex flex-wrap justify-center gap-1.5 w-full mt-1">
+                      {additional.map(mkPurpleBtn)}
+                    </div>
                   </div>
+
                 </div>
-              </div>
-            </div>
+              );
+            })()}
           </>
         )}
 
