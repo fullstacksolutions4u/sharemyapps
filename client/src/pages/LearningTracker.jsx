@@ -316,12 +316,11 @@ const LearningTracker = ({ embedded = false }) => {
             {(() => {
               const mentorship = modules.filter(m => (m.order ?? 0) < 100);
               const additional = modules.filter(m => (m.order ?? 0) >= 100);
-              const n = mentorship.length;
-              const topCount  = Math.ceil(n / 3);
-              const leftCount = Math.ceil((n - topCount) / 2);
-              const topMods    = mentorship.slice(0, topCount);
-              const leftMods   = mentorship.slice(topCount, topCount + leftCount);
-              const bottomMods = mentorship.slice(topCount + leftCount);
+              const allModules = [...mentorship, ...additional];
+              const halfCount = Math.ceil(allModules.length / 2);
+
+              const leftMods   = allModules.slice(0, halfCount);
+              const rightMods  = allModules.slice(halfCount);
 
               const mkGoldBtn = (module) => {
                 const gi = modules.indexOf(module);
@@ -330,8 +329,8 @@ const LearningTracker = ({ embedded = false }) => {
                   <button key={gi} onClick={() => goToSlide(gi)} title={label}
                     className="whitespace-nowrap text-left transition-all duration-200 rounded-lg px-2.5 py-1.5 text-xs font-semibold"
                     style={gi === currentIndex
-                      ? { backgroundColor: '#9B7D43', color: '#FAF7F2', boxShadow: '0 2px 6px rgba(155,125,67,0.4)', border: '1px solid #C9A96E' }
-                      : { backgroundColor: '#FAF7F2', color: '#5A5550', border: '1px solid #D4B896' }}>
+                      ? { backgroundColor: '#7C5CBF', color: '#FAF7F2', boxShadow: '0 2px 6px rgba(124,92,191,0.4)', border: '1px solid #A07DD6' }
+                      : { backgroundColor: '#F3EEFF', color: '#5A4080', border: '1px solid #C4B0E8' }}>
                     {label}
                   </button>
                 );
@@ -344,34 +343,6 @@ const LearningTracker = ({ embedded = false }) => {
                   <button key={gi} onClick={() => goToSlide(gi)} title={label}
                     className="w-full whitespace-nowrap text-left transition-all duration-200 rounded-lg px-2.5 py-1.5 text-xs font-semibold"
                     style={gi === currentIndex
-                      ? { backgroundColor: '#9B7D43', color: '#FAF7F2', boxShadow: '0 2px 6px rgba(155,125,67,0.4)', border: '1px solid #C9A96E' }
-                      : { backgroundColor: '#FAF7F2', color: '#5A5550', border: '1px solid #D4B896' }}>
-                    {label}
-                  </button>
-                );
-              };
-
-              const mkPurpleSideBtn = (module) => {
-                const gi = modules.indexOf(module);
-                const label = module.title.replace(/^Module\s+\d+\s*[:\s-]+\s*/i, '');
-                return (
-                  <button key={gi} onClick={() => goToSlide(gi)} title={label}
-                    className="w-full whitespace-nowrap text-left transition-all duration-200 rounded-lg px-2.5 py-1.5 text-xs font-semibold"
-                    style={gi === currentIndex
-                      ? { backgroundColor: '#7C5CBF', color: '#FAF7F2', boxShadow: '0 2px 6px rgba(124,92,191,0.4)', border: '1px solid #A07DD6' }
-                      : { backgroundColor: '#F3EEFF', color: '#5A4080', border: '1px solid #C4B0E8' }}>
-                    {label}
-                  </button>
-                );
-              };
-
-              const mkPurpleBtn = (module) => {
-                const gi = modules.indexOf(module);
-                const label = module.title.replace(/^Module\s+\d+\s*[:\s-]+\s*/i, '');
-                return (
-                  <button key={gi} onClick={() => goToSlide(gi)} title={label}
-                    className="whitespace-nowrap text-left transition-all duration-200 rounded-lg px-2.5 py-1.5 text-xs font-semibold"
-                    style={gi === currentIndex
                       ? { backgroundColor: '#7C5CBF', color: '#FAF7F2', boxShadow: '0 2px 6px rgba(124,92,191,0.4)', border: '1px solid #A07DD6' }
                       : { backgroundColor: '#F3EEFF', color: '#5A4080', border: '1px solid #C4B0E8' }}>
                     {label}
@@ -382,10 +353,6 @@ const LearningTracker = ({ embedded = false }) => {
               return (
                 <div className="flex flex-col gap-2 mb-8">
 
-                  {/* ── TOP ROW ── */}
-                  <div className="flex flex-wrap justify-center gap-1.5">
-                    {topMods.map(mkGoldBtn)}
-                  </div>
 
                   {/* ── MIDDLE ROW: left | cards | right ── */}
                   <div className="flex gap-1 items-stretch">
@@ -455,7 +422,7 @@ const LearningTracker = ({ embedded = false }) => {
                                               <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: '#C9A96E' }}><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
                                             )}
                                           </button>
-                                          <span className="flex-1 text-sm font-medium" style={{ color: topic.completed ? '#9A8A7A' : '#1C1A17' }}>{topic.name}</span>
+                                          <span className="flex-1 text-xs font-medium" style={{ color: topic.completed ? '#9A8A7A' : '#1C1A17' }}>{topic.name}</span>
                                           {(topic.hasQuiz || topic.quizzes?.length > 0 || topic.quiz?.question) && (
                                             <button
                                               onClick={async (e) => {
@@ -505,7 +472,7 @@ const LearningTracker = ({ embedded = false }) => {
                                               {topic.completed && <svg className="w-2.5 h-2.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>}
                                             </button>
                                             <div className="flex-1 min-w-0 flex items-center justify-between gap-2">
-                                              <span className="text-sm font-medium truncate" style={{ color: topic.completed ? '#9A8A7A' : '#1C1A17' }}>{topic.name}</span>
+                                              <span className="text-xs font-medium truncate" style={{ color: topic.completed ? '#9A8A7A' : '#1C1A17' }}>{topic.name}</span>
                                               {topic.problemUrl && (
                                                 <a href={topic.problemUrl} target="_blank" rel="noopener noreferrer" className="flex-shrink-0 flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-semibold" style={topic.completed ? { backgroundColor: '#E0D8CC', color: '#5A5550' } : { backgroundColor: 'rgba(201,169,110,0.15)', color: '#9B7D43', border: '1px solid rgba(201,169,110,0.5)' }}>
                                                   <span>Solve</span>
@@ -652,25 +619,17 @@ const LearningTracker = ({ embedded = false }) => {
                       </div>
                       </div>
 
-                    {/* RIGHT column — additional courses */}
+                    {/* RIGHT column */}
                     <div className="hidden xl:flex flex-col gap-1 flex-shrink-0">
-                      {additional.map(mkPurpleSideBtn)}
+                      {rightMods.map(mkGoldSideBtn)}
                     </div>
 
                   </div>{/* end middle row */}
 
-                  {/* ── BOTTOM ROW ── */}
-                  <div className="flex flex-wrap justify-center gap-1.5">
-                    {bottomMods.map(mkGoldBtn)}
-                    <button onClick={() => navigate('/dashboard/mentorship')}
-                      className="whitespace-normal text-left transition-all duration-200 rounded-lg px-2.5 py-1.5 text-xs font-bold"
-                      style={{ backgroundColor: '#0A7373', color: '#FAF7F2', border: '1px solid #0c8c8c', boxShadow: '0 2px 6px rgba(10,115,115,0.3)' }}>
-                      🎓 Enroll Mentorship Programm
-                    </button>
-                    {/* Mobile only: show additional modules in bottom row too */}
-                    <div className="xl:hidden flex flex-wrap justify-center gap-1.5 w-full mt-1">
-                      {additional.map(mkPurpleBtn)}
-                    </div>
+                  {/* ── BOTTOM ROW (Mobile Only) ── */}
+                  <div className="xl:hidden flex flex-wrap justify-center gap-1.5 mt-2">
+                    {leftMods.map(mkGoldBtn)}
+                    {rightMods.map(mkGoldBtn)}
                   </div>
 
                 </div>
