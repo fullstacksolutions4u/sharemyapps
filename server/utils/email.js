@@ -29,11 +29,16 @@ const transporter = nodemailer.createTransport({
 });
 
 const sendEmailWithFallback = async (brevoOptions) => {
+  console.log(`[EMAIL-DEBUG] Starting email send process for: ${brevoOptions.subject}`);
   try {
     // 1. Try Brevo First
-    return await api.sendTransacEmail(brevoOptions);
+    console.log('[EMAIL-DEBUG] Attempting to send via Brevo API...');
+    const result = await api.sendTransacEmail(brevoOptions);
+    console.log('[EMAIL-DEBUG] Brevo Success! Response:', JSON.stringify(result));
+    return result;
   } catch (error) {
-    console.error('Brevo failed (quota or error). Falling back to SendPulse...', error.message);
+    console.error('[EMAIL-DEBUG] Brevo failed! Error details:', error.response?.text || error.message);
+    console.log('[EMAIL-DEBUG] Initiating SendPulse Fallback process...');
     
     // 2. Transform options for Nodemailer
     const mailOptions = {
@@ -47,17 +52,22 @@ const sendEmailWithFallback = async (brevoOptions) => {
       mailOptions.replyTo = `"${brevoOptions.replyTo.name || ''}" <${brevoOptions.replyTo.email}>`;
     }
 
+    console.log('[EMAIL-DEBUG] Checking SendPulse credentials...');
+    console.log(`[EMAIL-DEBUG] Host: ${process.env.SENDPULSE_SMTP_HOST ? 'SET' : 'MISSING'}`);
+    console.log(`[EMAIL-DEBUG] User: ${process.env.SENDPULSE_SMTP_USER ? 'SET' : 'MISSING'}`);
+
     if (process.env.SENDPULSE_SMTP_HOST) {
       try {
+        console.log('[EMAIL-DEBUG] Sending via SendPulse SMTP transport...');
         const info = await transporter.sendMail(mailOptions);
-        console.log('Successfully sent via SendPulse fallback:', info.messageId);
+        console.log('[EMAIL-DEBUG] Successfully sent via SendPulse fallback:', info.messageId);
         return info;
       } catch (fallbackError) {
-        console.error('SendPulse fallback also failed:', fallbackError.message);
+        console.error('[EMAIL-DEBUG] SendPulse fallback also failed:', fallbackError.message);
         throw fallbackError;
       }
     } else {
-      console.warn('No SendPulse credentials configured. Fallback skipped.');
+      console.error('[EMAIL-DEBUG] CRITICAL ERROR: No SendPulse credentials configured. Fallback skipped.');
       throw error;
     }
   }
