@@ -4,7 +4,7 @@ import {
   AlertCircle, FileText, Briefcase, Pencil, Trash2, Eye, EyeOff,
   UserCircle2, Search, Zap, FolderOpen as FolderOpenIcon,
   Heart, Star, Users, History, ChevronDown, ChevronUp, ExternalLink,
-  MessageSquare,
+  MessageSquare, ChevronsLeft, ChevronsRight,
 } from 'lucide-react';
 import api from '../../api/axios';
 import toast from 'react-hot-toast';
@@ -901,7 +901,7 @@ export default function AdminUsersSection({ initialTab = 'developers' }) {
                         : isPlaceholderCv(u.cvUrl)
                         ? <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-purple-50 text-purple-600 border border-purple-200 font-medium w-fit" title={u.cvUrl}><AlertCircle size={10} /> Placeholder CV</span>
                         : u.cvWasPlaceholder
-                        ? <a href={u.cvUrl.startsWith('http') ? u.cvUrl : `https://${u.cvUrl}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-blue-50 text-blue-600 border border-blue-200 font-medium w-fit hover:bg-blue-100 transition-colors"><FileText size={10} /> CV Updated</a>
+                        ? <a href={u.cvUrl.startsWith('http') ? u.cvUrl : `https://${u.cvUrl}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-blue-50 text-blue-600 border border-blue-200 font-medium w-fit hover:bg-blue-100 transition-colors"><FileText size={10} /> CV Updated{u.resumeData?.summary === 'empty' && <span className="w-1.5 h-1.5 rounded-full bg-red-500 ml-0.5 animate-pulse" title="Resume summary is empty"></span>}</a>
                         : <a href={u.cvUrl.startsWith('http') ? u.cvUrl : `https://${u.cvUrl}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-xs text-[#00A693] hover:underline font-medium"><FileText size={11} /> View CV</a>
                       }
                       {!u.resumeData && <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-yellow-50 text-yellow-600 border border-yellow-200 font-medium w-fit"><AlertCircle size={10} /> No summary</span>}
@@ -1081,11 +1081,11 @@ export default function AdminUsersSection({ initialTab = 'developers' }) {
             <p className="text-xs text-[#9CA3AF]">Showing {(page - 1) * PER_PAGE + 1}–{Math.min(page * PER_PAGE, list.length)} of {list.length}</p>
             <div className="flex items-center gap-1">
               <button onClick={() => setPage(p => p - 1)} disabled={page === 1} className="px-3 h-8 text-sm border border-border rounded-lg text-muted hover:border-accent hover:text-accent disabled:opacity-40 disabled:cursor-not-allowed transition">‹</button>
-              {groupStart > 1 && <button onClick={() => setPage(groupStart - 1)} className="px-3 h-8 text-sm border border-border rounded-lg text-muted hover:border-accent hover:text-accent transition">…</button>}
+              {groupStart > 1 && <button onClick={() => setPage(groupStart - 1)} className="px-3 h-8 flex items-center justify-center border border-border rounded-lg text-muted hover:border-accent hover:text-accent transition"><ChevronsLeft size={14} /></button>}
               {Array.from({ length: groupEnd - groupStart + 1 }, (_, i) => groupStart + i).map(n => (
                 <button key={n} onClick={() => setPage(n)} className={`w-8 h-8 text-sm rounded-lg border transition ${n === page ? 'bg-accent text-white border-accent font-medium' : 'border-border text-muted hover:border-accent hover:text-accent'}`}>{n}</button>
               ))}
-              {groupEnd < totalPages && <button onClick={() => setPage(groupEnd + 1)} className="px-3 h-8 text-sm border border-border rounded-lg text-muted hover:border-accent hover:text-accent transition">…</button>}
+              {groupEnd < totalPages && <button onClick={() => setPage(groupEnd + 1)} className="px-3 h-8 flex items-center justify-center border border-border rounded-lg text-muted hover:border-accent hover:text-accent transition"><ChevronsRight size={14} /></button>}
               <button onClick={() => setPage(p => p + 1)} disabled={page === totalPages} className="px-3 h-8 text-sm border border-border rounded-lg text-muted hover:border-accent hover:text-accent disabled:opacity-40 disabled:cursor-not-allowed transition">›</button>
             </div>
           </div>

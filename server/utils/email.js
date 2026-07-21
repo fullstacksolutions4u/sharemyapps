@@ -17,8 +17,54 @@ const FOOTER = (text) => `
   </div>
 `;
 
+const nodemailer = require('nodemailer');
+
+const transporter = nodemailer.createTransport({
+  host: process.env.SENDPULSE_SMTP_HOST,
+  port: process.env.SENDPULSE_SMTP_PORT || 587,
+  auth: {
+    user: process.env.SENDPULSE_SMTP_USER,
+    pass: process.env.SENDPULSE_SMTP_PASS
+  }
+});
+
+const sendEmailWithFallback = async (brevoOptions) => {
+  try {
+    // 1. Try Brevo First
+    return await api.sendTransacEmail(brevoOptions);
+  } catch (error) {
+    console.error('Brevo failed (quota or error). Falling back to SendPulse...', error.message);
+    
+    // 2. Transform options for Nodemailer
+    const mailOptions = {
+      from: `"${brevoOptions.sender?.name || 'ShareMyApps'}" <${brevoOptions.sender?.email || process.env.EMAIL_FROM}>`,
+      to: (brevoOptions.to || []).map(t => `"${t.name || ''}" <${t.email}>`).join(', '),
+      subject: brevoOptions.subject,
+      html: brevoOptions.htmlContent,
+    };
+
+    if (brevoOptions.replyTo) {
+      mailOptions.replyTo = `"${brevoOptions.replyTo.name || ''}" <${brevoOptions.replyTo.email}>`;
+    }
+
+    if (process.env.SENDPULSE_SMTP_HOST) {
+      try {
+        const info = await transporter.sendMail(mailOptions);
+        console.log('Successfully sent via SendPulse fallback:', info.messageId);
+        return info;
+      } catch (fallbackError) {
+        console.error('SendPulse fallback also failed:', fallbackError.message);
+        throw fallbackError;
+      }
+    } else {
+      console.warn('No SendPulse credentials configured. Fallback skipped.');
+      throw error;
+    }
+  }
+};
+
 exports.sendFeedbackEmail = async ({ senderName, senderEmail, text }) => {
-  await api.sendTransacEmail({
+  await sendEmailWithFallback({
     sender: FROM,
     to: [{ email: 'hello@sharemyapps.in', name: 'ShareMyApps' }],
     replyTo: { email: senderEmail, name: senderName },
@@ -42,7 +88,7 @@ exports.sendFeedbackEmail = async ({ senderName, senderEmail, text }) => {
 exports.sendProjectApprovedEmail = async ({ to, name, projectTitle, projectId, adminNote }) => {
   const projectUrl = `${BASE_URL}/project/${projectId}`;
 
-  await api.sendTransacEmail({
+  await sendEmailWithFallback({
     sender: FROM,
     to: [{ email: to, name }],
     subject: `"${projectTitle}" is now live @ ShareMyApps`,
@@ -75,7 +121,7 @@ exports.sendProjectApprovedEmail = async ({ to, name, projectTitle, projectId, a
 };
 
 exports.sendOtpEmail = async ({ to, otp }) => {
-  await api.sendTransacEmail({
+  await sendEmailWithFallback({
     sender: FROM,
     to: [{ email: to }],
     subject: 'Your ShareMyApps password reset OTP',
@@ -101,7 +147,7 @@ exports.sendOtpEmail = async ({ to, otp }) => {
 exports.sendCollaboratorAddedEmail = async ({ to, name, addedByName, projectTitle, projectId }) => {
   const projectUrl = `${BASE_URL}/project/${projectId}`;
 
-  await api.sendTransacEmail({
+  await sendEmailWithFallback({
     sender: FROM,
     to: [{ email: to, name }],
     subject: `${addedByName} added you as a collaborator on "${projectTitle}"`,
@@ -144,7 +190,7 @@ exports.sendPlacementPaymentEmail = async ({ to, name, plan }) => {
     `<tr><td style="padding:6px 0;border-bottom:1px solid #F3F0EB;font-size:13px;color:#374151;">✓ ${f}</td></tr>`
   ).join('');
 
-  await api.sendTransacEmail({
+  await sendEmailWithFallback({
     sender: FROM,
     to: [{ email: to, name }],
     subject: `Payment Confirmed – ${plan.name} Plan | ShareMyApps`,
@@ -191,7 +237,7 @@ exports.sendPlacementPaymentEmail = async ({ to, name, plan }) => {
 };
 
 exports.sendMentorshipApplicationEmail = async ({ to, name }) => {
-  await api.sendTransacEmail({
+  await sendEmailWithFallback({
     sender: FROM,
     to: [{ email: to, name }],
     subject: `Application Received – Mentorship Program | ShareMyApps`,
@@ -222,7 +268,7 @@ exports.sendMentorshipApplicationEmail = async ({ to, name }) => {
 exports.sendMarketingCampaignEmail = async ({ to, name }) => {
   const hrUrl = `${BASE_URL}/hr-services`;
 
-  await api.sendTransacEmail({
+  await sendEmailWithFallback({
     sender: FROM,
     to: [{ email: to, name }],
     subject: `You've sent 50+ apps. We'll send 10 that actually land interviews — or your ₹999 back.`,
@@ -351,7 +397,7 @@ exports.sendMarketingCampaignEmail = async ({ to, name }) => {
 exports.sendJobApplicationEmail = async ({ to, name, vacancy }) => {
   const vacanciesUrl = `${BASE_URL}/opportunities`;
 
-  await api.sendTransacEmail({
+  await sendEmailWithFallback({
     sender: FROM,
     to: [{ email: to, name }],
     subject: `Application submitted – ${vacancy.title}`,
@@ -406,7 +452,7 @@ exports.sendJobApplicationEmail = async ({ to, name, vacancy }) => {
 exports.sendProjectRejectedEmail = async ({ to, name, projectTitle, projectId, adminNote }) => {
   const editUrl = `${BASE_URL}/dashboard`;
 
-  await api.sendTransacEmail({
+  await sendEmailWithFallback({
     sender: FROM,
     to: [{ email: to, name }],
     subject: `Action needed on your project "${projectTitle}"`,
@@ -455,7 +501,7 @@ exports.sendResumeReadyEmail = async ({ to, name, serviceLabel, completionLink, 
         Download Documents
       </a>`;
 
-  await api.sendTransacEmail({
+  await sendEmailWithFallback({
     sender: FROM,
     to: [{ email: to, name }],
     subject: `Your ${serviceLabel} is ready — Download Now`,
@@ -487,7 +533,7 @@ exports.sendResumeReadyEmail = async ({ to, name, serviceLabel, completionLink, 
 exports.sendActivationEmail = async ({ to, name }) => {
   const servicesUrl = `${BASE_URL}/dashboard/services`;
 
-  await api.sendTransacEmail({
+  await sendEmailWithFallback({
     sender: FROM,
     to: [{ email: to, name }],
     subject: `You're in! Your ShareMyApps placement support is now active`,
@@ -528,7 +574,7 @@ exports.sendSessionScheduledEmail = async ({ to, name, serviceLabel, meetLink, s
     ? new Date(scheduledAt).toLocaleString('en-IN', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Kolkata' }) + ' IST'
     : null;
 
-  await api.sendTransacEmail({
+  await sendEmailWithFallback({
     sender: FROM,
     to: [{ email: to, name }],
     subject: `Your session is scheduled — ${serviceLabel}`,
@@ -585,7 +631,7 @@ exports.sendJobRecommendationsEmail = async ({ to, name, jobs }) => {
     </tr>
   `).join('');
 
-  await api.sendTransacEmail({
+  await sendEmailWithFallback({
     sender: FROM,
     to: [{ email: to, name }],
     subject: `Your Daily Job Recommendations | ShareMyApps`,
@@ -627,7 +673,7 @@ const escapeHtml = (s) => String(s)
   .replace(/"/g, '&quot;');
 
 exports.sendAdminCustomEmail = async ({ to, name, subject, body }) => {
-  await api.sendTransacEmail({
+  await sendEmailWithFallback({
     sender: FROM,
     to: [{ email: to, name }],
     subject,
@@ -649,7 +695,7 @@ exports.sendAdminCustomEmail = async ({ to, name, subject, body }) => {
 exports.sendJobAlertEmail = async ({ to, name }) => {
   const jobAlertsUrl = `${BASE_URL}/dashboard/job-alerts`;
 
-  await api.sendTransacEmail({
+  await sendEmailWithFallback({
     sender: FROM,
     to: [{ email: to, name }],
     subject: `New Job Openings 🎯 | ShareMyApps`,
