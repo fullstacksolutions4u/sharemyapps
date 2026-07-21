@@ -215,6 +215,32 @@ const submitQuizAttempt = async (req, res) => {
           }
         }
         await userDoc.save();
+
+        if (!userDoc.top5CongratsSent && isCorrect) {
+          try {
+            const devFilter = { 
+              role: { $ne: 'admin' }, 
+              userType: 'developer', 
+              isDeleted: { $ne: true }, 
+              hidden: { $ne: true },
+              _id: { $nin: ['6a225bdd9c1fca63c9154a8d', '6a5b3f5c36d9511e20e8058d'] }
+            };
+            const top5Users = await User.find(devFilter)
+              .select('_id')
+              .sort({ points: -1, createdAt: 1 })
+              .limit(5)
+              .lean();
+
+            if (top5Users.some(u => u._id.toString() === req.user._id.toString())) {
+              userDoc.top5CongratsSent = true;
+              await userDoc.save();
+              const { sendTop5CongratsEmail } = require('../utils/email');
+              sendTop5CongratsEmail({ to: userDoc.email, name: userDoc.name }).catch(err => console.error('[Top5 Email] failed:', err));
+            }
+          } catch (err) {
+            console.error('[Top5 Logic] error:', err);
+          }
+        }
       }
     }
 

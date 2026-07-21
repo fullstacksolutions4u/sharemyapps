@@ -762,3 +762,43 @@ exports.sendJobAlertEmail = async ({ to, name }) => {
     `,
   });
 };
+
+exports.sendTop5CongratsEmail = async ({ to, name }) => {
+  const leaderboardUrl = `${BASE_URL}/quiz-zone`;
+
+  await sendEmailWithFallback({
+    sender: FROM,
+    to: [{ email: to, name }],
+    subject: `🏆 Congratulations! You've reached the Top 5 on ShareMyApps!`,
+    htmlContent: `
+      <div style="font-family:Inter,Arial,sans-serif;max-width:560px;margin:0 auto;background:#fff;border-radius:12px;overflow:hidden;border:1px solid #E5E1DA;">
+        <div style="background:#00A693;padding:12px 32px;text-align:center;">
+          <img src="${LOGO_URL}" alt="ShareMyApps" style="height:40px;object-fit:contain;" />
+        </div>
+        <div style="padding:32px;">
+          <h2 style="margin:0 0 8px;font-size:22px;color:#1A1A1A;">🏆 You are in the Top 5!</h2>
+          <p style="color:#374151;margin:0 0 16px;font-size:15px;">Hi ${name},</p>
+          <p style="color:#374151;margin:0 0 20px;font-size:15px;line-height:1.6;">
+            Amazing work! We noticed your dedication and wanted to personally congratulate you on making it into the <strong>Top 5 of the ShareMyApps Leaderboard</strong>.
+          </p>
+          <div style="background:#FFFBF0;border:1px solid #F59E0B;border-radius:10px;padding:20px;margin-bottom:24px;text-align:center;">
+            <p style="margin:0 0 8px;font-size:32px;">🎉</p>
+            <p style="margin:0;font-size:14px;color:#92400E;font-weight:600;">Your learning progress is truly inspiring!</p>
+          </div>
+          <p style="color:#374151;margin:0 0 24px;font-size:14px;line-height:1.6;">
+            Keep completing modules and quizzes to maintain your spot or even reach #1. Other developers are catching up!
+          </p>
+          <div style="text-align:center;margin-bottom:24px;">
+            <a href="${leaderboardUrl}" style="display:inline-block;background:linear-gradient(135deg,#F59E0B 0%,#D97706 100%);color:#fff;text-decoration:none;padding:13px 32px;border-radius:8px;font-weight:700;font-size:14px;">
+              View Leaderboard →
+            </a>
+          </div>
+          <p style="color:#6B7280;font-size:13px;margin:0;">
+            Keep up the fantastic work!
+          </p>
+        </div>
+        ${FOOTER('You received this email because you reached the top 5 on ShareMyApps.')}
+      </div>
+    `,
+  });
+};
