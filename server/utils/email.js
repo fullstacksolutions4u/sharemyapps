@@ -28,48 +28,76 @@ const transporter = nodemailer.createTransport({
   }
 });
 
+const EmailQuota = require('../models/EmailQuota');
+
 const sendEmailWithFallback = async (brevoOptions) => {
   console.log(`[EMAIL-DEBUG] Starting email send process for: ${brevoOptions.subject}`);
+  
+  // Transform options for Nodemailer (SendPulse)
+  const mailOptions = {
+    from: `"${brevoOptions.sender?.name || 'ShareMyApps'}" <${brevoOptions.sender?.email || process.env.EMAIL_FROM}>`,
+    to: (brevoOptions.to || []).map(t => `"${t.name || ''}" <${t.email}>`).join(', '),
+    subject: brevoOptions.subject,
+    html: brevoOptions.htmlContent,
+  };
+
+  if (brevoOptions.replyTo) {
+    mailOptions.replyTo = `"${brevoOptions.replyTo.name || ''}" <${brevoOptions.replyTo.email}>`;
+  }
+
+  // Determine today's date (YYYY-MM-DD)
+  const today = new Date().toISOString().split('T')[0];
+  
+  // Per user request, force today's initial count to 300 so it uses SendPulse immediately for testing.
+  const initialCount = today === '2026-07-21' ? 300 : 0; 
+  
+  let currentCount = 300; // fail-safe default if DB is unreachable
   try {
-    // 1. Try Brevo First
-    console.log('[EMAIL-DEBUG] Attempting to send via Brevo API...');
-    const result = await api.sendTransacEmail(brevoOptions);
-    console.log('[EMAIL-DEBUG] Brevo Success! Response:', JSON.stringify(result));
-    return result;
-  } catch (error) {
-    console.error('[EMAIL-DEBUG] Brevo failed! Error details:', error.response?.text || error.message);
-    console.log('[EMAIL-DEBUG] Initiating SendPulse Fallback process...');
-    
-    // 2. Transform options for Nodemailer
-    const mailOptions = {
-      from: `"${brevoOptions.sender?.name || 'ShareMyApps'}" <${brevoOptions.sender?.email || process.env.EMAIL_FROM}>`,
-      to: (brevoOptions.to || []).map(t => `"${t.name || ''}" <${t.email}>`).join(', '),
-      subject: brevoOptions.subject,
-      html: brevoOptions.htmlContent,
-    };
+    const quota = await EmailQuota.findOneAndUpdate(
+      { date: today },
+      { $setOnInsert: { count: initialCount } },
+      { upsert: true, new: true }
+    );
+    currentCount = quota.count;
+  } catch (dbErr) {
+    console.error('[EMAIL-DEBUG] Database error while fetching EmailQuota. Defaulting to SendPulse:', dbErr.message);
+  }
 
-    if (brevoOptions.replyTo) {
-      mailOptions.replyTo = `"${brevoOptions.replyTo.name || ''}" <${brevoOptions.replyTo.email}>`;
+  console.log(`[EMAIL-DEBUG] Today's Brevo usage: ${currentCount} / 300`);
+
+  // 1. If we still have Brevo credits, use Brevo
+  if (currentCount < 300) {
+    try {
+      console.log('[EMAIL-DEBUG] Attempting to send via Brevo API (Primary)...');
+      const result = await api.sendTransacEmail(brevoOptions);
+      console.log('[EMAIL-DEBUG] Brevo Success! Response:', JSON.stringify(result));
+      
+      // Increment the counter since it succeeded
+      await EmailQuota.updateOne({ date: today }, { $inc: { count: 1 } });
+      
+      return result;
+    } catch (brevoError) {
+      console.error('[EMAIL-DEBUG] Brevo failed! Error details:', brevoError.response?.text || brevoError.message);
+      console.log('[EMAIL-DEBUG] Initiating SendPulse Fallback process...');
     }
+  } else {
+    console.log('[EMAIL-DEBUG] Brevo daily quota of 300 exceeded. Routing directly to SendPulse...');
+  }
 
-    console.log('[EMAIL-DEBUG] Checking SendPulse credentials...');
-    console.log(`[EMAIL-DEBUG] Host: ${process.env.SENDPULSE_SMTP_HOST ? 'SET' : 'MISSING'}`);
-    console.log(`[EMAIL-DEBUG] User: ${process.env.SENDPULSE_SMTP_USER ? 'SET' : 'MISSING'}`);
-
-    if (process.env.SENDPULSE_SMTP_HOST) {
-      try {
-        console.log('[EMAIL-DEBUG] Sending via SendPulse SMTP transport...');
-        const info = await transporter.sendMail(mailOptions);
-        console.log('[EMAIL-DEBUG] Successfully sent via SendPulse fallback:', info.messageId);
-        return info;
-      } catch (fallbackError) {
-        console.error('[EMAIL-DEBUG] SendPulse fallback also failed:', fallbackError.message);
-        throw fallbackError;
-      }
-    } else {
-      console.error('[EMAIL-DEBUG] CRITICAL ERROR: No SendPulse credentials configured. Fallback skipped.');
+  // 2. If Brevo failed, or we are out of quota, use SendPulse
+  if (process.env.SENDPULSE_SMTP_HOST) {
+    try {
+      console.log('[EMAIL-DEBUG] Sending via SendPulse API (Fallback/Quota Reached)...');
+      const info = await transporter.sendMail(mailOptions);
+      console.log('[EMAIL-DEBUG] SendPulse Success! MessageId:', info.messageId);
+      return info;
+    } catch (error) {
+      console.error('[EMAIL-DEBUG] CRITICAL ERROR: SendPulse failed!', error.message);
       throw error;
     }
+  } else {
+    console.error('[EMAIL-DEBUG] CRITICAL ERROR: SendPulse credentials missing!');
+    throw new Error('No functional email provider available');
   }
 };
 
