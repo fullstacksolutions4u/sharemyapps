@@ -259,10 +259,10 @@ export default function SelectRole() {
               return (
                 <div
                   key={key}
-                  className={`transition-all duration-[3000ms] ease-in-out flex origin-center overflow-hidden ${
+                  className={`flex origin-center overflow-hidden ${
                     isHidden
-                      ? 'opacity-0 max-w-0 max-h-0 px-0 pb-0 m-0 scale-75'
-                      : 'opacity-100 w-full sm:w-1/2 lg:w-[45%] max-w-[500px] max-h-[500px] px-2 pb-4 scale-100'
+                      ? 'hidden'
+                      : 'transition-all duration-1000 ease-in-out opacity-100 w-full sm:w-1/2 lg:w-[45%] max-w-[500px] max-h-[500px] px-2 pb-4 scale-100'
                   }`}
                 >
                   <button
@@ -517,8 +517,8 @@ export default function SelectRole() {
         )}
 
         {/* Action Buttons */}
-        <div className={`mx-auto transition-all duration-[3000ms] ease-in-out flex gap-4 ${
-          selected && !showForm ? 'w-full sm:w-1/2 lg:w-[45%] max-w-[500px] px-2' : 'w-full max-w-4xl px-0'
+        <div className={`mx-auto transition-all duration-1000 ease-in-out flex gap-4 ${
+          selected && !showForm ? 'w-full sm:w-1/2 lg:w-[45%] max-w-[500px] px-2' : 'w-full lg:w-[90%] max-w-[1000px] px-2'
         }`}>
           <button
             onClick={handleContinue}

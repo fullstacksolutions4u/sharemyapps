@@ -189,12 +189,7 @@ export default function Feed() {
         </div>
 
         {/* OPPORTUNITIES (Jobs) */}
-        <div 
-          className="sticky-curly flex flex-col flex-1 min-h-0 rotate-1"
-          style={{ '--sticky-bg': '#fdf7df', '--sticky-fold': '#e8dfb8' }}
-        >
-          {/* Pushpin */}
-          <div className="absolute -top-3 -right-2 text-2xl z-20 drop-shadow-md rotate-12 select-none">📌</div>
+        <div className="bg-linear-to-br from-amber-50/80 to-yellow-50/50 rounded-xl shadow-sm border border-black/5 flex flex-col flex-1 min-h-0 overflow-hidden">
           
           <div className="p-4 border-b border-black/5 bg-transparent flex items-center justify-between shrink-0">
             <div className="flex items-center gap-2 font-bold text-lg text-text">
