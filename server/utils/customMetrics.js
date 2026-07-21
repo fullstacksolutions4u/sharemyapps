@@ -16,7 +16,14 @@ const userActivityCounter = new promClient.Counter({
   labelNames: ['action'] // action can be 'signup' or 'login'
 });
 
+// Gauge to track the number of registered users in the last hour
+const hourlyRegisteredUsers = new promClient.Gauge({
+  name: 'sharemyapps_hourly_registered_users',
+  help: 'Number of users registered in the last hour'
+});
+
 module.exports = {
   onboardingDuration,
-  userActivityCounter
+  userActivityCounter,
+  hourlyRegisteredUsers
 };

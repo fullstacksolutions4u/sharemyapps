@@ -31,6 +31,7 @@ const premiumServicesRoutes = require('./routes/premiumServices');
 const feedRoutes = require('./routes/feed');
 const { startJobAlertScheduler } = require('./jobs/jobAlertScheduler');
 const { task: thumbnailTask } = require('./cron/thumbnails');
+const { task: hourlyMetricsTask } = require('./cron/hourlyMetrics');
 const { startMetricsPusher } = require('./utils/metricsPusher');
 require('./utils/customMetrics'); // Initialize custom metrics on startup
 
@@ -101,6 +102,7 @@ mongoose.connect(process.env.MONGO_URI, { maxPoolSize: 10 })
     console.log('MongoDB connected');
     startJobAlertScheduler();
     thumbnailTask.start();
+    hourlyMetricsTask.start();
     startMetricsPusher();
     const PORT = process.env.PORT || 5000;
     app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
