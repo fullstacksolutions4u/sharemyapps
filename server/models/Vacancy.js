@@ -16,6 +16,14 @@ const vacancySchema = new mongoose.Schema({
   interests:   [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
   everApplied: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
   applicantStatus: { type: Map, of: String, default: {} },
+  applicantStatusHistory: {
+    type: Map,
+    of: [{
+      status: String,
+      date: { type: Date, default: Date.now }
+    }],
+    default: {}
+  },
 }, { timestamps: true });
 
 vacancySchema.index({ status: 1, createdAt: -1 });

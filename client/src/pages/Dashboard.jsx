@@ -7,7 +7,7 @@ import {
   Crown, UserCircle, LogOut, Menu, X, Plus, Share2,
   Pencil, Trash2, ExternalLink, Clock, CheckCircle, XCircle,
   AlertCircle, Copy, Check, Eye, EyeOff, Heart, Star, ChevronRight,
-  Lock, Briefcase, GraduationCap, Inbox
+  Lock, Briefcase, GraduationCap, Inbox, FileText
 } from 'lucide-react';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
@@ -18,6 +18,7 @@ const NAV = [
   { key: 'profile',            label: 'Profile',               icon: UserCircle },
   { key: 'projects',           label: 'My Projects',           icon: FolderOpen },
   { key: 'inbox',              label: 'Inbox',                 icon: Inbox },
+  { key: 'applications',       label: 'My Applications',       icon: FileText },
   { key: 'premium',            label: 'Job Assistance Services', icon: Crown, isGolden: true },
   { key: 'mentorship',         label: 'Mentorship Program', icon: GraduationCap, isGolden: true },
   { key: 'services',           label: 'Services',         icon: Lock, isPremiumService: true, isGolden: true },

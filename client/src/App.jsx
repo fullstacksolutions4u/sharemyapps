@@ -17,8 +17,10 @@ const Register           = lazy(() => import('./pages/Register'));
 const Dashboard          = lazy(() => import('./pages/Dashboard'));
 const ProjectForm        = lazy(() => import('./pages/ProjectForm'));
 const NotFound           = lazy(() => import('./pages/NotFound'));
-const AdminPanel         = lazy(() => import('./pages/AdminPanel'));
+const JobAlerts          = lazy(() => import('./pages/JobAlerts'));
 const Inbox              = lazy(() => import('./pages/Inbox'));
+const Applications       = lazy(() => import('./pages/Applications'));
+const AdminPanel         = lazy(() => import('./pages/AdminPanel'));
 const PublicPortfolio    = lazy(() => import('./pages/PublicPortfolio'));
 const ClientProfile      = lazy(() => import('./pages/ClientProfile'));
 const ChatAdmin          = lazy(() => import('./pages/ChatAdmin'));
@@ -36,7 +38,6 @@ const AddVacancy         = lazy(() => import('./pages/AddVacancy'));
 const LearningTracker    = lazy(() => import('./pages/LearningTracker'));
 const Profile            = lazy(() => import('./pages/Profile'));
 const Services           = lazy(() => import('./pages/Services'));
-const JobAlerts          = lazy(() => import('./pages/JobAlerts'));
 
 class ErrorBoundary extends Component {
   state = { error: null };
@@ -121,8 +122,9 @@ function AppRoutes() {
             <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>}>
               <Route path="add" element={<ProjectForm />} />
               <Route path="edit/:id" element={<ProjectForm />} />
-              <Route path="profile" element={<Profile />} />
+              <Route path="job-alerts" element={<JobAlerts />} />
               <Route path="inbox" element={<Inbox />} />
+              <Route path="applications" element={<Applications />} />
               <Route path="premium" element={<PaidServices />} />
               <Route path="mentorship" element={<MentorshipProgram />} />
               <Route path="services" element={<Services />} />

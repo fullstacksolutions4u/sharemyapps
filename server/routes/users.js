@@ -1,6 +1,7 @@
 const router = require('express').Router();
 const User = require('../models/User');
 const Project = require('../models/Project');
+const Vacancy = require('../models/Vacancy');
 const { protect } = require('../middleware/auth');
 const { extractJDRequirements } = require('../utils/aiExtract');
 const aiLimit = require('../middleware/aiLimit');
@@ -11,6 +12,36 @@ router.get('/count', async (req, res) => {
   try {
     const count = await User.countDocuments({ isDeleted: { $ne: true }, role: { $ne: 'admin' } });
     res.json({ count });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// GET /api/users/applications — protected, returns job opportunities the user has applied for
+router.get('/applications', protect, async (req, res) => {
+  try {
+    const userId = req.user._id;
+    // Find all vacancies where the user is in the everApplied array
+    const vacancies = await Vacancy.find({ everApplied: userId })
+      .select('title company location type salaryRange status applicantStatus applicantStatusHistory createdAt')
+      .sort({ createdAt: -1 })
+      .lean();
+
+    // Map the results to include the user's specific status
+    const applications = vacancies.map(v => ({
+      _id: v._id,
+      title: v.title,
+      company: v.company,
+      location: v.location,
+      type: v.type,
+      salaryRange: v.salaryRange,
+      jobStatus: v.status, // The status of the job itself (active/closed)
+      applicantStatus: v.applicantStatus && v.applicantStatus[userId.toString()] ? v.applicantStatus[userId.toString()] : 'pending',
+      statusHistory: v.applicantStatusHistory && v.applicantStatusHistory[userId.toString()] ? v.applicantStatusHistory[userId.toString()] : [],
+      appliedAt: v.createdAt // We use job created at for now, or could just show it.
+    }));
+
+    res.json(applications);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

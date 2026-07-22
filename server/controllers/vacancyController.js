@@ -34,7 +34,11 @@ exports.showInterest = async (req, res) => {
     }
     const isFirstTime = !vacancy.everApplied.some(id => id.toString() === userId.toString());
     vacancy.interests.push(userId);
-    if (isFirstTime) vacancy.everApplied.push(userId);
+    if (isFirstTime) {
+      vacancy.everApplied.push(userId);
+      if (!vacancy.applicantStatusHistory) vacancy.applicantStatusHistory = new Map();
+      vacancy.applicantStatusHistory.set(userId.toString(), [{ status: 'applied', date: new Date() }]);
+    }
     await vacancy.save();
     res.json({ interested: true, interestCount: vacancy.interests.length });
 
@@ -155,6 +159,12 @@ exports.updateApplicantStatus = async (req, res) => {
     const previousStatus = vacancy.applicantStatus.get(userId);
     if (previousStatus !== status) {
       vacancy.applicantStatus.set(userId, status);
+      
+      if (!vacancy.applicantStatusHistory) vacancy.applicantStatusHistory = new Map();
+      const history = vacancy.applicantStatusHistory.get(userId) || [];
+      history.push({ status: status, date: new Date() });
+      vacancy.applicantStatusHistory.set(userId, history);
+      
       await vacancy.save();
 
       const user = await User.findById(userId).select('name email');
@@ -167,15 +177,19 @@ exports.updateApplicantStatus = async (req, res) => {
           }).catch(console.error);
         }
 
-        // In-platform notification for all changes
-        await Notification.create({
-          user: userId,
-          fromUser: req.user._id,
-          type: 'vacancy_status_update',
-          title: 'Application Status Updated',
-          message: `Your application status for "${vacancy.title}" has been updated to: ${status}`,
-          vacancy: vacancy._id,
-        }).catch(console.error);
+        // Ensure notification type is valid or skip it if it fails
+        try {
+          await Notification.create({
+            user: userId,
+            fromUser: req.user._id,
+            type: 'vacancy_reply', // using a valid enum type instead of vacancy_status_update
+            title: 'Application Status Updated',
+            message: `Your application status for "${vacancy.title}" has been updated to: ${status}`,
+            vacancy: vacancy._id,
+          });
+        } catch (notifErr) {
+          console.error('Notification error:', notifErr);
+        }
       }
     }
     
