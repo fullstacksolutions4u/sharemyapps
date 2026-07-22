@@ -30,7 +30,7 @@ const transporter = nodemailer.createTransport({
 
 const EmailQuota = require('../models/EmailQuota');
 const { Resend } = require('resend');
-const resend = new Resend(process.env.RESEND_API_KEY);
+const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 const sendEmailWithFallback = async (brevoOptions) => {
   console.log(`[EMAIL-DEBUG] Starting email send process for: ${brevoOptions.subject}`);
   
