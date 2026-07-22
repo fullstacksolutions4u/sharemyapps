@@ -703,24 +703,24 @@ router.post('/find-developers', protect, jdQuota, aiLimit, async (req, res) => {
         // Apply level multiplier
         const devLevel = inferDevLevel(dev);
         const levelMul = LEVEL_MULTIPLIER[jdLevel]?.[devLevel] ?? 1.0;
-        let finalScore = rawScore * levelMul;
+        let matchScore = rawScore * levelMul;
 
         // Experience years bonus (additive, max +3)
         if (minYears !== null && minYears > 0) {
           const yearsScore = Math.min(getDevYears(dev) / minYears, 1.5);
-          finalScore += yearsScore * 2;
+          matchScore += yearsScore * 2;
         }
 
         // jobMode match vs JD locationType (+1.0)
         if (locationType !== 'any' && devJobModes.length > 0) {
           if (devJobModes.some(m => m.includes(locationType) || locationType.includes(m))) {
-            finalScore += 1.0;
+            matchScore += 1.0;
           }
         }
 
         // Nice-to-have skills (low weight bonus)
         if (niceToHave.length > 0) {
-          finalScore +=
+          matchScore +=
             scoreMatches(techTags,          niceToHave) * 0.5 +
             scoreMatches(resumeSkills,      niceToHave) * 0.5 +
             scoreMatches(resumeStack,       niceToHave) * 0.3 +
@@ -729,7 +729,7 @@ router.post('/find-developers', protect, jdQuota, aiLimit, async (req, res) => {
         }
 
         // Profile completeness tie-breaker (max +1.5)
-        finalScore += completenessBonus(dev);
+        matchScore += completenessBonus(dev);
 
         // JD match breakdown
         const allDevSkills = new Set([
