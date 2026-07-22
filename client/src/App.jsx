@@ -36,7 +36,6 @@ const PaidServices       = lazy(() => import('./pages/PaidServices'));
 const MentorshipProgram  = lazy(() => import('./pages/MentorshipProgram'));
 const AddVacancy         = lazy(() => import('./pages/AddVacancy'));
 const LearningTracker    = lazy(() => import('./pages/LearningTracker'));
-const Profile            = lazy(() => import('./pages/Profile'));
 const Services           = lazy(() => import('./pages/Services'));
 
 class ErrorBoundary extends Component {
