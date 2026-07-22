@@ -49,7 +49,7 @@ const sendEmailWithFallback = async (brevoOptions) => {
   const today = new Date().toISOString().split('T')[0];
   
   // Per user request, force today's initial count to 300 so it uses SendPulse immediately for testing.
-  const initialCount = today === '2026-07-21' ? 300 : 0; 
+  const initialCount = (today === '2026-07-21' || today === '2026-07-22') ? 300 : 0; 
   
   let currentCount = 300; // fail-safe default if DB is unreachable
   try {
@@ -62,6 +62,9 @@ const sendEmailWithFallback = async (brevoOptions) => {
   } catch (dbErr) {
     console.error('[EMAIL-DEBUG] Database error while fetching EmailQuota. Defaulting to SendPulse:', dbErr.message);
   }
+  
+  // Force SendPulse for today's testing
+  if (today === '2026-07-22') currentCount = 300;
 
   console.log(`[EMAIL-DEBUG] Today's Brevo usage: ${currentCount} / 300`);
 
