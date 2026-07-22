@@ -822,7 +822,7 @@ exports.sendApplicationReviewingEmail = async ({ to, name, vacancyTitle }) => {
             Our team has started to review your application for the <strong>${vacancyTitle}</strong> position. 
           </p>
           <div style="background:#EFF6FF;border:1px solid #BFDBFE;border-radius:10px;padding:16px 20px;margin-bottom:24px;">
-            <p style="margin:0;font-size:14px;color:#1E40AF;font-weight:600;">📞 Our team will be in touch with you soon. Best of luck!</p>
+            <p style="margin:0;font-size:14px;color:#1E40AF;font-weight:600;">📞 Our team will be in touch with you if your profile is short listed for next round. Best of luck!</p>
           </div>
           <p style="color:#6B7280;font-size:13px;margin:0;">
             Make sure your contact number is up to date in your profile!
