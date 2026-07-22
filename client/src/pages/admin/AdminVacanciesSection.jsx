@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
 import {
   Plus, Save, Check, Trash2, Pencil, ToggleLeft, ToggleRight,
-  MapPin, Briefcase, ChevronDown, Users as UsersIcon, Send,
+  MapPin, Briefcase, ChevronDown, Users as UsersIcon, Send, MessageCircle
 } from 'lucide-react';
 import api from '../../api/axios';
 import toast from 'react-hot-toast';
+import { useAuth } from '../../context/AuthContext';
 
 const TYPE_LABEL = { remote: 'Remote', onsite: 'On-site', hybrid: 'Hybrid' };
 const TYPE_STYLE = {
@@ -95,6 +96,7 @@ export default function AdminVacanciesSection({ hideTitle = false }) {
   const [replyOpen, setReplyOpen] = useState(null);
   const [replyText, setReplyText] = useState('');
   const [replySending, setReplySending] = useState(false);
+  const { user } = useAuth();
 
   useEffect(() => {
     api.get('/admin/vacancies')
@@ -144,6 +146,19 @@ export default function AdminVacanciesSection({ hideTitle = false }) {
       setVacancies(prev => prev.map(v => v._id === id ? { ...v, status: res.data.status } : v));
       toast.success(res.data.status === 'closed' ? 'Vacancy closed' : 'Vacancy reopened');
     } catch { toast.error('Failed to update status'); }
+  };
+
+  const handleStatusChange = async (vacancyId, userId, status) => {
+    try {
+      const res = await api.patch(`/admin/vacancies/${vacancyId}/applicant-status`, { userId, status });
+      setVacancies(prev => prev.map(v => {
+        if (v._id !== vacancyId) return v;
+        return { ...v, applicantStatus: res.data.applicantStatus };
+      }));
+      toast.success('Status updated');
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to update status');
+    }
   };
 
   const startEdit = (v) => {
@@ -298,16 +313,51 @@ export default function AdminVacanciesSection({ hideTitle = false }) {
                                   </p>
                                   <p className="text-xs text-[#6B7280] truncate">{u.email}</p>
                                 </div>
-                                <button
-                                  onClick={() => {
-                                    const key = `${v._id}-${u._id}`;
-                                    if (replyOpen?.key === key) { setReplyOpen(null); setReplyText(''); }
-                                    else { setReplyOpen({ key, vacancyId: v._id, userId: u._id }); setReplyText(''); }
-                                  }}
-                                  className={`shrink-0 flex items-center gap-1 text-xs font-medium px-2.5 py-1.5 rounded-lg border transition-colors ${replyOpen?.key === `${v._id}-${u._id}` ? 'bg-accent text-white border-transparent' : 'text-muted border-border hover:border-accent hover:text-accent'}`}
-                                >
-                                  <Send size={11} /> Reply
-                                </button>
+                                <div className="flex items-center gap-2 shrink-0">
+                                  <select
+                                    value={v.applicantStatus?.[u._id] || 'applied'}
+                                    onChange={(e) => handleStatusChange(v._id, u._id, e.target.value)}
+                                    className="px-2 py-1.5 text-xs font-medium border border-border rounded-lg text-text bg-white focus:outline-none focus:border-accent"
+                                  >
+                                    <option value="applied">Applied</option>
+                                    <option value="reviewing">Reviewing</option>
+                                    <option value="contacting">Contacting</option>
+                                    <option value="1 round interview">1st Round Interview</option>
+                                    <option value="2nd round interview">2nd Round Interview</option>
+                                    <option value="3rd round interview">3rd Round Interview</option>
+                                    <option value="selected">Selected</option>
+                                    <option value="rejected">Rejected</option>
+                                  </select>
+
+                                  <button
+                                    onClick={() => {
+                                      if (!u.phone) {
+                                        toast.error('No phone number provided by user');
+                                        return;
+                                      }
+                                      const adminName = user?.name?.split(' ')[0] || 'Admin';
+                                      const devName = u.name?.split(' ')[0] || 'there';
+                                      const msg = `Hi ${devName}. its me ${adminName} from sharemyapps. thank you for applying for ${v.title} position. need some more details from you`;
+                                      const phone = u.phone.replace(/\D/g, '');
+                                      window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank');
+                                    }}
+                                    className="shrink-0 flex items-center gap-1 text-xs font-medium px-2.5 py-1.5 rounded-lg border border-[#25D366] text-[#25D366] hover:bg-[#25D366] hover:text-white transition-colors"
+                                    title="WhatsApp"
+                                  >
+                                    <MessageCircle size={13} /> WA
+                                  </button>
+
+                                  <button
+                                    onClick={() => {
+                                      const key = `${v._id}-${u._id}`;
+                                      if (replyOpen?.key === key) { setReplyOpen(null); setReplyText(''); }
+                                      else { setReplyOpen({ key, vacancyId: v._id, userId: u._id }); setReplyText(''); }
+                                    }}
+                                    className={`shrink-0 flex items-center gap-1 text-xs font-medium px-2.5 py-1.5 rounded-lg border transition-colors ${replyOpen?.key === `${v._id}-${u._id}` ? 'bg-accent text-white border-transparent' : 'text-muted border-border hover:border-accent hover:text-accent'}`}
+                                  >
+                                    <Send size={11} /> Reply
+                                  </button>
+                                </div>
                               </div>
                               {replyOpen?.key === `${v._id}-${u._id}` && (
                                 <div className="ml-10 flex gap-2">

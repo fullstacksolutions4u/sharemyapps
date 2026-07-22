@@ -520,9 +520,16 @@ function normalize(str) {
   return ALIAS_MAP[lower] ?? lower;
 }
 
+const wordMatchCache = new Map();
+
 function isWordMatch(hay, needle) {
-  const escaped = needle.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  const re = new RegExp(`(?:^|[\\s,./\\-+#])${escaped}(?:[\\s,./\\-+#]|$)`, 'i');
+  let re = wordMatchCache.get(needle);
+  if (!re) {
+    if (wordMatchCache.size > 5000) wordMatchCache.clear();
+    const escaped = needle.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    re = new RegExp(`(?:^|[\\s,./\\-+#])${escaped}(?:[\\s,./\\-+#]|$)`, 'i');
+    wordMatchCache.set(needle, re);
+  }
   return re.test(` ${hay} `);
 }
 

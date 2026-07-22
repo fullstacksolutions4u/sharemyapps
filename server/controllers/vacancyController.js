@@ -1,6 +1,7 @@
 const Vacancy = require('../models/Vacancy');
 const Notification = require('../models/Notification');
-const { sendJobApplicationEmail } = require('../utils/email');
+const { sendJobApplicationEmail, sendApplicationReviewingEmail } = require('../utils/email');
+const User = require('../models/User');
 
 const parseSkills = (skills) =>
   Array.isArray(skills)
@@ -63,7 +64,7 @@ exports.getAllVacanciesAdmin = async (req, res) => {
   try {
     const vacancies = await Vacancy.find()
       .sort({ createdAt: -1 })
-      .populate('interests', 'name email regNumber userType avatar')
+      .populate('interests', 'name email phone regNumber userType avatar')
       .populate('createdBy', 'name email companyName userType');
     res.json(vacancies);
   } catch (err) { res.status(500).json({ message: err.message }); }
@@ -136,4 +137,50 @@ exports.deleteVacancy = async (req, res) => {
     if (!vacancy) return res.status(404).json({ message: 'Vacancy not found' });
     res.json({ message: 'Deleted' });
   } catch (err) { res.status(500).json({ message: err.message }); }
+};
+exports.updateApplicantStatus = async (req, res) => {
+  try {
+    const { userId, status } = req.body;
+    if (!userId || !status) {
+      return res.status(400).json({ message: 'userId and status are required' });
+    }
+    const vacancy = await Vacancy.findById(req.params.id);
+    if (!vacancy) return res.status(404).json({ message: 'Vacancy not found' });
+    
+    // Ensure the applicantStatus Map exists
+    if (!vacancy.applicantStatus) {
+      vacancy.applicantStatus = new Map();
+    }
+    
+    const previousStatus = vacancy.applicantStatus.get(userId);
+    if (previousStatus !== status) {
+      vacancy.applicantStatus.set(userId, status);
+      await vacancy.save();
+
+      const user = await User.findById(userId).select('name email');
+      if (user) {
+        if (status === 'reviewing') {
+          sendApplicationReviewingEmail({
+            to: user.email,
+            name: user.name,
+            vacancyTitle: vacancy.title
+          }).catch(console.error);
+        }
+
+        // In-platform notification for all changes
+        await Notification.create({
+          user: userId,
+          fromUser: req.user._id,
+          type: 'vacancy_status_update',
+          title: 'Application Status Updated',
+          message: `Your application status for "${vacancy.title}" has been updated to: ${status}`,
+          vacancy: vacancy._id,
+        }).catch(console.error);
+      }
+    }
+    
+    res.json({ success: true, applicantStatus: vacancy.applicantStatus });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
 };

@@ -802,3 +802,32 @@ exports.sendTop5CongratsEmail = async ({ to, name }) => {
     `,
   });
 };
+
+exports.sendApplicationReviewingEmail = async ({ to, name, vacancyTitle }) => {
+  await sendEmailWithFallback({
+    sender: FROM,
+    to: [{ email: to, name }],
+    subject: `Application Update – ${vacancyTitle} | ShareMyApps`,
+    htmlContent: `
+      <div style="font-family:Inter,Arial,sans-serif;max-width:560px;margin:0 auto;background:#fff;border-radius:12px;overflow:hidden;border:1px solid #E5E1DA;">
+        <div style="background:#00A693;padding:12px 32px;text-align:center;">
+          <img src="${LOGO_URL}" alt="ShareMyApps" style="height:40px;object-fit:contain;" />
+        </div>
+        <div style="padding:32px;">
+          <h2 style="margin:0 0 8px;font-size:20px;color:#1A1A1A;">Good News!</h2>
+          <p style="color:#374151;margin:0 0 16px;font-size:14px;">Hi ${name},</p>
+          <p style="color:#374151;margin:0 0 20px;font-size:14px;">
+            Our team has started to review your application for the <strong>${vacancyTitle}</strong> position. 
+          </p>
+          <div style="background:#EFF6FF;border:1px solid #BFDBFE;border-radius:10px;padding:16px 20px;margin-bottom:24px;">
+            <p style="margin:0;font-size:14px;color:#1E40AF;font-weight:600;">📞 You may expect a call from our team soon. Best of luck!</p>
+          </div>
+          <p style="color:#6B7280;font-size:13px;margin:0;">
+            Make sure your phone number is up to date in your profile!
+          </p>
+        </div>
+        ${FOOTER('You received this email because of a status update on your ShareMyApps application.')}
+      </div>
+    `,
+  });
+};
