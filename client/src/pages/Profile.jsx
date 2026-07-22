@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import {
   ArrowLeft, ArrowRight, User, Mail, Phone, Link2, GitBranch,
   Globe, Save, Trash2, AlertTriangle, Camera, Loader2, FileText, Check, Plus, X as XIcon,
-  Briefcase, BookOpen, IndianRupee, Code2, Languages, Clock, MapPin, Monitor, Calendar, Crown,
+  Briefcase, BookOpen, IndianRupee, Code2, Languages, Clock, MapPin, Monitor, Calendar, Crown, ChevronDown,
 } from 'lucide-react';
 
 const COUNTRY_CODES = [
@@ -533,10 +533,6 @@ export default function Profile() {
             {/* Tab 0 — Basic Info */}
             {activeTab === 0 && (
               <div className="space-y-4">
-                <div className="flex items-center gap-2 mb-1">
-                  <User size={15} className="text-accent" />
-                  <h2 className="text-sm font-semibold text-text">Basic Info</h2>
-                </div>
 
                 {/* Row 1: Full name + Email */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -563,17 +559,30 @@ export default function Profile() {
                   <div>
                     <label className="block text-sm font-medium text-text mb-2">Mobile</label>
                     <div className="flex rounded-xl border border-border focus-within:border-accent focus-within:ring-2 focus-within:ring-accent/10 transition overflow-hidden bg-white">
-                      <select
-                        value={countryCode}
-                        onChange={e => setCountryCode(e.target.value)}
-                        className="shrink-0 bg-[#F9F8F6] border-r border-border text-sm text-text px-2 py-2.5 focus:outline-none cursor-pointer"
-                      >
-                        {COUNTRY_CODES.map(c => (
-                          <option key={c.code} value={c.code}>
-                            {c.flag} {c.code}
-                          </option>
-                        ))}
-                      </select>
+                      <div className="shrink-0 bg-[#F9F8F6] border-r border-border relative flex items-center hover:bg-gray-100 transition-colors">
+                        {(() => {
+                          const selected = COUNTRY_CODES.find(c => c.code === countryCode) || COUNTRY_CODES[0];
+                          const iso = Array.from(selected.flag).map(char => String.fromCharCode(char.codePointAt(0) - 127397)).join('').toLowerCase();
+                          return (
+                            <div className="flex items-center gap-1.5 px-3 py-2.5 pointer-events-none">
+                              <img src={`https://flagcdn.com/w20/${iso}.png`} alt={selected.name} className="w-5 h-[14px] object-cover rounded-[2px] shadow-sm" />
+                              <span className="text-sm font-medium text-text">{selected.code}</span>
+                              <ChevronDown size={14} className="text-[#6B7280]" />
+                            </div>
+                          );
+                        })()}
+                        <select
+                          value={countryCode}
+                          onChange={e => setCountryCode(e.target.value)}
+                          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                        >
+                          {COUNTRY_CODES.map(c => (
+                            <option key={c.code} value={c.code}>
+                              {c.flag} {c.code} ({c.name})
+                            </option>
+                          ))}
+                        </select>
+                      </div>
                       <div className="relative flex-1">
                         <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#9CA3AF]"><Phone size={15} /></span>
                         <input
@@ -755,10 +764,6 @@ export default function Profile() {
             {/* Tab 1 — Developer Links */}
             {activeTab === 1 && (
               <div className="space-y-4">
-                <div className="flex items-center gap-2 mb-1">
-                  <Link2 size={15} className="text-accent" />
-                  <h2 className="text-sm font-semibold text-text">Developer Links <span className="text-xs text-muted font-normal">(all optional)</span></h2>
-                </div>
 
                 {/* Row 1: LinkedIn + GitHub */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -1073,23 +1078,11 @@ export default function Profile() {
             {/* Tab 3 — Resume / CV */}
             {activeTab === 3 && (
               <div className="space-y-5">
-                <div className="flex items-center gap-2 mb-1">
-                  <div className="w-7 h-7 rounded-lg bg-blue-50 flex items-center justify-center shrink-0">
-                    <FileText size={13} className="text-blue-500" />
-                  </div>
-                  <h2 className="text-sm font-semibold text-text">Resume / CV</h2>
-                </div>
 
                 {/* CV link */}
                 <div>
                   <div className="flex items-center justify-between mb-2">
                     <label className="text-sm font-medium text-text">Google Drive CV link <span className="text-red-400">*</span></label>
-                    {form.cvUrl && (
-                      <a href={form.cvUrl.startsWith('http') ? form.cvUrl : `https://${form.cvUrl}`} target="_blank" rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1.5 text-xs text-accent hover:underline font-medium">
-                        <FileText size={12} /> Preview your CV
-                      </a>
-                    )}
                   </div>
 
                   {/* Instructions */}

@@ -36,6 +36,7 @@ const PaidServices       = lazy(() => import('./pages/PaidServices'));
 const MentorshipProgram  = lazy(() => import('./pages/MentorshipProgram'));
 const AddVacancy         = lazy(() => import('./pages/AddVacancy'));
 const LearningTracker    = lazy(() => import('./pages/LearningTracker'));
+const Profile            = lazy(() => import('./pages/Profile'));
 const Services           = lazy(() => import('./pages/Services'));
 
 class ErrorBoundary extends Component {
@@ -127,7 +128,7 @@ function AppRoutes() {
               <Route path="premium" element={<PaidServices />} />
               <Route path="mentorship" element={<MentorshipProgram />} />
               <Route path="services" element={<Services />} />
-              <Route path="job-alerts" element={<JobAlerts />} />
+              <Route path="profile" element={<Profile />} />
             </Route>
             <Route path="/inbox" element={<ProtectedRoute><Inbox /></ProtectedRoute>} />
             <Route path="/messages" element={<Navigate to="/dashboard/inbox" state={{ tab: 'messages' }} replace />} />
