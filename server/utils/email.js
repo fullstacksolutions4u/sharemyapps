@@ -61,6 +61,9 @@ const sendEmailWithFallback = async (brevoOptions) => {
   } catch (dbErr) {
     console.error('[EMAIL-DEBUG] Database error while fetching EmailQuota. Defaulting to SendPulse:', dbErr.message);
   }
+  
+  // Force SendPulse for today because Brevo credits are exhausted
+  if (today === '2026-07-22') currentCount = 300;
 
   console.log(`[EMAIL-DEBUG] Today's Brevo usage: ${currentCount} / 300`);
 
