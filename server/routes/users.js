@@ -671,7 +671,7 @@ router.post('/find-developers', protect, jdQuota, aiLimit, async (req, res) => {
       projectMap[dev._id.toString()]?.count > 0 || hasValidResume(dev);
 
     const scored = developers
-      .filter(dev => !isEmptySummaryPlaceholder(dev) && hasProfileData(dev) && locationFilter(dev) && hasValidResume(dev))
+      .filter(dev => !isEmptySummaryPlaceholder(dev) && hasProfileData(dev) && locationFilter(dev))
       .map(dev => {
         const pid = dev._id.toString();
         const toArr = v => Array.isArray(v) ? v : (v && typeof v === 'object' ? Object.values(v).flat() : []);
