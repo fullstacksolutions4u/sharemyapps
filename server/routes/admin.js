@@ -1029,7 +1029,7 @@ router.post('/job-recommendations/send', async (req, res) => {
   try {
     const JobAlert = require('../models/JobAlert');
     const Notification = require('../models/Notification');
-    const { jobs, careerLinks, userIds, scheduledAt } = req.body;
+    const { jobs, careerLinks, userIds, scheduledAt, reusedFromSessionNumber } = req.body;
     const cleanJobs = (Array.isArray(jobs) ? jobs : [])
       .map(j => ({
         emailId: j.emailId?.trim() || '',
@@ -1066,6 +1066,7 @@ router.post('/job-recommendations/send', async (req, res) => {
       scheduledAt: sendAt,
       notified: false,
       sessionNumber,
+      reusedFromSessionNumber: reusedFromSessionNumber || null,
     });
 
     if (isScheduledForLater) {
@@ -1102,7 +1103,7 @@ router.get('/job-recommendations/sessions', async (_req, res) => {
     const sessions = await JobAlert.find()
       .sort({ sessionNumber: -1 })
       .limit(50)
-      .select('sessionNumber jobs careerLinks recipients scheduledAt notified createdAt')
+      .select('sessionNumber jobs careerLinks recipients scheduledAt notified createdAt reusedFromSessionNumber')
       .populate('recipients', 'name email')
       .lean();
     res.json({
@@ -1116,6 +1117,7 @@ router.get('/job-recommendations/sessions', async (_req, res) => {
         scheduledAt: s.scheduledAt,
         notified: s.notified,
         createdAt: s.createdAt,
+        reusedFromSessionNumber: s.reusedFromSessionNumber,
       })),
     });
   } catch (err) { res.status(500).json({ message: err.message }); }

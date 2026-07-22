@@ -34,6 +34,7 @@ export default function AdminJobRecommendationsSection() {
   const [sessionPage, setSessionPage] = useState(1);
   const SESSIONS_PER_PAGE = 5;
   const [searchQuery, setSearchQuery] = useState('');
+  const [reusedFromSessionNumber, setReusedFromSessionNumber] = useState(null);
 
   const loadUsers = useCallback(() => {
     setLoadingUsers(true);
@@ -58,6 +59,7 @@ export default function AdminJobRecommendationsSection() {
 
   const handleReuseSession = (session) => {
     setEditingSessionId(null);
+    setReusedFromSessionNumber(session.sessionNumber);
     setEditingSessionSent(false);
     setEditingSessionRecipients([]);
     setJobs(session.jobs.length ? session.jobs.map(j => ({ 
@@ -115,6 +117,7 @@ export default function AdminJobRecommendationsSection() {
 
   const cancelEdit = () => {
     setEditingSessionId(null);
+    setReusedFromSessionNumber(null);
     setEditingSessionSent(false);
     setEditingSessionRecipients([]);
     setJobs(emptyJobs());
@@ -198,6 +201,7 @@ export default function AdminJobRecommendationsSection() {
         careerLinks: validLinks,
         userIds: [...selectedIds],
         scheduledAt: scheduledAtISO,
+        reusedFromSessionNumber,
       });
       if (res.data.scheduled) {
         toast.success(`Scheduled for ${new Date(res.data.scheduledAt).toLocaleString('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })} — ${res.data.total} user${res.data.total === 1 ? '' : 's'}`);
@@ -207,6 +211,7 @@ export default function AdminJobRecommendationsSection() {
       setJobs(emptyJobs());
       setLinks(emptyLinks());
       setScheduledAt('');
+      setReusedFromSessionNumber(null);
       loadSessions();
     } catch (err) {
       toast.error(err.response?.data?.message || (editingSessionId ? 'Failed to update session' : 'Failed to send recommendations'));
@@ -481,6 +486,11 @@ export default function AdminJobRecommendationsSection() {
                 <div className="min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className="text-sm font-semibold text-[#1A1A1A]">Session {session.sessionNumber}</span>
+                    {session.reusedFromSessionNumber && (
+                      <span className="text-[10px] font-medium px-2 py-0.5 rounded-full border bg-gray-50 text-gray-600 border-gray-200">
+                        Reused from Session {session.reusedFromSessionNumber}
+                      </span>
+                    )}
                     <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full border ${
                       session.notified
                         ? 'bg-green-50 text-green-700 border-green-200'
