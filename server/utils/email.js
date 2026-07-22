@@ -29,7 +29,8 @@ const transporter = nodemailer.createTransport({
 });
 
 const EmailQuota = require('../models/EmailQuota');
-
+const { Resend } = require('resend');
+const resend = new Resend(process.env.RESEND_API_KEY);
 const sendEmailWithFallback = async (brevoOptions) => {
   console.log(`[EMAIL-DEBUG] Starting email send process for: ${brevoOptions.subject}`);
   
@@ -67,40 +68,79 @@ const sendEmailWithFallback = async (brevoOptions) => {
 
   console.log(`[EMAIL-DEBUG] Today's Brevo usage: ${currentCount} / 300`);
 
+  let emailSent = false;
+  let resultInfo;
+
   // 1. If we still have Brevo credits, use Brevo
   if (currentCount < 300) {
     try {
       console.log('[EMAIL-DEBUG] Attempting to send via Brevo API (Primary)...');
-      const result = await api.sendTransacEmail(brevoOptions);
-      console.log('[EMAIL-DEBUG] Brevo Success! Response:', JSON.stringify(result));
+      resultInfo = await api.sendTransacEmail(brevoOptions);
+      console.log('[EMAIL-DEBUG] Brevo Success! Response:', JSON.stringify(resultInfo));
       
       // Increment the counter since it succeeded
       await EmailQuota.updateOne({ date: today }, { $inc: { count: 1 } });
       
-      return result;
+      emailSent = true;
     } catch (brevoError) {
       console.error('[EMAIL-DEBUG] Brevo failed! Error details:', brevoError.response?.text || brevoError.message);
-      console.log('[EMAIL-DEBUG] Initiating SendPulse Fallback process...');
+      console.log('[EMAIL-DEBUG] Initiating fallback process...');
     }
   } else {
-    console.log('[EMAIL-DEBUG] Brevo daily quota of 300 exceeded. Routing directly to SendPulse...');
+    console.log('[EMAIL-DEBUG] Brevo daily quota of 300 exceeded. Routing directly to fallbacks...');
   }
 
-  // 2. If Brevo failed, or we are out of quota, use SendPulse
-  if (process.env.SENDPULSE_SMTP_HOST) {
+  // 2. If Brevo failed, or we are out of quota, use Resend
+  if (!emailSent && process.env.RESEND_API_KEY) {
     try {
-      console.log('[EMAIL-DEBUG] Sending via SendPulse API (Fallback/Quota Reached)...');
-      const info = await transporter.sendMail(mailOptions);
-      console.log('[EMAIL-DEBUG] SendPulse Success! MessageId:', info.messageId);
-      return info;
+      console.log('[EMAIL-DEBUG] Attempting to send via Resend API (Secondary)...');
+      const fromStr = `"${brevoOptions.sender?.name || 'ShareMyApps'}" <${brevoOptions.sender?.email || process.env.EMAIL_FROM}>`;
+      const toArr = (brevoOptions.to || []).map(t => t.email);
+      
+      const resendOptions = {
+        from: fromStr,
+        to: toArr,
+        subject: brevoOptions.subject,
+        html: brevoOptions.htmlContent,
+      };
+      
+      if (brevoOptions.replyTo) {
+        resendOptions.reply_to = brevoOptions.replyTo.email;
+      }
+
+      const { data, error } = await resend.emails.send(resendOptions);
+      if (error) {
+        throw new Error(error.message);
+      }
+      
+      console.log('[EMAIL-DEBUG] Resend Success! Data:', JSON.stringify(data));
+      resultInfo = data;
+      emailSent = true;
+    } catch (resendError) {
+      console.error('[EMAIL-DEBUG] Resend failed! Error details:', resendError.message);
+      console.log('[EMAIL-DEBUG] Initiating SendPulse Fallback process...');
+    }
+  }
+
+  // 3. If Resend failed, or API key missing, use SendPulse
+  if (!emailSent && process.env.SENDPULSE_SMTP_HOST) {
+    try {
+      console.log('[EMAIL-DEBUG] Sending via SendPulse API (Tertiary)...');
+      resultInfo = await transporter.sendMail(mailOptions);
+      console.log('[EMAIL-DEBUG] SendPulse Success! MessageId:', resultInfo.messageId);
+      emailSent = true;
     } catch (error) {
       console.error('[EMAIL-DEBUG] CRITICAL ERROR: SendPulse failed!', error.message);
       throw error;
     }
-  } else {
-    console.error('[EMAIL-DEBUG] CRITICAL ERROR: SendPulse credentials missing!');
+  } 
+
+  if (!emailSent) {
+    console.error('[EMAIL-DEBUG] CRITICAL ERROR: All email providers failed or are missing credentials!');
     throw new Error('No functional email provider available');
   }
+
+  return resultInfo;
 };
 
 exports.sendFeedbackEmail = async ({ senderName, senderEmail, text }) => {
