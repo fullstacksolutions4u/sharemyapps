@@ -14,6 +14,10 @@
 
 const { register } = require('prom-client');
 const { pushTimeseries } = require('prometheus-remote-write');
+const crypto = require('crypto');
+
+// Generate a unique ID per process to prevent interleaved metric streams across Cloud Run instances
+const INSTANCE_ID = process.env.K_REVISION || crypto.randomBytes(4).toString('hex');
 
 const PUSH_INTERVAL_MS = 15 * 1000; // Push every 15 seconds
 
@@ -37,7 +41,7 @@ async function pushMetrics() {
       for (const val of metric.values) {
         const labels = {
           __name__: val.metricName || metric.name,
-          instance: 'sharemyapps-server',
+          instance: `sharemyapps-server-${INSTANCE_ID}`,
         };
         if (val.labels) {
           for (const [k, v] of Object.entries(val.labels)) {
