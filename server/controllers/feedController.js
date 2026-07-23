@@ -1,5 +1,6 @@
 const Activity = require('../models/Activity');
 const Project = require('../models/Project');
+const User = require('../models/User');
 
 exports.getFeed = async (req, res) => {
   try {
@@ -7,7 +8,10 @@ exports.getFeed = async (req, res) => {
     const limit = parseInt(req.query.limit) || 40;
     const skip = (page - 1) * limit;
 
-    let activities = await Activity.find({ user: { $nin: ['6a225bdd9c1fca63c9154a8d', '6a5b3f5c36d9511e20e8058d'] } })
+    const hiddenUsers = await User.find({ $or: [{ hidden: true }, { isDeleted: true }] }).select('_id').lean();
+    const excludeIds = ['6a225bdd9c1fca63c9154a8d', '6a5b3f5c36d9511e20e8058d', ...hiddenUsers.map(u => u._id.toString())];
+
+    let activities = await Activity.find({ user: { $nin: excludeIds } })
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit)
@@ -23,7 +27,7 @@ exports.getFeed = async (req, res) => {
     // To ensure the feed isn't empty when first launching, if we have 0 activities, 
     // dynamically pull the latest 40 approved projects and format them as activities
     if (activities.length === 0 && page === 1) {
-      const recentProjects = await Project.find({ status: 'approved' })
+      const recentProjects = await Project.find({ status: 'approved', owner: { $nin: excludeIds } })
         .sort({ createdAt: -1 })
         .limit(40)
         .populate('owner', 'name profileImage avatar designations')

@@ -50,7 +50,7 @@ router.get('/applications', protect, async (req, res) => {
 // GET /api/users/stats — public, returns counts by userType for hero section
 router.get('/stats', async (req, res) => {
   try {
-    const base = { isDeleted: { $ne: true }, role: { $ne: 'admin' } };
+    const base = { isDeleted: { $ne: true }, hidden: { $ne: true }, role: { $ne: 'admin' } };
     const [developerCount, recruiterCount, menteeCount] = await Promise.all([
       User.countDocuments({ ...base, userType: 'developer' }),
       User.countDocuments({ ...base, userType: { $in: ['recruiter', 'client'] } }),
@@ -66,7 +66,7 @@ router.get('/stats', async (req, res) => {
 router.get('/search', async (req, res) => {
   try {
     const q = req.query.q?.trim() || '';
-    const filter = { role: { $ne: 'admin' }, isDeleted: { $ne: true } };
+    const filter = { role: { $ne: 'admin' }, isDeleted: { $ne: true }, hidden: { $ne: true } };
     if (q) {
       const safe = q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
       filter.name = { $regex: safe, $options: 'i' };
@@ -84,7 +84,7 @@ router.get('/recent', async (req, res) => {
     const limit = Math.min(parseInt(req.query.limit) || 5, 200);
     const skip = Math.max(parseInt(req.query.skip) || 0, 0);
     const users = await require('../models/User').find(
-      { role: { $ne: 'admin' }, isDeleted: { $ne: true }, userType: 'developer', avatar: { $exists: true, $ne: '' } },
+      { role: { $ne: 'admin' }, isDeleted: { $ne: true }, hidden: { $ne: true }, userType: 'developer', avatar: { $exists: true, $ne: '' } },
       { name: 1, avatar: 1, userType: 1 }
     ).sort({ createdAt: -1 }).skip(skip).limit(limit).lean();
     res.json(users);
@@ -106,6 +106,7 @@ router.get('/showcase-devs', async (req, res) => {
       {
         role: { $ne: 'admin' },
         isDeleted: { $ne: true },
+        hidden: { $ne: true },
         userType: 'developer',
         avatar: { $exists: true, $ne: '' },
       },

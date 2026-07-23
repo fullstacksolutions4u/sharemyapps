@@ -307,16 +307,18 @@ const getLeaderboard = async (req, res) => {
     let userRank = null;
     let userPoints = 0;
     if (req.user) {
-      const currentUser = await User.findById(req.user._id).select('points createdAt').lean();
+      const currentUser = await User.findById(req.user._id).select('points createdAt hidden').lean();
       userPoints = currentUser?.points || 0;
-      const usersAbove = await User.countDocuments({
-        ...devFilter,
-        $or: [
-          { points: { $gt: userPoints } },
-          { points: userPoints, createdAt: { $lt: currentUser.createdAt } },
-        ],
-      });
-      userRank = usersAbove + 1;
+      if (currentUser && !currentUser.hidden) {
+        const usersAbove = await User.countDocuments({
+          ...devFilter,
+          $or: [
+            { points: { $gt: userPoints } },
+            { points: userPoints, createdAt: { $lt: currentUser.createdAt } },
+          ],
+        });
+        userRank = usersAbove + 1;
+      }
     }
 
     res.status(200).json({ success: true, leaderboard, userRank, userPoints });
