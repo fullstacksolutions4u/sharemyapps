@@ -7,7 +7,7 @@ import api from '../../api/axios';
 import toast from 'react-hot-toast';
 
 const PLACEHOLDER = 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=400&q=80';
-const getBanner = (bannerImage, liveUrl) => bannerImage || (liveUrl ? `https://s0.wp.com/mshots/v1/${encodeURIComponent(liveUrl)}?w=400` : PLACEHOLDER);
+const getBanner = (bannerImage) => bannerImage || PLACEHOLDER;
 const statusStyle = {
   pending:  'bg-yellow-50 text-yellow-700 border-yellow-200',
   approved: 'bg-green-50 text-green-700 border-green-200',

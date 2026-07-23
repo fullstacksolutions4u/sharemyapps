@@ -29,7 +29,7 @@ import { useConfirm } from '../context/ConfirmContext';
 
 const PLACEHOLDER = 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=1200&q=80';
 const toAbsUrl = (url) => url && !/^https?:\/\//i.test(url) ? `https://${url}` : url;
-const getbanner = (bannerImage, liveUrl) => bannerImage || `https://s0.wp.com/mshots/v1/${encodeURIComponent(liveUrl)}?w=1200`;
+const getbanner = (bannerImage) => bannerImage || PLACEHOLDER;
 
 const TAG_COLORS = ['bg-blue-50 text-blue-700','bg-green-50 text-green-700','bg-purple-50 text-purple-700','bg-yellow-50 text-yellow-700','bg-pink-50 text-pink-700','bg-[#E6F7F5] text-[#00A693]'];
 function tagColor(tag) {

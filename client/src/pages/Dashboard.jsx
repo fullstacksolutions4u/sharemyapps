@@ -26,8 +26,7 @@ const NAV = [
 ];
 
 const PLACEHOLDER = 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=400&q=80';
-const getbanner = (bannerImage, liveUrl) =>
-  bannerImage || `https://s0.wp.com/mshots/v1/${encodeURIComponent(liveUrl)}?w=400`;
+const getbanner = (bannerImage) => bannerImage || PLACEHOLDER;
 
 const statusBadge = {
   pending:  { label: 'Pending review', icon: Clock,        cls: 'bg-yellow-50 text-yellow-700 border-yellow-200' },

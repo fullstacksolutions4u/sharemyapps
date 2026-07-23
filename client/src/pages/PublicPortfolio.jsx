@@ -99,8 +99,7 @@ const APP_TYPE_CFG = {
   mobile: { label: 'Mobile App', Icon: Smartphone, cls: 'bg-violet-500/90 text-white' },
   web:    { label: 'Web App',    Icon: Monitor,    cls: 'bg-sky-500/90 text-white' },
 };
-const getbanner = (bannerImage, liveUrl) =>
-  bannerImage || `https://s0.wp.com/mshots/v1/${encodeURIComponent(liveUrl)}?w=400`;
+const getbanner = (bannerImage) => bannerImage || PLACEHOLDER;
 
 const toAbsoluteUrl = (url) => {
   if (!url) return '';

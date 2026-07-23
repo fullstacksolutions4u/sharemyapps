@@ -15,7 +15,7 @@ const AVATAR_COLORS = [
   'bg-orange-500', 'bg-teal-500',
 ];
 const avatarColor = (name = '') => AVATAR_COLORS[name.charCodeAt(0) % AVATAR_COLORS.length];
-const getbanner = (bannerImage, liveUrl) => bannerImage || `https://s0.wp.com/mshots/v1/${encodeURIComponent(liveUrl)}?w=800`;
+const getbanner = (bannerImage) => bannerImage || PLACEHOLDER;
 
 function avgRating(ratings = []) {
   if (!ratings.length) return null;
