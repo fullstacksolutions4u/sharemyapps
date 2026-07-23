@@ -37,6 +37,9 @@ const LearningTracker = ({ embedded = false }) => {
   });
   const [weeklyProgress, setWeeklyProgress] = useState([]);
   const [calendarDate, setCalendarDate] = useState(new Date());
+  const completedModulesCount = useMemo(() => {
+    return modules.filter(m => m.topics.length > 0 && m.topics.every(t => t.completed)).length;
+  }, [modules]);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/immutability
@@ -300,7 +303,6 @@ const LearningTracker = ({ embedded = false }) => {
     }
     return streak;
   })();
-
   return (
     <div className="min-h-screen relative" style={{ paddingTop: embedded ? '24px' : '24px', paddingBottom: '48px', background: 'linear-gradient(to bottom right, rgba(0,166,147,0.10), #ffffff, #f5f3ff)' }}>
       <div className="absolute inset-0 opacity-20 pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle, #00A693 1px, transparent 1px)', backgroundSize: '28px 28px' }} />
@@ -499,15 +501,19 @@ const LearningTracker = ({ embedded = false }) => {
                 <div className="flex-shrink-0 w-full lg:w-[360px] lg:sticky lg:top-28">
                   <div className="rounded-2xl shadow-xl p-5 flex flex-col overflow-y-auto custom-scrollbar" style={{ height: '800px', backgroundColor: '#FAF7F2', border: '2px solid #E0D8CC' }}>
                   
-                  {/* Streak / Points */}
+                  {/* Streak / Points / Completed Modules */}
                   <div className="flex flex-wrap items-center justify-center gap-2 mb-4 mt-2">
-                    <div className="px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-sm" style={{ backgroundColor: '#FFF8F0', border: '1px solid rgba(192,122,58,0.3)' }}>
+                    <div className="px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-sm" style={{ backgroundColor: '#FFF8F0', border: '1px solid rgba(192,122,58,0.3)' }} title="Streak">
                       <span className="text-base animate-pulse">🔥</span>
-                      <span className="text-xs font-bold text-orange-400">Streak: <span style={{ color: '#1C1A17' }}>{streakCount} {streakCount === 1 ? 'day' : 'days'}</span></span>
+                      <span className="text-xs font-bold text-[#1C1A17]">{streakCount}</span>
                     </div>
-                    <div className="px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-sm" style={{ backgroundColor: '#FFF8E8', border: '1px solid rgba(201,169,110,0.3)' }}>
+                    <div className="px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-sm" style={{ backgroundColor: '#FFF8E8', border: '1px solid rgba(201,169,110,0.3)' }} title="Points">
                       <AnimatedCoin className="w-4 h-4" />
-                      <span className="text-xs font-bold text-yellow-400">Points: <span style={{ color: '#1C1A17' }}>{userPoints}</span></span>
+                      <span className="text-xs font-bold text-[#1C1A17]">{userPoints}</span>
+                    </div>
+                    <div className="px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-sm" style={{ backgroundColor: '#F0FDF4', border: '1px solid rgba(34,197,94,0.3)' }} title="Completed Modules">
+                      <span className="text-base">🎓</span>
+                      <span className="text-xs font-bold text-[#1C1A17]">{completedModulesCount}/{modules.length}</span>
                     </div>
                   </div>
 
