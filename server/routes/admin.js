@@ -37,6 +37,7 @@ const {
   replyToInterest,
   toggleVacancyStatus,
   updateApplicantStatus,
+  markVacancyViewed,
 } = require('../controllers/vacancyController');
 const { adminGetUserJDHistory } = require('../controllers/jdAnalysisController');
 const { adminGetPayments, adminDeletePayment } = require('../controllers/paymentController');
@@ -91,8 +92,9 @@ router.get('/vacancies', getAllVacanciesAdmin);
 router.post('/vacancies', createVacancy);
 router.put('/vacancies/:id', updateVacancy);
 router.delete('/vacancies/:id', deleteVacancy);
-router.post('/vacancies/:id/reply', replyToInterest);
 router.patch('/vacancies/:id/toggle-status', toggleVacancyStatus);
+router.patch('/vacancies/:id/view', markVacancyViewed);
+router.post('/vacancies/:id/reply', replyToInterest);
 router.patch('/vacancies/:id/applicant-status', updateApplicantStatus);
 
 // Freelance opportunities

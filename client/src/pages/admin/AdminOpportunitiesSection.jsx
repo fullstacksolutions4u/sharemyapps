@@ -5,10 +5,11 @@ import AdminFreelanceSection from './AdminFreelanceSection';
 
 const TABS = [
   { key: 'vacancies',  label: 'Vacancies',         icon: Briefcase },
+  { key: 'reported',   label: 'Reported Vacancies', icon: Briefcase },
   { key: 'freelance',  label: 'Freelance Projects', icon: Laptop },
 ];
 
-export default function AdminOpportunitiesSection() {
+export default function AdminOpportunitiesSection({ stats }) {
   const [tab, setTab] = useState('vacancies');
   const vacanciesRef = useRef(null);
 
@@ -28,6 +29,11 @@ export default function AdminOpportunitiesSection() {
             >
               <Icon size={14} />
               {label}
+              {key === 'reported' && stats?.pendingVacancies > 0 && (
+                <span className="ml-1.5 bg-red-500 text-white text-[10px] w-4 h-4 flex items-center justify-center rounded-full leading-none shrink-0">
+                  {stats.pendingVacancies}
+                </span>
+              )}
             </button>
           ))}
         </div>
@@ -42,7 +48,8 @@ export default function AdminOpportunitiesSection() {
         )}
       </div>
 
-      {tab === 'vacancies'  && <AdminVacanciesSection ref={vacanciesRef} hideTitle />}
+      {tab === 'vacancies'  && <AdminVacanciesSection ref={vacanciesRef} hideTitle filterStatus="standard" />}
+      {tab === 'reported'   && <AdminVacanciesSection hideTitle filterStatus="reported" />}
       {tab === 'freelance'  && <AdminFreelanceSection />}
     </div>
   );

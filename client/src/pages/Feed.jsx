@@ -6,14 +6,18 @@ import { Trophy, MessageCircle, Heart, Star, TrendingUp, Briefcase, ChevronRight
 import _Lottie from 'lottie-react';
 import feedAnimation from '../assets/feed.json';
 import FeedProjectCard from '../components/FeedProjectCard';
+import { useAuth } from '../context/AuthContext';
+import ReportVacancyModal from '../components/ReportVacancyModal';
 
 const Lottie = _Lottie.default ?? _Lottie;
 
 export default function Feed() {
+  const { user } = useAuth();
   const [activities, setActivities] = useState([]);
   const [leaderboard, setLeaderboard] = useState([]);
   const [opportunities, setOpportunities] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [showReportModal, setShowReportModal] = useState(false);
   
   // Infinite scroll state
   const [page, setPage] = useState(1);
@@ -130,10 +134,10 @@ export default function Feed() {
       </div>
 
       {/* RIGHT: Leaderboard & Opportunities */}
-      <div className="flex-1 md:max-w-[30%] flex flex-col gap-6 sticky top-20 h-[calc(100vh-100px)]">
+      <div className="flex-1 md:max-w-[30%] flex flex-col gap-6 sticky top-20 max-h-[calc(100vh-100px)] overflow-y-auto custom-scrollbar pb-4 pr-1">
         
         {/* LEADERBOARD (Top 5) */}
-        <div className="bg-linear-to-br from-violet-50/80 to-purple-50/50 rounded-xl shadow-sm border border-black/5 overflow-hidden shrink-0">
+        <div className="bg-linear-to-br from-violet-50/80 to-purple-50/50 rounded-xl shadow-sm border border-black/5 overflow-hidden shrink-0 flex flex-col h-[360px]">
           <div className="p-4 border-b border-black/5 bg-transparent flex items-center justify-between">
             <div className="flex items-center gap-2 font-bold text-lg text-text">
               <Trophy size={20} className="text-violet-600" />
@@ -147,7 +151,7 @@ export default function Feed() {
             </Link>
           </div>
           
-          <div className="p-0">
+          <div className="p-0 flex-1 overflow-y-auto custom-scrollbar">
             {leaderboard.length === 0 ? (
               <div className="p-6 text-center text-muted">No data available</div>
             ) : (
@@ -188,8 +192,19 @@ export default function Feed() {
           </div>
         </div>
 
+        {/* REPORT VACANCY BUTTON */}
+        {user && (
+          <button
+            onClick={() => setShowReportModal(true)}
+            className="bg-gradient-to-r from-[#00A693] to-[#007D6F] text-white font-bold py-3.5 px-4 rounded-xl flex items-center justify-center gap-2.5 transition-all w-full shrink-0 shadow-[0_4px_14px_0_rgba(0,166,147,0.39)] hover:shadow-[0_6px_20px_rgba(0,166,147,0.23)] hover:-translate-y-0.5"
+          >
+            <Briefcase size={18} className="drop-shadow-sm" />
+            Is your company hiring right now?
+          </button>
+        )}
+
         {/* OPPORTUNITIES (Jobs) */}
-        <div className="bg-linear-to-br from-amber-50/80 to-yellow-50/50 rounded-xl shadow-sm border border-black/5 flex flex-col flex-1 min-h-0 overflow-hidden">
+        <div className="bg-linear-to-br from-amber-50/80 to-yellow-50/50 rounded-xl shadow-sm border border-black/5 flex flex-col overflow-hidden shrink-0 h-[360px]">
           
           <div className="p-4 border-b border-black/5 bg-transparent flex items-center justify-between shrink-0">
             <div className="flex items-center gap-2 font-bold text-lg text-text">
@@ -203,7 +218,7 @@ export default function Feed() {
               View All
             </Link>
           </div>
-          <div className="p-0 overflow-y-auto custom-scrollbar flex-1 relative">
+          <div className="p-0 flex-1 overflow-y-auto custom-scrollbar relative">
             {opportunities.length === 0 ? (
                <div className="p-10 flex flex-col items-center justify-center text-muted">
                  <Briefcase size={32} className="opacity-20 mb-3" />
@@ -211,7 +226,7 @@ export default function Feed() {
                </div>
             ) : (
                <div className="divide-y divide-black/5">
-                 {opportunities.map(job => (
+                 {opportunities.slice(0, 5).map(job => (
                     <Link 
                       key={job._id} 
                       to="/vacancies" 
@@ -221,9 +236,8 @@ export default function Feed() {
                         <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center shrink-0 group-hover:bg-primary/20 transition-colors shadow-sm">
                           <Briefcase size={16} className="text-primary" />
                         </div>
-                        <div className="flex flex-col flex-1 min-w-0">
-                          <p className="text-sm font-bold text-text line-clamp-1 group-hover:text-primary transition-colors leading-tight">{job.title}</p>
-                          <p className="text-xs text-muted mt-1 font-medium truncate">{job.company || 'Confidential'}</p>
+                        <div className="flex flex-col flex-1 min-w-0 justify-center">
+                          <p className="text-sm font-medium text-text line-clamp-2 group-hover:text-primary transition-colors leading-snug">{job.title}</p>
                         </div>
                       </div>
                       <ChevronRight size={16} className="text-primary opacity-0 -translate-x-3 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300 absolute right-4 z-10" />
@@ -236,6 +250,12 @@ export default function Feed() {
 
       </div>
       </div>
+
+      <ReportVacancyModal 
+        isOpen={showReportModal} 
+        onClose={() => setShowReportModal(false)} 
+        user={user} 
+      />
     </div>
   );
 }

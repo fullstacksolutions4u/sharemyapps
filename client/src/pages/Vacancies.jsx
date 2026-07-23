@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { MapPin, Briefcase, CreditCard, CheckCircle, ArrowRight, Laptop, Clock, Crown, Home } from 'lucide-react';
+import { MapPin, Briefcase, CreditCard, CheckCircle, XCircle, ArrowRight, Laptop, Clock, Crown, Home } from 'lucide-react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
@@ -16,6 +16,46 @@ const SKILL_COLORS = [
   'bg-cyan-50 text-cyan-700 border-cyan-200',
   'bg-rose-50 text-rose-700 border-rose-200',
 ];
+
+const getStatusConfig = (status) => {
+  const s = (status || '').toLowerCase();
+  
+  if (s === 'rejected') {
+    return {
+      classes: 'bg-red-50 text-red-600 border border-red-200 cursor-default opacity-100',
+      icon: <XCircle size={15} />,
+      canWithdraw: false
+    };
+  }
+  if (s === 'selected') {
+    return {
+      classes: 'bg-green-50 text-green-600 border border-green-200 cursor-default opacity-100',
+      icon: <CheckCircle size={15} />,
+      canWithdraw: false
+    };
+  }
+  if (s === 'reviewing') {
+    return {
+      classes: 'bg-orange-50 text-orange-600 border border-orange-200 hover:bg-red-50 hover:text-red-500 hover:border-red-200',
+      icon: <CheckCircle size={15} className="group-hover:hidden" />,
+      canWithdraw: true
+    };
+  }
+  if (s.startsWith('interview')) {
+    return {
+      classes: 'bg-violet-50 text-violet-600 border border-violet-200 hover:bg-red-50 hover:text-red-500 hover:border-red-200',
+      icon: <CheckCircle size={15} className="group-hover:hidden" />,
+      canWithdraw: true
+    };
+  }
+  
+  // Default to applied (blue)
+  return {
+    classes: 'bg-blue-50 text-blue-600 border border-blue-200 hover:bg-red-50 hover:text-red-500 hover:border-red-200',
+    icon: <CheckCircle size={15} className="group-hover:hidden" />,
+    canWithdraw: true
+  };
+};
 
 function SkillsList({ skills, colors }) {
   const [expanded, setExpanded] = useState(false);
@@ -320,29 +360,36 @@ export default function Vacancies() {
                     >
                       Sign in to apply <ArrowRight size={15} />
                     </Link>
-                  ) : (
-                    <button
-                      onClick={() => handleInterest(v)}
-                      disabled={busy === v._id}
-                      className={`group flex items-center gap-2 text-sm font-semibold px-5 py-2.5 rounded-xl transition-colors disabled:opacity-60 disabled:cursor-not-allowed ${
-                        v.interested
-                          ? 'bg-accent-light text-accent border border-accent/30 hover:bg-red-50 hover:text-red-500 hover:border-red-200'
-                          : 'bg-white text-accent border border-accent hover:bg-accent hover:text-white'
-                      }`}
-                    >
-                      {busy === v._id ? (
-                        <span className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                      ) : v.interested ? (
-                        <>
-                          <CheckCircle size={15} className="group-hover:hidden" />
-                          <span className="group-hover:hidden">Applied</span>
-                          <span className="hidden group-hover:inline">Withdraw</span>
-                        </>
-                      ) : (
-                        <>Show Interest <ArrowRight size={15} /></>
-                      )}
-                    </button>
-                  )}
+                  ) : (() => {
+                    const config = getStatusConfig(v.applicationStatus);
+                    return (
+                      <button
+                        onClick={() => handleInterest(v)}
+                        disabled={busy === v._id || !config.canWithdraw}
+                        className={`group flex items-center gap-2 text-sm font-semibold px-5 py-2.5 rounded-xl transition-colors ${
+                          !config.canWithdraw ? 'disabled:opacity-100 disabled:cursor-default cursor-default' : 'disabled:opacity-60 disabled:cursor-not-allowed'
+                        } ${
+                          v.interested
+                            ? config.classes
+                            : 'bg-white text-accent border border-accent hover:bg-accent hover:text-white'
+                        }`}
+                      >
+                        {busy === v._id ? (
+                          <span className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                        ) : v.interested ? (
+                          <>
+                            {config.icon}
+                            <span className={!config.canWithdraw ? '' : 'group-hover:hidden'}>
+                              {v.applicationStatus ? v.applicationStatus.charAt(0).toUpperCase() + v.applicationStatus.slice(1) : 'Applied'}
+                            </span>
+                            {config.canWithdraw && <span className="hidden group-hover:inline">Withdraw</span>}
+                          </>
+                        ) : (
+                          <>Show Interest <ArrowRight size={15} /></>
+                        )}
+                      </button>
+                    );
+                  })()}
                 </div>
               </div>
             );

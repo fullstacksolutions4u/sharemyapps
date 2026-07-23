@@ -157,4 +157,10 @@ userSchema.methods.toPublicJSON = function () {
   };
 };
 
+userSchema.methods.toAuthJSON = function () {
+  const data = this.toPublicJSON();
+  data.resumeData = this.resumeData;
+  return data;
+};
+
 module.exports = mongoose.model('User', userSchema);

@@ -69,6 +69,12 @@ const { user, setUser, logout } = useAuth();
   useEffect(() => {
     api.get('/admin/stats').then(res => setStats(res.data)).catch(() => {});
     api.get('/messages').then(res => setUnreadMessages(res.data.unreadCount)).catch(() => {});
+
+    const handleDecrement = () => {
+      setStats(prev => prev ? { ...prev, pendingVacancies: Math.max(0, prev.pendingVacancies - 1) } : null);
+    };
+    window.addEventListener('decrementPendingVacancies', handleDecrement);
+    return () => window.removeEventListener('decrementPendingVacancies', handleDecrement);
   }, []);
 
   const navigate = (key) => { setSection(key); setMobileOpen(false); };
@@ -109,6 +115,9 @@ const { user, setUser, logout } = useAuth();
               )}
               {key === 'messages' && unreadMessages > 0 && (
                 <span className="ml-auto bg-accent text-white text-xs w-5 h-5 flex items-center justify-center rounded-full leading-none shrink-0">{unreadMessages > 9 ? '9+' : unreadMessages}</span>
+              )}
+              {key === 'opportunities' && stats?.pendingVacancies > 0 && (
+                <span className="ml-auto bg-red-500 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full leading-none shrink-0">{stats.pendingVacancies}</span>
               )}
             </button>
           ))}
@@ -162,7 +171,7 @@ const { user, setUser, logout } = useAuth();
           {section === 'users'            && <AdminUsersSection initialTab="developers" />}
           {section === 'companies'        && <AdminAdvancedUsersFilterSection />}
           {section === 'vacancies'        && <AdminVacanciesSection />}
-          {section === 'opportunities'    && <AdminOpportunitiesSection />}
+          {section === 'opportunities'    && <AdminOpportunitiesSection stats={stats} />}
           {section === 'resumes'          && <AdminResumesSection />}
           {section === 'announcements'    && <AdminAnnouncementsSection />}
           {section === 'messages'         && <AdminMessagesSection onUnreadChange={setUnreadMessages} />}

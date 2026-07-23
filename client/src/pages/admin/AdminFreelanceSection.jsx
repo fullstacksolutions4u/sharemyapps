@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import {
   Plus, Save, Check, Trash2, Pencil, ToggleLeft, ToggleRight,
-  Laptop, ChevronDown, Users as UsersIcon, Send,
+  Laptop, ChevronDown, Users as UsersIcon, Send, X, Eye
 } from 'lucide-react';
 import api from '../../api/axios';
 import toast from 'react-hot-toast';
@@ -70,6 +70,7 @@ export default function AdminFreelanceSection() {
   const [replyOpen, setReplyOpen] = useState(null);
   const [replyText, setReplyText] = useState('');
   const [replySending, setReplySending] = useState(false);
+  const [viewModal, setViewModal] = useState({ isOpen: false, project: null });
 
   useEffect(() => {
     api.get('/admin/freelance')
@@ -219,6 +220,10 @@ export default function AdminFreelanceSection() {
                       )}
                     </div>
                     <div className="flex items-center gap-1 shrink-0">
+                      <button onClick={() => setViewModal({ isOpen: true, project: v })}
+                        className="p-1.5 rounded-lg hover:bg-accent/10 text-accent hover:text-accent-hover transition-colors" title="View details">
+                        <Eye size={16} />
+                      </button>
                       <button onClick={() => setExpandedInterests(expandedInterests === v._id ? null : v._id)}
                         className="flex items-center gap-1 text-xs text-[#6B7280] hover:text-[#1A1A1A] px-2.5 py-1.5 rounded-lg hover:bg-[#F3F0EB] transition-colors">
                         <UsersIcon size={13} />
@@ -290,6 +295,52 @@ export default function AdminFreelanceSection() {
               )}
             </div>
           ))}
+        </div>
+      )}
+
+      {/* View Modal */}
+      {viewModal.isOpen && viewModal.project && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm overflow-y-auto">
+          <div className="bg-white rounded-2xl w-full max-w-2xl p-6 shadow-2xl relative my-auto animate-in fade-in zoom-in duration-200">
+            <button onClick={() => setViewModal({ isOpen: false, project: null })} className="absolute top-4 right-4 text-muted hover:text-text transition-colors">
+              <X size={20} />
+            </button>
+            <h2 className="text-xl font-bold text-text mb-4 border-b pb-3">Project Details</h2>
+            
+            <div className="space-y-4 text-sm text-[#1A1A1A]">
+              <div className="grid grid-cols-2 gap-4">
+                <div><span className="font-semibold text-muted">Title:</span> <p className="font-medium">{viewModal.project.title}</p></div>
+                <div><span className="font-semibold text-muted">Budget:</span> <p className="font-medium text-green-700">{viewModal.project.budget || 'Not specified'}</p></div>
+                <div><span className="font-semibold text-muted">Duration:</span> <p className="font-medium">{viewModal.project.duration || 'Not specified'}</p></div>
+                <div><span className="font-semibold text-muted">Work Mode:</span> <p className="font-medium capitalize">{viewModal.project.type}</p></div>
+                <div><span className="font-semibold text-muted">Status:</span> <p className="font-medium capitalize">{viewModal.project.status}</p></div>
+                <div><span className="font-semibold text-muted">Posted By:</span> <p className="font-medium">{viewModal.project.createdBy?.name || 'Admin'} ({viewModal.project.createdBy?.email})</p></div>
+              </div>
+              
+              <div className="pt-2 border-t">
+                <span className="font-semibold text-muted block mb-1">Description:</span> 
+                <div className="bg-gray-50 p-4 rounded-xl whitespace-pre-wrap font-medium">{viewModal.project.description}</div>
+              </div>
+              
+              {viewModal.project.skills?.length > 0 && (
+                <div className="pt-2 border-t">
+                  <span className="font-semibold text-muted block mb-2">Skills Required:</span>
+                  <div className="flex flex-wrap gap-1.5">
+                    {viewModal.project.skills.map(s => <span key={s} className="text-xs bg-[#F3F0EB] text-[#6B7280] px-2.5 py-1 rounded-full">{s}</span>)}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="flex justify-end gap-3 mt-6">
+              <button 
+                onClick={() => setViewModal({ isOpen: false, project: null })}
+                className="px-5 py-2 text-sm font-semibold text-white bg-accent hover:bg-accent-hover rounded-xl transition-colors"
+              >
+                Close
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

@@ -53,7 +53,7 @@ exports.register = async (req, res) => {
       await existing.save();
       const token = signToken(existing._id);
       setCookie(res, token);
-      return res.status(201).json({ user: existing.toPublicJSON(), token });
+      return res.status(201).json({ user: existing.toAuthJSON(), token });
     }
 
     const regNumber = await getNextRegNumber();
@@ -65,7 +65,7 @@ exports.register = async (req, res) => {
     const { userActivityCounter } = require('../utils/customMetrics');
     userActivityCounter.inc({ action: 'signup' });
 
-    res.status(201).json({ user: user.toPublicJSON(), token });
+    res.status(201).json({ user: user.toAuthJSON(), token });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -94,7 +94,7 @@ exports.login = async (req, res) => {
     const { userActivityCounter } = require('../utils/customMetrics');
     userActivityCounter.inc({ action: 'login' });
 
-    res.json({ user: user.toPublicJSON(), token });
+    res.json({ user: user.toAuthJSON(), token });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -122,7 +122,7 @@ exports.getMe = async (req, res) => {
       dirty = true;
     }
     if (dirty) await user.save();
-    res.json({ user: user.toPublicJSON() });
+    res.json({ user: user.toAuthJSON() });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

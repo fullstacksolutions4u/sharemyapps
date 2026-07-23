@@ -12,6 +12,10 @@
   --color-accent: #00A693;
   --color-accent-hover: #007D6F;
   --color-accent-light: #E6F7F5;
+  
+  --color-primary: var(--color-accent);
+  --color-primary-hover: var(--color-accent-hover);
+  --color-primary-light: var(--color-accent-light);
 }
 
 @keyframes marquee {

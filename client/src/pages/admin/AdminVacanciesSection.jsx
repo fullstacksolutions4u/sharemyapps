@@ -1,7 +1,7 @@
 import { useState, useEffect, forwardRef, useImperativeHandle } from 'react';
 import {
   Plus, Save, Check, Trash2, Pencil, ToggleLeft, ToggleRight,
-  MapPin, Briefcase, ChevronDown, Users as UsersIcon, Send, MessageCircle, Home, X
+  MapPin, Briefcase, ChevronDown, Users as UsersIcon, Send, MessageCircle, Home, X, Eye
 } from 'lucide-react';
 import api from '../../api/axios';
 import toast from 'react-hot-toast';
@@ -45,6 +45,7 @@ function VacancyFormFields({ form, onChange }) {
         <select name="status" value={form.status} onChange={onChange} className={inp}>
           <option value="active">Active</option>
           <option value="closed">Closed</option>
+          <option value="pending">Pending</option>
         </select>
       </div>
       <div className="sm:col-span-2">
@@ -85,7 +86,7 @@ function VacancyFormFields({ form, onChange }) {
   );
 }
 
-const AdminVacanciesSection = forwardRef(function AdminVacanciesSection({ hideTitle = false }, ref) {
+const AdminVacanciesSection = forwardRef(function AdminVacanciesSection({ hideTitle = false, filterStatus = 'standard' }, ref) {
   const [vacancies, setVacancies] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showAdd, setShowAdd] = useState(false);
@@ -97,6 +98,7 @@ const AdminVacanciesSection = forwardRef(function AdminVacanciesSection({ hideTi
   const [replyText, setReplyText] = useState('');
   const [replySending, setReplySending] = useState(false);
   const [statusModal, setStatusModal] = useState({ isOpen: false, vacancyId: null, userId: null, status: null, note: '' });
+  const [viewModal, setViewModal] = useState({ isOpen: false, vacancy: null });
   const { user } = useAuth();
 
   useImperativeHandle(ref, () => ({
@@ -153,8 +155,21 @@ const AdminVacanciesSection = forwardRef(function AdminVacanciesSection({ hideTi
     try {
       const res = await api.patch(`/admin/vacancies/${id}/toggle-status`);
       setVacancies(prev => prev.map(v => v._id === id ? { ...v, status: res.data.status } : v));
-      toast.success(res.data.status === 'closed' ? 'Vacancy closed' : 'Vacancy reopened');
+      toast.success(res.data.status === 'active' ? 'Vacancy activated' : 'Vacancy closed');
     } catch { toast.error('Failed to update status'); }
+  };
+
+  const handleViewVacancy = async (v) => {
+    setViewModal({ isOpen: true, vacancy: v });
+    if (v.status === 'pending' && !v.isViewed) {
+      try {
+        await api.patch(`/admin/vacancies/${v._id}/view`);
+        setVacancies(prev => prev.map(vac => vac._id === v._id ? { ...vac, isViewed: true } : vac));
+        window.dispatchEvent(new CustomEvent('decrementPendingVacancies'));
+      } catch {
+        // ignore errors if view update fails silently
+      }
+    }
   };
 
   const handleStatusChange = async (vacancyId, userId, status) => {
@@ -167,21 +182,23 @@ const AdminVacanciesSection = forwardRef(function AdminVacanciesSection({ hideTi
   };
 
   const submitStatusChange = async () => {
-    const { vacancyId, userId, status, note } = statusModal;
     setSaving(true);
     try {
-      const res = await api.patch(`/admin/vacancies/${vacancyId}/applicant-status`, { userId, status, note });
+      const { vacancyId, userId, status, note } = statusModal;
+      await api.put(`/admin/vacancies/${vacancyId}/applicant-status`, { userId, status, note });
       setVacancies(prev => prev.map(v => {
         if (v._id !== vacancyId) return v;
-        return { ...v, applicantStatus: res.data.applicantStatus };
+        const history = v.applicantStatusHistory?.[userId] || [];
+        return {
+          ...v,
+          applicantStatus: { ...v.applicantStatus, [userId]: status },
+          applicantStatusHistory: { ...v.applicantStatusHistory, [userId]: [...history, { status, date: new Date().toISOString() }] }
+        };
       }));
-      toast.success(status === 'rejected' ? 'Applicant marked as Not Selected' : 'Status updated');
+      toast.success('Applicant status updated');
       setStatusModal({ isOpen: false, vacancyId: null, userId: null, status: null, note: '' });
-    } catch (err) {
-      toast.error(err.response?.data?.message || 'Failed to update status');
-    } finally {
-      setSaving(false);
-    }
+    } catch (err) { toast.error(err.response?.data?.message || 'Failed to update status'); }
+    finally { setSaving(false); }
   };
 
   const startEdit = (v) => {
@@ -202,8 +219,10 @@ const AdminVacanciesSection = forwardRef(function AdminVacanciesSection({ hideTi
     finally { setReplySending(false); }
   };
 
+  const displayedVacancies = vacancies.filter(v => filterStatus === 'reported' ? v.status === 'pending' : v.status !== 'pending');
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {!hideTitle && (
         <div className="flex items-center justify-between">
           <h2 className="text-xl font-bold text-[#1A1A1A]">Vacancies</h2>
@@ -234,19 +253,12 @@ const AdminVacanciesSection = forwardRef(function AdminVacanciesSection({ hideTi
       )}
 
       {loading ? (
-        <div className="space-y-3">
-          {Array.from({ length: 3 }).map((_, i) => (
-            <div key={i} className="h-20 bg-white border border-[#E5E1DA] rounded-xl animate-pulse" />
-          ))}
-        </div>
-      ) : vacancies.length === 0 ? (
-        <div className="bg-white border border-[#E5E1DA] rounded-2xl p-16 text-center">
-          <Briefcase size={28} className="text-[#9CA3AF] mx-auto mb-3" />
-          <p className="text-sm text-[#6B7280]">No vacancies yet. Post the first one!</p>
-        </div>
+        <div className="flex justify-center p-12"><div className="w-6 h-6 border-2 border-accent border-t-transparent rounded-full animate-spin" /></div>
+      ) : displayedVacancies.length === 0 ? (
+        <div className="text-center p-12 text-muted border border-border rounded-xl bg-white">No {filterStatus === 'reported' ? 'reported' : ''} vacancies found.</div>
       ) : (
         <div className="space-y-3">
-          {vacancies.map(v => (
+          {displayedVacancies.map(v => (
             <div key={v._id} className="bg-white border border-[#E5E1DA] rounded-2xl overflow-hidden">
               {editId === v._id ? (
                 <div className="p-5 space-y-4">
@@ -273,7 +285,11 @@ const AdminVacanciesSection = forwardRef(function AdminVacanciesSection({ hideTi
                       <div className="flex items-center gap-2 flex-wrap mb-0.5">
                         <h3 className="font-semibold text-[#1A1A1A]">{v.title}</h3>
                         <span className={`text-xs px-2.5 py-0.5 rounded-full border font-medium ${TYPE_STYLE[v.type]}`}>{TYPE_LABEL[v.type]}</span>
-                        <span className={`text-xs px-2.5 py-0.5 rounded-full border font-medium ${v.status === 'active' ? 'bg-green-50 text-green-700 border-green-200' : 'bg-gray-100 text-gray-500 border-gray-200'}`}>{v.status}</span>
+                        <span className={`text-xs px-2.5 py-0.5 rounded-full border font-medium ${
+                          v.status === 'active' ? 'bg-green-50 text-green-700 border-green-200' :
+                          v.status === 'pending' ? 'bg-amber-50 text-amber-700 border-amber-200' :
+                          'bg-gray-100 text-gray-500 border-gray-200'
+                        }`}>{v.status}</span>
                       </div>
                       {(v.company || v.location || v.industry || v.jobType || v.experience || v.salaryRange) && (
                         <div className="flex items-center gap-2 text-xs text-[#6B7280] mb-1 flex-wrap">
@@ -288,6 +304,10 @@ const AdminVacanciesSection = forwardRef(function AdminVacanciesSection({ hideTi
 
                     </div>
                     <div className="flex items-center gap-1 shrink-0">
+                      <button onClick={() => handleViewVacancy(v)}
+                        className="p-1.5 rounded-lg hover:bg-accent/10 text-accent hover:text-accent-hover transition-colors" title="View details">
+                        <Eye size={16} />
+                      </button>
                       <button onClick={() => setExpandedInterests(expandedInterests === v._id ? null : v._id)}
                         className="flex items-center gap-1 text-xs text-[#6B7280] hover:text-[#1A1A1A] px-2.5 py-1.5 rounded-lg hover:bg-[#F3F0EB] transition-colors">
                         <UsersIcon size={13} />
@@ -295,8 +315,12 @@ const AdminVacanciesSection = forwardRef(function AdminVacanciesSection({ hideTi
                         <ChevronDown size={11} className={`transition-transform ${expandedInterests === v._id ? 'rotate-180' : ''}`} />
                       </button>
                       <button onClick={() => handleToggleStatus(v._id)}
-                        className={`p-1.5 rounded-lg transition-colors ${v.status === 'active' ? 'text-green-500 hover:bg-green-50' : 'text-red-400 hover:bg-red-50'}`}
-                        title={v.status === 'active' ? 'Close vacancy' : 'Reopen vacancy'}>
+                        className={`p-1.5 rounded-lg transition-colors ${
+                          v.status === 'active' ? 'text-green-500 hover:bg-green-50' : 
+                          v.status === 'pending' ? 'text-amber-500 hover:bg-amber-50' : 
+                          'text-red-400 hover:bg-red-50'
+                        }`}
+                        title={v.status === 'active' ? 'Close vacancy' : 'Activate vacancy'}>
                         {v.status === 'active' ? <ToggleRight size={16} /> : <ToggleLeft size={16} />}
                       </button>
                       <button onClick={() => startEdit(v)} className="p-1.5 rounded-lg hover:bg-[#F3F0EB] text-[#6B7280] hover:text-[#1A1A1A] transition-colors"><Pencil size={14} /></button>
@@ -441,6 +465,57 @@ const AdminVacanciesSection = forwardRef(function AdminVacanciesSection({ hideTi
                 className={`px-5 py-2.5 text-sm font-semibold text-white rounded-xl transition-colors flex items-center justify-center min-w-[100px] disabled:opacity-50 disabled:cursor-not-allowed ${statusModal.status === 'rejected' ? 'bg-red-600 hover:bg-red-700' : 'bg-accent hover:bg-accent-hover'}`}
               >
                 {saving ? <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> : 'Save'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* View Modal */}
+      {viewModal.isOpen && viewModal.vacancy && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm overflow-y-auto">
+          <div className="bg-white rounded-2xl w-full max-w-2xl p-6 shadow-2xl relative my-auto animate-in fade-in zoom-in duration-200">
+            <button onClick={() => setViewModal({ isOpen: false, vacancy: null })} className="absolute top-4 right-4 text-muted hover:text-text transition-colors">
+              <X size={20} />
+            </button>
+            <h2 className="text-xl font-bold text-text mb-4 border-b pb-3">Vacancy Details</h2>
+            
+            <div className="space-y-4 text-sm text-[#1A1A1A]">
+              <div className="grid grid-cols-2 gap-4">
+                <div><span className="font-semibold text-muted">Title:</span> <p className="font-medium">{viewModal.vacancy.title}</p></div>
+                <div><span className="font-semibold text-muted">Company:</span> <p className="font-medium">{viewModal.vacancy.company}</p></div>
+                <div><span className="font-semibold text-muted">Salary Range:</span> <p className="font-medium">{viewModal.vacancy.salaryRange || 'Not specified'}</p></div>
+                <div><span className="font-semibold text-muted">Work Mode:</span> <p className="font-medium capitalize">{viewModal.vacancy.type}</p></div>
+                <div><span className="font-semibold text-muted">Status:</span> <p className="font-medium capitalize">{viewModal.vacancy.status}</p></div>
+                <div>
+                  <span className="font-semibold text-muted">Posted By:</span> 
+                  <div className="flex items-center gap-2 mt-1">
+                    <p className="font-medium">{viewModal.vacancy.createdBy?.name || 'Admin'} {viewModal.vacancy.createdBy?.email && `(${viewModal.vacancy.createdBy.email})`}</p>
+                    {viewModal.vacancy.createdBy?.phone && (
+                      <a 
+                        href={`https://wa.me/${viewModal.vacancy.createdBy.phone.replace(/\D/g, '')}?text=${encodeURIComponent(`Hi ${viewModal.vacancy.createdBy.name}, I'm contacting you regarding the ${viewModal.vacancy.title} role you submitted to our platform. Please let me know when you might be free for a short verification call.`)}`}
+                        target="_blank" rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium text-green-700 bg-green-50 hover:bg-green-100 border border-green-200 rounded-lg transition-colors"
+                      >
+                        <MessageCircle size={12} /> WhatsApp
+                      </a>
+                    )}
+                  </div>
+                </div>
+              </div>
+              
+              <div className="pt-2 border-t">
+                <span className="font-semibold text-muted block mb-1">Description:</span> 
+                <div className="bg-gray-50 p-4 rounded-xl whitespace-pre-wrap font-medium">{viewModal.vacancy.description}</div>
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-3 mt-6">
+              <button 
+                onClick={() => setViewModal({ isOpen: false, vacancy: null })}
+                className="px-5 py-2 text-sm font-semibold text-white bg-accent hover:bg-accent-hover rounded-xl transition-colors"
+              >
+                Close
               </button>
             </div>
           </div>

@@ -435,7 +435,7 @@ exports.deleteProject = async (req, res) => {
 
 exports.getStats = async (req, res) => {
   try {
-    const [total, pending, approved, rejected, users, developers, clients, forSale] = await Promise.all([
+    const [total, pending, approved, rejected, users, developers, clients, forSale, pendingVacancies] = await Promise.all([
       Project.countDocuments(),
       Project.countDocuments({ status: 'pending' }),
       Project.countDocuments({ status: 'approved' }),
@@ -444,8 +444,9 @@ exports.getStats = async (req, res) => {
       User.countDocuments({ userType: { $ne: 'client' } }),
       User.countDocuments({ userType: 'client' }),
       Project.countDocuments({ forSale: true, status: 'approved' }),
+      require('../models/Vacancy').countDocuments({ status: 'pending', isViewed: { $ne: true } }),
     ]);
-    res.json({ total, pending, approved, rejected, users, developers, clients, forSale });
+    res.json({ total, pending, approved, rejected, users, developers, clients, forSale, pendingVacancies });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

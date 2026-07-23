@@ -18,7 +18,10 @@ exports.getVacancies = async (req, res) => {
       ...v,
       interestCount: v.interests.length,
       interested: userId ? v.interests.some(id => id.toString() === userId) : false,
+      applicationStatus: userId && v.applicantStatus && v.applicantStatus[userId] ? v.applicantStatus[userId] : null,
       interests: undefined,
+      applicantStatus: undefined,
+      applicantStatusHistory: undefined,
     }));
     res.json(result);
   } catch (err) { res.status(500).json({ message: err.message }); }
@@ -62,6 +65,28 @@ exports.withdrawInterest = async (req, res) => {
   } catch (err) { res.status(500).json({ message: err.message }); }
 };
 
+exports.reportVacancy = async (req, res) => {
+  try {
+    const { company, title, type, salaryRange, description } = req.body;
+    if (!company || !title || !description) {
+      return res.status(400).json({ message: 'Company, Designation, and Description are required' });
+    }
+    const vacancy = await Vacancy.create({
+      title,
+      company,
+      description,
+      type: type || 'remote',
+      salaryRange,
+      status: 'pending',
+      createdBy: req.user._id,
+    });
+    res.status(201).json(vacancy);
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
+};
+
+
 // ─── Admin ────────────────────────────────────────────────────────────────────
 
 exports.getAllVacanciesAdmin = async (req, res) => {
@@ -69,7 +94,7 @@ exports.getAllVacanciesAdmin = async (req, res) => {
     const vacancies = await Vacancy.find()
       .sort({ createdAt: -1 })
       .populate('interests', 'name email phone regNumber userType avatar')
-      .populate('createdBy', 'name email companyName userType');
+      .populate('createdBy', 'name email phone companyName userType');
     res.json(vacancies);
   } catch (err) { res.status(500).json({ message: err.message }); }
 };
@@ -194,6 +219,16 @@ exports.updateApplicantStatus = async (req, res) => {
     }
     
     res.json({ success: true, applicantStatus: vacancy.applicantStatus });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+exports.markVacancyViewed = async (req, res) => {
+  try {
+    const vacancy = await Vacancy.findByIdAndUpdate(req.params.id, { isViewed: true }, { new: true });
+    if (!vacancy) return res.status(404).json({ message: 'Vacancy not found' });
+    res.json(vacancy);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
