@@ -11,7 +11,7 @@ export default function AddVacancy() {
   const [submitting, setSubmitting] = useState(false);
   const [posted, setPosted]         = useState(false);
 
-  // multiple emails for notification
+  
   const [emails, setEmails]           = useState(user?.email ? [user.email] : []);
   const [editingIdx, setEditingIdx]   = useState(null);
   const [emailDraft, setEmailDraft]   = useState('');
