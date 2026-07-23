@@ -1,12 +1,14 @@
 import { useState, useEffect } from 'react';
-import { X, Briefcase, Gift, Send } from 'lucide-react';
+import { X, Gift, Send } from 'lucide-react';
 import api from '../api/axios';
 import toast from 'react-hot-toast';
 
 export default function ReportVacancyModal({ isOpen, onClose, user }) {
-  const [companies, setCompanies] = useState([]);
+  const exp = user?.resumeData?.experience || user?.resumeData?.workExperience || [];
+  const companies = [...new Set(exp.map(e => e.company).filter(Boolean))];
+
   const [formData, setFormData] = useState({
-    company: '',
+    company: companies.length > 0 ? companies[0] : 'custom',
     customCompany: '',
     title: '',
     salaryRange: '',
@@ -14,22 +16,21 @@ export default function ReportVacancyModal({ isOpen, onClose, user }) {
     description: ''
   });
   const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    if (isOpen && user?.resumeData) {
-      const exp = user.resumeData.experience || user.resumeData.workExperience || [];
-      const uniqueCompanies = [...new Set(exp.map(e => e.company).filter(Boolean))];
-      setCompanies(uniqueCompanies);
-      if (uniqueCompanies.length > 0) {
-        setFormData(prev => ({ ...prev, company: uniqueCompanies[0] }));
-      } else {
-        setFormData(prev => ({ ...prev, company: 'custom' }));
-      }
-    } else if (isOpen) {
-      setCompanies([]);
-      setFormData(prev => ({ ...prev, company: 'custom' }));
-    }
-  }, [isOpen, user]);
+  const [prevIsOpen, setPrevIsOpen] = useState(isOpen);
+  
+  if (isOpen && !prevIsOpen) {
+    setPrevIsOpen(true);
+    setFormData({
+      company: companies.length > 0 ? companies[0] : 'custom',
+      customCompany: '',
+      title: '',
+      salaryRange: '',
+      type: 'remote',
+      description: ''
+    });
+  } else if (!isOpen && prevIsOpen) {
+    setPrevIsOpen(false);
+  }
 
   if (!isOpen) return null;
 
