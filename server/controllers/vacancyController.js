@@ -94,7 +94,8 @@ exports.getAllVacanciesAdmin = async (req, res) => {
     const vacancies = await Vacancy.find()
       .sort({ createdAt: -1 })
       .populate('interests', 'name email phone regNumber userType avatar')
-      .populate('createdBy', 'name email phone companyName userType');
+      .populate('createdBy', 'name email phone companyName userType')
+      .lean();
     res.json(vacancies);
   } catch (err) { res.status(500).json({ message: err.message }); }
 };

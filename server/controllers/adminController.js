@@ -10,7 +10,8 @@ exports.getPendingProjects = async (req, res) => {
   try {
     const projects = await Project.find({ status: 'pending' })
       .populate('owner', 'name email avatar')
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .lean();
     res.json(projects);
   } catch (err) {
     res.status(500).json({ message: err.message });
