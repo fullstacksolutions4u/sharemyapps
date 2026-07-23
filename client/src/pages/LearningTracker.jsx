@@ -415,7 +415,7 @@ const LearningTracker = ({ embedded = false }) => {
                                       const isPartial = uniqueAttempted.size > 0 && !isQuizCompleted;
                                       return (
                                         <div key={topic._id || topicIndex} className="flex items-center gap-3 p-3 rounded-xl transition-all duration-200 border group" style={{ backgroundColor: topic.completed ? '#EFF8EF' : isQuizCompleted ? '#F0ECFA' : '#F5F0E8', borderColor: topic.completed ? '#86efac' : isQuizCompleted ? '#C4B5FD' : '#00A693' }}>
-                                          <button onClick={() => handleToggleTopic(module._id, topic._id, topic.completed, index)} className={`flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center transition-all duration-200 hover:scale-110 ${topic.completed ? 'bg-green-500 hover:bg-green-600 shadow-lg' : ''}`} style={!topic.completed ? { backgroundColor: '#FAF7F2', border: '1.5px solid #D4B896' } : {}} title={topic.completed ? 'Mark as incomplete' : 'Mark as complete'}>
+                                          <button onClick={() => handleToggleTopic(module._id, topic._id, topic.completed, index)} className={`cursor-pointer flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center transition-all duration-200 hover:scale-110 ${topic.completed ? 'bg-green-500 hover:bg-green-600 shadow-lg' : ''}`} style={!topic.completed ? { backgroundColor: '#FAF7F2', border: '1.5px solid #D4B896' } : {}} title={topic.completed ? 'Mark as incomplete' : 'Mark as complete'}>
                                             {topic.completed ? (
                                               <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
                                             ) : (
@@ -468,7 +468,7 @@ const LearningTracker = ({ embedded = false }) => {
                                       <div className="space-y-2 max-h-[120px] overflow-y-auto custom-scrollbar pr-1">
                                         {practicalProblems.map((topic, tIdx) => (
                                           <div key={topic._id || `pp-${tIdx}`} className="flex items-center gap-3 p-2 rounded-lg border" style={{ backgroundColor: topic.completed ? '#EFF8EF' : '#FAF7F2', borderColor: topic.completed ? '#86efac' : '#D4B896' }}>
-                                            <button onClick={() => handleToggleTopic(module._id, topic._id, topic.completed, index)} className="flex-shrink-0 w-4 h-4 rounded-full flex items-center justify-center" style={topic.completed ? { backgroundColor: '#C9A96E' } : { border: '1.5px solid #D4B896', backgroundColor: 'transparent' }}>
+                                            <button onClick={() => handleToggleTopic(module._id, topic._id, topic.completed, index)} className="cursor-pointer flex-shrink-0 w-4 h-4 rounded-full flex items-center justify-center" style={topic.completed ? { backgroundColor: '#C9A96E' } : { border: '1.5px solid #D4B896', backgroundColor: 'transparent' }}>
                                               {topic.completed && <svg className="w-2.5 h-2.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>}
                                             </button>
                                             <div className="flex-1 min-w-0 flex items-center justify-between gap-2">

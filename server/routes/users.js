@@ -239,6 +239,8 @@ router.get('/developers', async (req, res) => {
       }
     };
 
+
+
     const [result] = await User.aggregate([
       { $match: matchStage },
       ownProjectsLookup,
@@ -250,6 +252,7 @@ router.get('/developers', async (req, res) => {
         $addFields: {
           hasProjects:    { $gt: [{ $size: '$projects' }, 0] },
           isPremium:      { $gt: [{ $size: { $ifNull: ['$premiumServices', []] } }, 0] },
+          hasCoins:       { $gt: [{ $ifNull: ['$points', 0] }, 0] },
           lastProjectAt:  { $max: '$projects.createdAt' },
           likesGiven:     { $size: '$_likedProjects' },
           ratingsGiven:   { $size: '$_ratedProjects' },
@@ -290,9 +293,29 @@ router.get('/developers', async (req, res) => {
             $switch: {
               branches: [
                 { case: '$isPremium', then: 0 },
-                { case: { $in: ['$badge', ['active', 'top', 'champion']] }, then: 1 }
+                {
+                  case: { $and: [
+                    { $in: ['$badge', ['active', 'top', 'champion']] },
+                    '$hasCoins'
+                  ] },
+                  then: 1
+                },
+                {
+                  case: { $and: [
+                    { $not: { $in: ['$badge', ['active', 'top', 'champion']] } },
+                    '$hasCoins'
+                  ] },
+                  then: 2
+                },
+                {
+                  case: { $and: [
+                    { $in: ['$badge', ['active', 'top', 'champion']] },
+                    { $not: '$hasCoins' }
+                  ] },
+                  then: 3
+                }
               ],
-              default: 2
+              default: 4
             }
           },
           isJobAlertPremium: {
@@ -340,7 +363,7 @@ router.get('/developers', async (req, res) => {
               $project: {
                 password: 0, googleId: 0, companyName: 0, companyWebsite: 0,
                 industry: 0, requirements: 0, adminNote: 0,
-                _likedProjects: 0, _ratedProjects: 0, _userComments: 0, _jobAlertSessions: 0, hasProjects: 0,
+                _likedProjects: 0, _ratedProjects: 0, _userComments: 0, _jobAlertSessions: 0, _progress: 0, hasProjects: 0,
               },
             },
           ],
