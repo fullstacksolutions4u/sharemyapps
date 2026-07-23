@@ -96,7 +96,7 @@ export default function AdminMentorshipApplicationsSection() {
                   <span className="flex items-center gap-1"><Mail size={11} /> {a.user?.email || '—'}</span>
                   <span className="flex items-center gap-1"><Phone size={11} /> {a.phone}</span>
                   <a
-                    href={`https://wa.me/${a.phone.replace(/\D/g, '').replace(/^(\d{10})$/, '91$1')}?text=${encodeURIComponent(`Hi ${a.user?.name || ''}, this is the ShareMyApps team regarding your Mentorship Program application.`)}`}
+                    href={`https://wa.me/${a.phone.replace(/\D/g, '').replace(/^(\d{10})$/, '91$1')}?text=${encodeURIComponent(`Hi ${a.user?.name || ''}, this is Kevin regarding your Mentorship Program application. How are you ?`)}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex items-center gap-1 px-2 py-0.5 rounded-full font-semibold bg-emerald-50 text-emerald-600 border border-emerald-200 hover:bg-emerald-100 transition-colors"
