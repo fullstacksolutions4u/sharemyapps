@@ -20,6 +20,7 @@ const vacancySchema = new mongoose.Schema({
     type: Map,
     of: [{
       status: String,
+      note: String,
       date: { type: Date, default: Date.now }
     }],
     default: {}

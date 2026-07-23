@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, forwardRef, useImperativeHandle } from 'react';
 import {
   Plus, Save, Check, Trash2, Pencil, ToggleLeft, ToggleRight,
-  MapPin, Briefcase, ChevronDown, Users as UsersIcon, Send, MessageCircle
+  MapPin, Briefcase, ChevronDown, Users as UsersIcon, Send, MessageCircle, Home, X
 } from 'lucide-react';
 import api from '../../api/axios';
 import toast from 'react-hot-toast';
@@ -85,7 +85,7 @@ function VacancyFormFields({ form, onChange }) {
   );
 }
 
-export default function AdminVacanciesSection({ hideTitle = false }) {
+const AdminVacanciesSection = forwardRef(function AdminVacanciesSection({ hideTitle = false }, ref) {
   const [vacancies, setVacancies] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showAdd, setShowAdd] = useState(false);
@@ -96,7 +96,16 @@ export default function AdminVacanciesSection({ hideTitle = false }) {
   const [replyOpen, setReplyOpen] = useState(null);
   const [replyText, setReplyText] = useState('');
   const [replySending, setReplySending] = useState(false);
+  const [statusModal, setStatusModal] = useState({ isOpen: false, vacancyId: null, userId: null, status: null, note: '' });
   const { user } = useAuth();
+
+  useImperativeHandle(ref, () => ({
+    openAddVacancy: () => {
+      setShowAdd(v => !v);
+      setEditId(null);
+      setForm(EMPTY_FORM);
+    }
+  }));
 
   useEffect(() => {
     api.get('/admin/vacancies')
@@ -149,15 +158,29 @@ export default function AdminVacanciesSection({ hideTitle = false }) {
   };
 
   const handleStatusChange = async (vacancyId, userId, status) => {
+    if (status === 'rejected') {
+      const defaultNote = "Thank you for your application. Unfortunately, we have decided to move forward with other candidates whose profiles more closely match our current requirements.\n\nWe encourage you to keep applying for our future vacancies, as we would be happy to consider your profile for other suitable opportunities.\n\nWe wish you all the best in your job search.";
+      setStatusModal({ isOpen: true, vacancyId, userId, status, note: defaultNote });
+    } else {
+      setStatusModal({ isOpen: true, vacancyId, userId, status, note: '' });
+    }
+  };
+
+  const submitStatusChange = async () => {
+    const { vacancyId, userId, status, note } = statusModal;
+    setSaving(true);
     try {
-      const res = await api.patch(`/admin/vacancies/${vacancyId}/applicant-status`, { userId, status });
+      const res = await api.patch(`/admin/vacancies/${vacancyId}/applicant-status`, { userId, status, note });
       setVacancies(prev => prev.map(v => {
         if (v._id !== vacancyId) return v;
         return { ...v, applicantStatus: res.data.applicantStatus };
       }));
-      toast.success('Status updated');
+      toast.success(status === 'rejected' ? 'Applicant marked as Not Selected' : 'Status updated');
+      setStatusModal({ isOpen: false, vacancyId: null, userId: null, status: null, note: '' });
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to update status');
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -181,15 +204,17 @@ export default function AdminVacanciesSection({ hideTitle = false }) {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        {!hideTitle && <h2 className="text-xl font-bold text-[#1A1A1A]">Vacancies</h2>}
-        <button
-          onClick={() => { setShowAdd(v => !v); setEditId(null); setForm(EMPTY_FORM); }}
-          className="flex items-center gap-1.5 text-sm font-medium bg-[#00A693] hover:bg-[#007D6F] text-white px-4 py-2 rounded-xl transition-colors"
-        >
-          <Plus size={14} /> {showAdd ? 'Cancel' : 'Add Vacancy'}
-        </button>
-      </div>
+      {!hideTitle && (
+        <div className="flex items-center justify-between">
+          <h2 className="text-xl font-bold text-[#1A1A1A]">Vacancies</h2>
+          <button
+            onClick={() => { setShowAdd(v => !v); setEditId(null); setForm(EMPTY_FORM); }}
+            className="flex items-center gap-1.5 text-sm font-medium bg-[#00A693] hover:bg-[#007D6F] text-white px-4 py-2 rounded-xl transition-colors"
+          >
+            <Plus size={14} /> {showAdd ? 'Cancel' : 'Add Vacancy'}
+          </button>
+        </div>
+      )}
 
       {showAdd && (
         <div className="bg-white border border-[#E5E1DA] rounded-2xl p-5 space-y-4">
@@ -257,21 +282,10 @@ export default function AdminVacanciesSection({ hideTitle = false }) {
                           {v.experience && <span className="px-2 py-0.5 rounded-full bg-orange-50 text-orange-700 border border-orange-200">{v.experience}</span>}
                           {v.industry && <span className="px-2 py-0.5 rounded-full bg-[#F3F0EB] border border-[#E5E1DA]">{v.industry}</span>}
                           {v.salaryRange && <span className="font-medium text-green-700">{v.salaryRange}</span>}
-                          {v.location && <span className="flex items-center gap-1"><MapPin size={10} />{v.location}</span>}
+                          {v.location && <span className="flex items-center gap-1">{v.location?.toLowerCase() === 'remote' ? <Home size={10} /> : <MapPin size={10} />}{v.location}</span>}
                         </div>
                       )}
-                      {v.createdBy && (
-                        <p className="text-xs text-violet-600 font-medium mb-1">
-                          Posted by recruiter: {v.createdBy.name}
-                          {v.createdBy.email && <span className="text-[#9CA3AF] font-normal ml-1">({v.createdBy.email})</span>}
-                        </p>
-                      )}
-                      <p className="text-xs text-[#9CA3AF] line-clamp-2">{v.description}</p>
-                      {v.skills?.length > 0 && (
-                        <div className="flex flex-wrap gap-1 mt-2">
-                          {v.skills.map(s => <span key={s} className="text-xs bg-[#F3F0EB] text-[#6B7280] px-2 py-0.5 rounded-full">{s}</span>)}
-                        </div>
-                      )}
+
                     </div>
                     <div className="flex items-center gap-1 shrink-0">
                       <button onClick={() => setExpandedInterests(expandedInterests === v._id ? null : v._id)}
@@ -326,7 +340,7 @@ export default function AdminVacanciesSection({ hideTitle = false }) {
                                     <option value="2nd round interview">2nd Round Interview</option>
                                     <option value="3rd round interview">3rd Round Interview</option>
                                     <option value="selected">Selected</option>
-                                    <option value="rejected">Rejected</option>
+                                    <option value="rejected">Not Selected This Time</option>
                                   </select>
 
                                   <button
@@ -391,6 +405,49 @@ export default function AdminVacanciesSection({ hideTitle = false }) {
           ))}
         </div>
       )}
+
+      {/* Status Modal */}
+      {statusModal.isOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl relative animate-in fade-in zoom-in duration-200">
+            <button onClick={() => setStatusModal({ ...statusModal, isOpen: false })} className="absolute top-4 right-4 text-muted hover:text-text transition-colors">
+              <X size={20} />
+            </button>
+            
+            <div className="mb-6 mt-4">
+              <label className="block text-sm font-medium text-text mb-2">
+                Note to Applicant {statusModal.status !== 'rejected' && <span className="text-muted font-normal">(Optional)</span>}
+              </label>
+              <textarea
+                value={statusModal.note}
+                onChange={e => setStatusModal({ ...statusModal, note: e.target.value })}
+                placeholder={statusModal.status === 'rejected' ? "e.g., We are looking for someone with more React experience..." : "e.g., Leave an optional comment about their status..."}
+                rows={statusModal.status === 'rejected' ? 8 : 4}
+                className="w-full px-4 py-3 border border-border rounded-xl text-sm text-text bg-white placeholder-muted focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/10 transition resize-none"
+              />
+            </div>
+            
+            <div className="flex justify-end gap-3">
+              <button 
+                onClick={() => setStatusModal({ ...statusModal, isOpen: false })}
+                className="px-5 py-2.5 text-sm font-semibold text-text bg-[#F3F0EB] hover:bg-[#E5E1DA] rounded-xl transition-colors"
+                disabled={saving}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={submitStatusChange}
+                disabled={saving || (statusModal.status === 'rejected' && !statusModal.note.trim())}
+                className={`px-5 py-2.5 text-sm font-semibold text-white rounded-xl transition-colors flex items-center justify-center min-w-[100px] disabled:opacity-50 disabled:cursor-not-allowed ${statusModal.status === 'rejected' ? 'bg-red-600 hover:bg-red-700' : 'bg-accent hover:bg-accent-hover'}`}
+              >
+                {saving ? <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> : 'Save'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
-}
+});
+
+export default AdminVacanciesSection;

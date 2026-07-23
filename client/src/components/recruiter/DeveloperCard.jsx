@@ -1,4 +1,4 @@
-import { GitBranch, Globe, Link2, Mail, MapPin, Phone } from 'lucide-react';
+import { GitBranch, Globe, Link2, Mail, MapPin, Phone, Home } from 'lucide-react';
 
 const SKILL_PALETTES = [
   { bg: '#EFF6FF', border: '#BFDBFE', text: '#1D4ED8' }, // blue
@@ -248,7 +248,7 @@ export default function DeveloperCard({ dev, stagger, hideContact = false }) {
           }
           return loc ? (
             <span className="inline-flex items-center justify-center gap-1 text-[10px] font-medium px-2 py-1 rounded-lg bg-bg border border-border text-muted text-center">
-              <MapPin size={9} className="shrink-0" /> {loc}
+              {loc?.toLowerCase() === 'remote' ? <Home size={9} className="shrink-0" /> : <MapPin size={9} className="shrink-0" />} {loc}
             </span>
           ) : null;
         })()}

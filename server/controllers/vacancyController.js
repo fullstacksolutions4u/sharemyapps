@@ -144,7 +144,7 @@ exports.deleteVacancy = async (req, res) => {
 };
 exports.updateApplicantStatus = async (req, res) => {
   try {
-    const { userId, status } = req.body;
+    const { userId, status, note } = req.body;
     if (!userId || !status) {
       return res.status(400).json({ message: 'userId and status are required' });
     }
@@ -162,7 +162,7 @@ exports.updateApplicantStatus = async (req, res) => {
       
       if (!vacancy.applicantStatusHistory) vacancy.applicantStatusHistory = new Map();
       const history = vacancy.applicantStatusHistory.get(userId) || [];
-      history.push({ status: status, date: new Date() });
+      history.push({ status: status, date: new Date(), note: note || '' });
       vacancy.applicantStatusHistory.set(userId, history);
       
       await vacancy.save();

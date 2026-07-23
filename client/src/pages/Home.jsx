@@ -55,18 +55,68 @@ function buildLayout(users) {
   return { nodes: placed };
 }
 
-// Connect nearby nodes sparsely — produces organic web, not a grid
+// Connect all nodes into a single network using a Minimum Spanning Tree,
+// then add extra edges for an organic web look.
 function buildEdges(nodes) {
-  const edges = [];
+  if (nodes.length < 2) return [];
+  const edgesSet = new Set();
+  
+  // 1. Prim's algorithm for Minimum Spanning Trees
+  const inTree = new Set([0]);
+  const minDist = new Array(nodes.length).fill(Infinity);
+  const closestNode = new Array(nodes.length).fill(-1);
+  
+  for (let j = 1; j < nodes.length; j++) {
+    const dx = nodes[0].x - nodes[j].x;
+    const dy = nodes[0].y - nodes[j].y;
+    minDist[j] = dx * dx + dy * dy;
+    closestNode[j] = 0;
+  }
+  
+  while (inTree.size < nodes.length) {
+    let minD2 = Infinity;
+    let bestJ = -1;
+    
+    for (let j = 1; j < nodes.length; j++) {
+      if (!inTree.has(j) && minDist[j] < minD2) {
+        minD2 = minDist[j];
+        bestJ = j;
+      }
+    }
+    
+    if (bestJ === -1) break;
+    
+    inTree.add(bestJ);
+    const a = Math.min(bestJ, closestNode[bestJ]);
+    const b = Math.max(bestJ, closestNode[bestJ]);
+    edgesSet.add(`${a}-${b}`);
+    
+    for (let j = 1; j < nodes.length; j++) {
+      if (!inTree.has(j)) {
+        const dx = nodes[bestJ].x - nodes[j].x;
+        const dy = nodes[bestJ].y - nodes[j].y;
+        const d2 = dx * dx + dy * dy;
+        if (d2 < minDist[j]) {
+          minDist[j] = d2;
+          closestNode[j] = bestJ;
+        }
+      }
+    }
+  }
+
+  // 2. Add extra organic edges
   for (let i = 0; i < nodes.length; i++) {
     for (let j = i + 1; j < nodes.length; j++) {
       const dx = nodes[i].x - nodes[j].x;
       const dy = nodes[i].y - nodes[j].y;
       const d2 = dx * dx + dy * dy;
-      if (d2 < 110 && (i * 7 + j * 3) % 5 === 0) edges.push([i, j]);
+      if (d2 < 110 && (i * 7 + j * 3) % 5 === 0) {
+        edgesSet.add(`${i}-${j}`);
+      }
     }
   }
-  return edges;
+  
+  return Array.from(edgesSet).map(e => e.split('-').map(Number));
 }
 
 // Fixed pseudo-random positions for loading spinners
@@ -161,8 +211,8 @@ function NetworkNode({ user, x, y }) {
             src={src}
             alt={user.name}
             style={{
-              width: 26,
-              height: 26,
+              width: 38,
+              height: 38,
               borderRadius: '50%',
               objectFit: 'cover',
               display: 'block',
@@ -177,7 +227,7 @@ function NetworkNode({ user, x, y }) {
           {hovered && (
             <div style={{
               position: 'absolute',
-              bottom: 'calc(100% + 5px)',
+              ...(y < 15 ? { top: 'calc(100% + 5px)' } : { bottom: 'calc(100% + 5px)' }),
               left: '50%',
               transform: 'translateX(-50%)',
               background: 'rgba(15,35,33,0.88)',
