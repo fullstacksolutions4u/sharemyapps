@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { X, Gift, Send } from 'lucide-react';
 import api from '../api/axios';
 import toast from 'react-hot-toast';
