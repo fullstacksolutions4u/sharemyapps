@@ -373,7 +373,8 @@ const AdminVacanciesSection = forwardRef(function AdminVacanciesSection({ hideTi
                                         toast.error('No phone number provided by user');
                                         return;
                                       }
-                                      const adminName = user?.name?.split(' ')[0] || 'Admin';
+                                      const namePart = user?.name?.split(' ')[0];
+                                      const adminName = (!namePart || namePart.toLowerCase() === 'admin') ? 'Kevin' : namePart;
                                       const devName = u.name?.split(' ')[0] || 'there';
                                       const msg = `Hi ${devName}. its me ${adminName} from sharemyapps. thank you for applying for ${v.title} position. need some more details from you`;
                                       const phone = u.phone.replace(/\D/g, '');
