@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Trophy } from 'lucide-react';
+import { Trophy, Crown } from 'lucide-react';
 import { moduleAPI, progressAPI } from '../api/tick2test';
 import { useAuth } from '../context/AuthContext';
 import AnimatedCoin from '../components/common/AnimatedCoin';
@@ -611,7 +611,12 @@ const LearningTracker = ({ embedded = false }) => {
                               }}>
                               {idx + 1}
                             </div>
-                            <img src={u.profileImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(u.name)}&background=random`} alt={u.name} className="w-6 h-6 rounded-full object-cover" />
+                            <div className="relative shrink-0">
+                              {idx === 0 && (
+                                <Crown size={12} className="absolute -top-2 left-1/2 -translate-x-1/2 text-amber-500 fill-amber-400 -rotate-12" />
+                              )}
+                              <img src={u.profileImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(u.name)}&background=random`} alt={u.name} className="w-6 h-6 rounded-full object-cover" />
+                            </div>
                             <div className="flex-1 min-w-0">
                               <p className="text-xs font-bold text-[#1C1A17] truncate">{u.name}</p>
                             </div>

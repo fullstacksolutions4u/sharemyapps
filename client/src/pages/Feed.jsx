@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import axios from '../api/axios';
 import { formatDistanceToNow } from 'date-fns';
-import { Trophy, MessageCircle, Heart, Star, TrendingUp, Briefcase, ChevronRight, UserPlus } from 'lucide-react';
+import { Trophy, MessageCircle, Heart, Star, TrendingUp, Briefcase, ChevronRight, UserPlus, Crown } from 'lucide-react';
 import _Lottie from 'lottie-react';
 import feedAnimation from '../assets/feed.json';
 import FeedProjectCard from '../components/FeedProjectCard';
@@ -171,11 +171,16 @@ export default function Feed() {
                       {idx + 1}
                     </div>
                     
-                    <img 
-                      src={user.profileImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=random`}
-                      alt={user.name}
-                      className="w-8 h-8 rounded-full object-cover"
-                    />
+                    <div className="relative shrink-0">
+                      {idx === 0 && (
+                        <Crown size={14} className="absolute -top-2.5 left-1/2 -translate-x-1/2 text-amber-500 fill-amber-400 -rotate-12" />
+                      )}
+                      <img 
+                        src={user.profileImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=random`}
+                        alt={user.name}
+                        className="w-8 h-8 rounded-full object-cover"
+                      />
+                    </div>
                     
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium text-text truncate">{user.name}</p>
