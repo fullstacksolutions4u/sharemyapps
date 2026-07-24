@@ -1086,13 +1086,13 @@ export default function Profile() {
                   </div>
 
                   {/* Instructions */}
-                  <p className="mb-3 text-[10.5px] text-yellow-500 leading-snug whitespace-nowrap overflow-x-auto">
+                  <p className="mb-3 text-[10.5px] text-blue-500 leading-snug whitespace-nowrap overflow-x-auto">
                     Upload your CV to Google Drive →&nbsp;
-                    {[<><span className="text-blue-500 font-black">⋮</span> Menu</>, 'Share', 'Share', 'Anyone with link', 'Viewer'].map((label, i) => (
-                      <span key={i} className={`inline-flex items-center gap-0.5 ${i >= 3 ? 'text-red-500' : ''}`}>
-                        <span className={`inline-flex items-center justify-center w-3 h-3 rounded-full text-white font-bold ${i >= 3 ? 'bg-red-500' : 'bg-yellow-500'}`} style={{fontSize:'7px',flexShrink:0}}>{i+1}</span>
+                    {[<><span className="text-blue-600 font-black">⋮</span> Menu</>, 'Share', 'Share', 'Anyone with link', 'Viewer'].map((label, i) => (
+                      <span key={i} className="inline-flex items-center gap-0.5 text-blue-500">
+                        <span className="inline-flex items-center justify-center w-3 h-3 rounded-full text-white font-bold bg-blue-500" style={{fontSize:'7px',flexShrink:0}}>{i+1}</span>
                         <span className="font-semibold">{label}</span>
-                        {i < 4 ? <span className="mx-0.75">→</span> : <span className="font-normal ml-0.75">(role) <span className="text-yellow-500">→ copy link &amp; paste below.</span></span>}
+                        {i < 4 ? <span className="mx-0.75">→</span> : <span className="font-normal ml-0.75">(role) <span className="text-blue-500">→ copy link &amp; paste below.</span></span>}
                       </span>
                     ))}
                   </p>
@@ -1108,6 +1108,13 @@ export default function Profile() {
                       className="w-full pl-10 pr-4 py-2.5 border border-border rounded-xl text-sm text-text placeholder-[#9CA3AF] focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/10 transition bg-white"
                     />
                   </div>
+                  
+                  {form.cvUrl?.trim() && (
+                    <p className="mt-2 text-[11px] font-medium text-yellow-600 flex items-center gap-1.5 leading-tight">
+                      <AlertTriangle size={12} className="shrink-0" />
+                      <span>Please ensure this link is NOT restricted! Double check that you've set General Access to <span className="font-bold">"Anyone with the link"</span>.</span>
+                    </p>
+                  )}
                 </div>
 
                 <hr className="border-border" />
