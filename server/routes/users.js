@@ -150,6 +150,10 @@ router.get('/showcase-devs', optionalAuth, async (req, res) => {
         delete d.email;
         delete d.phone;
         delete d.cvUrl;
+        if (d.resumeData && d.resumeData.personalInfo) {
+          delete d.resumeData.personalInfo.email;
+          delete d.resumeData.personalInfo.phone;
+        }
       }
       return d;
     });
@@ -402,6 +406,10 @@ router.get('/developers', optionalAuth, async (req, res) => {
         delete dev.email;
         delete dev.phone;
         delete dev.cvUrl;
+        if (dev.resumeData && dev.resumeData.personalInfo) {
+          delete dev.resumeData.personalInfo.email;
+          delete dev.resumeData.personalInfo.phone;
+        }
       }
       return dev;
     });
@@ -860,7 +868,28 @@ router.post('/find-developers', protect, jdQuota, aiLimit, async (req, res) => {
       .sort((a, b) => b.matchScore - a.matchScore || b.createdAt - a.createdAt)
       .slice(0, 40);
 
-    res.json({ developers: scored, extracted });
+    const reqUser = req.user;
+    const isClientRecruiterOrAdmin = reqUser && (
+      reqUser.role === 'admin' ||
+      reqUser.userType === 'recruiter' ||
+      reqUser.userType === 'client'
+    );
+
+    const sanitizedDevs = scored.map(dev => {
+      const isSelf = reqUser && reqUser._id.toString() === dev._id.toString();
+      if (!isClientRecruiterOrAdmin && !isSelf) {
+        delete dev.email;
+        delete dev.phone;
+        delete dev.cvUrl;
+        if (dev.resumeData && dev.resumeData.personalInfo) {
+          delete dev.resumeData.personalInfo.email;
+          delete dev.resumeData.personalInfo.phone;
+        }
+      }
+      return dev;
+    });
+
+    res.json({ developers: sanitizedDevs, extracted });
   } catch (err) {
     console.error('find-developers error:', err);
     res.status(500).json({ message: 'Search failed. Please try again.' });
