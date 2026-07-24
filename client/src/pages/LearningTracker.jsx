@@ -304,9 +304,9 @@ const LearningTracker = ({ embedded = false }) => {
     return streak;
   })();
   return (
-    <div className="min-h-screen relative" style={{ paddingTop: embedded ? '24px' : '24px', paddingBottom: '48px', background: 'linear-gradient(to bottom right, rgba(0,166,147,0.10), #ffffff, #f5f3ff)' }}>
+    <div className="min-h-screen relative" style={{ paddingTop: embedded ? '12px' : '12px', paddingBottom: '24px', background: 'linear-gradient(to bottom right, rgba(0,166,147,0.10), #ffffff, #f5f3ff)' }}>
       <div className="absolute inset-0 opacity-20 pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle, #00A693 1px, transparent 1px)', backgroundSize: '28px 28px' }} />
-      <div className="w-full px-2 xl:px-4">
+      <div className="w-full px-1 xl:px-2">
         {modules.length === 0 ? (
           <div className="rounded-xl shadow-md p-12 text-center" style={{ backgroundColor: '#FAF7F2', border: '1px solid #E0D8CC' }}>
             <p className="text-lg font-semibold" style={{ color: '#1C1A17' }}>No modules available</p>
@@ -353,7 +353,7 @@ const LearningTracker = ({ embedded = false }) => {
               };
 
               return (
-                <div className="flex flex-col gap-2 mb-8">
+                <div className="flex flex-col gap-1 mb-4">
 
 
                   {/* ── MIDDLE ROW: left | cards | right ── */}
@@ -365,14 +365,14 @@ const LearningTracker = ({ embedded = false }) => {
                     </div>
 
                     {/* CENTER: two main cards */}
-                    <div className="flex-1 flex flex-col lg:flex-row gap-4 items-stretch min-w-0">
+                    <div className="flex-1 flex flex-col lg:flex-row gap-2 items-stretch min-w-0">
                       <div className="flex-1 min-w-0">
                         <div className="flex-1 relative w-full">
-                  <button onClick={goToPrevious} className="absolute left-0 top-1/2 -translate-y-1/2 z-10 rounded-full p-3 shadow-md" style={{ backgroundColor: '#FAF7F2', border: '2px solid #D4B896' }} aria-label="Previous module">
-                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: '#1C1A17' }}><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
+                  <button onClick={goToPrevious} className="absolute left-0 top-1/2 -translate-y-1/2 z-10 rounded-full p-1.5 shadow-md" style={{ backgroundColor: '#FAF7F2', border: '2px solid #D4B896' }} aria-label="Previous module">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: '#1C1A17' }}><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
                   </button>
-                  <button onClick={goToNext} className="absolute right-0 top-1/2 -translate-y-1/2 z-10 rounded-full p-3 shadow-md" style={{ backgroundColor: '#FAF7F2', border: '2px solid #D4B896' }} aria-label="Next module">
-                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: '#1C1A17' }}><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+                  <button onClick={goToNext} className="absolute right-0 top-1/2 -translate-y-1/2 z-10 rounded-full p-1.5 shadow-md" style={{ backgroundColor: '#FAF7F2', border: '2px solid #D4B896' }} aria-label="Next module">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: '#1C1A17' }}><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
                   </button>
                   <div ref={sliderRef} className="overflow-x-auto overflow-y-hidden rounded-2xl" style={{ scrollSnapType: 'x mandatory', scrollBehavior: 'smooth', WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
                     <div className="flex" style={{ width: `${modules.length * 100}%` }}>
@@ -384,8 +384,8 @@ const LearningTracker = ({ embedded = false }) => {
                         const regularTopics = [...(module.topics || [])].filter(t => !t.isPracticalProblem).sort((a, b) => (a.order || 0) - (b.order || 0));
                         const practicalProblems = [...(module.topics || [])].filter(t => t.isPracticalProblem).sort((a, b) => (a.order || 0) - (b.order || 0));
                         return (
-                          <div key={module._id} className="flex-shrink-0" style={{ width: `${100 / modules.length}%`, minWidth: `${100 / modules.length}%`, scrollSnapAlign: 'start', scrollSnapStop: 'always', padding: '0 1rem' }}>
-                            <div id={`module-container-${index}`} className="rounded-2xl shadow-lg p-6 border-2 flex flex-col relative" style={{ backgroundColor: '#FAF7F2', borderColor: isModuleLocked ? '#C07A3A' : '#E0D8CC', height: '800px' }}>
+                          <div key={module._id} className="flex-shrink-0" style={{ width: `${100 / modules.length}%`, minWidth: `${100 / modules.length}%`, scrollSnapAlign: 'start', scrollSnapStop: 'always', padding: '0 0.5rem' }}>
+                            <div id={`module-container-${index}`} className="rounded-2xl shadow-lg p-3 border-2 flex flex-col relative" style={{ backgroundColor: '#FAF7F2', borderColor: isModuleLocked ? '#C07A3A' : '#E0D8CC', height: '800px' }}>
                               {isModuleLocked && (
                                 <div className="absolute inset-0 backdrop-blur-sm rounded-2xl z-10 flex flex-col items-center justify-center p-6" style={{ backgroundColor: 'rgba(245,240,232,0.85)' }}>
                                   <svg className="w-20 h-20 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: '#C07A3A' }}><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
@@ -499,10 +499,10 @@ const LearningTracker = ({ embedded = false }) => {
               </div>
                 {/* Progress Panel */}
                 <div className="flex-shrink-0 w-full lg:w-[360px] lg:sticky lg:top-28">
-                  <div className="rounded-2xl shadow-xl p-5 flex flex-col overflow-y-auto custom-scrollbar" style={{ height: '800px', backgroundColor: '#FAF7F2', border: '2px solid #E0D8CC' }}>
+                  <div className="rounded-2xl shadow-xl p-3 flex flex-col overflow-y-auto custom-scrollbar" style={{ height: '800px', backgroundColor: '#FAF7F2', border: '2px solid #E0D8CC' }}>
                   
                   {/* Streak / Points / Completed Modules */}
-                  <div className="flex flex-wrap items-center justify-center gap-2 mb-4 mt-2">
+                  <div className="flex flex-wrap items-center justify-center gap-1 mb-2 mt-1">
                     <div className="px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-sm" style={{ backgroundColor: '#FFF8F0', border: '1px solid rgba(192,122,58,0.3)' }} title="Streak">
                       <span className="text-base animate-pulse">🔥</span>
                       <span className="text-xs font-bold text-[#1C1A17]">{streakCount}</span>
@@ -548,7 +548,7 @@ const LearningTracker = ({ embedded = false }) => {
                   </div>
 
                   {/* Calendar */}
-                  <div className="rounded-xl p-3 flex-shrink-0 mb-8 mx-auto w-full max-w-[260px]" style={{ backgroundColor: '#F0E8DC', border: '1px solid #D4B896' }}>
+                  <div className="rounded-xl p-3 flex-shrink-0 mb-4 mx-auto w-full max-w-[260px]" style={{ backgroundColor: '#F0E8DC', border: '1px solid #D4B896' }}>
                     <div className="flex items-center justify-between mb-2">
                       <button onClick={() => setCalendarDate(new Date(calendarDate.getFullYear(), calendarDate.getMonth() - 1, 1))} className="rounded-full p-1.5 shadow-sm" style={{ backgroundColor: '#FAF7F2', border: '1px solid #D4B896' }}>
                         <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: '#1C1A17' }}><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
