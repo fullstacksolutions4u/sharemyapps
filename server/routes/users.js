@@ -393,6 +393,9 @@ router.get('/developers', optionalAuth, async (req, res) => {
       },
     ]);
 
+    const developers = result?.developers ?? [];
+    const totalCount = result?.total?.[0]?.n ?? 0;
+
     const reqUser = req.user;
     const isRecruiterOrAdmin = reqUser && (
       reqUser.role === 'admin' ||
@@ -416,9 +419,9 @@ router.get('/developers', optionalAuth, async (req, res) => {
 
     res.json({
       developers: sanitizedDevs,
-      total,
+      total: totalCount,
       currentPage: page,
-      totalPages: Math.ceil(total / LIMIT),
+      totalPages: Math.ceil(totalCount / LIMIT),
     });
   } catch (err) {
     res.status(500).json({ message: err.message });
