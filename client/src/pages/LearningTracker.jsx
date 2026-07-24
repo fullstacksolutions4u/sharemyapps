@@ -440,32 +440,7 @@ const LearningTracker = ({ embedded = false }) => {
                                       );
                                     })}
                                   </div>
-                                  {practicalProblems.length > 0 && (
-                                    <div className="mt-3 flex-shrink-0 rounded-xl p-3 shadow-inner" style={{ backgroundColor: '#F0E8DC', border: '1px solid #D4B896' }}>
-                                      <h4 className="text-xs font-bold text-amber-500 uppercase tracking-wider flex items-center gap-2 mb-3 px-1">
-                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" /></svg>
-                                        LeetCode Problems
-                                      </h4>
-                                      <div className="space-y-2 max-h-[120px] overflow-y-auto custom-scrollbar pr-1">
-                                        {practicalProblems.map((topic, tIdx) => (
-                                          <div key={topic._id || `pp-${tIdx}`} className="flex items-center gap-3 p-2 rounded-lg border" style={{ backgroundColor: topic.completed ? '#EFF8EF' : '#FAF7F2', borderColor: topic.completed ? '#86efac' : '#D4B896' }}>
-                                            <button onClick={() => handleToggleTopic(module._id, topic._id, topic.completed, index)} className="cursor-pointer flex-shrink-0 w-4 h-4 rounded-full flex items-center justify-center" style={topic.completed ? { backgroundColor: '#C9A96E' } : { border: '1.5px solid #D4B896', backgroundColor: 'transparent' }}>
-                                              {topic.completed && <svg className="w-2.5 h-2.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>}
-                                            </button>
-                                            <div className="flex-1 min-w-0 flex items-center justify-between gap-2">
-                                              <span className="text-xs font-medium truncate" style={{ color: topic.completed ? '#9A8A7A' : '#1C1A17' }}>{topic.name}</span>
-                                              {topic.problemUrl && (
-                                                <a href={topic.problemUrl} target="_blank" rel="noopener noreferrer" className="flex-shrink-0 flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-semibold" style={topic.completed ? { backgroundColor: '#E0D8CC', color: '#5A5550' } : { backgroundColor: 'rgba(201,169,110,0.15)', color: '#9B7D43', border: '1px solid rgba(201,169,110,0.5)' }}>
-                                                  <span>Solve</span>
-                                                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
-                                                </a>
-                                              )}
-                                            </div>
-                                          </div>
-                                        ))}
-                                      </div>
-                                    </div>
-                                  )}
+
                                 </div>
                               </div>
                             </div>
