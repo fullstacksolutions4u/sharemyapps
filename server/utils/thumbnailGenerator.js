@@ -11,7 +11,7 @@ async function generateAndUploadThumbnail(liveUrl) {
   try {
     // Use Thum.io API to reliably get a screenshot.
     // It returns the image directly which Cloudinary can fetch.
-    const screenshotUrl = `https://image.thum.io/get/width/1200/crop/800/${liveUrl}`;
+    const screenshotUrl = `https://image.thum.io/get/width/1200/crop/800/noanimate/${liveUrl}`;
 
     // Upload the generated screenshot URL to our Cloudinary account
     const uploadRes = await cloudinary.uploader.upload(screenshotUrl, {

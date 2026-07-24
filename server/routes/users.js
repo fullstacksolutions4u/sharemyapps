@@ -2,7 +2,7 @@ const router = require('express').Router();
 const User = require('../models/User');
 const Project = require('../models/Project');
 const Vacancy = require('../models/Vacancy');
-const { protect } = require('../middleware/auth');
+const { protect, optionalAuth } = require('../middleware/auth');
 const { extractJDRequirements } = require('../utils/aiExtract');
 const aiLimit = require('../middleware/aiLimit');
 const { jdQuota } = require('../middleware/jdQuota');
@@ -94,7 +94,7 @@ router.get('/recent', async (req, res) => {
 });
 
 // GET /api/users/showcase-devs — devs with photo + approved projects, at a registration offset
-router.get('/showcase-devs', async (req, res) => {
+router.get('/showcase-devs', optionalAuth, async (req, res) => {
   try {
     const User = require('../models/User');
     const Project = require('../models/Project');
@@ -137,14 +137,31 @@ router.get('/showcase-devs', async (req, res) => {
       .filter(d => d.projectCount > 0)
       .slice(skip, skip + limit);
 
-    res.json(result);
+    const reqUser = req.user;
+    const isRecruiterOrAdmin = reqUser && (
+      reqUser.role === 'admin' ||
+      reqUser.userType === 'recruiter' ||
+      reqUser.userType === 'client'
+    );
+
+    const sanitizedResult = result.map(d => {
+      const isSelf = reqUser && reqUser._id.toString() === d._id.toString();
+      if (!isRecruiterOrAdmin && !isSelf) {
+        delete d.email;
+        delete d.phone;
+        delete d.cvUrl;
+      }
+      return d;
+    });
+
+    res.json(sanitizedResult);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 });
 
 // GET /api/users/developers — sorted by community engagement (likes/ratings/comments given to others)
-router.get('/developers', async (req, res) => {
+router.get('/developers', optionalAuth, async (req, res) => {
   try {
     const page  = Math.max(1, parseInt(req.query.page) || 1);
     const LIMIT = 12;
@@ -372,11 +389,25 @@ router.get('/developers', async (req, res) => {
       },
     ]);
 
-    const total = result.total[0]?.n || 0;
-    const developers = result.developers;
+    const reqUser = req.user;
+    const isRecruiterOrAdmin = reqUser && (
+      reqUser.role === 'admin' ||
+      reqUser.userType === 'recruiter' ||
+      reqUser.userType === 'client'
+    );
+
+    const sanitizedDevs = developers.map(dev => {
+      const isSelf = reqUser && reqUser._id.toString() === dev._id.toString();
+      if (!isRecruiterOrAdmin && !isSelf) {
+        delete dev.email;
+        delete dev.phone;
+        delete dev.cvUrl;
+      }
+      return dev;
+    });
 
     res.json({
-      developers,
+      developers: sanitizedDevs,
       total,
       currentPage: page,
       totalPages: Math.ceil(total / LIMIT),
@@ -463,6 +494,22 @@ router.get('/mentors', protect, async (req, res) => {
       .limit(100)
       .lean();
 
+    const reqUser = req.user;
+    const isRecruiterOrAdmin = reqUser && (
+      reqUser.role === 'admin' ||
+      reqUser.userType === 'recruiter' ||
+      reqUser.userType === 'client'
+    );
+
+    const sanitizedMentors = mentors.map(m => {
+      const isSelf = reqUser && reqUser._id.toString() === m._id.toString();
+      if (!isRecruiterOrAdmin && !isSelf) {
+        delete m.email;
+        delete m.phone;
+      }
+      return m;
+    });
+
     const mentorIds = mentors.map(m => m._id);
     const projectCounts = await Project.aggregate([
       { $match: { owner: { $in: mentorIds }, status: 'approved' } },
@@ -470,7 +517,7 @@ router.get('/mentors', protect, async (req, res) => {
     ]);
     const countMap = Object.fromEntries(projectCounts.map(p => [p._id.toString(), p.count]));
 
-    res.json(mentors.map(m => ({ ...m, projectCount: countMap[m._id.toString()] || 0 })));
+    res.json(sanitizedMentors.map(m => ({ ...m, projectCount: countMap[m._id.toString()] || 0 })));
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

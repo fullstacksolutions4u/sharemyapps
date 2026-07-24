@@ -174,7 +174,24 @@ exports.getProject = async (req, res) => {
       .populate('collaborators', 'name avatar badge');
     if (!project) return res.status(404).json({ message: 'Project not found' });
     if (project.owner?.hidden) return res.status(404).json({ message: 'Project not found' });
-    res.json(project);
+
+    const projectJSON = project.toObject();
+    const ownerId = project.owner?._id?.toString();
+    const reqUser = req.user;
+
+    const hasAccess = ownerId && reqUser && (
+      reqUser.role === 'admin' ||
+      reqUser.userType === 'recruiter' ||
+      reqUser.userType === 'client' ||
+      reqUser._id.toString() === ownerId
+    );
+
+    if (projectJSON.owner && !hasAccess) {
+      delete projectJSON.owner.email;
+      delete projectJSON.owner.phone;
+    }
+
+    res.json(projectJSON);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -182,12 +199,29 @@ exports.getProject = async (req, res) => {
 
 exports.getUserProjects = async (req, res) => {
   try {
-    const user = await User.findById(req.params.userId).select('name avatar linkedinUrl githubUrl leetcodeUrl phone email cvUrl hidden');
+    const targetUserId = req.params.userId;
+    const user = await User.findById(targetUserId).select('name avatar linkedinUrl githubUrl leetcodeUrl phone email cvUrl hidden');
     if (!user) return res.status(404).json({ message: 'User not found' });
     if (user.hidden) return res.status(404).json({ message: 'User not found' });
-    const projects = await Project.find({ owner: req.params.userId, status: 'approved', hidden: { $ne: true } })
+    const projects = await Project.find({ owner: targetUserId, status: 'approved', hidden: { $ne: true } })
       .sort({ createdAt: -1 });
-    res.json({ user, projects });
+
+    const reqUser = req.user;
+    const hasAccess = reqUser && (
+      reqUser.role === 'admin' ||
+      reqUser.userType === 'recruiter' ||
+      reqUser.userType === 'client' ||
+      reqUser._id.toString() === targetUserId.toString()
+    );
+
+    const userJSON = user.toObject();
+    if (!hasAccess) {
+      delete userJSON.email;
+      delete userJSON.phone;
+      delete userJSON.cvUrl;
+    }
+
+    res.json({ user: userJSON, projects });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
