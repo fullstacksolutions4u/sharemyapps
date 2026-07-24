@@ -168,19 +168,14 @@ export default function Feed() {
                       idx === 2 ? 'bg-orange-100 text-orange-600' :
                       'bg-bg text-muted'
                     }`}>
-                      {idx + 1}
+                      {idx === 0 ? <Crown size={12} className="fill-yellow-500 text-yellow-600" /> : idx + 1}
                     </div>
                     
-                    <div className="relative shrink-0">
-                      {idx === 0 && (
-                        <Crown size={14} className="absolute -top-2.5 left-1/2 -translate-x-1/2 text-amber-500 fill-amber-400 -rotate-12" />
-                      )}
-                      <img 
-                        src={user.profileImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=random`}
-                        alt={user.name}
-                        className="w-8 h-8 rounded-full object-cover"
-                      />
-                    </div>
+                    <img 
+                      src={user.profileImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=random`}
+                      alt={user.name}
+                      className="w-8 h-8 rounded-full object-cover shrink-0"
+                    />
                     
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium text-text truncate">{user.name}</p>
