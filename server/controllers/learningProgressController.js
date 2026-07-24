@@ -200,6 +200,29 @@ const submitQuizAttempt = async (req, res) => {
         const userDoc = await User.findById(req.user._id);
         const oldPoints = userDoc.points || 0;
         const newPoints = oldPoints + pointsAwarded;
+
+        // Fetch ranks before saving new points
+        let prevRank = 9999;
+        let prevRank1User = null;
+        try {
+          const devFilter = { 
+            role: { $ne: 'admin' }, 
+            userType: 'developer', 
+            isDeleted: { $ne: true }, 
+            hidden: { $ne: true },
+            _id: { $nin: ['6a225bdd9c1fca63c9154a8d', '6a5b3f5c36d9511e20e8058d'] }
+          };
+          const devsBefore = await User.find(devFilter)
+            .select('_id points email name')
+            .sort({ points: -1, createdAt: 1 })
+            .lean();
+          prevRank = devsBefore.findIndex(d => d._id.toString() === userDoc._id.toString()) + 1;
+          if (prevRank === 0) prevRank = devsBefore.length + 1;
+          prevRank1User = devsBefore[0];
+        } catch (err) {
+          console.error('[Leaderboard Ranks Before] error:', err);
+        }
+
         userDoc.points = newPoints;
 
         const oldLevel = Math.floor(oldPoints / 100);
@@ -216,30 +239,52 @@ const submitQuizAttempt = async (req, res) => {
         }
         await userDoc.save();
 
-        if (!userDoc.top5CongratsSent && isCorrect) {
-          try {
-            const devFilter = { 
-              role: { $ne: 'admin' }, 
-              userType: 'developer', 
-              isDeleted: { $ne: true }, 
-              hidden: { $ne: true },
-              _id: { $nin: ['6a225bdd9c1fca63c9154a8d', '6a5b3f5c36d9511e20e8058d'] }
-            };
-            const top5Users = await User.find(devFilter)
-              .select('_id')
-              .sort({ points: -1, createdAt: 1 })
-              .limit(5)
-              .lean();
+        // Fetch ranks after saving new points
+        try {
+          const devFilter = { 
+            role: { $ne: 'admin' }, 
+            userType: 'developer', 
+            isDeleted: { $ne: true }, 
+            hidden: { $ne: true },
+            _id: { $nin: ['6a225bdd9c1fca63c9154a8d', '6a5b3f5c36d9511e20e8058d'] }
+          };
+          const devsAfter = await User.find(devFilter)
+            .select('_id points email name')
+            .sort({ points: -1, createdAt: 1 })
+            .lean();
+          const newRank = devsAfter.findIndex(d => d._id.toString() === userDoc._id.toString()) + 1;
 
-            if (top5Users.some(u => u._id.toString() === req.user._id.toString())) {
+          // Event triggers
+          const { sendTop10CongratsEmail, sendTop5CongratsEmail, sendRank1Email, sendPushedDownEmail } = require('../utils/email');
+
+          // 1. Enter into Top 10 (prev > 10, new <= 10, and new > 5)
+          if (prevRank > 10 && newRank <= 10 && newRank > 5) {
+            sendTop10CongratsEmail({ to: userDoc.email, name: userDoc.name }).catch(err => console.error('[Leaderboard Email] Top 10 failed:', err));
+          }
+
+          // 2. Enter into Top 5 (prev > 5, new <= 5, and new > 1)
+          if (prevRank > 5 && newRank <= 5 && newRank > 1) {
+            if (!userDoc.top5CongratsSent) {
               userDoc.top5CongratsSent = true;
               await userDoc.save();
-              const { sendTop5CongratsEmail } = require('../utils/email');
-              sendTop5CongratsEmail({ to: userDoc.email, name: userDoc.name }).catch(err => console.error('[Top5 Email] failed:', err));
             }
-          } catch (err) {
-            console.error('[Top5 Logic] error:', err);
+            sendTop5CongratsEmail({ to: userDoc.email, name: userDoc.name }).catch(err => console.error('[Leaderboard Email] Top 5 failed:', err));
           }
+
+          // 3. First ranking (prev > 1, new === 1)
+          if (prevRank > 1 && newRank === 1) {
+            sendRank1Email({ to: userDoc.email, name: userDoc.name }).catch(err => console.error('[Leaderboard Email] Rank 1 failed:', err));
+
+            // If someone else was rank 1 before, and they are now rank 2, send them the "down to second" email
+            if (prevRank1User && prevRank1User._id.toString() !== userDoc._id.toString()) {
+              const currentRankOfPrev1 = devsAfter.findIndex(d => d._id.toString() === prevRank1User._id.toString()) + 1;
+              if (currentRankOfPrev1 === 2) {
+                sendPushedDownEmail({ to: prevRank1User.email, name: prevRank1User.name }).catch(err => console.error('[Leaderboard Email] Pushed down failed:', err));
+              }
+            }
+          }
+        } catch (err) {
+          console.error('[Leaderboard Ranks After] error:', err);
         }
       }
     }

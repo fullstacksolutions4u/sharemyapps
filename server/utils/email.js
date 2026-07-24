@@ -842,6 +842,117 @@ exports.sendTop5CongratsEmail = async ({ to, name }) => {
   });
 };
 
+exports.sendTop10CongratsEmail = async ({ to, name }) => {
+  const leaderboardUrl = `${BASE_URL}/quiz-zone`;
+
+  await sendEmailWithFallback({
+    sender: FROM,
+    to: [{ email: to, name }],
+    subject: `🚀 Awesome! You've entered the Top 10 on ShareMyApps!`,
+    htmlContent: `
+      <div style="font-family:Inter,Arial,sans-serif;max-width:560px;margin:0 auto;background:#fff;border-radius:12px;overflow:hidden;border:1px solid #E5E1DA;">
+        <div style="background:#00A693;padding:12px 32px;text-align:center;">
+          <img src="${LOGO_URL}" alt="ShareMyApps" style="height:40px;object-fit:contain;" />
+        </div>
+        <div style="padding:32px;">
+          <h2 style="margin:0 0 8px;font-size:22px;color:#1A1A1A;">🚀 You are in the Top 10!</h2>
+          <p style="color:#374151;margin:0 0 16px;font-size:15px;">Hi ${name},</p>
+          <p style="color:#374151;margin:0 0 20px;font-size:15px;line-height:1.6;">
+            Great job! You have officially entered the <strong>Top 10 of the ShareMyApps Leaderboard</strong>.
+          </p>
+          <div style="background:#F0FDF4;border:1px solid #22C55E;border-radius:10px;padding:20px;margin-bottom:24px;text-align:center;">
+            <p style="margin:0 0 8px;font-size:32px;">🌟</p>
+            <p style="margin:0;font-size:14px;color:#166534;font-weight:600;">You are climbing fast! Keep going!</p>
+          </div>
+          <p style="color:#374151;margin:0 0 24px;font-size:14px;line-height:1.6;">
+            Keep completing modules and quizzes to increase your points and break into the Top 5.
+          </p>
+          <div style="text-align:center;margin-bottom:24px;">
+            <a href="${leaderboardUrl}" style="display:inline-block;background:linear-gradient(135deg,#22C55E 0%,#15803D 100%);color:#fff;text-decoration:none;padding:13px 32px;border-radius:8px;font-weight:700;font-size:14px;">
+              Earn More Coins →
+            </a>
+          </div>
+        </div>
+        ${FOOTER('You received this email because you reached the top 10 on ShareMyApps.')}
+      </div>
+    `,
+  });
+};
+
+exports.sendRank1Email = async ({ to, name }) => {
+  const leaderboardUrl = `${BASE_URL}/quiz-zone`;
+
+  await sendEmailWithFallback({
+    sender: FROM,
+    to: [{ email: to, name }],
+    subject: `👑 Outstanding! You are now Rank 1 on ShareMyApps!`,
+    htmlContent: `
+      <div style="font-family:Inter,Arial,sans-serif;max-width:560px;margin:0 auto;background:#fff;border-radius:12px;overflow:hidden;border:1px solid #E5E1DA;">
+        <div style="background:#00A693;padding:12px 32px;text-align:center;">
+          <img src="${LOGO_URL}" alt="ShareMyApps" style="height:40px;object-fit:contain;" />
+        </div>
+        <div style="padding:32px;">
+          <h2 style="margin:0 0 8px;font-size:22px;color:#1A1A1A;">👑 You are Rank #1!</h2>
+          <p style="color:#374151;margin:0 0 16px;font-size:15px;">Hi ${name},</p>
+          <p style="color:#374151;margin:0 0 20px;font-size:15px;line-height:1.6;">
+            Incredible! You have claimed the absolute <strong>#1 spot on the ShareMyApps Leaderboard</strong>. You've earned the crown!
+          </p>
+          <div style="background:#FEF3C7;border:1px solid #D97706;border-radius:10px;padding:20px;margin-bottom:24px;text-align:center;">
+            <p style="margin:0 0 8px;font-size:32px;">👑</p>
+            <p style="margin:0;font-size:14px;color:#92400E;font-weight:600;">You are the reigning champion!</p>
+          </div>
+          <p style="color:#374151;margin:0 0 24px;font-size:14px;line-height:1.6;">
+            Keep earning coins and completing quizzes to maintain your position, as other developers are fighting to overtake you!
+          </p>
+          <div style="text-align:center;margin-bottom:24px;">
+            <a href="${leaderboardUrl}" style="display:inline-block;background:linear-gradient(135deg,#D97706 0%,#B45309 100%);color:#fff;text-decoration:none;padding:13px 32px;border-radius:8px;font-weight:700;font-size:14px;">
+              Keep Learning →
+            </a>
+          </div>
+        </div>
+        ${FOOTER('You received this email because you reached rank 1 on ShareMyApps.')}
+      </div>
+    `,
+  });
+};
+
+exports.sendPushedDownEmail = async ({ to, name }) => {
+  const leaderboardUrl = `${BASE_URL}/quiz-zone`;
+
+  await sendEmailWithFallback({
+    sender: FROM,
+    to: [{ email: to, name }],
+    subject: `⚠️ Oh no! You've been overtaken on the Leaderboard!`,
+    htmlContent: `
+      <div style="font-family:Inter,Arial,sans-serif;max-width:560px;margin:0 auto;background:#fff;border-radius:12px;overflow:hidden;border:1px solid #E5E1DA;">
+        <div style="background:#00A693;padding:12px 32px;text-align:center;">
+          <img src="${LOGO_URL}" alt="ShareMyApps" style="height:40px;object-fit:contain;" />
+        </div>
+        <div style="padding:32px;">
+          <h2 style="margin:0 0 8px;font-size:22px;color:#1A1A1A;">⚠️ You've been overtaken!</h2>
+          <p style="color:#374151;margin:0 0 16px;font-size:15px;">Hi ${name},</p>
+          <p style="color:#374151;margin:0 0 20px;font-size:15px;line-height:1.6;">
+            Another developer has just overtaken your <strong>#1 spot</strong>. You are currently in 2nd place.
+          </p>
+          <div style="background:#FEF2F2;border:1px solid #EF4444;border-radius:10px;padding:20px;margin-bottom:24px;text-align:center;">
+            <p style="margin:0 0 8px;font-size:32px;">⚡</p>
+            <p style="margin:0;font-size:14px;color:#991B1B;font-weight:600;">Time to win back your crown!</p>
+          </div>
+          <p style="color:#374151;margin:0 0 24px;font-size:14px;line-height:1.6;">
+            Complete more quizzes and modules right now to earn coins and claim back your #1 champion rank.
+          </p>
+          <div style="text-align:center;margin-bottom:24px;">
+            <a href="${leaderboardUrl}" style="display:inline-block;background:linear-gradient(135deg,#EF4444 0%,#B91C1C 100%);color:#fff;text-decoration:none;padding:13px 32px;border-radius:8px;font-weight:700;font-size:14px;">
+              Reclaim #1 Rank →
+            </a>
+          </div>
+        </div>
+        ${FOOTER('You received this email because your leaderboard rank changed on ShareMyApps.')}
+      </div>
+    `,
+  });
+};
+
 exports.sendApplicationReviewingEmail = async ({ to, name, vacancyTitle }) => {
   await sendEmailWithFallback({
     sender: FROM,
