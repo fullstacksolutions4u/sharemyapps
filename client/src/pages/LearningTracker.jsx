@@ -330,26 +330,23 @@ const LearningTracker = ({ embedded = false }) => {
                 const completedTopics = module.topics?.filter(t => t.completed).length || 0;
                 const totalTopics = module.topics?.length || 0;
                 const percent = totalTopics > 0 ? (completedTopics / totalTopics) * 100 : 0;
+                
+                const isActive = gi === currentIndex;
+                const completedBg = isActive ? '#00A693' : '#D8CCF4';
+                const uncompletedBg = isActive ? '#3ABCAE' : '#F3EEFF';
+                const backgroundStyle = `linear-gradient(to right, ${completedBg} ${percent}%, ${uncompletedBg} ${percent}%)`;
+
                 return (
                   <button key={gi} onClick={() => goToSlide(gi)} title={label}
-                    className="whitespace-nowrap flex flex-col justify-center transition-all duration-200 rounded-lg px-2.5 py-1.5 pb-2 text-xs font-semibold relative overflow-hidden"
-                    style={gi === currentIndex
-                      ? { backgroundColor: '#7C5CBF', color: '#FAF7F2', boxShadow: '0 2px 6px rgba(124,92,191,0.4)', border: '1px solid #A07DD6' }
-                      : { backgroundColor: '#F3EEFF', color: '#5A4080', border: '1px solid #C4B0E8' }}>
-                    <div className="flex items-center justify-between gap-1.5 w-full">
-                      <span className="truncate">{gi + 1}. {label}</span>
-                      <span className="text-[9px] opacity-80 shrink-0">({completedTopics}/{totalTopics})</span>
-                    </div>
+                    className="whitespace-nowrap text-left transition-all duration-200 rounded-lg px-2.5 py-1.5 text-xs font-semibold flex items-center justify-between gap-2"
+                    style={isActive
+                      ? { background: backgroundStyle, color: '#FAF7F2', boxShadow: '0 2px 6px rgba(0,166,147,0.4)', border: '1px solid #008A7A' }
+                      : { background: backgroundStyle, color: '#5A4080', border: '1px solid #C4B0E8' }}>
+                    <span className="truncate flex-1 min-w-0">{gi + 1}. {label}</span>
                     {totalTopics > 0 && (
-                      <div className="absolute bottom-0 left-0 h-[3px] w-full" style={{ backgroundColor: gi === currentIndex ? 'rgba(255,255,255,0.25)' : 'rgba(124,92,191,0.15)' }}>
-                        <div 
-                          className="h-full transition-all duration-300" 
-                          style={{ 
-                            backgroundColor: gi === currentIndex ? '#FACC15' : '#7C5CBF', 
-                            width: `${percent}%` 
-                          }} 
-                        />
-                      </div>
+                      <span className="text-[10px] font-medium shrink-0 opacity-90 ml-1">
+                        ({completedTopics}/{totalTopics})
+                      </span>
                     )}
                   </button>
                 );
@@ -361,26 +358,23 @@ const LearningTracker = ({ embedded = false }) => {
                 const completedTopics = module.topics?.filter(t => t.completed).length || 0;
                 const totalTopics = module.topics?.length || 0;
                 const percent = totalTopics > 0 ? (completedTopics / totalTopics) * 100 : 0;
+                
+                const isActive = gi === currentIndex;
+                const completedBg = isActive ? '#00A693' : '#D8CCF4';
+                const uncompletedBg = isActive ? '#3ABCAE' : '#F3EEFF';
+                const backgroundStyle = `linear-gradient(to right, ${completedBg} ${percent}%, ${uncompletedBg} ${percent}%)`;
+
                 return (
                   <button key={gi} onClick={() => goToSlide(gi)} title={label}
-                    className="w-full flex flex-col justify-center transition-all duration-200 rounded-lg px-2.5 py-1.5 pb-2 text-xs font-semibold relative overflow-hidden"
-                    style={gi === currentIndex
-                      ? { backgroundColor: '#7C5CBF', color: '#FAF7F2', boxShadow: '0 2px 6px rgba(124,92,191,0.4)', border: '1px solid #A07DD6' }
-                      : { backgroundColor: '#F3EEFF', color: '#5A4080', border: '1px solid #C4B0E8' }}>
-                    <div className="flex items-center justify-between gap-2 w-full">
-                      <span className="truncate">{gi + 1}. {label}</span>
-                      <span className="text-[10px] opacity-80 shrink-0">({completedTopics}/{totalTopics})</span>
-                    </div>
+                    className="w-full whitespace-nowrap text-left transition-all duration-200 rounded-lg px-2.5 py-1.5 text-xs font-semibold flex items-center justify-between gap-2"
+                    style={isActive
+                      ? { background: backgroundStyle, color: '#FAF7F2', boxShadow: '0 2px 6px rgba(0,166,147,0.4)', border: '1px solid #008A7A' }
+                      : { background: backgroundStyle, color: '#5A4080', border: '1px solid #C4B0E8' }}>
+                    <span className="truncate flex-1 min-w-0">{gi + 1}. {label}</span>
                     {totalTopics > 0 && (
-                      <div className="absolute bottom-0 left-0 h-[3px] w-full" style={{ backgroundColor: gi === currentIndex ? 'rgba(255,255,255,0.25)' : 'rgba(124,92,191,0.15)' }}>
-                        <div 
-                          className="h-full transition-all duration-300" 
-                          style={{ 
-                            backgroundColor: gi === currentIndex ? '#FACC15' : '#7C5CBF', 
-                            width: `${percent}%` 
-                          }} 
-                        />
-                      </div>
+                      <span className="text-[10px] font-medium shrink-0 opacity-90 ml-1">
+                        ({completedTopics}/{totalTopics})
+                      </span>
                     )}
                   </button>
                 );
@@ -394,7 +388,7 @@ const LearningTracker = ({ embedded = false }) => {
                   <div className="flex gap-1 items-stretch">
 
                     {/* LEFT column */}
-                    <div className="hidden xl:flex flex-col gap-1 flex-shrink-0">
+                    <div className="hidden xl:flex flex-col gap-1 flex-shrink-0 w-[240px]">
                       {leftMods.map(mkGoldSideBtn)}
                     </div>
 
@@ -419,7 +413,7 @@ const LearningTracker = ({ embedded = false }) => {
                         const practicalProblems = [...(module.topics || [])].filter(t => t.isPracticalProblem).sort((a, b) => (a.order || 0) - (b.order || 0));
                         return (
                           <div key={module._id} className="flex-shrink-0" style={{ width: `${100 / modules.length}%`, minWidth: `${100 / modules.length}%`, scrollSnapAlign: 'start', scrollSnapStop: 'always', padding: '0 0.5rem' }}>
-                            <div id={`module-container-${index}`} className="rounded-2xl shadow-lg p-3 border-2 flex flex-col relative" style={{ backgroundColor: '#FAF7F2', borderColor: isModuleLocked ? '#C07A3A' : index === currentIndex ? '#7C5CBF' : '#E0D8CC', height: '800px' }}>
+                            <div id={`module-container-${index}`} className="rounded-2xl shadow-lg p-3 border-2 flex flex-col relative" style={{ backgroundColor: '#FAF7F2', borderColor: isModuleLocked ? '#C07A3A' : index === currentIndex ? '#00A693' : '#E0D8CC', height: '800px' }}>
                               {isModuleLocked && (
                                 <div className="absolute inset-0 backdrop-blur-sm rounded-2xl z-10 flex flex-col items-center justify-center p-6" style={{ backgroundColor: 'rgba(245,240,232,0.85)' }}>
                                   <svg className="w-20 h-20 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: '#C07A3A' }}><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
@@ -431,7 +425,7 @@ const LearningTracker = ({ embedded = false }) => {
                                   </div>
                                 </div>
                               )}
-                              <div className="flex-1 flex flex-col min-h-0">
+                               <div className="flex-1 flex flex-col min-h-0">
                                 <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
                                   <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar space-y-3">
                                     {regularTopics.map((topic, topicIndex) => {
@@ -540,35 +534,7 @@ const LearningTracker = ({ embedded = false }) => {
                     </div>
                   </div>
 
-                  {/* Weekly Progress */}
-                  <div className="relative mb-4">
-                    <div className="flex items-center justify-between gap-1 pb-1 px-4">
-                      {weeklyProgress.map((day, idx) => {
-                        const progress = Math.min(100, (day.completedCount / dailyTarget) * 100);
-                        const isCompleted = day.completedCount >= dailyTarget;
-                        const circumference = 2 * Math.PI * 15;
-                        return (
-                          <div key={idx} className="flex flex-col items-center gap-1">
-                            <div className="relative w-8 h-8 flex items-center justify-center">
-                              <svg className="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
-                                <circle cx="18" cy="18" r="15" fill="transparent" stroke="#E0D8CC" strokeWidth="3" />
-                                <circle cx="18" cy="18" r="15" fill="transparent" stroke={isCompleted ? '#22c55e' : '#f97316'} strokeWidth="3" strokeDasharray={circumference} strokeDashoffset={circumference * (1 - progress / 100)} strokeLinecap="round" className="transition-all duration-500" />
-                              </svg>
-                              <div className="absolute inset-0 m-1 rounded-full flex items-center justify-center" style={{ backgroundColor: day.isToday ? 'rgba(155,125,67,0.15)' : 'transparent' }}>
-                                <span className="text-xs font-bold" style={{ color: day.isToday ? '#9B7D43' : '#5A5550' }}>{day.date}</span>
-                              </div>
-                              {isCompleted && (
-                                <div className="absolute -right-1 -top-1 bg-green-500 rounded-full p-0.5 shadow-lg border border-white">
-                                  <svg className="w-2 h-2 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
-                                </div>
-                              )}
-                            </div>
-                            <span className="text-xs font-bold uppercase tracking-wider" style={{ color: day.isToday ? '#9B7D43' : '#5A5550' }}>{day.dayName}</span>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
+
 
                   {/* Calendar */}
                   <div className="rounded-xl p-3 flex-shrink-0 mb-4 mx-auto w-full max-w-[260px]" style={{ backgroundColor: '#F0E8DC', border: '1px solid #D4B896' }}>
@@ -649,7 +615,7 @@ const LearningTracker = ({ embedded = false }) => {
                       </div>
 
                     {/* RIGHT column */}
-                    <div className="hidden xl:flex flex-col gap-1 flex-shrink-0">
+                    <div className="hidden xl:flex flex-col gap-1 flex-shrink-0 w-[240px]">
                       {rightMods.map(mkGoldSideBtn)}
                     </div>
 

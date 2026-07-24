@@ -3,8 +3,6 @@ const LearningModule = require('../models/LearningModule');
 const User = require('../models/User');
 const Activity = require('../models/Activity');
 
-const DAILY_LIMIT = 40;
-
 const getProgress = async (req, res) => {
   try {
     let progress = await LearningProgress.findOne({ userId: req.user._id });
@@ -62,24 +60,6 @@ const toggleTopicCompletion = async (req, res) => {
     let isCompleted;
 
     if (topicIndex === -1) {
-      const today = new Date();
-      const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-      const todayEnd = new Date(todayStart);
-      todayEnd.setDate(todayEnd.getDate() + 1);
-      const todaysCompletions = progressDoc.completedTopics.filter(t => {
-        const at = new Date(t.completedAt);
-        return at >= todayStart && at < todayEnd;
-      }).length;
-
-      if (todaysCompletions >= DAILY_LIMIT) {
-        return res.status(400).json({
-          success: false,
-          message: '⏸️ Daily Limit Reached!',
-          dailyLimitExceeded: true,
-          limitMessage: `You've already completed ${DAILY_LIMIT} topics today! 🎯\n\nTake time to deeply understand each concept. Quality learning beats quantity every time. Review what you've learned, practice thoroughly, and come back tomorrow with fresh energy! 🌟`
-        });
-      }
-
       // Check if this is the first topic in the module
       const isFirstTopicInModule = progressDoc.completedTopics.filter(t => t.moduleId.toString() === moduleId).length === 0;
 
