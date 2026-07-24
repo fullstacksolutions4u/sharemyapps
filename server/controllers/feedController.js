@@ -8,8 +8,12 @@ exports.getFeed = async (req, res) => {
     const limit = parseInt(req.query.limit) || 40;
     const skip = (page - 1) * limit;
 
-    const hiddenUsers = await User.find({ $or: [{ hidden: true }, { isDeleted: true }] }).select('_id').lean();
-    const excludeIds = ['6a225bdd9c1fca63c9154a8d', '6a5b3f5c36d9511e20e8058d', ...hiddenUsers.map(u => u._id.toString())];
+    let hiddenUserFilter = { $or: [{ hidden: true }, { isDeleted: true }] };
+    if (req.user && (req.user.role === 'admin' || req.user.hidden)) {
+      hiddenUserFilter = { isDeleted: true };
+    }
+    const hiddenUsers = await User.find(hiddenUserFilter).select('_id').lean();
+    const excludeIds = hiddenUsers.map(u => u._id.toString());
 
     let activities = await Activity.find({ user: { $nin: excludeIds } })
       .sort({ createdAt: -1 })
@@ -22,6 +26,7 @@ exports.getFeed = async (req, res) => {
         populate: { path: 'owner', select: 'name profileImage avatar designations' }
       })
       .populate('module', 'title _id')
+      .populate('comments.user', 'name profileImage avatar')
       .lean();
 
     // To ensure the feed isn't empty when first launching, if we have 0 activities, 
@@ -49,6 +54,51 @@ exports.getFeed = async (req, res) => {
       page,
       hasMore: activities.length === limit
     });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+exports.likeActivity = async (req, res) => {
+  try {
+    const activity = await Activity.findById(req.params.id);
+    if (!activity) return res.status(404).json({ success: false, message: 'Activity not found' });
+    
+    const userId = req.user._id;
+    const idx = activity.likes.indexOf(userId);
+    if (idx === -1) {
+      activity.likes.push(userId);
+    } else {
+      activity.likes.splice(idx, 1);
+    }
+    
+    await activity.save();
+    res.json({ success: true, likes: activity.likes });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+exports.commentActivity = async (req, res) => {
+  try {
+    const { text } = req.body;
+    if (!text || !text.trim()) return res.status(400).json({ success: false, message: 'Comment text is required' });
+    
+    const activity = await Activity.findById(req.params.id);
+    if (!activity) return res.status(404).json({ success: false, message: 'Activity not found' });
+    
+    const comment = {
+      user: req.user._id,
+      text: text.trim(),
+      createdAt: new Date()
+    };
+    
+    activity.comments.push(comment);
+    await activity.save();
+    
+    await activity.populate('comments.user', 'name profileImage avatar');
+    
+    res.json({ success: true, comment: activity.comments[activity.comments.length - 1] });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }

@@ -23,8 +23,8 @@ router.get('/count', async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 });
-router.get('/', getProjects);
-router.get('/featured', getFeaturedProjects);
+router.get('/', optionalAuth, getProjects);
+router.get('/featured', optionalAuth, getFeaturedProjects);
 router.get('/my', protect, getMyProjects);
 router.get('/user/:userId', optionalAuth, getUserProjects);
 router.get('/showcase', async (req, res) => {

@@ -189,8 +189,7 @@ const submitQuizAttempt = async (req, res) => {
             role: { $ne: 'admin' }, 
             userType: 'developer', 
             isDeleted: { $ne: true }, 
-            hidden: { $ne: true },
-            _id: { $nin: ['6a225bdd9c1fca63c9154a8d', '6a5b3f5c36d9511e20e8058d'] }
+            hidden: { $ne: true }
           };
           const devsBefore = await User.find(devFilter)
             .select('_id points email name')
@@ -225,8 +224,7 @@ const submitQuizAttempt = async (req, res) => {
             role: { $ne: 'admin' }, 
             userType: 'developer', 
             isDeleted: { $ne: true }, 
-            hidden: { $ne: true },
-            _id: { $nin: ['6a225bdd9c1fca63c9154a8d', '6a5b3f5c36d9511e20e8058d'] }
+            hidden: { $ne: true }
           };
           const devsAfter = await User.find(devFilter)
             .select('_id points email name')
@@ -254,6 +252,17 @@ const submitQuizAttempt = async (req, res) => {
           // 3. First ranking (prev > 1, new === 1)
           if (prevRank > 1 && newRank === 1) {
             sendRank1Email({ to: userDoc.email, name: userDoc.name }).catch(err => console.error('[Leaderboard Email] Rank 1 failed:', err));
+
+            // Generate Leaderboard Top Activity
+            try {
+              await Activity.create({
+                user: userDoc._id,
+                type: 'LEADERBOARD_TOP',
+                meta: { score: newPoints }
+              });
+            } catch (err) {
+              console.error('[Leaderboard Activity] failed:', err);
+            }
 
             // If someone else was rank 1 before, and they are now rank 2, send them the "down to second" email
             if (prevRank1User && prevRank1User._id.toString() !== userDoc._id.toString()) {
@@ -310,10 +319,11 @@ const getLeaderboard = async (req, res) => {
     const devFilter = { 
       role: { $ne: 'admin' }, 
       userType: 'developer', 
-      isDeleted: { $ne: true }, 
-      hidden: { $ne: true },
-      _id: { $nin: ['6a225bdd9c1fca63c9154a8d', '6a5b3f5c36d9511e20e8058d'] }
+      isDeleted: { $ne: true }
     };
+    if (!req.user || (req.user.role !== 'admin' && !req.user.hidden)) {
+      devFilter.hidden = { $ne: true };
+    }
 
     const topUsers = await User.find(devFilter)
       .select('name avatar points')
@@ -334,7 +344,7 @@ const getLeaderboard = async (req, res) => {
     if (req.user) {
       const currentUser = await User.findById(req.user._id).select('points createdAt hidden').lean();
       userPoints = currentUser?.points || 0;
-      if (currentUser && !currentUser.hidden) {
+      if (currentUser) {
         const usersAbove = await User.countDocuments({
           ...devFilter,
           $or: [

@@ -11,13 +11,20 @@ const activitySchema = new mongoose.Schema({
       'PROJECT_RATED',
       'MODULE_STARTED',
       'MODULE_COMPLETED',
-      'USER_JOINED'
+      'USER_JOINED',
+      'LEADERBOARD_TOP'
     ],
     required: true
   },
   project: { type: mongoose.Schema.Types.ObjectId, ref: 'Project' },
   module: { type: mongoose.Schema.Types.ObjectId, ref: 'LearningModule' },
-  meta: { type: mongoose.Schema.Types.Mixed, default: {} }
+  meta: { type: mongoose.Schema.Types.Mixed, default: {} },
+  likes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+  comments: [{
+    user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    text: { type: String, required: true },
+    createdAt: { type: Date, default: Date.now }
+  }]
 }, { timestamps: true });
 
 activitySchema.index({ createdAt: -1 });

@@ -262,7 +262,42 @@ export default function Feed() {
 
 // Sub-component for individual activity feed items
 function ActivityCard({ activity, index = 0 }) {
-  const { type, user, project, module, createdAt, meta } = activity;
+  const { user: currentUser } = useAuth();
+  const { type, user, project, module, createdAt, meta, _id } = activity;
+  
+  const [likes, setLikes] = useState(activity.likes || []);
+  const [comments, setComments] = useState(activity.comments || []);
+  const [showComments, setShowComments] = useState(false);
+  const [commentText, setCommentText] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+
+  const hasLiked = currentUser && likes.includes(currentUser._id);
+
+  const handleLike = async () => {
+    if (!currentUser) return;
+    try {
+      const res = await axios.post(`/feed/${_id}/like`);
+      if (res.data.success) setLikes(res.data.likes);
+    } catch (err) { console.error(err); }
+  };
+
+  const handleCommentSubmit = async (e) => {
+    e.preventDefault();
+    if (!commentText.trim() || !currentUser || submitting) return;
+    setSubmitting(true);
+    try {
+      const res = await axios.post(`/feed/${_id}/comment`, { text: commentText });
+      if (res.data.success) {
+        setComments([...comments, res.data.comment]);
+        setCommentText('');
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   const timeAgo = formatDistanceToNow(new Date(createdAt), { addSuffix: true });
   
   if (!user) return null;
@@ -382,6 +417,26 @@ function ActivityCard({ activity, index = 0 }) {
       </div>
     );
   }
+  else if (type === 'LEADERBOARD_TOP') {
+    wrapperClass = "bg-gradient-to-br from-yellow-100 via-amber-50 to-yellow-100 rounded-xl shadow border border-yellow-300 p-4 transition-transform hover:scale-[1.01] hover:z-10 mb-8";
+    innerContent = (
+      <div className="mt-4">
+        <div className="flex items-center gap-3">
+          <div className="bg-yellow-500 text-white p-2 rounded-full shadow-inner">
+            <Crown size={24} />
+          </div>
+          <p className="text-base text-black font-semibold">
+            Just reached <span className="text-yellow-600 font-bold">#1</span> on the Global Leaderboard! 🎉
+          </p>
+        </div>
+        {meta?.score !== undefined && (
+          <div className="mt-3 ml-12 inline-flex bg-white px-4 py-1.5 rounded-full text-sm font-bold text-yellow-700 shadow-sm border border-yellow-200">
+            {meta.score} Points
+          </div>
+        )}
+      </div>
+    );
+  }
   
   if (!innerContent) return null;
 
@@ -403,6 +458,58 @@ function ActivityCard({ activity, index = 0 }) {
         </div>
       </div>
       {innerContent}
+      
+      {type === 'LEADERBOARD_TOP' && (
+        <div className="mt-4 ml-12 border-t border-black/10 pt-3">
+          <div className="flex items-center gap-4 text-sm font-medium">
+            <button 
+              onClick={handleLike}
+              className={`flex items-center gap-1.5 transition-colors ${hasLiked ? 'text-rose-500' : 'text-gray-500 hover:text-rose-500'}`}
+            >
+              <Heart size={16} className={hasLiked ? 'fill-current' : ''} />
+              <span>{likes.length}</span>
+            </button>
+            <button 
+              onClick={() => setShowComments(!showComments)}
+              className="flex items-center gap-1.5 text-gray-500 hover:text-blue-500 transition-colors"
+            >
+              <MessageCircle size={16} />
+              <span>{comments.length}</span>
+            </button>
+          </div>
+
+          {showComments && (
+            <div className="mt-3 space-y-3">
+              {comments.map((c, i) => (
+                <div key={i} className="flex gap-2">
+                  <img src={c.user?.profileImage || c.user?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(c.user?.name || 'User')}`} alt="" className="w-6 h-6 rounded-full border border-border" />
+                  <div className="bg-white/60 rounded-xl px-3 py-1.5 text-sm flex-1">
+                    <span className="font-semibold text-xs mr-2">{c.user?.name}</span>
+                    <span className="text-gray-800">{c.text}</span>
+                  </div>
+                </div>
+              ))}
+              <form onSubmit={handleCommentSubmit} className="flex gap-2 mt-2">
+                <input 
+                  type="text" 
+                  value={commentText}
+                  onChange={e => setCommentText(e.target.value)}
+                  placeholder="Congratulate them..." 
+                  className="flex-1 bg-white border border-black/10 rounded-full px-3 py-1.5 text-sm focus:outline-none focus:border-blue-300"
+                  disabled={submitting}
+                />
+                <button 
+                  type="submit" 
+                  disabled={submitting || !commentText.trim()} 
+                  className="text-blue-600 font-semibold text-sm px-2 disabled:opacity-50"
+                >
+                  Post
+                </button>
+              </form>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }

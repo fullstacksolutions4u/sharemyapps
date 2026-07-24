@@ -173,7 +173,10 @@ router.get('/developers', optionalAuth, async (req, res) => {
     const search = req.query.search?.trim();
 
     const safeSearch = search?.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    const matchStage = { userType: 'developer', role: { $ne: 'admin' }, hidden: { $ne: true }, isDeleted: { $ne: true } };
+    const matchStage = { userType: 'developer', role: { $ne: 'admin' }, isDeleted: { $ne: true } };
+    if (!req.user || (req.user.role !== 'admin' && !req.user.hidden)) {
+      matchStage.hidden = { $ne: true };
+    }
     if (safeSearch) matchStage.name = { $regex: safeSearch, $options: 'i' };
     if (req.query.freelance === 'true') matchStage.freelanceAvailable = true;
     if (req.query.designation?.trim()) {
@@ -368,7 +371,7 @@ router.get('/candidates', protect, async (req, res) => {
         $match: {
           userType: { $in: ['developer', 'mentee'] },
           role: { $ne: 'admin' },
-          hidden: { $ne: true },
+          ...((!req.user || (req.user.role !== 'admin' && !req.user.hidden)) ? { hidden: { $ne: true } } : {}),
           isDeleted: { $ne: true },
           $and: [
             { cvUrl: { $exists: true, $nin: ['', null] } },
@@ -665,12 +668,15 @@ router.post('/find-developers', protect, jdQuota, aiLimit, async (req, res) => {
     const isOnsiteJob   = locationType === 'onsite' && (locationCity || locationState);
 
     // 2. Fetch all eligible developers with their approved projects
-    const developers = await User.find({
+    const filter = {
       userType: { $in: ['developer', 'mentee'] },
       role: { $ne: 'admin' },
-      hidden: { $ne: true },
       isDeleted: { $ne: true },
-    }).select('-password -googleId -adminNote').lean();
+    };
+    if (!req.user || (req.user.role !== 'admin' && !req.user.hidden)) {
+      filter.hidden = { $ne: true };
+    }
+    const developers = await User.find(filter).select('-password -googleId -adminNote').lean();
 
     const projectsByOwner = await Project.aggregate([
       { $match: { status: 'approved' } },

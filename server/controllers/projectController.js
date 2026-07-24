@@ -113,8 +113,15 @@ exports.getProjects = async (req, res) => {
     const type = req.query.type || '';
 
     const safeSearch = search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    const hiddenIds = await hiddenOwnerIds();
-    const filter = { status: 'approved', hidden: { $ne: true }, owner: { $nin: hiddenIds } };
+    let hiddenIds = [];
+    if (!req.user || (req.user.role !== 'admin' && !req.user.hidden)) {
+      hiddenIds = await hiddenOwnerIds();
+    }
+    const filter = { status: 'approved' };
+    if (!req.user || (req.user.role !== 'admin' && !req.user.hidden)) {
+      filter.hidden = { $ne: true };
+      filter.owner = { $nin: hiddenIds };
+    }
     if (safeSearch) filter.$or = [
       { title: { $regex: safeSearch, $options: 'i' } },
       { description: { $regex: safeSearch, $options: 'i' } },
@@ -202,8 +209,13 @@ exports.getUserProjects = async (req, res) => {
     const targetUserId = req.params.userId;
     const user = await User.findById(targetUserId).select('name avatar linkedinUrl githubUrl leetcodeUrl phone email cvUrl hidden');
     if (!user) return res.status(404).json({ message: 'User not found' });
-    if (user.hidden) return res.status(404).json({ message: 'User not found' });
-    const projects = await Project.find({ owner: targetUserId, status: 'approved', hidden: { $ne: true } })
+    const canSeeHidden = req.user && (req.user.role === 'admin' || req.user.hidden);
+    if (user.hidden && !canSeeHidden) return res.status(404).json({ message: 'User not found' });
+    const filter = { owner: targetUserId, status: 'approved' };
+    if (!canSeeHidden) {
+      filter.hidden = { $ne: true };
+    }
+    const projects = await Project.find(filter)
       .sort({ createdAt: -1 });
 
     const reqUser = req.user;
