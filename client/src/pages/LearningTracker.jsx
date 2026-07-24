@@ -341,11 +341,11 @@ const LearningTracker = ({ embedded = false }) => {
                       <span className="text-[9px] opacity-80 shrink-0">({completedTopics}/{totalTopics})</span>
                     </div>
                     {totalTopics > 0 && (
-                      <div className="absolute bottom-0 left-0 h-[2.5px] w-full" style={{ backgroundColor: gi === currentIndex ? 'rgba(255,255,255,0.2)' : 'rgba(124,92,191,0.1)' }}>
+                      <div className="absolute bottom-0 left-0 h-[3px] w-full" style={{ backgroundColor: gi === currentIndex ? 'rgba(255,255,255,0.25)' : 'rgba(124,92,191,0.15)' }}>
                         <div 
                           className="h-full transition-all duration-300" 
                           style={{ 
-                            backgroundColor: gi === currentIndex ? '#FAF7F2' : '#7C5CBF', 
+                            backgroundColor: gi === currentIndex ? '#FACC15' : '#7C5CBF', 
                             width: `${percent}%` 
                           }} 
                         />
@@ -372,11 +372,11 @@ const LearningTracker = ({ embedded = false }) => {
                       <span className="text-[10px] opacity-80 shrink-0">({completedTopics}/{totalTopics})</span>
                     </div>
                     {totalTopics > 0 && (
-                      <div className="absolute bottom-0 left-0 h-[2.5px] w-full" style={{ backgroundColor: gi === currentIndex ? 'rgba(255,255,255,0.2)' : 'rgba(124,92,191,0.1)' }}>
+                      <div className="absolute bottom-0 left-0 h-[3px] w-full" style={{ backgroundColor: gi === currentIndex ? 'rgba(255,255,255,0.25)' : 'rgba(124,92,191,0.15)' }}>
                         <div 
                           className="h-full transition-all duration-300" 
                           style={{ 
-                            backgroundColor: gi === currentIndex ? '#FAF7F2' : '#7C5CBF', 
+                            backgroundColor: gi === currentIndex ? '#FACC15' : '#7C5CBF', 
                             width: `${percent}%` 
                           }} 
                         />
