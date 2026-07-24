@@ -272,16 +272,36 @@ router.get('/developers', optionalAuth, async (req, res) => {
           },
         }
       },
+      // Pre-compute a single composite sort key so $setWindowFields can use exactly one field
       {
-        $sort: {
-          isComplete: -1,
-          isJobAlertPremium: -1,
-          displayCategory: 1,
-          hasProjects: -1,
-          lastProjectAt: -1,
-          createdAt: -1,
+        $addFields: {
+          _sortKey: {
+            $concat: [
+              { $toString: '$isComplete' },
+              '_',
+              { $toString: '$isJobAlertPremium' },
+              '_',
+              { $cond: ['$hasProjects', '1', '0'] },
+              '_',
+              { $dateToString: { date: '$lastProjectAt', format: '%Y-%m-%dT%H:%M:%S.%LZ', onNull: '0000-01-01T00:00:00.000Z' } },
+              '_',
+              { $dateToString: { date: '$createdAt', format: '%Y-%m-%dT%H:%M:%S.%LZ', onNull: '0000-01-01T00:00:00.000Z' } },
+            ]
+          }
         }
       },
+      // Assign a rank within each displayCategory using the single sort key
+      {
+        $setWindowFields: {
+          partitionBy: '$displayCategory',
+          sortBy: { _sortKey: -1 },
+          output: {
+            categoryRank: { $documentNumber: {} }
+          }
+        }
+      },
+      // Interleaved sort: rank-1 premium + rank-1 active + rank-1 new, rank-2 of each, etc.
+      { $sort: { categoryRank: 1, displayCategory: 1 } },
       {
         $facet: {
           total: [{ $count: 'n' }],
@@ -293,6 +313,7 @@ router.get('/developers', optionalAuth, async (req, res) => {
                 password: 0, googleId: 0, companyName: 0, companyWebsite: 0,
                 industry: 0, requirements: 0, adminNote: 0,
                 _jobAlertSessions: 0, _progress: 0, hasProjects: 0,
+                categoryRank: 0, _sortKey: 0,
               },
             },
           ],
