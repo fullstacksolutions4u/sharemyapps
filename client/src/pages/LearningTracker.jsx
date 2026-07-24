@@ -326,28 +326,34 @@ const LearningTracker = ({ embedded = false }) => {
 
               const mkGoldBtn = (module) => {
                 const gi = modules.indexOf(module);
-                const label = `${gi + 1}. ${module.title.replace(/^Module\s+\d+\s*[:\s-]+\s*/i, '')}`;
+                const label = module.title.replace(/^Module\s+\d+\s*[:\s-]+\s*/i, '');
+                const completedTopics = module.topics?.filter(t => t.completed).length || 0;
+                const totalTopics = module.topics?.length || 0;
                 return (
                   <button key={gi} onClick={() => goToSlide(gi)} title={label}
-                    className="whitespace-nowrap text-left transition-all duration-200 rounded-lg px-2.5 py-1.5 text-xs font-semibold"
+                    className="whitespace-nowrap flex items-center justify-between gap-1.5 transition-all duration-200 rounded-lg px-2.5 py-1.5 text-xs font-semibold"
                     style={gi === currentIndex
                       ? { backgroundColor: '#7C5CBF', color: '#FAF7F2', boxShadow: '0 2px 6px rgba(124,92,191,0.4)', border: '1px solid #A07DD6' }
                       : { backgroundColor: '#F3EEFF', color: '#5A4080', border: '1px solid #C4B0E8' }}>
-                    {label}
+                    <span className="truncate">{gi + 1}. {label}</span>
+                    <span className="text-[9px] opacity-80 shrink-0">({completedTopics}/{totalTopics})</span>
                   </button>
                 );
               };
 
               const mkGoldSideBtn = (module) => {
                 const gi = modules.indexOf(module);
-                const label = `${gi + 1}. ${module.title.replace(/^Module\s+\d+\s*[:\s-]+\s*/i, '')}`;
+                const label = module.title.replace(/^Module\s+\d+\s*[:\s-]+\s*/i, '');
+                const completedTopics = module.topics?.filter(t => t.completed).length || 0;
+                const totalTopics = module.topics?.length || 0;
                 return (
                   <button key={gi} onClick={() => goToSlide(gi)} title={label}
-                    className="w-full whitespace-nowrap text-left transition-all duration-200 rounded-lg px-2.5 py-1.5 text-xs font-semibold"
+                    className="w-full flex items-center justify-between gap-2 transition-all duration-200 rounded-lg px-2.5 py-1.5 text-xs font-semibold"
                     style={gi === currentIndex
                       ? { backgroundColor: '#7C5CBF', color: '#FAF7F2', boxShadow: '0 2px 6px rgba(124,92,191,0.4)', border: '1px solid #A07DD6' }
                       : { backgroundColor: '#F3EEFF', color: '#5A4080', border: '1px solid #C4B0E8' }}>
-                    {label}
+                    <span className="truncate">{gi + 1}. {label}</span>
+                    <span className="text-[10px] opacity-80 shrink-0">({completedTopics}/{totalTopics})</span>
                   </button>
                 );
               };
@@ -398,18 +404,10 @@ const LearningTracker = ({ embedded = false }) => {
                                 </div>
                               )}
                               <div className="flex-1 flex flex-col min-h-0">
-                                <div className="mb-4 flex-shrink-0">
-                                  <div className="flex items-center justify-between text-sm mb-3" style={{ color: '#5A5550' }}>
-                                    <span className="font-semibold">{index + 1}. {module.title.replace(/^Module\s+\d+\s*[:\s-]+\s*/i, '')}</span>
-                                    <span className="font-bold">{completedTopics} / {totalTopics} topics</span>
-                                  </div>
-                                  <div className="w-full rounded-full h-3 overflow-hidden" style={{ backgroundColor: '#E0D8CC' }}>
-                                    <div className="rounded-full h-3 transition-all duration-500" style={{ background: 'linear-gradient(90deg, #9B7D43, #C9A96E)', width: `${progressPercentage}%` }}>
-                                      {progressPercentage > 15 && <span className="text-xs font-bold text-white pr-1.5 flex items-center justify-end h-full">{Math.round(progressPercentage)}%</span>}
-                                    </div>
-                                  </div>
+                                <div className="mb-3 flex-shrink-0 flex items-center justify-between border-b pb-2" style={{ borderColor: '#E0D8CC' }}>
+                                  <span className="font-semibold text-sm" style={{ color: '#1C1A17' }}>{index + 1}. {module.title.replace(/^Module\s+\d+\s*[:\s-]+\s*/i, '')}</span>
                                 </div>
-<div className="flex-1 flex flex-col min-h-0 overflow-hidden">
+                                <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
                                   <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar space-y-3">
                                     {regularTopics.map((topic, topicIndex) => {
                                       const uniqueAttempted = new Set((userProgress?.attemptedQuizzes || []).filter(a => String(a.topicId) === String(topic._id)).map(a => String(a.quizId)));
