@@ -372,7 +372,7 @@ const LearningTracker = ({ embedded = false }) => {
                       {modules.map((module, index) => {
                         const isModuleLocked = index >= 3 && !isAuthenticated;
                         const regularTopics = [...(module.topics || [])].filter(t => !t.isPracticalProblem).sort((a, b) => (a.order || 0) - (b.order || 0));
-                        const practicalProblems = [...(module.topics || [])].filter(t => t.isPracticalProblem).sort((a, b) => (a.order || 0) - (b.order || 0));
+
                         return (
                           <div key={module._id} className="flex-shrink-0" style={{ width: `${100 / modules.length}%`, minWidth: `${100 / modules.length}%`, scrollSnapAlign: 'start', scrollSnapStop: 'always', padding: '0 0.5rem' }}>
                             <div id={`module-container-${index}`} className="rounded-2xl shadow-lg p-3 border-2 flex flex-col relative" style={{ backgroundColor: '#FAF7F2', borderColor: isModuleLocked ? '#C07A3A' : index === currentIndex ? '#00A693' : '#E0D8CC', height: '800px' }}>
