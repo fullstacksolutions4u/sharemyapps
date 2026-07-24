@@ -91,6 +91,8 @@ userSchema.index({ userType: 1, hidden: 1, isDeleted: 1 });
 userSchema.index({ role: 1 });
 userSchema.index({ mentorshipAvailable: 1, hidden: 1, isDeleted: 1 });
 userSchema.index({ freelanceAvailable: 1, hidden: 1, isDeleted: 1 });
+// Compound index for /api/users/developers query
+userSchema.index({ userType: 1, role: 1, hidden: 1, isDeleted: 1 });
 
 userSchema.pre('save', async function (next) {
   if (!this.isModified('password') || !this.password) return next();

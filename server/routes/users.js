@@ -195,97 +195,36 @@ router.get('/developers', optionalAuth, async (req, res) => {
       },
     };
 
-    // Projects they liked on OTHER developers' work
-    const likedProjectsLookup = {
-      $lookup: {
-        from: 'projects',
-        let: { uid: '$_id' },
-        pipeline: [
-          { $match: { $expr: { $and: [
-            { $ne: ['$owner', '$$uid'] },
-            { $in: ['$$uid', '$likes'] },
-          ] } } },
-          { $project: { _id: 1 } },
-        ],
-        as: '_likedProjects',
-      },
-    };
-
-    // Projects they rated on OTHER developers' work
-    const ratedProjectsLookup = {
-      $lookup: {
-        from: 'projects',
-        let: { uid: '$_id' },
-        pipeline: [
-          { $match: { $expr: { $and: [
-            { $ne: ['$owner', '$$uid'] },
-            { $gt: [
-              { $size: { $filter: { input: { $ifNull: ['$ratings', []] }, as: 'r', cond: { $eq: ['$$r.user', '$$uid'] } } } },
-              0,
-            ] },
-          ] } } },
-          { $project: { _id: 1 } },
-        ],
-        as: '_ratedProjects',
-      },
-    };
-
-    // Comments they wrote (on any project — Comment model stores project ref but not owner)
-    const commentsLookup = {
-      $lookup: {
-        from: 'comments',
-        let: { uid: '$_id' },
-        pipeline: [
-          { $match: { $expr: { $eq: ['$user', '$$uid'] } } },
-          { $project: { _id: 1 } },
-        ],
-        as: '_userComments',
-      },
-    };
-
-    // Job alert eligibility
+    // Job alert eligibility — only need to know if ≥1 exists
     const jobAlertLookup = {
       $lookup: {
         from: 'sessionrequests',
         let: { uid: '$_id' },
         pipeline: [
-          { $match: { 
+          { $match: {
               $expr: { $eq: ['$user', '$$uid'] },
               serviceKey: 'ats_compatible_resume_cover_letter_optimization',
               status: 'completed',
               completionLink: { $nin: ['', null] }
           }},
+          { $limit: 1 },
           { $project: { _id: 1 } },
         ],
         as: '_jobAlertSessions',
       }
     };
 
-
-
     const [result] = await User.aggregate([
       { $match: matchStage },
       ownProjectsLookup,
-      likedProjectsLookup,
-      ratedProjectsLookup,
-      commentsLookup,
       jobAlertLookup,
       {
         $addFields: {
-          hasProjects:    { $gt: [{ $size: '$projects' }, 0] },
-          isPremium:      { $gt: [{ $size: { $ifNull: ['$premiumServices', []] } }, 0] },
-          hasCoins:       { $gt: [{ $ifNull: ['$points', 0] }, 0] },
-          lastProjectAt:  { $max: '$projects.createdAt' },
-          likesGiven:     { $size: '$_likedProjects' },
-          ratingsGiven:   { $size: '$_ratedProjects' },
-          commentsGiven:  { $size: '$_userComments' },
-          communityScore: {
-            $add: [
-              { $size: '$_likedProjects' },
-              { $multiply: [{ $size: '$_ratedProjects' }, 2] },
-              { $multiply: [{ $size: '$_userComments' }, 3] },
-            ],
-          },
+          hasProjects:        { $gt: [{ $size: '$projects' }, 0] },
+          isPremium:          { $gt: [{ $size: { $ifNull: ['$premiumServices', []] } }, 0] },
+          hasCoins:           { $gt: [{ $ifNull: ['$points', 0] }, 0] },
+          lastProjectAt:      { $max: '$projects.createdAt' },
+          isJobAlertPremium:  { $cond: [{ $gt: [{ $size: '$_jobAlertSessions' }, 0] }, 1, 0] },
           isComplete: {
             $cond: [
               {
@@ -316,65 +255,33 @@ router.get('/developers', optionalAuth, async (req, res) => {
               branches: [
                 { case: '$isPremium', then: 0 },
                 {
-                  case: { $and: [
-                    { $in: ['$badge', ['active', 'top', 'champion']] },
-                    '$hasCoins'
-                  ] },
+                  case: { $and: [{ $in: ['$badge', ['active', 'top', 'champion']] }, '$hasCoins'] },
                   then: 1
                 },
                 {
-                  case: { $and: [
-                    { $not: { $in: ['$badge', ['active', 'top', 'champion']] } },
-                    '$hasCoins'
-                  ] },
+                  case: { $and: [{ $not: { $in: ['$badge', ['active', 'top', 'champion']] } }, '$hasCoins'] },
                   then: 2
                 },
                 {
-                  case: { $and: [
-                    { $in: ['$badge', ['active', 'top', 'champion']] },
-                    { $not: '$hasCoins' }
-                  ] },
+                  case: { $and: [{ $in: ['$badge', ['active', 'top', 'champion']] }, { $not: '$hasCoins' }] },
                   then: 3
                 }
               ],
               default: 4
             }
           },
-          isJobAlertPremium: {
-            $cond: [
-              { $gt: [{ $size: '$_jobAlertSessions' }, 0] },
-              1, 0
-            ]
-          },
         }
       },
       {
-        $addFields: {
-          sortString: {
-            $concat: [
-              { $toString: "$isJobAlertPremium" },
-              "_",
-              { $dateToString: { date: "$lastProjectAt", format: "%Y-%m-%dT%H:%M:%S.%LZ", onNull: "0000-01-01T00:00:00.000Z" } },
-              "_",
-              { $toString: "$hasProjects" },
-              "_",
-              { $dateToString: { date: "$createdAt", format: "%Y-%m-%dT%H:%M:%S.%LZ", onNull: "0000-01-01T00:00:00.000Z" } }
-            ]
-          }
+        $sort: {
+          isComplete: -1,
+          isJobAlertPremium: -1,
+          displayCategory: 1,
+          hasProjects: -1,
+          lastProjectAt: -1,
+          createdAt: -1,
         }
       },
-      {
-        $setWindowFields: {
-          partitionBy: '$displayCategory',
-          sortBy: { sortString: -1 },
-          output: {
-            categoryRank: {
-              $documentNumber: {}
-            }
-          }
-        }
-      },
-      { $sort: { isComplete: -1, categoryRank: 1, displayCategory: 1 } },
       {
         $facet: {
           total: [{ $count: 'n' }],
@@ -385,7 +292,7 @@ router.get('/developers', optionalAuth, async (req, res) => {
               $project: {
                 password: 0, googleId: 0, companyName: 0, companyWebsite: 0,
                 industry: 0, requirements: 0, adminNote: 0,
-                _likedProjects: 0, _ratedProjects: 0, _userComments: 0, _jobAlertSessions: 0, _progress: 0, hasProjects: 0,
+                _jobAlertSessions: 0, _progress: 0, hasProjects: 0,
               },
             },
           ],
