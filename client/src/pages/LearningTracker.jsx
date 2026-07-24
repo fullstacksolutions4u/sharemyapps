@@ -35,7 +35,6 @@ const LearningTracker = ({ embedded = false }) => {
     const saved = localStorage.getItem('dailyTarget');
     return saved ? parseInt(saved, 10) : 10;
   });
-  const [weeklyProgress, setWeeklyProgress] = useState([]);
   const [calendarDate, setCalendarDate] = useState(new Date());
   const completedModulesCount = useMemo(() => {
     return modules.filter(m => m.topics.length > 0 && m.topics.every(t => t.completed)).length;
@@ -45,11 +44,6 @@ const LearningTracker = ({ embedded = false }) => {
     // eslint-disable-next-line react-hooks/immutability
     fetchModulesAndProgress();
   }, [isAuthenticated]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/immutability
-    if (userProgress) calculateWeeklyProgress();
-  }, [userProgress, dailyTarget]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     localStorage.setItem('lastModuleIndex', currentIndex.toString());
@@ -72,35 +66,6 @@ const LearningTracker = ({ embedded = false }) => {
     });
     return map;
   }, [userProgress]);
-
-  const calculateWeeklyProgress = () => {
-    const actualToday = new Date();
-    const viewDate = new Date();
-    const startOfWeek = new Date(viewDate);
-    const day = startOfWeek.getDay();
-    const diff = startOfWeek.getDate() - day + (day === 0 ? -6 : 1);
-    startOfWeek.setDate(diff);
-    startOfWeek.setHours(0, 0, 0, 0);
-    const completedTopics = userProgress?.completedTopics || [];
-    const weekData = [];
-    for (let i = 0; i < 7; i++) {
-      const d = new Date(startOfWeek);
-      d.setDate(startOfWeek.getDate() + i);
-      const dateStr = getLocalDateString(d);
-      const count = completedTopics.filter(topic => {
-        if (!topic.completedAt) return false;
-        return getLocalDateString(new Date(topic.completedAt)) === dateStr;
-      }).length;
-      weekData.push({
-        dayName: d.toLocaleDateString('en-US', { weekday: 'short' }),
-        date: d.getDate(),
-        fullDate: dateStr,
-        completedCount: count,
-        isToday: d.toDateString() === actualToday.toDateString()
-      });
-    }
-    setWeeklyProgress(weekData);
-  };
 
   useEffect(() => {
     localStorage.setItem('dailyTarget', dailyTarget.toString());
@@ -407,7 +372,6 @@ const LearningTracker = ({ embedded = false }) => {
                       {modules.map((module, index) => {
                         const completedTopics = module.topics?.filter(t => t.completed).length || 0;
                         const totalTopics = module.topics?.length || 0;
-                        const progressPercentage = totalTopics > 0 ? (completedTopics / totalTopics) * 100 : 0;
                         const isModuleLocked = index >= 3 && !isAuthenticated;
                         const regularTopics = [...(module.topics || [])].filter(t => !t.isPracticalProblem).sort((a, b) => (a.order || 0) - (b.order || 0));
                         const practicalProblems = [...(module.topics || [])].filter(t => t.isPracticalProblem).sort((a, b) => (a.order || 0) - (b.order || 0));
