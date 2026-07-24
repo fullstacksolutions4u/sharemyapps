@@ -432,9 +432,6 @@ const LearningTracker = ({ embedded = false }) => {
                                 </div>
                               )}
                               <div className="flex-1 flex flex-col min-h-0">
-                                <div className="mb-3 flex-shrink-0 flex items-center justify-between border-b pb-2" style={{ borderColor: '#E0D8CC' }}>
-                                  <span className="font-semibold text-sm" style={{ color: '#1C1A17' }}>{index + 1}. {module.title.replace(/^Module\s+\d+\s*[:\s-]+\s*/i, '')}</span>
-                                </div>
                                 <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
                                   <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar space-y-3">
                                     {regularTopics.map((topic, topicIndex) => {
