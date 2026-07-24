@@ -329,14 +329,28 @@ const LearningTracker = ({ embedded = false }) => {
                 const label = module.title.replace(/^Module\s+\d+\s*[:\s-]+\s*/i, '');
                 const completedTopics = module.topics?.filter(t => t.completed).length || 0;
                 const totalTopics = module.topics?.length || 0;
+                const percent = totalTopics > 0 ? (completedTopics / totalTopics) * 100 : 0;
                 return (
                   <button key={gi} onClick={() => goToSlide(gi)} title={label}
-                    className="whitespace-nowrap flex items-center justify-between gap-1.5 transition-all duration-200 rounded-lg px-2.5 py-1.5 text-xs font-semibold"
+                    className="whitespace-nowrap flex flex-col justify-center transition-all duration-200 rounded-lg px-2.5 py-1.5 pb-2 text-xs font-semibold relative overflow-hidden"
                     style={gi === currentIndex
                       ? { backgroundColor: '#7C5CBF', color: '#FAF7F2', boxShadow: '0 2px 6px rgba(124,92,191,0.4)', border: '1px solid #A07DD6' }
                       : { backgroundColor: '#F3EEFF', color: '#5A4080', border: '1px solid #C4B0E8' }}>
-                    <span className="truncate">{gi + 1}. {label}</span>
-                    <span className="text-[9px] opacity-80 shrink-0">({completedTopics}/{totalTopics})</span>
+                    <div className="flex items-center justify-between gap-1.5 w-full">
+                      <span className="truncate">{gi + 1}. {label}</span>
+                      <span className="text-[9px] opacity-80 shrink-0">({completedTopics}/{totalTopics})</span>
+                    </div>
+                    {totalTopics > 0 && (
+                      <div className="absolute bottom-0 left-0 h-[2.5px] w-full" style={{ backgroundColor: gi === currentIndex ? 'rgba(255,255,255,0.2)' : 'rgba(124,92,191,0.1)' }}>
+                        <div 
+                          className="h-full transition-all duration-300" 
+                          style={{ 
+                            backgroundColor: gi === currentIndex ? '#FAF7F2' : '#7C5CBF', 
+                            width: `${percent}%` 
+                          }} 
+                        />
+                      </div>
+                    )}
                   </button>
                 );
               };
@@ -346,14 +360,28 @@ const LearningTracker = ({ embedded = false }) => {
                 const label = module.title.replace(/^Module\s+\d+\s*[:\s-]+\s*/i, '');
                 const completedTopics = module.topics?.filter(t => t.completed).length || 0;
                 const totalTopics = module.topics?.length || 0;
+                const percent = totalTopics > 0 ? (completedTopics / totalTopics) * 100 : 0;
                 return (
                   <button key={gi} onClick={() => goToSlide(gi)} title={label}
-                    className="w-full flex items-center justify-between gap-2 transition-all duration-200 rounded-lg px-2.5 py-1.5 text-xs font-semibold"
+                    className="w-full flex flex-col justify-center transition-all duration-200 rounded-lg px-2.5 py-1.5 pb-2 text-xs font-semibold relative overflow-hidden"
                     style={gi === currentIndex
                       ? { backgroundColor: '#7C5CBF', color: '#FAF7F2', boxShadow: '0 2px 6px rgba(124,92,191,0.4)', border: '1px solid #A07DD6' }
                       : { backgroundColor: '#F3EEFF', color: '#5A4080', border: '1px solid #C4B0E8' }}>
-                    <span className="truncate">{gi + 1}. {label}</span>
-                    <span className="text-[10px] opacity-80 shrink-0">({completedTopics}/{totalTopics})</span>
+                    <div className="flex items-center justify-between gap-2 w-full">
+                      <span className="truncate">{gi + 1}. {label}</span>
+                      <span className="text-[10px] opacity-80 shrink-0">({completedTopics}/{totalTopics})</span>
+                    </div>
+                    {totalTopics > 0 && (
+                      <div className="absolute bottom-0 left-0 h-[2.5px] w-full" style={{ backgroundColor: gi === currentIndex ? 'rgba(255,255,255,0.2)' : 'rgba(124,92,191,0.1)' }}>
+                        <div 
+                          className="h-full transition-all duration-300" 
+                          style={{ 
+                            backgroundColor: gi === currentIndex ? '#FAF7F2' : '#7C5CBF', 
+                            width: `${percent}%` 
+                          }} 
+                        />
+                      </div>
+                    )}
                   </button>
                 );
               };
