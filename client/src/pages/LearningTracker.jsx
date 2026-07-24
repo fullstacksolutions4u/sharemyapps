@@ -326,7 +326,7 @@ const LearningTracker = ({ embedded = false }) => {
 
               const mkGoldBtn = (module) => {
                 const gi = modules.indexOf(module);
-                const label = module.title.replace(/^Module\s+\d+\s*[:\s-]+\s*/i, '');
+                const label = `${gi + 1}. ${module.title.replace(/^Module\s+\d+\s*[:\s-]+\s*/i, '')}`;
                 return (
                   <button key={gi} onClick={() => goToSlide(gi)} title={label}
                     className="whitespace-nowrap text-left transition-all duration-200 rounded-lg px-2.5 py-1.5 text-xs font-semibold"
@@ -340,7 +340,7 @@ const LearningTracker = ({ embedded = false }) => {
 
               const mkGoldSideBtn = (module) => {
                 const gi = modules.indexOf(module);
-                const label = module.title.replace(/^Module\s+\d+\s*[:\s-]+\s*/i, '');
+                const label = `${gi + 1}. ${module.title.replace(/^Module\s+\d+\s*[:\s-]+\s*/i, '')}`;
                 return (
                   <button key={gi} onClick={() => goToSlide(gi)} title={label}
                     className="w-full whitespace-nowrap text-left transition-all duration-200 rounded-lg px-2.5 py-1.5 text-xs font-semibold"
@@ -400,7 +400,7 @@ const LearningTracker = ({ embedded = false }) => {
                               <div className="flex-1 flex flex-col min-h-0">
                                 <div className="mb-4 flex-shrink-0">
                                   <div className="flex items-center justify-between text-sm mb-3" style={{ color: '#5A5550' }}>
-                                    <span className="font-semibold">{module.title.replace(/^Module\s+\d+\s*[:\s-]+\s*/i, '')}</span>
+                                    <span className="font-semibold">{index + 1}. {module.title.replace(/^Module\s+\d+\s*[:\s-]+\s*/i, '')}</span>
                                     <span className="font-bold">{completedTopics} / {totalTopics} topics</span>
                                   </div>
                                   <div className="w-full rounded-full h-3 overflow-hidden" style={{ backgroundColor: '#E0D8CC' }}>
