@@ -370,8 +370,6 @@ const LearningTracker = ({ embedded = false }) => {
                   <div ref={sliderRef} className="overflow-x-auto overflow-y-hidden rounded-2xl" style={{ scrollSnapType: 'x mandatory', scrollBehavior: 'smooth', WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
                     <div className="flex" style={{ width: `${modules.length * 100}%` }}>
                       {modules.map((module, index) => {
-                        const completedTopics = module.topics?.filter(t => t.completed).length || 0;
-                        const totalTopics = module.topics?.length || 0;
                         const isModuleLocked = index >= 3 && !isAuthenticated;
                         const regularTopics = [...(module.topics || [])].filter(t => !t.isPracticalProblem).sort((a, b) => (a.order || 0) - (b.order || 0));
                         const practicalProblems = [...(module.topics || [])].filter(t => t.isPracticalProblem).sort((a, b) => (a.order || 0) - (b.order || 0));
