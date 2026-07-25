@@ -65,7 +65,7 @@ function getGoogleDriveEmbedUrl(url) {
         return `https://docs.google.com/document/d/${match[1]}/preview`;
       }
     }
-  } catch (e) {
+  } catch {
     return null;
   }
   return null;

@@ -4,9 +4,9 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate, useOutlet, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard, FolderOpen,
-  Crown, UserCircle, LogOut, Menu, X, Plus, Share2,
+  Crown, UserCircle, LogOut, Menu, X, Plus,
   Pencil, Trash2, ExternalLink, Clock, CheckCircle, XCircle,
-  AlertCircle, Copy, Check, Eye, EyeOff, Heart, Star, ChevronRight,
+  AlertCircle, Copy, Check, Eye, EyeOff, Heart, Star,
   Lock, Briefcase, GraduationCap, Inbox, FileText
 } from 'lucide-react';
 import api from '../api/axios';
@@ -78,7 +78,7 @@ function ShareModal({ userId, onClose }) {
 
 
 
-function ProjectsSection({ user, confirm, queryClient, setShowShare }) {
+function ProjectsSection({ confirm, queryClient }) {
 
   const { data: projects = [], isLoading: loading } = useQuery({
     queryKey: ['myProjects'],
