@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import api from '../../api/axios';
 import toast from 'react-hot-toast';
+import { optimizeImage } from '../../utils/image';
 
 const BADGES = [
   { value: 'new_member', label: 'New Member',    icon: UserCircle2, cls: 'bg-[#F3F0EB] text-[#6B7280] border-[#E5E1DA]' },
@@ -195,7 +196,7 @@ function UserEditPage({ user: initial, onBack, onSaved, allDesignations = [] }) 
               <div className="flex flex-col items-center text-center gap-3 -mt-12">
                 <div className="relative">
                   {initial?.avatar
-                    ? <img src={initial.avatar} alt={initial.name} className="w-20 h-20 rounded-full object-cover border-4 border-white shadow-sm" />
+                    ? <img src={optimizeImage(initial.avatar, 150)} alt={initial.name} className="w-20 h-20 rounded-full object-cover border-4 border-white shadow-sm" />
                     : <span className="w-20 h-20 rounded-full bg-gradient-to-br from-[#00A693]/20 to-[#00A693]/40 border-4 border-white shadow-sm flex flex-col items-center justify-center overflow-hidden">
                         <span className="w-8 h-8 rounded-full bg-[#00A693]/40 flex items-center justify-center mb-0.5">
                           <UserCircle2 size={16} className="text-[#00A693]" />
@@ -762,7 +763,7 @@ export default function AdminUsersSection({ initialTab = 'developers' }) {
   const paged = list.slice((page - 1) * PER_PAGE, page * PER_PAGE);
 
   const Avatar = ({ u }) => u.avatar
-    ? <img src={u.avatar} alt={u.name} className="w-8 h-8 rounded-full object-cover shrink-0" />
+    ? <img src={optimizeImage(u.avatar, 150)} alt={u.name} className="w-8 h-8 rounded-full object-cover shrink-0" />
     : <span className="w-8 h-8 rounded-full bg-[#00A693] text-white text-xs flex items-center justify-center font-medium shrink-0">{u.name[0].toUpperCase()}</span>;
 
   if (editingUser) {
@@ -1115,7 +1116,7 @@ export default function AdminUsersSection({ initialTab = 'developers' }) {
             <div className="bg-white rounded-2xl shadow-xl border border-[#E5E1DA] w-full max-w-md" onClick={e => e.stopPropagation()}>
               <div className="flex items-center justify-between px-5 py-4 border-b border-[#E5E1DA]">
                 <div className="flex items-center gap-3">
-                  {u.avatar ? <img src={u.avatar} alt={u.name} className="w-10 h-10 rounded-full object-cover" /> : <span className="w-10 h-10 rounded-full bg-[#00A693] text-white text-sm flex items-center justify-center font-bold">{u.name?.[0]?.toUpperCase()}</span>}
+                  {u.avatar ? <img src={optimizeImage(u.avatar, 150)} alt={u.name} className="w-10 h-10 rounded-full object-cover" /> : <span className="w-10 h-10 rounded-full bg-[#00A693] text-white text-sm flex items-center justify-center font-bold">{u.name?.[0]?.toUpperCase()}</span>}
                   <div><p className="font-semibold text-[#1A1A1A] text-sm">{u.name}</p><p className="text-xs text-[#6B7280]">{u.email}</p></div>
                 </div>
                 <button onClick={() => setViewingUser(null)} className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-[#F3F0EB] text-[#9CA3AF] hover:text-[#1A1A1A] transition-colors"><X size={15} /></button>
@@ -1205,7 +1206,7 @@ export default function AdminUsersSection({ initialTab = 'developers' }) {
             <div className="flex items-center justify-between px-5 py-4 border-b border-[#E5E1DA] shrink-0">
               <div className="flex items-center gap-3">
                 {jdHistoryUser.avatar
-                  ? <img src={jdHistoryUser.avatar} alt={jdHistoryUser.name} className="w-9 h-9 rounded-full object-cover" />
+                  ? <img src={optimizeImage(jdHistoryUser.avatar, 150)} alt={jdHistoryUser.name} className="w-9 h-9 rounded-full object-cover" />
                   : <span className="w-9 h-9 rounded-full bg-[#00A693] text-white text-sm flex items-center justify-center font-bold">{jdHistoryUser.name?.[0]?.toUpperCase()}</span>
                 }
                 <div>
@@ -1289,7 +1290,7 @@ export default function AdminUsersSection({ initialTab = 'developers' }) {
                                         <td className="px-3 py-2">
                                           <div className="flex items-center gap-2">
                                             {dev.avatar
-                                              ? <img src={dev.avatar} alt={dev.name} className="w-6 h-6 rounded-full object-cover shrink-0" />
+                                              ? <img src={optimizeImage(dev.avatar, 150)} alt={dev.name} className="w-6 h-6 rounded-full object-cover shrink-0" />
                                               : <span className="w-6 h-6 rounded-full bg-[#00A693] text-white text-[10px] flex items-center justify-center font-bold shrink-0">{dev.name?.[0]?.toUpperCase()}</span>
                                             }
                                             <div className="min-w-0">
@@ -1339,7 +1340,7 @@ export default function AdminUsersSection({ initialTab = 'developers' }) {
             <div className="flex items-center justify-between px-5 py-4 border-b border-[#E5E1DA] shrink-0">
               <div className="flex items-center gap-3">
                 {portfolioVisitsUser.avatar
-                  ? <img src={portfolioVisitsUser.avatar} alt={portfolioVisitsUser.name} className="w-9 h-9 rounded-full object-cover" />
+                  ? <img src={optimizeImage(portfolioVisitsUser.avatar, 150)} alt={portfolioVisitsUser.name} className="w-9 h-9 rounded-full object-cover" />
                   : <span className="w-9 h-9 rounded-full bg-indigo-500 text-white text-sm flex items-center justify-center font-bold">{portfolioVisitsUser.name?.[0]?.toUpperCase()}</span>
                 }
                 <div>
@@ -1365,7 +1366,7 @@ export default function AdminUsersSection({ initialTab = 'developers' }) {
                 portfolioVisits.map((visit) => (
                   <div key={visit._id} className="flex items-center gap-3 px-4 py-3 rounded-xl border border-[#E5E1DA] bg-[#FAF9F6]">
                     {visit.user?.avatar
-                      ? <img src={visit.user.avatar} alt={visit.user.name} className="w-9 h-9 rounded-full object-cover shrink-0" />
+                      ? <img src={optimizeImage(visit.user.avatar, 150)} alt={visit.user.name} className="w-9 h-9 rounded-full object-cover shrink-0" />
                       : <span className="w-9 h-9 rounded-full bg-[#00A693] text-white text-sm flex items-center justify-center font-bold shrink-0">{visit.user?.name?.[0]?.toUpperCase()}</span>
                     }
                     <div className="flex-1 min-w-0">
@@ -1394,7 +1395,7 @@ export default function AdminUsersSection({ initialTab = 'developers' }) {
             <div className="flex items-center justify-between px-5 py-4 border-b border-[#E5E1DA]">
               <div className="flex items-center gap-3">
                 {messagingUser.avatar
-                  ? <img src={messagingUser.avatar} alt={messagingUser.name} className="w-9 h-9 rounded-full object-cover" />
+                  ? <img src={optimizeImage(messagingUser.avatar, 150)} alt={messagingUser.name} className="w-9 h-9 rounded-full object-cover" />
                   : <span className="w-9 h-9 rounded-full bg-[#00A693] text-white text-sm flex items-center justify-center font-bold">{messagingUser.name?.[0]?.toUpperCase()}</span>}
                 <div>
                   <p className="text-sm font-semibold text-[#1A1A1A]">{messagingUser.name}</p>

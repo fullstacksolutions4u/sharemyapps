@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import api from '../api/axios';
+import { optimizeImage } from '../utils/image';
 
 const BADGE = {
   premium:    { label: 'Premium Member', cls: 'bg-linear-to-r from-amber-400 via-yellow-500 to-orange-400 text-white border-0 shadow-sm' },
@@ -86,7 +87,7 @@ function DeveloperCard({ dev, idx }) {
       {/* Avatar — overlapping the banner */}
       <div className="relative z-10 px-5 -mt-8 mb-3 flex items-end justify-between">
         {dev.avatar ? (
-          <img src={dev.avatar} alt={dev.name} loading="lazy"
+          <img src={optimizeImage(dev.avatar, 150)} alt={dev.name} loading="lazy"
             className="w-16 h-16 rounded-2xl object-cover border-4 border-white shadow-md transition-none" />
         ) : (
           <div className={`w-16 h-16 rounded-2xl bg-linear-to-br ${accent} border-4 border-white shadow-md flex items-center justify-center transition-none`}>

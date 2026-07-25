@@ -87,6 +87,7 @@ import api from '../api/axios';
 import CoinIcon from '../components/common/AnimatedCoin';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
+import { optimizeImage } from '../utils/image';
 
 const LeetCodeIcon = () => (
   <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor" className="text-muted">
@@ -434,7 +435,7 @@ export default function Profile() {
               <div className="flex flex-col items-center text-center gap-3">
                 <div className="relative">
                   {user?.avatar
-                    ? <img src={user.avatar} alt={user.name} className="w-20 h-20 rounded-full object-cover" />
+                    ? <img src={optimizeImage(user.avatar, 150)} alt={user.name} className="w-20 h-20 rounded-full object-cover" />
                     : <span className="w-20 h-20 rounded-full bg-linear-to-br from-accent/20 to-accent/40 border-2 border-accent/30 flex flex-col items-center justify-center overflow-hidden">
                         <span className="w-8 h-8 rounded-full bg-accent/40 flex items-center justify-center mb-0.5">
                           <User size={16} className="text-accent" />

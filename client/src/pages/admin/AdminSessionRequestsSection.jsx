@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Video, Clock, X } from 'lucide-react';
 import api from '../../api/axios';
 import toast from 'react-hot-toast';
+import { optimizeImage } from '../../utils/image';
 
 const STATUS_LABEL = { pending: 'Pending', scheduled: 'Scheduled', completed: 'Completed' };
 const STATUS_COLOR = {
@@ -45,7 +46,7 @@ function ScheduleModal({ session, onClose, onSaved }) {
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '18px 20px', borderBottom: '1px solid #f0f0f0' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             {session.user?.avatar
-              ? <img src={session.user.avatar} alt="" style={{ width: 34, height: 34, borderRadius: '50%', objectFit: 'cover' }} />
+              ? <img src={optimizeImage(session.user.avatar, 150)} alt="" style={{ width: 34, height: 34, borderRadius: '50%', objectFit: 'cover' }} />
               : <div style={{ width: 34, height: 34, borderRadius: '50%', background: '#dcefed', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 14, color: '#0a7373' }}>{session.user?.name?.[0]?.toUpperCase() || '?'}</div>
             }
             <div>
@@ -219,7 +220,7 @@ export default function AdminSessionRequestsSection() {
               {/* Avatar + name */}
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0, minWidth: 180 }}>
                 {user?.avatar
-                  ? <img src={user.avatar} alt="" style={{ width: 34, height: 34, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />
+                  ? <img src={optimizeImage(user.avatar, 150)} alt="" style={{ width: 34, height: 34, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />
                   : <div style={{ width: 34, height: 34, borderRadius: '50%', background: '#dcefed', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 13, color: '#0a7373', flexShrink: 0 }}>{user?.name?.[0]?.toUpperCase() || '?'}</div>
                 }
                 <div style={{ minWidth: 0 }}>

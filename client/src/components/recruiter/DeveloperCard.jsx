@@ -1,4 +1,5 @@
 import { GitBranch, Globe, Link2, Mail, MapPin, Phone, Home } from 'lucide-react';
+import { optimizeImage } from '../../utils/image';
 
 const SKILL_PALETTES = [
   { bg: '#EFF6FF', border: '#BFDBFE', text: '#1D4ED8' }, // blue
@@ -24,7 +25,7 @@ function Avatar({ dev }) {
   const initials =
     dev.name?.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) || '?';
   return dev.avatar ? (
-    <img src={dev.avatar} alt={dev.name} className="w-11 h-11 rounded-full object-cover shrink-0" />
+    <img src={optimizeImage(dev.avatar, 150)} alt={dev.name} className="w-11 h-11 rounded-full object-cover shrink-0" />
   ) : (
     <span className="w-11 h-11 rounded-full bg-accent text-white text-sm font-bold flex items-center justify-center shrink-0">
       {initials}

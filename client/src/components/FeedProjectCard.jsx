@@ -5,6 +5,7 @@ import { Heart, MessageCircle, Star, CheckCircle, Code, Send } from 'lucide-reac
 import { useAuth } from '../context/AuthContext';
 import axios from '../api/axios';
 import toast from 'react-hot-toast';
+import { optimizeImage } from '../utils/image';
 
 export default function FeedProjectCard({ activity, index = 0 }) {
   const { user: activityUser, project, createdAt } = activity;
@@ -138,7 +139,7 @@ export default function FeedProjectCard({ activity, index = 0 }) {
           <div>
             {/* User Header */}
             <div className="flex items-center gap-3 mb-4">
-              <img src={avatarUrl} alt={activityUser.name} className="w-10 h-10 rounded-full object-cover shrink-0 border border-black/5" />
+              <img src={optimizeImage(avatarUrl, 150)} alt={activityUser.name} className="w-10 h-10 rounded-full object-cover shrink-0 border border-black/5" />
               <div className="flex flex-col">
                 <Link to={`/portfolio/${activityUser._id}`} className="font-bold text-black hover:text-primary transition leading-tight">
                   {activityUser.name}
@@ -216,7 +217,7 @@ export default function FeedProjectCard({ activity, index = 0 }) {
         <div className="w-full md:w-64 shrink-0 flex flex-col">
           <Link to={`/project/${project._id}`} className="block flex-1 group rounded-lg overflow-hidden border border-border shadow-sm">
             {project.bannerImage ? (
-              <img src={project.bannerImage} alt={project.title} className="w-full h-full min-h-[140px] object-cover group-hover:scale-105 transition duration-300" />
+              <img src={optimizeImage(project.bannerImage, 800)} alt={project.title} className="w-full h-full min-h-[140px] object-cover group-hover:scale-105 transition duration-300" />
             ) : (
               <div className="w-full h-full min-h-[140px] bg-gradient-to-r from-gray-200 to-gray-300 flex items-center justify-center group-hover:scale-105 transition duration-300">
                 <Code size={40} className="text-gray-400" />
@@ -255,7 +256,7 @@ export default function FeedProjectCard({ activity, index = 0 }) {
             ) : (
               comments.map(c => (
                 <div key={c._id} className="flex gap-3">
-                  <img src={c.user?.profileImage || c.user?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(c.user?.name || 'User')}&background=random`} className="w-8 h-8 rounded-full border border-border shrink-0" />
+                  <img src={optimizeImage(c.user?.profileImage || c.user?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(c.user?.name || 'User')}&background=random`, 150)} className="w-8 h-8 rounded-full border border-border shrink-0" />
                   <div className="bg-bg rounded-2xl rounded-tl-none p-3 flex-1">
                     <p className="text-xs font-bold text-slate-900 mb-0.5">{c.user?.name}</p>
                     <p className="text-sm text-slate-900 whitespace-pre-wrap leading-relaxed">{c.text}</p>

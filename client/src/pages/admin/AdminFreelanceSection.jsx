@@ -5,6 +5,7 @@ import {
 } from 'lucide-react';
 import api from '../../api/axios';
 import toast from 'react-hot-toast';
+import { optimizeImage } from '../../utils/image';
 
 const TYPE_LABEL = { remote: 'Remote', onsite: 'On-site', hybrid: 'Hybrid' };
 const TYPE_STYLE = {
@@ -253,7 +254,7 @@ export default function AdminFreelanceSection() {
                             <div key={u._id} className="space-y-2">
                               <div className="flex items-center gap-3">
                                 {u.avatar
-                                  ? <img src={u.avatar} alt={u.name} className="w-7 h-7 rounded-full object-cover shrink-0" />
+                                  ? <img src={optimizeImage(u.avatar, 150)} alt={u.name} className="w-7 h-7 rounded-full object-cover shrink-0" />
                                   : <span className="w-7 h-7 rounded-full bg-[#00A693] text-white text-xs flex items-center justify-center font-medium shrink-0">{u.name?.[0]?.toUpperCase()}</span>
                                 }
                                 <div className="flex-1 min-w-0">

@@ -23,6 +23,7 @@ import AdminEmailSection from './admin/AdminEmailSection';
 import AdminMentorshipApplicationsSection from './admin/AdminMentorshipApplicationsSection';
 import AdminJobAlertHistorySection from './admin/AdminJobAlertHistorySection';
 import AdminAdvancedUsersFilterSection from './admin/AdminAdvancedUsersFilterSection';
+import { optimizeImage } from '../utils/image';
 
 const NAV = [
   { key: 'overview',       label: 'Overview',        icon: LayoutDashboard },
@@ -133,7 +134,7 @@ const { user, setUser, logout } = useAuth();
             >
               <div className="relative shrink-0">
                 {user?.avatar
-                  ? <img src={user.avatar} alt="Admin" className="w-7 h-7 rounded-full object-cover" />
+                  ? <img src={optimizeImage(user.avatar, 150)} alt="Admin" className="w-7 h-7 rounded-full object-cover" />
                   : <span className="w-7 h-7 rounded-full bg-accent text-white text-xs flex items-center justify-center font-bold">{user?.name?.[0]?.toUpperCase() || 'A'}</span>
                 }
                 {avatarUploading

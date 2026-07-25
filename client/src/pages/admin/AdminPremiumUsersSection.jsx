@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import api from '../../api/axios';
+import { optimizeImage } from '../../utils/image';
 
 // ── helpers ───────────────────────────────────────────────────────────────────
 
@@ -88,7 +89,7 @@ function SummaryModal({ userData, onClose, onSummaryUpdate }) {
         {/* Header */}
         <div style={{ padding: '18px 24px 14px', borderBottom: '1px solid #f0f0f0', display: 'flex', alignItems: 'center', gap: 14, flexShrink: 0 }}>
           {userData.profile.avatar
-            ? <img src={userData.profile.avatar} alt="" style={{ width: 40, height: 40, borderRadius: '50%', objectFit: 'cover' }} />
+            ? <img src={optimizeImage(userData.profile.avatar, 150)} alt="" style={{ width: 40, height: 40, borderRadius: '50%', objectFit: 'cover' }} />
             : <span style={{ width: 40, height: 40, borderRadius: '50%', background: '#dcefed', color: '#0a7373', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 16 }}>{userData.profile.name?.[0]?.toUpperCase()}</span>
           }
           <div style={{ flex: 1 }}>
@@ -331,7 +332,7 @@ export default function AdminPremiumUsersSection() {
                 <span style={{ fontSize: 13, color: '#aaa', textAlign: 'right' }}>{i + 1}</span>
 
                 {p.avatar
-                  ? <img src={p.avatar} alt="" style={{ width: 38, height: 38, borderRadius: '50%', objectFit: 'cover' }} />
+                  ? <img src={optimizeImage(p.avatar, 150)} alt="" style={{ width: 38, height: 38, borderRadius: '50%', objectFit: 'cover' }} />
                   : <span style={{ width: 38, height: 38, borderRadius: '50%', background: '#dcefed', color: '#0a7373', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 15, flexShrink: 0 }}>{p.name?.[0]?.toUpperCase()}</span>
                 }
 

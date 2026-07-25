@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Search, ToggleLeft, ToggleRight, Save, IndianRupee, Gift, Crown, UserPlus, X } from 'lucide-react';
 import api from '../../api/axios';
 import toast from 'react-hot-toast';
+import { optimizeImage } from '../../utils/image';
 
 function fmt(paise) {
   return `₹${(paise / 100).toLocaleString('en-IN', { minimumFractionDigits: 2 })}`;
@@ -178,7 +179,7 @@ function FreeOfferCard({ config, onSaved }) {
 /* ── Free Premium Access card ───────────────────────────────── */
 function Avatar({ user, size = 32 }) {
   return user?.avatar ? (
-    <img src={user.avatar} alt="" style={{ width: size, height: size }} className="rounded-full object-cover shrink-0" />
+    <img src={optimizeImage(user.avatar, 150)} alt="" style={{ width: size, height: size }} className="rounded-full object-cover shrink-0" />
   ) : (
     <div
       style={{ width: size, height: size }}

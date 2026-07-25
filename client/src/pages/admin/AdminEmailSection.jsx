@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { Send, Search, Users, CheckSquare, Square, FileText, Pencil, Trash2, Save, X } from 'lucide-react';
 import api from '../../api/axios';
 import toast from 'react-hot-toast';
+import { optimizeImage } from '../../utils/image';
 
 const inp = 'w-full px-3 py-2 border border-border rounded-lg text-sm text-text bg-white placeholder-[#9CA3AF] focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/10 transition';
 
@@ -263,7 +264,7 @@ export default function AdminEmailSection() {
                       className="accent-accent w-4 h-4 shrink-0"
                     />
                     {u.avatar
-                      ? <img src={u.avatar} alt="" className="w-6 h-6 rounded-full object-cover shrink-0" />
+                      ? <img src={optimizeImage(u.avatar, 150)} alt="" className="w-6 h-6 rounded-full object-cover shrink-0" />
                       : <span className="w-6 h-6 rounded-full bg-accent/10 text-accent text-[10px] flex items-center justify-center font-bold shrink-0">{u.name?.[0]?.toUpperCase() || '?'}</span>
                     }
                     <span className="text-sm font-medium text-text truncate">{u.name}</span>

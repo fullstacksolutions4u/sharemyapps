@@ -8,6 +8,7 @@ import confetti from 'canvas-confetti';
 import TopicQuizModal from '../components/user/TopicQuizModal';
 import _Lottie from 'lottie-react';
 import modulesAnimation from '../assets/modules.json';
+import { optimizeImage } from '../utils/image';
 
 const Lottie = _Lottie.default ?? _Lottie;
 
@@ -537,7 +538,7 @@ const LearningTracker = ({ embedded = false }) => {
                               }}>
                               {idx === 0 ? <Crown size={10} className="fill-[#CA8A04] text-[#CA8A04]" /> : idx + 1}
                             </div>
-                            <img src={u.profileImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(u.name)}&background=random`} alt={u.name} className="w-6 h-6 rounded-full object-cover shrink-0" />
+                            <img src={optimizeImage(u.profileImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(u.name)}&background=random`, 150)} alt={u.name} className="w-6 h-6 rounded-full object-cover shrink-0" />
                             <div className="flex-1 min-w-0">
                               <p className="text-xs font-bold text-[#1C1A17] truncate">{u.name}</p>
                             </div>

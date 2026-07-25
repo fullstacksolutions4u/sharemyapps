@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Search, FileText } from 'lucide-react';
 import api from '../../api/axios';
 import toast from 'react-hot-toast';
+import { optimizeImage } from '../../utils/image';
 
 export default function AdminResumesSection() {
   const [users, setUsers] = useState([]);
@@ -67,7 +68,7 @@ export default function AdminResumesSection() {
             {filtered.map(u => (
               <div key={u._id} className="flex items-center gap-4 px-5 py-4 hover:bg-[#FAF9F6] transition-colors">
                 {u.avatar
-                  ? <img src={u.avatar} alt={u.name} className="w-10 h-10 rounded-full object-cover shrink-0" />
+                  ? <img src={optimizeImage(u.avatar, 150)} alt={u.name} className="w-10 h-10 rounded-full object-cover shrink-0" />
                   : <span className="w-10 h-10 rounded-full bg-accent-light text-accent font-bold text-sm flex items-center justify-center shrink-0">
                       {u.name[0].toUpperCase()}
                     </span>

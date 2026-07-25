@@ -8,6 +8,7 @@ import feedAnimation from '../assets/feed.json';
 import FeedProjectCard from '../components/FeedProjectCard';
 import { useAuth } from '../context/AuthContext';
 import ReportVacancyModal from '../components/ReportVacancyModal';
+import { optimizeImage } from '../utils/image';
 
 const Lottie = _Lottie.default ?? _Lottie;
 
@@ -172,7 +173,7 @@ export default function Feed() {
                     </div>
                     
                     <img 
-                      src={user.profileImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=random`}
+                      src={optimizeImage(user.profileImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=random`, 150)}
                       alt={user.name}
                       className="w-8 h-8 rounded-full object-cover shrink-0"
                     />
@@ -444,7 +445,7 @@ function ActivityCard({ activity, index = 0 }) {
     <div className={wrapperClass} style={{ '--sticky-bg': colorObj.bg, '--sticky-fold': colorObj.fold }}>
       <div className="flex items-center gap-3">
         <Link to={`/portfolio/${displayUser._id || displayUser}`}>
-          <img src={avatarUrl} alt={displayUser.name} className="w-10 h-10 rounded-full object-cover border border-border" />
+          <img src={optimizeImage(avatarUrl, 150)} alt={displayUser.name} className="w-10 h-10 rounded-full object-cover border border-border" />
         </Link>
         <div className="flex flex-col">
           <Link to={`/portfolio/${displayUser._id || displayUser}`} className="font-bold text-sm text-black hover:text-primary transition">
@@ -482,7 +483,7 @@ function ActivityCard({ activity, index = 0 }) {
             <div className="mt-3 space-y-3">
               {comments.map((c, i) => (
                 <div key={i} className="flex gap-2">
-                  <img src={c.user?.profileImage || c.user?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(c.user?.name || 'User')}`} alt="" className="w-6 h-6 rounded-full border border-border" />
+                  <img src={optimizeImage(c.user?.profileImage || c.user?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(c.user?.name || 'User')}`, 150)} alt="" className="w-6 h-6 rounded-full border border-border" />
                   <div className="bg-white/60 rounded-xl px-3 py-1.5 text-sm flex-1">
                     <span className="font-semibold text-xs mr-2">{c.user?.name}</span>
                     <span className="text-gray-800">{c.text}</span>

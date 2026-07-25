@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { RefreshCw, MessageSquare, CornerDownRight, Send } from 'lucide-react';
 import api from '../../api/axios';
 import toast from 'react-hot-toast';
+import { optimizeImage } from '../../utils/image';
 
 export default function AdminMessagesSection({ onUnreadChange }) {
   const [messages, setMessages] = useState([]);
@@ -83,7 +84,7 @@ export default function AdminMessagesSection({ onUnreadChange }) {
               <div className="p-4 cursor-default" onClick={() => !msg.read && markRead(msg._id)}>
                 <div className="flex items-start gap-3">
                   {msg.sender?.avatar
-                    ? <img src={msg.sender.avatar} alt={msg.sender.name} className="w-9 h-9 rounded-full object-cover shrink-0" />
+                    ? <img src={optimizeImage(msg.sender.avatar, 150)} alt={msg.sender.name} className="w-9 h-9 rounded-full object-cover shrink-0" />
                     : <span className="w-9 h-9 rounded-full bg-accent text-white text-sm flex items-center justify-center font-medium shrink-0">
                         {msg.sender?.name?.[0]?.toUpperCase() || '?'}
                       </span>

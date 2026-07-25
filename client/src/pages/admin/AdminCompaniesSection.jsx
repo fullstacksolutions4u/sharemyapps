@@ -2,6 +2,7 @@ import { Fragment, useEffect, useState } from 'react';
 import { Building2, Search, X, ChevronDown, ChevronUp, ChevronsLeft, ChevronsRight, Users } from 'lucide-react';
 import toast from 'react-hot-toast';
 import api from '../../api/axios';
+import { optimizeImage } from '../../utils/image';
 
 export default function AdminCompaniesSection() {
   const [companies, setCompanies] = useState([]);
@@ -33,7 +34,7 @@ export default function AdminCompaniesSection() {
   const paged = list.slice((page - 1) * PER_PAGE, page * PER_PAGE);
 
   const Avatar = ({ d }) => d.avatar
-    ? <img src={d.avatar} alt={d.name} className="w-8 h-8 rounded-full object-cover shrink-0" />
+    ? <img src={optimizeImage(d.avatar, 150)} alt={d.name} className="w-8 h-8 rounded-full object-cover shrink-0" />
     : <span className="w-8 h-8 rounded-full bg-[#00A693] text-white text-xs flex items-center justify-center font-medium shrink-0">{d.name?.[0]?.toUpperCase() || '?'}</span>;
 
   return (

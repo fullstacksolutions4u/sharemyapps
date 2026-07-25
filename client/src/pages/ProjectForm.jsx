@@ -4,6 +4,7 @@ import { ArrowLeft, X, Plus, Users, ChevronRight, ChevronLeft } from 'lucide-rea
 import api from '../api/axios';
 import toast from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
+import { optimizeImage } from '../utils/image';
 
 const AVATAR_COLORS = [
   'bg-blue-500', 'bg-violet-500', 'bg-rose-500', 'bg-amber-500',
@@ -422,7 +423,7 @@ export default function ProjectForm() {
                   {collaborators.map(c => (
                     <span key={c._id} className="inline-flex items-center gap-1.5 bg-[#F3F0EB] border border-[#E5E1DA] text-text text-xs font-medium px-2.5 py-1.5 rounded-full">
                       {c.avatar
-                        ? <img src={c.avatar} alt={c.name} className="w-4 h-4 rounded-full object-cover" />
+                        ? <img src={optimizeImage(c.avatar, 150)} alt={c.name} className="w-4 h-4 rounded-full object-cover" />
                         : <span className={`w-4 h-4 rounded-full ${avatarColor(c.name)} text-white text-[9px] flex items-center justify-center font-semibold`}>{c.name?.[0]?.toUpperCase()}</span>
                       }
                       {c.name}
@@ -453,7 +454,7 @@ export default function ProjectForm() {
                           className="w-full flex items-center gap-2.5 px-3.5 py-2.5 hover:bg-[#F3F0EB] transition-colors text-left"
                         >
                           {u.avatar
-                            ? <img src={u.avatar} alt={u.name} className="w-7 h-7 rounded-full object-cover shrink-0" />
+                            ? <img src={optimizeImage(u.avatar, 150)} alt={u.name} className="w-7 h-7 rounded-full object-cover shrink-0" />
                             : <span className={`w-7 h-7 rounded-full ${avatarColor(u.name)} text-white text-xs flex items-center justify-center font-semibold shrink-0`}>{u.name?.[0]?.toUpperCase()}</span>
                           }
                           <span className="text-sm text-text">{u.name}</span>

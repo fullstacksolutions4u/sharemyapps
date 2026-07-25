@@ -19,6 +19,7 @@ import { useAuth } from '../context/AuthContext';
 import api from '../api/axios';
 import toast from 'react-hot-toast';
 import logo from '../assets/logo.png';
+import { optimizeImage } from '../utils/image';
 
 const typeIcon = {
   approved:      <CheckCircle size={14} className="text-green-500 shrink-0" />,
@@ -176,7 +177,7 @@ function UserDropdown({ user, onLogout }) {
         className="relative flex items-center gap-2 text-sm text-text hover:text-accent transition-colors"
       >
         {user.avatar
-          ? <img src={user.avatar} alt={user.name} className="w-7 h-7 rounded-full object-cover" />
+          ? <img src={optimizeImage(user.avatar, 150)} alt={user.name} className="w-7 h-7 rounded-full object-cover" />
           : <span className="w-7 h-7 rounded-full bg-accent text-white text-xs flex items-center justify-center font-medium">{user.name[0].toUpperCase()}</span>
         }
         <span>{user.name.split(' ')[0]}</span>

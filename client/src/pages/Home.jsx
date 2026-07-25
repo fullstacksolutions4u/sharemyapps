@@ -8,6 +8,7 @@ import api from '../api/axios';
 import ProjectCard from '../components/ProjectCard';
 import DeveloperCard from '../components/recruiter/DeveloperCard';
 import { useAuth } from '../context/AuthContext';
+import { optimizeImage } from '../utils/image';
 
 const AVATAR_PALETTE = ['#F87171','#FB923C','#FBBF24','#34D399','#38BDF8','#818CF8','#E879F9','#F472B6','#00A693'];
 const avatarBg = name => AVATAR_PALETTE[(name?.charCodeAt(0) ?? 0) % AVATAR_PALETTE.length];
@@ -295,7 +296,7 @@ export default function Home() {
           {authUser && (
             <div className="flex flex-col items-center mb-3 pointer-events-auto">
               {authUser.avatar ? (
-                <img src={authUser.avatar} alt={authUser.name} className="w-12 h-12 rounded-full object-cover border-2 border-white shadow-md" />
+                <img src={optimizeImage(authUser.avatar, 150)} alt={authUser.name} className="w-12 h-12 rounded-full object-cover border-2 border-white shadow-md" />
               ) : (
                 <div className="w-12 h-12 rounded-full bg-accent text-white font-bold flex items-center justify-center text-base border-2 border-white shadow-md">
                   {authUser.name?.charAt(0).toUpperCase()}

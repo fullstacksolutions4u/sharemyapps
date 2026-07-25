@@ -1,6 +1,7 @@
 import { memo } from 'react';
 import { Link } from 'react-router-dom';
 import { ExternalLink, Heart, Star, Eye, Zap, Sparkles, Sprout, Monitor, Smartphone, Crown } from 'lucide-react';
+import { optimizeImage } from '../utils/image';
 
 const BADGE_CFG = {
   new_member: { label: 'New Member',    Icon: Sprout, cls: 'text-emerald-500' },
@@ -52,7 +53,7 @@ const ProjectCard = memo(function ProjectCard({ project }) {
           <appTypeCfg.Icon size={9} /> {appTypeCfg.label}
         </span>
         <img
-          src={getbanner(bannerImage, liveUrl)}
+          src={optimizeImage(getbanner(bannerImage, liveUrl), 800)}
           alt={title}
           loading="lazy"
           className="w-full h-44 object-cover group-hover:scale-[1.02] transition-transform duration-300"
@@ -74,7 +75,7 @@ const ProjectCard = memo(function ProjectCard({ project }) {
           {owner && (
             <div className="flex items-center gap-2 min-w-0">
               {owner.avatar
-                ? <img src={owner.avatar} alt={owner.name} className="w-6 h-6 rounded-full object-cover shrink-0" />
+                ? <img src={optimizeImage(owner.avatar, 150)} alt={owner.name} className="w-6 h-6 rounded-full object-cover shrink-0" />
                 : <span className={`w-6 h-6 rounded-full ${avatarColor(owner.name)} text-white text-xs flex items-center justify-center font-medium shrink-0`}>{owner.name?.[0]?.toUpperCase() || '?'}</span>
               }
               <div className="flex flex-col min-w-0">
@@ -108,7 +109,7 @@ const ProjectCard = memo(function ProjectCard({ project }) {
                 {collaborators.slice(0, 2).map(c => (
                   <div key={c._id} className="flex items-center gap-1">
                     {c.avatar
-                      ? <img src={c.avatar} alt={c.name} className="w-4 h-4 rounded-full object-cover ring-1 ring-white shrink-0" />
+                      ? <img src={optimizeImage(c.avatar, 150)} alt={c.name} className="w-4 h-4 rounded-full object-cover ring-1 ring-white shrink-0" />
                       : <span className={`w-4 h-4 rounded-full ${avatarColor(c.name)} text-white text-[7px] flex items-center justify-center font-semibold ring-1 ring-white shrink-0`}>{c.name?.[0]?.toUpperCase()}</span>
                     }
                     <span className="text-[10px] text-muted truncate max-w-13">{c.name.split(' ')[0]}</span>

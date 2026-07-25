@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { MessageSquare, ExternalLink, CheckCheck, CornerDownRight, Send } from 'lucide-react';
 import api from '../api/axios';
 import toast from 'react-hot-toast';
+import { optimizeImage } from '../utils/image';
 
 function timeAgo(date) {
   const secs = Math.floor((Date.now() - new Date(date)) / 1000);
@@ -52,7 +53,7 @@ function MessageRow({ msg, onMarkRead, onReplySent, isInbox }) {
       >
         <div className="flex items-start gap-3">
           {person?.avatar
-            ? <img src={person.avatar} alt={person.name} className="w-9 h-9 rounded-full object-cover shrink-0" />
+            ? <img src={optimizeImage(person.avatar, 150)} alt={person.name} className="w-9 h-9 rounded-full object-cover shrink-0" />
             : <span className="w-9 h-9 rounded-full bg-[#00A693] text-white text-sm flex items-center justify-center font-medium shrink-0">
                 {person?.name?.[0]?.toUpperCase() || '?'}
               </span>

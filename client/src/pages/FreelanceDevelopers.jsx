@@ -5,6 +5,7 @@ import {
   Globe, Layers, ChevronLeft, ChevronRight, Users, IndianRupee, Monitor, Smartphone, Briefcase,
 } from 'lucide-react';
 import api from '../api/axios';
+import { optimizeImage } from '../utils/image';
 
 const BADGE = {
   new_member: { label: 'New Member',    cls: 'bg-slate-100 text-slate-500 border-slate-200' },
@@ -76,7 +77,7 @@ function DeveloperCard({ dev, idx }) {
       {/* Avatar + rate badge row */}
       <div className="px-5 -mt-8 mb-3 flex items-end justify-between">
         {dev.avatar ? (
-          <img src={dev.avatar} alt={dev.name}
+          <img src={optimizeImage(dev.avatar, 150)} alt={dev.name}
             className="w-16 h-16 rounded-2xl object-cover border-4 border-white shadow-md group-hover:scale-105 transition-transform duration-300" />
         ) : (
           <div className={`w-16 h-16 rounded-2xl bg-linear-to-br ${accent} border-4 border-white shadow-md flex items-center justify-center group-hover:scale-105 transition-transform duration-300`}>

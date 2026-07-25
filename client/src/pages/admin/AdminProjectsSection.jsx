@@ -5,6 +5,7 @@ import {
 } from 'lucide-react';
 import api from '../../api/axios';
 import toast from 'react-hot-toast';
+import { optimizeImage } from '../../utils/image';
 
 const PLACEHOLDER = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI4MDAiIGhlaWdodD0iNDUwIiB2aWV3Qm94PSIwIDAgODAwIDQ1MCI+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0iI2YxZjVmOSIgLz48ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSg0MDAsMjEwKSIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjOTRhM2I4IiBzdHJva2Utd2lkdGg9IjMiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCI+PHJlY3QgeD0iLTM1IiB5PSItNDUiIHdpZHRoPSI3MCIgaGVpZ2h0PSI1MCIgcng9IjQiIC8+PGxpbmUgeDE9Ii0xNSIgeTE9IjUiIHgyPSIxNSIgeTI9IjUiIC8+PGxpbmUgeDE9Ii01IiB5MT0iNSIgeDI9Ii0xMCIgeTI9IjE1IiAvPjxsaW5lIHgxPSI1IiB5MT0iNSIgeDI9IjEwIiB5Mj0iMTUiIC8+PGxpbmUgeDE9Ii0yMCIgeTE9IjE1IiB4Mj0iMjAiIHkyPSIxNSIgLz48L2c+PHRleHQgeD0iNTAlIiB5PSIyNzUiIGRvbWluYW50LWJhc2VsaW5lPSJtaWRkbGUiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZvbnQtZmFtaWx5PSJzeXN0ZW0tdWksIC1hcHBsZS1zeXN0ZW0sIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTYiIGZvbnQtd2VpZ2h0PSI2MDAiIGZpbGw9IiM2NDc0OGIiPlByZXZpZXcgR2VuZXJhdGluZy4uLjwvdGV4dD48L3N2Zz4=';
 const getBanner = (bannerImage) => bannerImage || PLACEHOLDER;
@@ -297,7 +298,7 @@ function ProjectReviewPage({ project: initial, onBack, onSave, onApprove, onReje
 
         <div className="space-y-4">
           <div className="bg-white border border-[#E5E1DA] rounded-2xl overflow-hidden">
-            <img src={bannerSrc} alt={initial.title} className="w-full h-40 object-cover"
+            <img src={optimizeImage(bannerSrc, 800)} alt={initial.title} className="w-full h-40 object-cover"
               onError={e => { e.target.src = PLACEHOLDER; }} />
             <div className="p-4">
               <a href={initial.liveUrl} target="_blank" rel="noopener noreferrer"
@@ -311,7 +312,7 @@ function ProjectReviewPage({ project: initial, onBack, onSave, onApprove, onReje
             <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wider mb-3">Submitted by</p>
             <div className="flex items-center gap-3">
               {initial.owner?.avatar
-                ? <img src={initial.owner.avatar} className="w-9 h-9 rounded-full object-cover shrink-0" alt={initial.owner.name} />
+                ? <img src={optimizeImage(initial.owner.avatar, 150)} className="w-9 h-9 rounded-full object-cover shrink-0" alt={initial.owner.name} />
                 : <span className="w-9 h-9 rounded-full bg-[#00A693] text-white text-sm flex items-center justify-center font-medium shrink-0">{initial.owner?.name?.[0]?.toUpperCase()}</span>
               }
               <div className="min-w-0">
@@ -512,7 +513,7 @@ export default function AdminProjectsSection({ stats }) {
                   <tr key={project._id} className={`transition-colors hover:bg-[#f0fdfb] ${idx % 2 === 0 ? 'bg-white' : 'bg-[#FAFAF8]'}`}>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3 cursor-pointer" onClick={() => setSelected(project)}>
-                        <img src={getBanner(project.bannerImage, project.liveUrl)} alt={project.title}
+                        <img src={optimizeImage(getBanner(project.bannerImage, project.liveUrl), 800)} alt={project.title}
                           className="w-10 h-10 rounded-lg object-cover shrink-0 ring-2 ring-[#00A693]/20"
                           onError={e => { e.target.src = PLACEHOLDER; }} />
                         <p className="font-semibold text-[#1A1A1A] truncate max-w-[200px] hover:text-[#00A693] transition-colors">{project.title}</p>

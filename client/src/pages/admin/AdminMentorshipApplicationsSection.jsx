@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { GraduationCap, Check, X, Phone, Mail, RotateCcw, Trash2 } from 'lucide-react';
 import api from '../../api/axios';
 import toast from 'react-hot-toast';
+import { optimizeImage } from '../../utils/image';
 
 const STATUS_STYLES = {
   pending:  'bg-amber-50 text-amber-600 border-amber-200',
@@ -84,7 +85,7 @@ export default function AdminMentorshipApplicationsSection() {
           {filtered.map(a => (
             <div key={a._id} className="bg-white border border-border rounded-2xl p-4 flex flex-wrap items-center gap-4">
               {a.user?.avatar
-                ? <img src={a.user.avatar} alt={a.user?.name} className="w-10 h-10 rounded-full object-cover shrink-0" />
+                ? <img src={optimizeImage(a.user.avatar, 150)} alt={a.user?.name} className="w-10 h-10 rounded-full object-cover shrink-0" />
                 : <span className="w-10 h-10 rounded-full bg-teal-600 text-white text-sm flex items-center justify-center font-bold shrink-0">{a.user?.name?.[0]?.toUpperCase() || '?'}</span>
               }
               <div className="min-w-0 flex-1">

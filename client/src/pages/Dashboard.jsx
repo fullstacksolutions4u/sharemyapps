@@ -13,6 +13,7 @@ import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
 import { useConfirm } from '../context/ConfirmContext';
+import { optimizeImage } from '../utils/image';
 
 const NAV = [
   { key: 'profile',            label: 'Profile',               icon: UserCircle },
@@ -147,7 +148,7 @@ function ProjectsSection({ confirm, queryClient }) {
             <div key={project._id} className="bg-white border border-border rounded-xl p-4 flex items-center gap-4 hover:border-accent/30 transition-colors">
               <div className="w-28 h-20 rounded-lg overflow-hidden bg-bg shrink-0">
                 <img
-                  src={getbanner(project.bannerImage, project.liveUrl)}
+                  src={optimizeImage(getbanner(project.bannerImage, project.liveUrl), 800)}
                   alt={project.title}
                   loading="lazy"
                   className="w-full h-full object-cover"
@@ -179,7 +180,7 @@ function ProjectsSection({ confirm, queryClient }) {
                     <div className="flex -space-x-1">
                       {project.collaborators.slice(0, 4).map(c => (
                         c.avatar
-                          ? <img key={c._id} src={c.avatar} alt={c.name} className="w-4 h-4 rounded-full object-cover ring-1 ring-white" title={c.name} />
+                          ? <img key={c._id} src={optimizeImage(c.avatar, 150)} alt={c.name} className="w-4 h-4 rounded-full object-cover ring-1 ring-white" title={c.name} />
                           : <span key={c._id} className="w-4 h-4 rounded-full bg-accent text-white text-[7px] flex items-center justify-center font-semibold ring-1 ring-white" title={c.name}>{c.name?.[0]?.toUpperCase()}</span>
                       ))}
                     </div>
@@ -343,7 +344,7 @@ export default function Dashboard() {
           <div className="flex items-center gap-2 px-3 py-2.5">
             <div className="flex items-center gap-2 flex-1 min-w-0">
               {user?.avatar
-                ? <img src={user.avatar} alt={user.name} className="w-7 h-7 rounded-full object-cover shrink-0" />
+                ? <img src={optimizeImage(user.avatar, 150)} alt={user.name} className="w-7 h-7 rounded-full object-cover shrink-0" />
                 : <span className="w-7 h-7 rounded-full bg-accent text-white text-xs flex items-center justify-center font-bold shrink-0">{user?.name?.[0]?.toUpperCase()}</span>
               }
               <span className="truncate text-sm font-medium text-muted">{user?.name || 'User'}</span>

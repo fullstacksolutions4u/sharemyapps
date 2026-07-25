@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { Eye, Trash2 } from 'lucide-react';
 import api from '../../api/axios';
+import { optimizeImage } from '../../utils/image';
 
 function PortfolioModal({ offerId, onClose, onContacted }) {
   const [data, setData] = useState(null);
@@ -83,7 +84,7 @@ function PortfolioModal({ offerId, onClose, onContacted }) {
             {/* Header */}
             <div style={{ display: 'flex', gap: 16, alignItems: 'flex-start', marginBottom: 24 }}>
               {user.avatar
-                ? <img src={user.avatar} alt="" style={{ width: 64, height: 64, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />
+                ? <img src={optimizeImage(user.avatar, 150)} alt="" style={{ width: 64, height: 64, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />
                 : <span style={{ width: 64, height: 64, borderRadius: '50%', background: '#dcefed', color: '#0a7373', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 24, flexShrink: 0 }}>{user.name?.[0]?.toUpperCase()}</span>
               }
               <div style={{ flex: 1 }}>
@@ -359,7 +360,7 @@ function SummaryModal({ offer, onClose, onSummaryUpdate, onCommentUpdate }) {
         <div style={{ flexShrink: 0, borderBottom: '1px solid #f0f0f0' }}>
           <div style={{ padding: '16px 20px 12px', display: 'flex', alignItems: 'center', gap: 12 }}>
             {offer.user?.avatar
-              ? <img src={offer.user.avatar} alt="" style={{ width: 38, height: 38, borderRadius: '50%', objectFit: 'cover' }} />
+              ? <img src={optimizeImage(offer.user.avatar, 150)} alt="" style={{ width: 38, height: 38, borderRadius: '50%', objectFit: 'cover' }} />
               : <span style={{ width: 38, height: 38, borderRadius: '50%', background: '#dcefed', color: '#0a7373', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 15 }}>{offer.user?.name?.[0]?.toUpperCase()}</span>
             }
             <div style={{ flex: 1 }}>
@@ -743,7 +744,7 @@ export default function AdminOffersSection() {
 
               {/* Avatar */}
               {o.user?.avatar
-                ? <img src={o.user.avatar} alt="" style={{ width: 34, height: 34, borderRadius: '50%', objectFit: 'cover' }} />
+                ? <img src={optimizeImage(o.user.avatar, 150)} alt="" style={{ width: 34, height: 34, borderRadius: '50%', objectFit: 'cover' }} />
                 : <span style={{ width: 34, height: 34, borderRadius: '50%', background: '#dcefed', color: '#0a7373', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 14 }}>{o.user?.name?.[0]?.toUpperCase()}</span>
               }
 

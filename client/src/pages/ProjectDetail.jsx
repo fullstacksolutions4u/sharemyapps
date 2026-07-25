@@ -26,6 +26,7 @@ import { useAuth } from '../context/AuthContext';
 import ProjectCard from '../components/ProjectCard';
 import toast from 'react-hot-toast';
 import { useConfirm } from '../context/ConfirmContext';
+import { optimizeImage } from '../utils/image';
 
 const PLACEHOLDER = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI4MDAiIGhlaWdodD0iNDUwIiB2aWV3Qm94PSIwIDAgODAwIDQ1MCI+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0iI2YxZjVmOSIgLz48ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSg0MDAsMjEwKSIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjOTRhM2I4IiBzdHJva2Utd2lkdGg9IjMiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCI+PHJlY3QgeD0iLTM1IiB5PSItNDUiIHdpZHRoPSI3MCIgaGVpZ2h0PSI1MCIgcng9IjQiIC8+PGxpbmUgeDE9Ii0xNSIgeTE9IjUiIHgyPSIxNSIgeTI9IjUiIC8+PGxpbmUgeDE9Ii01IiB5MT0iNSIgeDI9Ii0xMCIgeTI9IjE1IiAvPjxsaW5lIHgxPSI1IiB5MT0iNSIgeDI9IjEwIiB5Mj0iMTUiIC8+PGxpbmUgeDE9Ii0yMCIgeTE9IjE1IiB4Mj0iMjAiIHkyPSIxNSIgLz48L2c+PHRleHQgeD0iNTAlIiB5PSIyNzUiIGRvbWluYW50LWJhc2VsaW5lPSJtaWRkbGUiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZvbnQtZmFtaWx5PSJzeXN0ZW0tdWksIC1hcHBsZS1zeXN0ZW0sIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTYiIGZvbnQtd2VpZ2h0PSI2MDAiIGZpbGw9IiM2NDc0OGIiPlByZXZpZXcgR2VuZXJhdGluZy4uLjwvdGV4dD48L3N2Zz4=';
 const toAbsUrl = (url) => url && !/^https?:\/\//i.test(url) ? `https://${url}` : url;
@@ -509,7 +510,7 @@ export default function ProjectDetail() {
           <form onSubmit={handleComment} className="flex gap-3 mb-6">
             {user ? (
               user.avatar
-                ? <img src={user.avatar} alt={user.name} className="w-8 h-8 rounded-full object-cover shrink-0" />
+                ? <img src={optimizeImage(user.avatar, 150)} alt={user.name} className="w-8 h-8 rounded-full object-cover shrink-0" />
                 : <span className="w-8 h-8 rounded-full bg-[#00A693] text-white text-xs flex items-center justify-center font-medium shrink-0">{user.name[0].toUpperCase()}</span>
             ) : (
               <span className="w-8 h-8 rounded-full bg-[#E5E1DA] shrink-0" />
@@ -540,7 +541,7 @@ export default function ProjectDetail() {
               {comments.map(c => (
                 <div key={c._id} className="flex gap-3">
                   {c.user?.avatar
-                    ? <img src={c.user.avatar} alt={c.user.name} className="w-8 h-8 rounded-full object-cover shrink-0" />
+                    ? <img src={optimizeImage(c.user.avatar, 150)} alt={c.user.name} className="w-8 h-8 rounded-full object-cover shrink-0" />
                     : <span className="w-8 h-8 rounded-full bg-[#E5E1DA] text-[#6B7280] text-xs flex items-center justify-center font-medium shrink-0">
                         {c.user?.name?.[0]?.toUpperCase() || '?'}
                       </span>
@@ -580,7 +581,7 @@ export default function ProjectDetail() {
               <div className="flex items-end justify-between -mt-7 mb-4">
                 <div className="relative">
                   {owner.avatar
-                    ? <img src={owner.avatar} alt={owner.name} className="w-14 h-14 rounded-2xl object-cover ring-4 ring-white shadow" />
+                    ? <img src={optimizeImage(owner.avatar, 150)} alt={owner.name} className="w-14 h-14 rounded-2xl object-cover ring-4 ring-white shadow" />
                     : <span className="w-14 h-14 rounded-2xl bg-[#00A693] text-white text-xl font-bold flex items-center justify-center ring-4 ring-white shadow">{owner.name[0].toUpperCase()}</span>
                   }
                   <span className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-400 rounded-full ring-2 ring-white" />
@@ -677,7 +678,7 @@ export default function ProjectDetail() {
               {collaborators.map(c => (
                 <div key={c._id} className="flex items-center gap-3">
                   {c.avatar
-                    ? <img src={c.avatar} alt={c.name} className="w-8 h-8 rounded-full object-cover shrink-0" />
+                    ? <img src={optimizeImage(c.avatar, 150)} alt={c.name} className="w-8 h-8 rounded-full object-cover shrink-0" />
                     : <span className={`w-8 h-8 rounded-full text-white text-xs font-semibold flex items-center justify-center shrink-0 ${['bg-blue-500','bg-violet-500','bg-rose-500','bg-amber-500','bg-emerald-500','bg-cyan-500'][c.name?.charCodeAt(0) % 6]}`}>{c.name?.[0]?.toUpperCase()}</span>
                   }
                   <div className="flex flex-col min-w-0">

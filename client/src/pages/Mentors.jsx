@@ -15,13 +15,14 @@ const fmtTime = (t) => {
 import { useAuth } from '../context/AuthContext';
 import api from '../api/axios';
 import toast from 'react-hot-toast';
+import { optimizeImage } from '../utils/image';
 
 const toAbs = (url) => (!url ? '' : /^https?:\/\//i.test(url) ? url : `https://${url}`);
 
 function Avatar({ mentor }) {
   const initials = mentor.name?.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) || '?';
   return mentor.avatar
-    ? <img src={mentor.avatar} alt={mentor.name} className="w-16 h-16 rounded-full object-cover ring-2 ring-white shadow" />
+    ? <img src={optimizeImage(mentor.avatar, 150)} alt={mentor.name} className="w-16 h-16 rounded-full object-cover ring-2 ring-white shadow" />
     : <span className="w-16 h-16 rounded-full bg-accent text-white text-xl font-bold flex items-center justify-center ring-2 ring-white shadow">{initials}</span>;
 }
 

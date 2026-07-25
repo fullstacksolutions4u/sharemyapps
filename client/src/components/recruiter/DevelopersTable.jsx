@@ -1,12 +1,13 @@
 import { Link } from 'react-router-dom';
 import { FileText, GitBranch, Globe, Link2, Phone } from 'lucide-react';
 import { toAbs } from './developerUtils';
+import { optimizeImage } from '../../utils/image';
 
 function Avatar({ dev }) {
   const initials =
     dev.name?.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) || '?';
   return dev.avatar ? (
-    <img src={dev.avatar} alt={dev.name} className="w-8 h-8 rounded-full object-cover shrink-0" />
+    <img src={optimizeImage(dev.avatar, 150)} alt={dev.name} className="w-8 h-8 rounded-full object-cover shrink-0" />
   ) : (
     <span className="w-8 h-8 rounded-full bg-accent text-white text-xs font-bold flex items-center justify-center shrink-0">
       {initials}
