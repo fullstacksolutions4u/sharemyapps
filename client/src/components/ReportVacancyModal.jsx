@@ -7,8 +7,10 @@ export default function ReportVacancyModal({ isOpen, onClose, user }) {
   const exp = user?.resumeData?.experience || user?.resumeData?.workExperience || [];
   const companies = [...new Set(exp.map(e => e.company).filter(Boolean))];
 
+  const [activeTab, setActiveTab] = useState('my-companies');
+
   const [formData, setFormData] = useState({
-    company: companies.length > 0 ? companies[0] : 'custom',
+    company: companies.length > 0 ? companies[0] : '',
     customCompany: '',
     title: '',
     salaryRange: '',
@@ -21,13 +23,14 @@ export default function ReportVacancyModal({ isOpen, onClose, user }) {
   if (isOpen && !prevIsOpen) {
     setPrevIsOpen(true);
     setFormData({
-      company: companies.length > 0 ? companies[0] : 'custom',
+      company: companies.length > 0 ? companies[0] : '',
       customCompany: '',
       title: '',
       salaryRange: '',
       type: 'remote',
       description: ''
     });
+    setActiveTab('my-companies');
   } else if (!isOpen && prevIsOpen) {
     setPrevIsOpen(false);
   }
@@ -36,8 +39,9 @@ export default function ReportVacancyModal({ isOpen, onClose, user }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const finalCompany = formData.company === 'custom' ? formData.customCompany : formData.company;
+    const finalCompany = activeTab === 'my-companies' ? formData.company : formData.customCompany;
     
+    if (activeTab === 'my-companies' && companies.length === 0) return toast.error('No previous companies found');
     if (!finalCompany?.trim()) return toast.error('Please specify a company');
     if (!formData.title?.trim()) return toast.error('Please specify a designation');
     if (!formData.description?.trim()) return toast.error('Please provide a job description');
@@ -71,32 +75,52 @@ export default function ReportVacancyModal({ isOpen, onClose, user }) {
         </button>
 
         <div className="p-6 sm:p-8">
-          <div className="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200/60 p-4 rounded-xl mb-6 flex gap-3 items-start shadow-sm">
-            <div className="bg-amber-100 text-amber-600 p-1.5 rounded-lg shrink-0 mt-0.5">
-              <Gift size={16} />
-            </div>
-            <p className="text-sm text-amber-900 leading-snug">
-              <span className="font-semibold block mb-0.5">Bonus Reward!</span>
-              If you share a vacancy in your company and it gets verified, you'll get our <span className="font-semibold">Premium Placement Support Services</span> completely FREE! 🎉
-            </p>
+          <div className="flex border-b border-gray-200 mb-6">
+            <button
+              type="button"
+              className={`flex-1 py-2 text-sm font-semibold text-center border-b-2 transition-colors ${
+                activeTab === 'my-companies'
+                  ? 'border-primary text-primary'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+              onClick={() => setActiveTab('my-companies')}
+            >
+              My Companies
+            </button>
+            <button
+              type="button"
+              className={`flex-1 py-2 text-sm font-semibold text-center border-b-2 transition-colors ${
+                activeTab === 'other-companies'
+                  ? 'border-primary text-primary'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+              onClick={() => setActiveTab('other-companies')}
+            >
+              Other Companies
+            </button>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label className="block text-sm font-semibold text-text mb-1.5">Select Company <span className="text-red-500">*</span></label>
-              <select
-                value={formData.company}
-                onChange={e => setFormData({ ...formData, company: e.target.value })}
-                className="w-full px-4 py-2.5 rounded-xl border border-border bg-gray-50 focus:bg-white focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all outline-hidden text-sm"
-              >
-                {companies.map(c => (
-                  <option key={c} value={c}>{c}</option>
-                ))}
-                <option value="custom">Other Company...</option>
-              </select>
-            </div>
-
-            {formData.company === 'custom' && (
+            {activeTab === 'my-companies' ? (
+              <div>
+                <label className="block text-sm font-semibold text-text mb-1.5">Select Company <span className="text-red-500">*</span></label>
+                {companies.length > 0 ? (
+                  <select
+                    value={formData.company}
+                    onChange={e => setFormData({ ...formData, company: e.target.value })}
+                    className="w-full px-4 py-2.5 rounded-xl border border-border bg-gray-50 focus:bg-white focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all outline-hidden text-sm"
+                  >
+                    {companies.map(c => (
+                      <option key={c} value={c}>{c}</option>
+                    ))}
+                  </select>
+                ) : (
+                  <div className="w-full px-4 py-2.5 rounded-xl border border-border bg-gray-50 text-gray-500 text-sm">
+                    No previous companies found. Please use the "Other Companies" tab.
+                  </div>
+                )}
+              </div>
+            ) : (
               <div className="animate-in fade-in slide-in-from-top-2">
                 <label className="block text-sm font-semibold text-text mb-1.5">Company Name <span className="text-red-500">*</span></label>
                 <input
@@ -166,7 +190,7 @@ export default function ReportVacancyModal({ isOpen, onClose, user }) {
                   <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                 ) : (
                   <>
-                    <Send size={18} /> Submit Report
+                    <Send size={18} /> Report Vacancy
                   </>
                 )}
               </button>

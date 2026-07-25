@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import axios from '../api/axios';
 import { formatDistanceToNow } from 'date-fns';
-import { Trophy, MessageCircle, Heart, Star, TrendingUp, Briefcase, ChevronRight, UserPlus, Crown } from 'lucide-react';
+import { Trophy, MessageCircle, Heart, Star, TrendingUp, Briefcase, ChevronRight, UserPlus, Crown, Share2 } from 'lucide-react';
 import _Lottie from 'lottie-react';
 import feedAnimation from '../assets/feed.json';
 import FeedProjectCard from '../components/FeedProjectCard';
@@ -198,8 +198,8 @@ export default function Feed() {
             onClick={() => setShowReportModal(true)}
             className="bg-gradient-to-r from-[#00A693] to-[#007D6F] text-white font-bold py-3.5 px-4 rounded-xl flex items-center justify-center gap-2.5 transition-all w-full shrink-0 shadow-[0_4px_14px_0_rgba(0,166,147,0.39)] hover:shadow-[0_6px_20px_rgba(0,166,147,0.23)] hover:-translate-y-0.5"
           >
-            <Briefcase size={18} className="drop-shadow-sm" />
-            Is your company hiring right now?
+            <Share2 size={18} className="drop-shadow-sm" />
+            Share Vacancy
           </button>
         )}
 
