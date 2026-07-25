@@ -1,0 +1,135 @@
+{
+  "generatedAt": "2026-07-25T03:23:32.683Z",
+  "modules": [
+    {
+      "moduleId": "6a64294eeefed1b670f189b6",
+      "moduleTitle": "Rust",
+      "topics": [
+        {
+          "topicId": "6a642a88457051997d1b6947",
+          "topicName": "Error Handling (Result, Option, panic!)",
+          "quizzes": [
+            {
+              "question": "What is the primary purpose of using the Result type in Rust?",
+              "options": [
+                "To represent a successful operation and an error",
+                "To manage memory safely",
+                "To provide multithreading capabilities",
+                "To create more complex data types"
+              ],
+              "correctAnswer": 0,
+              "explanation": "The Result type is used to encapsulate the success or failure of an operation, allowing developers to handle errors gracefully."
+            },
+            {
+              "question": "Which of the following methods is used to access the value of a Result if it's an Ok variant?",
+              "options": [
+                ".unwrap()",
+                ".get()",
+                ".success()",
+                ".value()"
+              ],
+              "correctAnswer": 0,
+              "explanation": ".unwrap() is used to extract the value from a Result when it is an Ok variant, panicking if it is an Err."
+            },
+            {
+              "question": "What will happen if you call .unwrap() on a Result that is an Err?",
+              "options": [
+                "Returns the error value",
+                "Panics at runtime",
+                "Returns None",
+                "Returns an empty option"
+              ],
+              "correctAnswer": 1,
+              "explanation": "Calling .unwrap() on an Err variant causes the program to panic, terminating execution unless handled."
+            },
+            {
+              "question": "Given the following code snippet, what will happen when it is executed?\n\nfn might_fail() -> Result<i32, String> {\n    Err(String::from(\"Error occurred\"))\n}\n\nfn main() {\n    let result = might_fail().unwrap();\n}",
+              "questionCode": "fn might_fail() -> Result<i32, String> {\n    Err(String::from(\"Error occurred\"))\n}\n\nfn main() {\n    let result = might_fail().unwrap();\n}",
+              "options": [
+                "The program will print 'Error occurred'",
+                "The program will print the integer value",
+                "The program will panic",
+                "The program will run without issues"
+              ],
+              "correctAnswer": 2,
+              "explanation": "The code will panic because .unwrap() is called on an Err variant, which causes a runtime error."
+            },
+            {
+              "question": "In Rust, how can you safely handle a Result without panicking?",
+              "options": [
+                "By using .unwrap()",
+                "By implementing the From trait",
+                "By using .map() or .and_then()",
+                "By using a loop"
+              ],
+              "correctAnswer": 2,
+              "explanation": "Methods like .map() or .and_then() can be used to work with the contained value in a Result safely, without panic."
+            }
+          ]
+        },
+        {
+          "topicId": "6a642a88457051997d1b6950",
+          "topicName": "Building a Multithreaded Web Server",
+          "quizzes": [
+            {
+              "question": "What is the primary purpose of using threads in a web server?",
+              "options": [
+                "To manage database connections",
+                "To handle multiple requests concurrently",
+                "To reduce response times by caching data",
+                "To limit memory usage"
+              ],
+              "correctAnswer": 1,
+              "explanation": "Threads in a web server allow it to handle multiple requests at the same time, increasing concurrency and improving overall performance."
+            },
+            {
+              "question": "In Rust, which crate is commonly used to build asynchronous applications?",
+              "options": [
+                "std",
+                "tokio",
+                "async_std",
+                "rustls"
+              ],
+              "correctAnswer": 1,
+              "explanation": "The 'tokio' crate provides an asynchronous runtime for Rust, making it a popular choice for building async applications, including web servers."
+            },
+            {
+              "question": "Which of the following tools helps manage and synchronize shared state between threads in Rust?",
+              "options": [
+                "Mutex",
+                "Arc",
+                "Rc",
+                "Channel"
+              ],
+              "correctAnswer": 0,
+              "explanation": "A Mutex (mutual exclusion) allows safe access to shared data across multiple threads by providing exclusive access to the data."
+            },
+            {
+              "question": "Consider the following Rust snippet. What is the potential issue with using a global mutable state directly between threads? (ex. using a global variable)",
+              "questionCode": "let GLOBAL_VAR: i32 = 0;",
+              "options": [
+                "Data races may occur",
+                "The program will crash immediately",
+                "Rust automatically handles synchronization",
+                "Global variables can be accessed only from main thread"
+              ],
+              "correctAnswer": 0,
+              "explanation": "Using a global mutable state directly can lead to data races, which can cause undefined behavior when multiple threads attempt to read and write to the variable simultaneously."
+            },
+            {
+              "question": "In a multithreaded web server, what is the purpose of using a `join_handle`?",
+              "options": [
+                "To log the request details",
+                "To manage thread termination and synchronization",
+                "To maintain a queue of incoming requests",
+                "To handle HTTP response formatting"
+              ],
+              "correctAnswer": 1,
+              "explanation": "A `join_handle` is used to wait for a thread to finish execution, enabling proper synchronization and resource cleanup after the thread completes."
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

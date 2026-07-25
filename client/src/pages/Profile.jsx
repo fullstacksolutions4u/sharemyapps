@@ -50,6 +50,27 @@ function parseStoredPhone(phone = '') {
   return { code: '+91', local: phone };
 }
 
+function getGoogleDriveEmbedUrl(url) {
+  if (!url) return null;
+  try {
+    const parsed = new URL(url);
+    if (parsed.hostname.includes('drive.google.com')) {
+      const match = parsed.pathname.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+      if (match && match[1]) {
+        return `https://drive.google.com/file/d/${match[1]}/preview`;
+      }
+    } else if (parsed.hostname.includes('docs.google.com')) {
+      const match = parsed.pathname.match(/\/document\/d\/([a-zA-Z0-9_-]+)/);
+      if (match && match[1]) {
+        return `https://docs.google.com/document/d/${match[1]}/preview`;
+      }
+    }
+  } catch (e) {
+    return null;
+  }
+  return null;
+}
+
 const PRESET_DESIGNATIONS = [
   'MERN Stack Developer', 'MEAN Stack Developer', 'MEVN Stack Developer', 'PERN Stack Developer',
   'Python Full Stack Developer',
@@ -369,25 +390,25 @@ export default function Profile() {
   const completionColor = completionPct >= 80 ? '#00A693' : '#F59E0B';
 
   return (
-    <div className="max-w-6xl mx-auto px-2 sm:px-3 pt-2 pb-6">
-<div className="flex flex-col lg:flex-row gap-6 items-start">
+    <div className="max-w-6xl mx-auto px-2 sm:px-3 pt-2 pb-3">
+<div className="flex flex-col lg:flex-row gap-6 items-stretch">
 
         {/* ── Left: sticky profile card ── */}
-        <div className="w-full lg:w-72 shrink-0 lg:sticky lg:top-6 space-y-4 lg:mt-20">
+        <div className="w-full lg:w-72 shrink-0 space-y-4 flex flex-col">
 
           {/* Avatar card with full progress border */}
           <div className="relative group">
             {/* Missing items tooltip */}
             {COMPLETION_ITEMS.some(i => !i.done) && (
-              <div className="absolute top-full inset-x-0 mx-auto mt-2.5 z-50 w-56 bg-gray-900 text-white text-xs rounded-xl px-3.5 py-3 shadow-xl opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200">
+              <div className="absolute top-full inset-x-0 mx-auto mt-3 z-50 w-56 bg-white border border-gray-200 text-text text-xs rounded-xl px-3.5 py-3 shadow-xl opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200">
                 {/* Arrow */}
-                <div className="absolute bottom-full left-1/2 -translate-x-1/2 border-4 border-transparent border-b-gray-900" />
-                <p className="font-semibold text-[11px] text-gray-300 mb-2">Missing to complete profile:</p>
-                <ul className="space-y-1.5">
+                <div className="absolute -top-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-white border-t border-l border-gray-200 rotate-45" />
+                <p className="font-semibold text-[11px] text-gray-500 mb-2 relative z-10">Missing to complete profile:</p>
+                <ul className="space-y-1.5 relative z-10">
                   {COMPLETION_ITEMS.filter(i => !i.done).map(item => (
                     <li key={item.label} className="flex items-center gap-2">
                       <span className="w-1.5 h-1.5 rounded-full bg-red-400 shrink-0" />
-                      <span>{item.label}</span>
+                      <span className="text-gray-700 font-medium">{item.label}</span>
                     </li>
                   ))}
                 </ul>
@@ -458,32 +479,29 @@ export default function Profile() {
                       </span>
                     )}
                   </div>
-                  <p className="text-sm text-muted mt-0.5">{user?.email}</p>
                   {placementPlan && (
                     <span className="inline-flex items-center gap-1 mt-2 text-[11px] font-semibold text-amber-700 bg-amber-50 border border-amber-200 px-2.5 py-0.5 rounded-full">
                       <Crown size={10} className="text-amber-500" /> Premium Member
                     </span>
                   )}
-                  <span className="text-xs text-muted mt-1 block">
-                    {user?.isGoogleUser ? 'Signed in with Google' : 'Click camera to change photo'}
-                  </span>
                 </div>
               </div>
             </div>
             </div>
           </div>
 
-          {/* Danger zone */}
-          <div className="border border-red-100 bg-red-50/50 rounded-2xl p-6 lg:mt-8 opacity-40 hover:opacity-100 transition-opacity duration-300">
-            <h2 className="text-sm font-semibold text-red-600 mb-1">Danger Zone</h2>
-            <p className="text-xs text-muted mb-3">Permanently delete your account and all your projects.</p>
-            <button
-              onClick={() => setShowDelete(true)}
-              className="w-full flex items-center justify-center gap-2 border border-red-200 text-red-500 hover:bg-red-500 hover:text-white hover:border-red-500 px-4 py-2 rounded-xl text-sm font-medium transition-colors"
-            >
-              <Trash2 size={13} /> Delete Account
-            </button>
-          </div>
+          {form.cvUrl && getGoogleDriveEmbedUrl(form.cvUrl) && (
+            <div className="w-full flex-1 mb-14 bg-white border border-border rounded-xl overflow-hidden shadow-sm flex flex-col pointer-events-none">
+              <iframe
+                src={getGoogleDriveEmbedUrl(form.cvUrl)}
+                title="CV Preview"
+                className="w-full h-full"
+                frameBorder="0"
+                allow="autoplay"
+              />
+            </div>
+          )}
+
         </div>
 
         {/* ── Right: tab wizard ── */}

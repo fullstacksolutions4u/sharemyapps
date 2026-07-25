@@ -429,7 +429,7 @@ const LearningTracker = ({ embedded = false }) => {
                                               disabled={!topic.completed || loadingQuizTopicId === topic._id}
                                               className="ml-2 px-2 py-1 text-xs font-semibold rounded-md transition-colors"
                                               style={isQuizCompleted ? { backgroundColor: '#22c55e', color: '#fff' } : isPartial ? { backgroundColor: '#f97316', color: '#fff' } : topic.completed ? { backgroundColor: '#9B7D43', color: '#FAF7F2' } : { backgroundColor: '#E0D8CC', color: '#5A5550', opacity: 0.7, cursor: 'not-allowed' }}
-                                              title={isQuizCompleted ? 'All questions attempted' : isPartial ? `${uniqueAttempted.size}/${topic.quizCount} questions done — continue` : (topic.completed ? 'Take a quiz on this topic' : 'Complete the topic to unlock quiz')}
+                                              title={isQuizCompleted ? 'All questions attempted' : isPartial ? `${uniqueAttempted.size}/${topic.quizCount} questions done — continue` : (topic.completed ? 'Take a quiz on this topic' : 'Tick the topic to start the quiz')}
                                             >
                                               {loadingQuizTopicId === topic._id ? (
                                                 <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
@@ -474,7 +474,7 @@ const LearningTracker = ({ embedded = false }) => {
 
 
                   {/* Calendar */}
-                  <div className="rounded-xl p-3 flex-shrink-0 mb-4 mx-auto w-full max-w-[260px]" style={{ backgroundColor: '#F0E8DC', border: '1px solid #D4B896' }}>
+                  <div className="rounded-xl p-3 flex-shrink-0 mb-4 mx-auto w-full" style={{ backgroundColor: '#F0E8DC', border: '1px solid #D4B896' }}>
                     <div className="flex items-center justify-between mb-2">
                       <button onClick={() => setCalendarDate(new Date(calendarDate.getFullYear(), calendarDate.getMonth() - 1, 1))} className="rounded-full p-1.5 shadow-sm" style={{ backgroundColor: '#FAF7F2', border: '1px solid #D4B896' }}>
                         <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: '#1C1A17' }}><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>

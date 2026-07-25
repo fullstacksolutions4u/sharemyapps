@@ -98,7 +98,7 @@ export default function Feed() {
   return (
     <div className="min-h-screen bg-linear-to-br from-accent/10 via-white to-violet-50 relative">
       <div className="absolute inset-0 opacity-20 pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle, #00A693 1px, transparent 1px)', backgroundSize: '28px 28px' }} />
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 py-4 w-full flex flex-col md:flex-row gap-4">
+      <div className="relative max-w-7xl mx-auto px-[10px] py-4 w-full flex flex-col md:flex-row gap-4">
       {/* LEFT: Activity Stream */}
       <div className="flex-[2] md:max-w-[70%]">
         {activities.length === 0 ? (
