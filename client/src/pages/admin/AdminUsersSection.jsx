@@ -17,16 +17,11 @@ const BADGES = [
 
 const inp = 'w-full px-3.5 py-2.5 border border-[#E5E1DA] rounded-xl text-sm text-[#1A1A1A] bg-white placeholder-[#9CA3AF] focus:outline-none focus:border-[#00A693] focus:ring-2 focus:ring-[#00A693]/10 transition';
 
-const RESUME_TEMPLATE = JSON.stringify({
-  summary: 'Brief 2-3 line profile summary',
-  totalExperience: '3 years',
-  skills: ['React', 'Node.js', 'MongoDB'],
-  techStack: ['JavaScript', 'TypeScript'],
-  experience: [{ company: 'Company Name', role: 'Role Title', duration: '2022 – 2024', highlights: ['Built X', 'Improved Y'] }],
-  education: [{ institution: 'University Name', degree: 'B.Tech CS', year: '2022' }],
-  languages: ['English'],
-  certifications: ['AWS Certified Developer'],
-}, null, 2);
+const RESUME_TEMPLATE = `{
+
+"summary":"empty"
+
+}`;
 
 function UserEditPage({ user: initial, onBack, onSaved, allDesignations = [] }) {
   const [form, setForm] = useState({
@@ -744,7 +739,7 @@ export default function AdminUsersSection({ initialTab = 'developers' }) {
     return map;
   })();
   const missingCvCount = developers.filter(u => !u.cvUrl).length;
-  const missingSummaryCount = developers.filter(u => !u.resumeData).length;
+  const missingSummaryCount = developers.filter(u => u.cvUrl && !u.resumeData).length;
   const placeholderCvCount = developers.filter(u => isPlaceholderCv(u.cvUrl)).length;
   const updatedCvCount = developers.filter(u => u.cvWasPlaceholder && !isPlaceholderCv(u.cvUrl) && u.cvUrl).length;
   const recruiters = activeUsers.filter(u => u.userType === 'recruiter');

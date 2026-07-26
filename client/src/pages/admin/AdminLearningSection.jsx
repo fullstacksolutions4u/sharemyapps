@@ -232,22 +232,7 @@ export default function AdminLearningSection() {
 
   return (
     <div>
-      {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 bg-accent-light rounded-xl flex items-center justify-center">
-            <BookOpen size={15} className="text-accent" />
-          </div>
-          <div>
-            <h2 className="text-base font-semibold text-text">Quiz Zone</h2>
-            <p className="text-xs text-muted">{modules.length} module{modules.length !== 1 ? 's' : ''}</p>
-          </div>
-        </div>
-        <button onClick={() => setShowCreateModule(true)}
-          className="flex items-center gap-1.5 bg-accent hover:bg-accent-hover text-white text-sm px-4 py-2 rounded-xl font-medium transition-colors">
-          <Plus size={14} /> Add Module
-        </button>
-      </div>
+
 
       {/* Module list */}
       {modules.length === 0 ? (

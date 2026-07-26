@@ -6,8 +6,11 @@ import toast from 'react-hot-toast';
 export default function ReportVacancyModal({ isOpen, onClose, user }) {
   const exp = user?.resumeData?.experience || user?.resumeData?.workExperience || [];
   const companies = [...new Set(exp.map(e => e.company).filter(Boolean))];
+  
+  const hasActualResumeData = user?.resumeData && Object.keys(user.resumeData).length > 0 && 
+    !(Object.keys(user.resumeData).length === 1 && user.resumeData.summary === 'empty');
 
-  const [activeTab, setActiveTab] = useState('my-companies');
+  const [activeTab, setActiveTab] = useState(hasActualResumeData ? 'my-companies' : 'other-companies');
 
   const [formData, setFormData] = useState({
     company: companies.length > 0 ? companies[0] : '',
@@ -30,7 +33,7 @@ export default function ReportVacancyModal({ isOpen, onClose, user }) {
       type: 'remote',
       description: ''
     });
-    setActiveTab('my-companies');
+    setActiveTab(hasActualResumeData ? 'my-companies' : 'other-companies');
   } else if (!isOpen && prevIsOpen) {
     setPrevIsOpen(false);
   }
@@ -55,7 +58,7 @@ export default function ReportVacancyModal({ isOpen, onClose, user }) {
         type: formData.type,
         description: formData.description.trim()
       });
-      toast.success('Vacancy reported successfully! Admin will review it shortly.');
+      toast.success('Vacancy reported successfully! Admin will review it shortly for publish.');
       onClose();
     } catch (error) {
       toast.error(error.response?.data?.message || 'Failed to report vacancy');
@@ -75,30 +78,32 @@ export default function ReportVacancyModal({ isOpen, onClose, user }) {
         </button>
 
         <div className="p-6 sm:p-8">
-          <div className="flex border-b border-gray-200 mb-6">
-            <button
-              type="button"
-              className={`flex-1 py-2 text-sm font-semibold text-center border-b-2 transition-colors ${
-                activeTab === 'my-companies'
-                  ? 'border-primary text-primary'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-              }`}
-              onClick={() => setActiveTab('my-companies')}
-            >
-              My Companies
-            </button>
-            <button
-              type="button"
-              className={`flex-1 py-2 text-sm font-semibold text-center border-b-2 transition-colors ${
-                activeTab === 'other-companies'
-                  ? 'border-primary text-primary'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-              }`}
-              onClick={() => setActiveTab('other-companies')}
-            >
-              Other Companies
-            </button>
-          </div>
+          {hasActualResumeData && (
+            <div className="flex border-b border-gray-200 mb-6">
+              <button
+                type="button"
+                className={`flex-1 py-2 text-sm font-semibold text-center border-b-2 transition-colors ${
+                  activeTab === 'my-companies'
+                    ? 'border-primary text-primary'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+                onClick={() => setActiveTab('my-companies')}
+              >
+                My Companies
+              </button>
+              <button
+                type="button"
+                className={`flex-1 py-2 text-sm font-semibold text-center border-b-2 transition-colors ${
+                  activeTab === 'other-companies'
+                    ? 'border-primary text-primary'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+                onClick={() => setActiveTab('other-companies')}
+              >
+                Other Companies
+              </button>
+            </div>
+          )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
             {activeTab === 'my-companies' ? (
