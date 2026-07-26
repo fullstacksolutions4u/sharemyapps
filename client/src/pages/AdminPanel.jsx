@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import {
   LayoutDashboard, FolderOpen, ShieldCheck, Menu, LogOut,
-  Users, Briefcase, Megaphone, MessageSquare, Camera, IndianRupee, Crown, BookOpen, Unlock, Mail, Building2, Send, GraduationCap, History
+  Users, Briefcase, Megaphone, MessageSquare, Camera, IndianRupee, Crown, BookOpen, Unlock, Mail, Building2, Send, GraduationCap, History, Link as LinkIcon
 } from 'lucide-react';
 import api from '../api/axios';
 import AdminOverview from './admin/AdminOverview';
@@ -23,6 +23,7 @@ import AdminEmailSection from './admin/AdminEmailSection';
 import AdminMentorshipApplicationsSection from './admin/AdminMentorshipApplicationsSection';
 import AdminJobAlertHistorySection from './admin/AdminJobAlertHistorySection';
 import AdminAdvancedUsersFilterSection from './admin/AdminAdvancedUsersFilterSection';
+import AdminJobLinksSection from './admin/AdminJobLinksSection';
 import { optimizeImage } from '../utils/image';
 
 const NAV = [
@@ -39,6 +40,7 @@ const NAV = [
   { key: 'mentorship_applications', label: 'Mentorship Applicants', icon: GraduationCap },
   { key: 'service_access', label: 'Services',           icon: Unlock },
   { key: 'job_recommendations', label: 'Job Alert', icon: Mail },
+  { key: 'job_links',      label: 'Job Links',        icon: LinkIcon },
   { key: 'job_alert_history', label: 'Job Alert History', icon: History },
   { key: 'email',          label: 'Email',            icon: Send },
 ];
@@ -183,6 +185,7 @@ const { user, setUser, logout } = useAuth();
           { section === 'job_recommendations' && <AdminJobRecommendationsSection /> }
           { section === 'job_alert_history' && <AdminJobAlertHistorySection /> }
           { section === 'email'            && <AdminEmailSection /> }
+          { section === 'job_links'        && <AdminJobLinksSection /> }
           {section === 'learning'         && <AdminLearningSection />}
         </div>
       </div>

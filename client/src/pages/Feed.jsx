@@ -2,7 +2,8 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import axios from '../api/axios';
 import { formatDistanceToNow } from 'date-fns';
-import { Trophy, MessageCircle, Heart, Star, TrendingUp, Briefcase, ChevronRight, UserPlus, Crown, Share2, Sparkles } from 'lucide-react';
+import { Trophy, MessageCircle, Heart, Star, TrendingUp, Briefcase, ChevronRight, UserPlus, Crown, Share2, Sparkles, Link as LinkIcon, Plus, MapPin, Laptop, Building2, ExternalLink, Clock } from 'lucide-react';
+import { toast } from 'react-hot-toast';
 import _Lottie from 'lottie-react';
 import feedAnimation from '../assets/feed.json';
 import FeedProjectCard from '../components/FeedProjectCard';
@@ -56,6 +57,9 @@ export default function Feed() {
   const [opportunities, setOpportunities] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showReportModal, setShowReportModal] = useState(false);
+  const [jobLinks, setJobLinks] = useState([]);
+  const [inlineUrl, setInlineUrl] = useState('');
+  const [submittingLink, setSubmittingLink] = useState(false);
   
   // Infinite scroll state
   const [page, setPage] = useState(1);
@@ -80,10 +84,11 @@ export default function Feed() {
   useEffect(() => {
     const fetchInitialData = async () => {
       try {
-        const [feedRes, leaderRes, oppRes] = await Promise.all([
+        const [feedRes, leaderRes, oppRes, jobLinksRes] = await Promise.all([
           axios.get('/feed?page=1'),
           axios.get('/learning-progress/leaderboard'),
           axios.get('/vacancies').catch(() => ({ data: [] })),
+          axios.get('/job-links').catch(() => ({ data: { success: false } })),
           new Promise(resolve => setTimeout(resolve, 2000)) // ensure spinner shows for at least 2 seconds
         ]);
         if (feedRes.data.success) {
@@ -96,6 +101,9 @@ export default function Feed() {
         if (oppRes.data) {
           const rawOpps = Array.isArray(oppRes.data) ? oppRes.data : oppRes.data.data || [];
           setOpportunities(rawOpps.filter(job => job.status === 'active'));
+        }
+        if (jobLinksRes.data && jobLinksRes.data.success) {
+          setJobLinks(jobLinksRes.data.data);
         }
       } catch (err) {
         console.error('Failed to load feed', err);
@@ -127,6 +135,23 @@ export default function Feed() {
     fetchMoreData();
   }, [page]);
 
+  const handleInlineJobLinkSubmit = async (e) => {
+    e.preventDefault();
+    if (!inlineUrl) return;
+    setSubmittingLink(true);
+    try {
+      const res = await axios.post('/job-links', { url: inlineUrl, platform: 'other' });
+      if (res.data.success) {
+        toast.success('Job link submitted for review!');
+        setInlineUrl('');
+      }
+    } catch (err) {
+      toast.error('Failed to share job link.');
+    } finally {
+      setSubmittingLink(false);
+    }
+  };
+
   if (loading) return (
     <div className="flex justify-center items-center h-[70vh] w-full">
       <Lottie animationData={feedAnimation} loop={true} className="w-40 h-40" />
@@ -136,9 +161,97 @@ export default function Feed() {
   return (
     <div className="min-h-screen bg-linear-to-br from-accent/10 via-white to-violet-50 relative">
       <div className="absolute inset-0 opacity-20 pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle, #00A693 1px, transparent 1px)', backgroundSize: '28px 28px' }} />
-      <div className="relative max-w-7xl mx-auto px-[10px] py-4 w-full flex flex-col md:flex-row gap-4">
-      {/* LEFT: Activity Stream */}
-      <div className="flex-[2] md:max-w-[70%]">
+      <div className="relative max-w-[1600px] mx-auto px-2 lg:px-4 py-4 w-full flex flex-col lg:flex-row gap-4">
+      
+      {/* LEFT: Shared Job Links */}
+      <div className="w-full lg:max-w-[25%] flex flex-col sticky top-20 max-h-[calc(100vh-100px)]">
+        <div className="bg-white rounded-xl shadow-sm border border-black/5 overflow-hidden flex flex-col h-full">
+          <div className="p-4 border-b border-black/5 bg-gray-50 flex items-center gap-2 font-bold text-lg text-gray-800 shrink-0">
+            <LinkIcon size={18} className="text-blue-500" />
+            External Latest Job Postings
+          </div>
+
+          {user && (
+            <div className="p-3 border-b border-black/5 bg-white shrink-0">
+              <form
+                onSubmit={handleInlineJobLinkSubmit}
+                className="flex items-center gap-1 bg-gray-50 rounded-xl border border-black/5 p-1 pl-1.5 overflow-hidden"
+              >
+                <input
+                  type="url"
+                  required
+                  placeholder="Share recent job posts only with community"
+                  value={inlineUrl}
+                  onChange={e => setInlineUrl(e.target.value)}
+                  className="flex-1 bg-transparent text-[13px] outline-none px-1 text-gray-700 min-w-0 placeholder:text-gray-400"
+                />
+                <button
+                  type="submit"
+                  disabled={submittingLink}
+                  className="bg-accent hover:bg-accent-hover text-white p-1.5 rounded-md transition-colors disabled:opacity-50 shrink-0 flex items-center justify-center"
+                >
+                  <Plus size={14} />
+                </button>
+              </form>
+            </div>
+          )}
+          <div className="overflow-y-auto custom-scrollbar p-2 flex-1">
+            {jobLinks.length === 0 ? (
+              <p className="text-sm text-gray-500 text-center py-6">No job links shared yet.</p>
+            ) : (
+              <div className="space-y-3">
+                {jobLinks.map(link => (
+                  <a 
+                    key={link._id} 
+                    href={link.url} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="block pl-3 pr-1 py-2.5 rounded-lg hover:bg-blue-50/50 border border-transparent hover:border-blue-100 transition group"
+                  >
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="flex flex-col gap-0.5 flex-1 min-w-0">
+                        <div className="font-semibold text-gray-800 text-[13px] group-hover:text-blue-600 transition-colors truncate">
+                          {link.title || 'Job Opportunity'}
+                        </div>
+                        
+                        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-gray-500">
+                          {link.location && (
+                            <div className="flex items-center gap-1">
+                              <MapPin size={12} />
+                              <span className="truncate max-w-[100px]">{link.location}</span>
+                            </div>
+                          )}
+                          {link.experience && (
+                            <div className="flex items-center gap-1">
+                              <Clock size={12} />
+                              <span className="whitespace-nowrap">{link.experience}</span>
+                            </div>
+                          )}
+                          {link.workMode && (
+                            <div className="flex items-center gap-1">
+                              <Laptop size={12} />
+                              {link.workMode}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="flex flex-col items-center justify-center shrink-0 bg-blue-50 group-hover:bg-blue-100 px-2.5 py-1.5 rounded-lg transition-colors border border-blue-100/50 group-hover:border-blue-200">
+                        <span className="flex items-center gap-1 text-[10px] font-bold text-blue-600 uppercase">
+                          Apply <ExternalLink size={11} />
+                        </span>
+                      </div>
+                    </div>
+                  </a>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* MIDDLE: Activity Stream */}
+      <div className="w-full lg:max-w-[50%] flex-1">
         {activities.length === 0 ? (
           <div className="text-center py-12 bg-white rounded-xl shadow-sm border border-border">
             <p className="text-muted">No activity yet. Check back soon!</p>
@@ -172,7 +285,7 @@ export default function Feed() {
       </div>
 
       {/* RIGHT: Leaderboard & Opportunities */}
-      <div className="flex-1 md:max-w-[30%] flex flex-col gap-6 sticky top-20 max-h-[calc(100vh-100px)] overflow-y-auto custom-scrollbar pb-4 pr-1">
+      <div className="w-full lg:max-w-[25%] flex-1 flex flex-col gap-6 sticky top-20 max-h-[calc(100vh-100px)] overflow-y-auto custom-scrollbar pb-4 pr-1">
         
         {/* LEADERBOARD (Top 5) */}
         <div className="bg-linear-to-br from-violet-50/80 to-purple-50/50 rounded-xl shadow-sm border border-black/5 overflow-hidden shrink-0 flex flex-col h-[360px]">
@@ -236,8 +349,8 @@ export default function Feed() {
             onClick={() => setShowReportModal(true)}
             className="bg-gradient-to-r from-[#00A693] to-[#007D6F] text-white font-bold py-3.5 px-4 rounded-xl flex items-center justify-center gap-2.5 transition-all w-full shrink-0 shadow-[0_4px_14px_0_rgba(0,166,147,0.39)] hover:shadow-[0_6px_20px_rgba(0,166,147,0.23)] hover:-translate-y-0.5"
           >
-            <Share2 size={18} className="drop-shadow-sm" />
-            Share Vacancy
+            <Briefcase size={18} className="drop-shadow-sm" />
+            Report your company vacancy
           </button>
         )}
 
