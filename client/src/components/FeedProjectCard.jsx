@@ -181,12 +181,14 @@ export default function FeedProjectCard({ activity, index = 0 }) {
             {/* Activity Text */}
             <div className="flex items-start gap-2 mb-2 text-sm text-black font-medium">
               <CheckCircle size={16} className="text-green-500 shrink-0 mt-0.5" />
-              <p>
-                Published a new application:{' '}
-                <Link to={`/project/${project._id}`} className="text-blue-500 hover:underline transition">
+              <div className="flex flex-col">
+                <span className="text-gray-700">
+                  Published a new application in <span className="font-semibold text-black capitalize">{project.category || 'General'}</span> category
+                </span>
+                <Link to={`/project/${project._id}`} className="text-blue-600 hover:underline transition font-bold text-[15px] mt-1.5">
                   {project.title}
                 </Link>
-              </p>
+              </div>
             </div>
             {project.techTags && project.techTags.length > 0 && (
               <div className="flex flex-wrap gap-1.5 pl-6 mt-2">
