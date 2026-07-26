@@ -4,8 +4,47 @@ import { toast } from 'react-hot-toast';
 import { Briefcase, Check, X, ExternalLink, Link as LinkIcon, MapPin, Laptop, Edit2, Plus, Save, Clock } from 'lucide-react';
 import { optimizeImage } from '../../utils/image';
 
+const DESIGNATION_OPTIONS = [
+  "Frontend Developer",
+  "Backend Developer",
+  "Full Stack Developer",
+  "MERN Stack Developer",
+  "MEAN Stack Developer",
+  "React Developer",
+  "Node.js Developer",
+  "Python Developer",
+  "Java Developer",
+  "Android Developer",
+  "iOS Developer",
+  "DevOps Engineer",
+  "UI/UX Designer",
+  "QA Engineer",
+  "Data Scientist",
+  "Data Analyst",
+  "Product Manager",
+  "Other"
+];
+
 export default function AdminJobLinksSection() {
   const [jobLinks, setJobLinks] = useState([]);
+  const [customDesignations, setCustomDesignations] = useState(() => {
+    const saved = localStorage.getItem('customDesignations');
+    return saved ? JSON.parse(saved) : [];
+  });
+
+  const handleAddDesignation = () => {
+    const newDesig = window.prompt("Enter new custom designation:");
+    if (newDesig && newDesig.trim()) {
+      const clean = newDesig.trim();
+      if (!DESIGNATION_OPTIONS.includes(clean) && !customDesignations.includes(clean)) {
+        const updated = [...customDesignations, clean];
+        setCustomDesignations(updated);
+        localStorage.setItem('customDesignations', JSON.stringify(updated));
+      }
+      return clean;
+    }
+    return null;
+  };
   const [loading, setLoading] = useState(true);
   const [editForms, setEditForms] = useState({});
   const [activeTab, setActiveTab] = useState('pending');
@@ -182,16 +221,32 @@ export default function AdminJobLinksSection() {
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="relative">
-                <Briefcase size={16} className="absolute left-3 top-3 text-gray-400" />
-                <input
-                  type="text"
-                  required
-                  placeholder="Designation"
-                  value={newLinkForm.title}
-                  onChange={e => setNewLinkForm(prev => ({...prev, title: e.target.value}))}
-                  className="w-full pl-9 p-2.5 text-sm border border-border rounded-lg focus:outline-none focus:border-accent"
-                />
+              <div className="flex gap-2">
+                <div className="relative flex-1 min-w-0">
+                  <Briefcase size={16} className="absolute left-3 top-3 text-gray-400" />
+                  <select
+                    required
+                    value={newLinkForm.title}
+                    onChange={e => setNewLinkForm(prev => ({...prev, title: e.target.value}))}
+                    className="w-full pl-9 p-2.5 text-sm border border-border rounded-lg focus:outline-none focus:border-accent text-gray-700 bg-white"
+                  >
+                    <option value="" disabled>Select Designation</option>
+                    {[...DESIGNATION_OPTIONS, ...customDesignations].map(opt => (
+                      <option key={opt} value={opt}>{opt}</option>
+                    ))}
+                  </select>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const added = handleAddDesignation();
+                    if (added) setNewLinkForm(prev => ({...prev, title: added}));
+                  }}
+                  className="bg-gray-100 hover:bg-gray-200 text-gray-600 px-3 rounded-lg transition shrink-0 flex items-center justify-center border border-border"
+                  title="Add Custom Designation"
+                >
+                  <Plus size={16} />
+                </button>
               </div>
               <div className="relative">
                 <Laptop size={16} className="absolute left-3 top-3 text-gray-400" />
@@ -303,15 +358,31 @@ export default function AdminJobLinksSection() {
                   {/* Form for adding details if Pending or Editing */}
                   {isEditing ? (
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-2">
-                      <div className="relative">
-                        <Briefcase size={14} className="absolute left-2.5 top-2.5 text-gray-400" />
-                        <input
-                          type="text"
-                          placeholder="Designation (e.g. Frontend Dev)"
-                          value={editForms[link._id]?.title !== undefined ? editForms[link._id].title : link.title}
-                          onChange={(e) => handleFormChange(link._id, 'title', e.target.value)}
-                          className="w-full pl-8 p-1.5 text-sm border rounded bg-white focus:outline-none focus:border-accent"
-                        />
+                      <div className="flex gap-1.5">
+                        <div className="relative flex-1 min-w-0">
+                          <Briefcase size={14} className="absolute left-2.5 top-2.5 text-gray-400" />
+                          <select
+                            value={editForms[link._id]?.title !== undefined ? editForms[link._id].title : link.title}
+                            onChange={(e) => handleFormChange(link._id, 'title', e.target.value)}
+                            className="w-full pl-8 p-1.5 text-sm border rounded bg-white text-gray-700 focus:outline-none focus:border-accent"
+                          >
+                            <option value="" disabled>Select Designation</option>
+                            {[...DESIGNATION_OPTIONS, ...customDesignations].map(opt => (
+                              <option key={opt} value={opt}>{opt}</option>
+                            ))}
+                          </select>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const added = handleAddDesignation();
+                            if (added) handleFormChange(link._id, 'title', added);
+                          }}
+                          className="bg-gray-100 hover:bg-gray-200 text-gray-600 px-2 rounded transition shrink-0 flex items-center justify-center border border-border"
+                          title="Add Custom Designation"
+                        >
+                          <Plus size={14} />
+                        </button>
                       </div>
                       <div className="relative">
                         <Laptop size={14} className="absolute left-2.5 top-2.5 text-gray-400" />

@@ -181,7 +181,7 @@ export default function Feed() {
                 <input
                   type="url"
                   required
-                  placeholder="Share recent job posts only with community"
+                  placeholder="Share job posts link with community"
                   value={inlineUrl}
                   onChange={e => setInlineUrl(e.target.value)}
                   className="flex-1 bg-transparent text-[13px] outline-none px-1 text-gray-700 min-w-0 placeholder:text-gray-400"
@@ -200,7 +200,7 @@ export default function Feed() {
             {jobLinks.length === 0 ? (
               <p className="text-sm text-gray-500 text-center py-6">No job links shared yet.</p>
             ) : (
-              <div className="space-y-3">
+              <div className="space-y-1">
                 {jobLinks.map(link => (
                   <a 
                     key={link._id} 

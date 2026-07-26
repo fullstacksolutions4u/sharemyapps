@@ -68,6 +68,7 @@ exports.createAdminJobLink = async (req, res) => {
       workMode,
       location,
       experience: experience || '',
+      expiresAt: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000), // 3 days
       platform: platform || 'other',
       createdBy: req.user._id,
       status: 'approved'
@@ -94,7 +95,12 @@ exports.updateJobLink = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Job link not found' });
     }
 
-    if (status) link.status = status;
+    if (status) {
+      link.status = status;
+      if (status === 'approved') {
+        link.expiresAt = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000); // 3 days
+      }
+    }
     if (title !== undefined) link.title = title;
     if (company !== undefined) link.company = company;
     if (workMode !== undefined) link.workMode = workMode;

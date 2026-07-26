@@ -15,8 +15,8 @@ const jobLinkSchema = new mongoose.Schema({
     default: 'pending'
   },
   workMode: { type: String, trim: true, default: '' },
-  location: { type: String, trim: true, default: '' },
   experience: { type: String, trim: true, default: '' },
+  expiresAt: { type: Date, expires: 0 },
   createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }
 }, { timestamps: true });
 
