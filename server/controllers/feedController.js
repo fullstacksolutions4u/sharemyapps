@@ -19,11 +19,11 @@ exports.getFeed = async (req, res) => {
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit)
-      .populate('user', 'name profileImage avatar designations userType')
+      .populate('user', 'name profileImage avatar designations userType linkedinUrl')
       .populate({
         path: 'project',
-        select: 'title description bannerImage liveUrl _id owner status likes ratings',
-        populate: { path: 'owner', select: 'name profileImage avatar designations' }
+        select: 'title description bannerImage liveUrl _id owner status likes ratings techTags',
+        populate: { path: 'owner', select: 'name profileImage avatar designations linkedinUrl' }
       })
       .populate('module', 'title _id')
       .populate('comments.user', 'name profileImage avatar')
@@ -35,7 +35,7 @@ exports.getFeed = async (req, res) => {
       const recentProjects = await Project.find({ status: 'approved', owner: { $nin: excludeIds } })
         .sort({ createdAt: -1 })
         .limit(40)
-        .populate('owner', 'name profileImage avatar designations')
+        .populate('owner', 'name profileImage avatar designations linkedinUrl')
         .lean();
       
       activities = recentProjects.map(p => ({
