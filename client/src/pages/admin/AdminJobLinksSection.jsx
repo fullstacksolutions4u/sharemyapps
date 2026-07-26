@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import api from '../../api/axios';
 import { toast } from 'react-hot-toast';
-import { Briefcase, Building2, Check, X, ExternalLink, Link as LinkIcon, MapPin, Laptop, Edit2, Plus, Save, Clock } from 'lucide-react';
+import { Briefcase, Check, X, ExternalLink, Link as LinkIcon, MapPin, Laptop, Edit2, Plus, Save, Clock } from 'lucide-react';
 import { optimizeImage } from '../../utils/image';
 
 export default function AdminJobLinksSection() {
@@ -22,22 +22,24 @@ export default function AdminJobLinksSection() {
   });
   const [submittingAdd, setSubmittingAdd] = useState(false);
 
-  useEffect(() => {
-    fetchJobLinks();
-  }, []);
-
   const fetchJobLinks = async () => {
     try {
       const res = await api.get('/job-links/admin');
       if (res.data.success) {
         setJobLinks(res.data.data);
       }
-    } catch (err) {
+    } catch (error) {
+      console.error(error);
       toast.error('Failed to load job links');
     } finally {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    fetchJobLinks();
+  }, []);
 
   const handleUpdate = async (id, status) => {
     try {
@@ -68,7 +70,8 @@ export default function AdminJobLinksSection() {
         setEditingLinkId(null);
         fetchJobLinks();
       }
-    } catch (err) {
+    } catch (error) {
+      console.error(error);
       toast.error(`Failed to update job link`);
     }
   };
@@ -118,6 +121,7 @@ export default function AdminJobLinksSection() {
         fetchJobLinks();
       }
     } catch (error) {
+      console.error(error);
       toast.error(error.response?.data?.message || 'Failed to add job link');
     } finally {
       setSubmittingAdd(false);
