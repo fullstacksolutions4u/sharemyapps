@@ -92,8 +92,8 @@ export default function AdminJobLinksSection() {
         const experience = editForms[id]?.experience !== undefined ? editForms[id].experience : link.experience;
         const url = editForms[id]?.url !== undefined ? editForms[id].url : link.url;
         
-        if (!title || !workMode || !location || !url) {
-          toast.error('URL, Designation, Work Mode, and Location are required!');
+        if (!title || !workMode || !url) {
+          toast.error('URL, Designation, and Work Mode are required!');
           return;
         }
         updates.title = title;
@@ -145,8 +145,8 @@ export default function AdminJobLinksSection() {
 
   const handleAddNew = async (e) => {
     e.preventDefault();
-    if (!newLinkForm.url || !newLinkForm.title || !newLinkForm.workMode || !newLinkForm.location) {
-      toast.error('All fields are required');
+    if (!newLinkForm.url || !newLinkForm.title || !newLinkForm.workMode) {
+      toast.error('URL, Designation, and Work Mode are required');
       return;
     }
     
@@ -266,8 +266,7 @@ export default function AdminJobLinksSection() {
                 <MapPin size={16} className="absolute left-3 top-3 text-gray-400" />
                 <input
                   type="text"
-                  required
-                  placeholder="Location (e.g. Bangalore, India)"
+                  placeholder="Location (e.g. Bangalore, India) - Optional"
                   value={newLinkForm.location}
                   onChange={e => setNewLinkForm(prev => ({...prev, location: e.target.value}))}
                   className="w-full pl-9 p-2.5 text-sm border border-border rounded-lg focus:outline-none focus:border-accent"
@@ -401,7 +400,7 @@ export default function AdminJobLinksSection() {
                         <MapPin size={14} className="absolute left-2.5 top-2.5 text-gray-400" />
                         <input
                           type="text"
-                          placeholder="Location (e.g. Bangalore, India)"
+                          placeholder="Location (e.g. Bangalore, India) - Optional"
                           value={editForms[link._id]?.location !== undefined ? editForms[link._id].location : link.location}
                           onChange={(e) => handleFormChange(link._id, 'location', e.target.value)}
                           className="w-full pl-8 p-1.5 text-sm border rounded bg-white focus:outline-none focus:border-accent"

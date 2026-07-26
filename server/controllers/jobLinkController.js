@@ -58,8 +58,8 @@ exports.createAdminJobLink = async (req, res) => {
   try {
     const { url, title, workMode, location, platform, experience } = req.body;
 
-    if (!url || !title || !workMode || !location) {
-      return res.status(400).json({ success: false, message: 'All fields except experience are required' });
+    if (!url || !title || !workMode) {
+      return res.status(400).json({ success: false, message: 'URL, Designation, and Work Mode are required' });
     }
 
     const jobLink = await JobLink.create({
