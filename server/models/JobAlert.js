@@ -17,6 +17,7 @@ const jobAlertSchema = new mongoose.Schema({
   notified:     { type: Boolean, default: false },
   sessionNumber: { type: Number, required: true },
   reusedFromSessionNumber: { type: Number, default: null },
+  isDraft:      { type: Boolean, default: false },
 }, { timestamps: true });
 
 jobAlertSchema.index({ notified: 1, scheduledAt: 1 });

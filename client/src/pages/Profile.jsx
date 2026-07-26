@@ -1106,7 +1106,7 @@ export default function Profile() {
 
                   {/* Instructions */}
                   <p className="mb-3 text-[10.5px] text-blue-500 leading-snug whitespace-nowrap overflow-x-auto">
-                    Upload your CV to Google Drive →&nbsp;
+                    Upload your CV to Google Drive as PDF format →&nbsp;
                     {[<><span className="text-blue-600 font-black">⋮</span> Menu</>, 'Share', 'Share', 'Anyone with link', 'Viewer'].map((label, i) => (
                       <span key={i} className="inline-flex items-center gap-0.5 text-blue-500">
                         <span className="inline-flex items-center justify-center w-3 h-3 rounded-full text-white font-bold bg-blue-500" style={{fontSize:'7px',flexShrink:0}}>{i+1}</span>

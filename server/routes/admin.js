@@ -1031,7 +1031,7 @@ router.post('/job-recommendations/send', async (req, res) => {
   try {
     const JobAlert = require('../models/JobAlert');
     const Notification = require('../models/Notification');
-    const { jobs, careerLinks, userIds, scheduledAt, reusedFromSessionNumber } = req.body;
+    const { jobs, careerLinks, userIds, scheduledAt, reusedFromSessionNumber, isDraft } = req.body;
     const cleanJobs = (Array.isArray(jobs) ? jobs : [])
       .map(j => ({
         emailId: j.emailId?.trim() || '',
@@ -1048,14 +1048,22 @@ router.post('/job-recommendations/send', async (req, res) => {
     if (Array.isArray(userIds) && userIds.length > 0) {
       const idSet = new Set(userIds.map(String));
       users = users.filter(u => idSet.has(String(u._id)));
+    } else if (isDraft) {
+      users = [];
     }
-    if (users.length === 0)
+    
+    if (!isDraft && users.length === 0)
       return res.status(404).json({ message: 'No eligible users to send to' });
 
-    const sendAt = scheduledAt ? new Date(scheduledAt) : new Date();
-    if (Number.isNaN(sendAt.getTime()))
-      return res.status(400).json({ message: 'Invalid scheduled date/time' });
-    const isScheduledForLater = sendAt.getTime() > Date.now() + 60 * 1000;
+    let sendAt = null;
+    if (scheduledAt) {
+      sendAt = new Date(scheduledAt);
+      if (Number.isNaN(sendAt.getTime()))
+        return res.status(400).json({ message: 'Invalid scheduled date/time' });
+    } else if (!isDraft) {
+      sendAt = new Date();
+    }
+    const isScheduledForLater = sendAt && sendAt.getTime() > Date.now() + 60 * 1000;
 
     const lastSession = await JobAlert.findOne().sort({ sessionNumber: -1 }).select('sessionNumber').lean();
     const sessionNumber = (lastSession?.sessionNumber || 0) + 1;
@@ -1069,7 +1077,12 @@ router.post('/job-recommendations/send', async (req, res) => {
       notified: false,
       sessionNumber,
       reusedFromSessionNumber: reusedFromSessionNumber || null,
+      isDraft: !!isDraft,
     });
+
+    if (isDraft) {
+      return res.json({ draft: true, sessionNumber });
+    }
 
     if (isScheduledForLater) {
       return res.json({ scheduled: true, scheduledAt: sendAt, total: users.length, sessionNumber });
@@ -1155,7 +1168,7 @@ router.put('/job-recommendations/sessions/:id', async (req, res) => {
     const alert = await JobAlert.findById(req.params.id);
     if (!alert) return res.status(404).json({ message: 'Session not found' });
 
-    const { jobs, careerLinks, userIds, scheduledAt } = req.body;
+    const { jobs, careerLinks, userIds, scheduledAt, isDraft } = req.body;
 
     if (jobs !== undefined || careerLinks !== undefined) {
       const cleanJobs = jobs !== undefined
@@ -1176,17 +1189,25 @@ router.put('/job-recommendations/sessions/:id', async (req, res) => {
     }
 
     if (!alert.notified) {
+      if (isDraft !== undefined) {
+        alert.isDraft = !!isDraft;
+      }
+      
       if (userIds !== undefined) {
-        if (!Array.isArray(userIds) || userIds.length === 0)
+        if (!alert.isDraft && (!Array.isArray(userIds) || userIds.length === 0))
           return res.status(400).json({ message: 'Select at least one user' });
         alert.recipients = userIds;
       }
 
       if (scheduledAt !== undefined) {
-        const sendAt = scheduledAt ? new Date(scheduledAt) : new Date();
-        if (Number.isNaN(sendAt.getTime()))
-          return res.status(400).json({ message: 'Invalid scheduled date/time' });
-        alert.scheduledAt = sendAt;
+        if (alert.isDraft && !scheduledAt) {
+          alert.scheduledAt = null;
+        } else {
+          const sendAt = scheduledAt ? new Date(scheduledAt) : new Date();
+          if (Number.isNaN(sendAt.getTime()))
+            return res.status(400).json({ message: 'Invalid scheduled date/time' });
+          alert.scheduledAt = sendAt;
+        }
       }
     }
 

@@ -173,9 +173,9 @@ export default function AdminJobRecommendationsSection() {
     });
   };
 
-  const handleSend = async () => {
+  const handleSend = async (isDraft = false) => {
     if (validJobs.length === 0 && validLinks.length === 0) { toast.error('Add at least one job (company name + email id) or one career page link'); return; }
-    if (selectedIds.size === 0 && !editingSessionSent) { toast.error('Select at least one user'); return; }
+    if (!isDraft && selectedIds.size === 0 && !editingSessionSent) { toast.error('Select at least one user'); return; }
     setSending(true);
     try {
       const scheduledAtISO = scheduledAt ? new Date(scheduledAt).toISOString() : undefined;
@@ -188,7 +188,8 @@ export default function AdminJobRecommendationsSection() {
               jobs: validJobs,
               careerLinks: validLinks,
               userIds: [...selectedIds],
-              scheduledAt: scheduledAtISO || new Date().toISOString(),
+              scheduledAt: scheduledAtISO || (isDraft ? null : new Date().toISOString()),
+              isDraft,
             });
         toast.success(`Session ${res.data.session.sessionNumber} updated`);
         cancelEdit();
@@ -202,8 +203,11 @@ export default function AdminJobRecommendationsSection() {
         userIds: [...selectedIds],
         scheduledAt: scheduledAtISO,
         reusedFromSessionNumber,
+        isDraft,
       });
-      if (res.data.scheduled) {
+      if (res.data.draft) {
+        toast.success(`Draft Session ${res.data.sessionNumber} saved`);
+      } else if (res.data.scheduled) {
         toast.success(`Scheduled for ${new Date(res.data.scheduledAt).toLocaleString('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })} — ${res.data.total} user${res.data.total === 1 ? '' : 's'}`);
       } else {
         toast.success(`Sent to ${res.data.sent} of ${res.data.total} selected user${res.data.total === 1 ? '' : 's'}${res.data.failed ? ` (${res.data.failed} failed)` : ''}`);
@@ -436,8 +440,18 @@ export default function AdminJobRecommendationsSection() {
               <X size={14} /> Cancel
             </button>
           )}
+          {!editingSessionSent && (
+            <button
+              onClick={() => handleSend(true)}
+              disabled={sending || (validJobs.length === 0 && validLinks.length === 0)}
+              className="flex items-center gap-1.5 px-5 py-2.5 border border-[#00A693] text-[#00A693] hover:bg-[#F0FBF9] text-sm font-medium rounded-xl transition-colors disabled:opacity-50"
+            >
+              <Save size={14} />
+              {editingSessionId ? 'Update Draft' : 'Save as Draft'}
+            </button>
+          )}
           <button
-            onClick={handleSend}
+            onClick={() => handleSend(false)}
             disabled={sending || (validJobs.length === 0 && validLinks.length === 0) || (selectedIds.size === 0 && !editingSessionSent)}
             className="flex items-center gap-1.5 px-5 py-2.5 bg-[#00A693] hover:bg-[#007D6F] text-white text-sm font-medium rounded-xl transition-colors disabled:opacity-50"
           >
@@ -447,12 +461,12 @@ export default function AdminJobRecommendationsSection() {
                   ? 'Updating…'
                   : editingSessionSent
                     ? 'Update Sent Session'
-                    : `Update Session for ${selectedIds.size} Selected User${selectedIds.size === 1 ? '' : 's'}`)
+                    : `Update & Send to ${selectedIds.size} User${selectedIds.size === 1 ? '' : 's'}`)
               : sending
                 ? (isScheduling ? 'Scheduling…' : 'Sending…')
                 : isScheduling
-                  ? `Schedule for ${selectedIds.size} Selected User${selectedIds.size === 1 ? '' : 's'}`
-                  : `Send Now to ${selectedIds.size} Selected User${selectedIds.size === 1 ? '' : 's'}`}
+                  ? `Schedule for ${selectedIds.size} User${selectedIds.size === 1 ? '' : 's'}`
+                  : `Send to ${selectedIds.size} User${selectedIds.size === 1 ? '' : 's'}`}
           </button>
         </div>
       </div>
@@ -494,9 +508,11 @@ export default function AdminJobRecommendationsSection() {
                     <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full border ${
                       session.notified
                         ? 'bg-green-50 text-green-700 border-green-200'
-                        : 'bg-amber-50 text-amber-700 border-amber-200'
+                        : session.isDraft
+                          ? 'bg-gray-50 text-gray-700 border-gray-200'
+                          : 'bg-amber-50 text-amber-700 border-amber-200'
                     }`}>
-                      {session.notified ? 'Sent' : 'Scheduled'}
+                      {session.notified ? 'Sent' : session.isDraft ? 'Draft' : 'Scheduled'}
                     </span>
                   </div>
                   <p className="text-xs text-[#9CA3AF] mt-1">

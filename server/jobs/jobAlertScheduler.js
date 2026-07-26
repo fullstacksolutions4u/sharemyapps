@@ -7,7 +7,7 @@ const JOB_ALERT_TITLE = 'New Job Openings 🎯';
 const JOB_ALERT_MESSAGE = 'New hiring opportunities are live! Check your dashboard for company and recruiters email IDs and career page links — share your CV or upload your resume to apply directly.';
 
 async function processDueJobAlerts() {
-  const due = await JobAlert.find({ notified: false, scheduledAt: { $lte: new Date() } }).select('_id');
+  const due = await JobAlert.find({ notified: false, isDraft: false, scheduledAt: { $lte: new Date() } }).select('_id');
   for (const { _id } of due) {
     // Atomically claim the alert so concurrent scheduler instances can't both process it.
     const alert = await JobAlert.findOneAndUpdate(
