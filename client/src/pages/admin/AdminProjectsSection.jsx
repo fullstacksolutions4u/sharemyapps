@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import {
   ExternalLink, Check, X, Plus, Save, ArrowLeft, Tag, Link as LinkIcon,
-  Mail, Phone, ChevronRight, RefreshCw, Search, EyeOff, Eye, Trash2, ShoppingBag,
+  Mail, Phone, ChevronRight, Search, EyeOff, Eye, Trash2,
 } from 'lucide-react';
 import api from '../../api/axios';
 import toast from 'react-hot-toast';
