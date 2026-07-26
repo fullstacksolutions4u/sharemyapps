@@ -18,18 +18,25 @@ const LinkedInIcon = ({ size = 14 }) => (
   </svg>
 );
 
+const starsData = [...Array(6)].map(() => ({
+  top: `${Math.random() * 80 + 10}%`,
+  left: `${Math.random() * 80 + 10}%`,
+  animationDelay: `${Math.random() * 4}s`,
+  size: `${Math.random() * 12 + 10}px`
+}));
+
 const TwinklingStars = () => (
   <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-xl">
-    {[...Array(6)].map((_, i) => (
+    {starsData.map((star, i) => (
       <Sparkles
         key={i}
         className="absolute text-yellow-500 opacity-0"
         style={{
-          top: `${Math.random() * 80 + 10}%`,
-          left: `${Math.random() * 80 + 10}%`,
-          animation: `twinkle 4s ease-in-out infinite ${Math.random() * 4}s`,
-          width: `${Math.random() * 12 + 10}px`,
-          height: `${Math.random() * 12 + 10}px`,
+          top: star.top,
+          left: star.left,
+          animation: `twinkle 4s ease-in-out infinite ${star.animationDelay}`,
+          width: star.size,
+          height: star.size,
         }}
       />
     ))}
