@@ -174,8 +174,12 @@ const submitQuizAttempt = async (req, res) => {
     if (isCorrect) {
       const module = await LearningModule.findById(moduleId);
       if (module) {
-        const order = module.order || 0;
-        pointsAwarded = order <= 10 ? 1 : order <= 20 ? 2 : 3;
+        const moduleTitle = module.title || '';
+        if (moduleTitle.toLowerCase() === 'html & css') {
+          pointsAwarded = 1;
+        } else {
+          pointsAwarded = 2;
+        }
 
         const userDoc = await User.findById(req.user._id);
         const oldPoints = userDoc.points || 0;
