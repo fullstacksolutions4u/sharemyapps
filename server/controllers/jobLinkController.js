@@ -23,6 +23,11 @@ exports.createJobLink = async (req, res) => {
       return res.status(400).json({ success: false, message: 'URL is required.' });
     }
 
+    const existingLink = await JobLink.findOne({ url });
+    if (existingLink) {
+      return res.status(400).json({ success: false, message: 'Link already shared' });
+    }
+
     const jobLink = await JobLink.create({
       url,
       platform: platform || 'other',
@@ -60,6 +65,11 @@ exports.createAdminJobLink = async (req, res) => {
 
     if (!url || !title || !workMode) {
       return res.status(400).json({ success: false, message: 'URL, Designation, and Work Mode are required' });
+    }
+
+    const existingLink = await JobLink.findOne({ url });
+    if (existingLink) {
+      return res.status(400).json({ success: false, message: 'Link already shared' });
     }
 
     const jobLink = await JobLink.create({

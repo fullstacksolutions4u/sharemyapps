@@ -60,6 +60,7 @@ export default function Feed() {
   const [jobLinks, setJobLinks] = useState([]);
   const [inlineUrl, setInlineUrl] = useState('');
   const [submittingLink, setSubmittingLink] = useState(false);
+  const [jobLinksFilter, setJobLinksFilter] = useState('');
   
   // Infinite scroll state
   const [page, setPage] = useState(1);
@@ -147,7 +148,11 @@ export default function Feed() {
       }
     } catch (error) {
       console.error(error);
-      toast.error('Failed to share job link.');
+      if (error.response?.data?.message) {
+        toast.error(error.response.data.message);
+      } else {
+        toast.error('Failed to share job link.');
+      }
     } finally {
       setSubmittingLink(false);
     }
@@ -159,6 +164,14 @@ export default function Feed() {
     </div>
   );
 
+  const uniqueJobLinkDesignations = Array.from(
+    new Set(jobLinks.map(link => link.title).filter(title => title && title.trim() !== ''))
+  ).sort((a, b) => a.localeCompare(b));
+
+  const filteredJobLinks = jobLinksFilter 
+    ? jobLinks.filter(link => link.title === jobLinksFilter) 
+    : jobLinks;
+
   return (
     <div className="min-h-screen bg-linear-to-br from-accent/10 via-white to-violet-50 relative">
       <div className="absolute inset-0 opacity-20 pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle, #00A693 1px, transparent 1px)', backgroundSize: '28px 28px' }} />
@@ -167,9 +180,19 @@ export default function Feed() {
       {/* LEFT: Shared Job Links */}
       <div className="w-full lg:max-w-[25%] flex flex-col sticky top-20 max-h-[calc(100vh-100px)]">
         <div className="bg-linear-to-br from-violet-50/80 to-purple-50/50 rounded-xl shadow-sm border border-black/5 overflow-hidden flex flex-col h-full">
-          <div className="p-4 border-b border-black/5 bg-transparent flex items-center gap-2 font-bold text-lg text-gray-800 shrink-0">
-            <LinkIcon size={18} className="text-blue-500" />
-            External Latest Job Postings
+          <div className="p-4 border-b border-black/5 bg-transparent flex flex-col gap-3 shrink-0">
+            {uniqueJobLinkDesignations.length > 0 && (
+              <select 
+                value={jobLinksFilter}
+                onChange={(e) => setJobLinksFilter(e.target.value)}
+                className="w-full bg-white border border-black/10 rounded-lg px-2.5 py-1.5 text-[13px] outline-none focus:border-blue-300 text-gray-700 transition-colors"
+              >
+                <option value="">All External Job Postings</option>
+                {uniqueJobLinkDesignations.map(d => (
+                  <option key={d} value={d}>{d}</option>
+                ))}
+              </select>
+            )}
           </div>
 
           {user && (
@@ -197,11 +220,11 @@ export default function Feed() {
             </div>
           )}
           <div className="overflow-y-auto custom-scrollbar p-2 flex-1">
-            {jobLinks.length === 0 ? (
-              <p className="text-sm text-gray-500 text-center py-6">No job links shared yet.</p>
+            {filteredJobLinks.length === 0 ? (
+              <p className="text-sm text-gray-500 text-center py-6">No job links match this filter.</p>
             ) : (
               <div className="space-y-1">
-                {jobLinks.map(link => (
+                {filteredJobLinks.map(link => (
                   <a 
                     key={link._id} 
                     href={link.url} 
@@ -209,19 +232,13 @@ export default function Feed() {
                     rel="noopener noreferrer"
                     className="block pl-3 pr-1 py-2.5 rounded-lg hover:bg-blue-50/50 border border-transparent hover:border-blue-100 transition group"
                   >
-                    <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-start justify-between gap-3">
                       <div className="flex flex-col gap-0.5 flex-1 min-w-0">
                         <div className="font-semibold text-gray-800 text-[13px] group-hover:text-blue-600 transition-colors truncate">
                           {link.title || 'Job Opportunity'}
                         </div>
                         
-                        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-gray-500">
-                          {link.location && (
-                            <div className="flex items-center gap-1">
-                              <MapPin size={12} />
-                              <span className="truncate max-w-[100px]">{link.location}</span>
-                            </div>
-                          )}
+                        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-gray-500 mt-0.5">
                           {link.experience && (
                             <div className="flex items-center gap-1">
                               <Clock size={12} />
@@ -231,7 +248,17 @@ export default function Feed() {
                           {link.workMode && (
                             <div className="flex items-center gap-1">
                               <Laptop size={12} />
-                              {link.workMode}
+                              <span className="whitespace-nowrap truncate max-w-[160px]">
+                                {link.workMode}{link.location ? `, ${link.location}` : ''}
+                              </span>
+                            </div>
+                          )}
+                          {!link.workMode && link.location && (
+                            <div className="flex items-center gap-1">
+                              <MapPin size={12} />
+                              <span className="whitespace-nowrap truncate max-w-[160px]">
+                                {link.location}
+                              </span>
                             </div>
                           )}
                         </div>
