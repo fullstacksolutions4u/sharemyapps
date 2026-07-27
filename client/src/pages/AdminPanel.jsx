@@ -24,6 +24,7 @@ import AdminMentorshipApplicationsSection from './admin/AdminMentorshipApplicati
 import AdminJobAlertHistorySection from './admin/AdminJobAlertHistorySection';
 import AdminAdvancedUsersFilterSection from './admin/AdminAdvancedUsersFilterSection';
 import AdminJobLinksSection from './admin/AdminJobLinksSection';
+import AdminCurationSection from './admin/AdminCurationSection';
 import { optimizeImage } from '../utils/image';
 
 const NAV = [
@@ -42,6 +43,7 @@ const NAV = [
   { key: 'job_recommendations', label: 'Job Alert', icon: Mail },
   { key: 'job_links',      label: 'Job Links',        icon: LinkIcon },
   { key: 'job_alert_history', label: 'Job Alert History', icon: History },
+  { key: 'curation',       label: 'Candidate Curation', icon: Briefcase },
   { key: 'email',          label: 'Email',            icon: Send },
 ];
 
@@ -187,6 +189,7 @@ const { user, setUser, logout } = useAuth();
           { section === 'email'            && <AdminEmailSection /> }
           { section === 'job_links'        && <AdminJobLinksSection /> }
           {section === 'learning'         && <AdminLearningSection />}
+          {section === 'curation'         && <AdminCurationSection />}
         </div>
       </div>
     </div>

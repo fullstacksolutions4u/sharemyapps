@@ -47,6 +47,8 @@ const mentorship = require('../controllers/mentorshipOpportunityController');
 const { aiChat } = require('../controllers/aiChatController');
 const { adminGetPlans, adminCreatePlan, adminUpdatePlan, adminDeletePlan } = require('../controllers/planController');
 const { adminGetOffers, adminUpdateOffer, adminDeleteOffer, adminGetOfferStats, adminGetOfferPortfolio, adminMarkWhatsappContacted, adminToggleEnroll, adminActivate } = require('../controllers/freeOfferController');
+const interview = require('../controllers/interviewController');
+const showcase  = require('../controllers/showcaseController');
 
 router.use(protect, requireAdmin);
 
@@ -1220,5 +1222,20 @@ router.delete('/job-recommendations/sessions/:id', async (req, res) => {
     res.json({ ok: true });
   } catch (err) { res.status(500).json({ message: err.message }); }
 });
+
+// ── Candidate Curation — Interview Sessions ───────────────────────────────────
+router.get('/interviews',                          interview.listSessions);
+router.get('/interviews/user/:userId',             interview.getUserSessions);
+router.post('/interviews/user/:userId',            interview.createSession);
+router.put('/interviews/:sessionId',               interview.updateSession);
+router.delete('/interviews/:sessionId',            interview.deleteSession);
+router.patch('/interviews/:sessionId/share',       interview.shareWithCandidate);
+
+// ── Candidate Curation — Showcase Pages ──────────────────────────────────────
+router.get('/showcases',           showcase.listShowcases);
+router.post('/showcases',          showcase.createShowcase);
+router.put('/showcases/:id',       showcase.updateShowcase);
+router.delete('/showcases/:id',    showcase.deleteShowcase);
+router.patch('/showcases/:id/toggle', showcase.toggleShowcase);
 
 module.exports = router;

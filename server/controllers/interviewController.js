@@ -1,0 +1,193 @@
+const InterviewSession = require('../models/InterviewSession');
+const User = require('../models/User');
+const Notification = require('../models/Notification');
+const { sendInterviewTipsEmail } = require('../utils/email');
+
+const DEFAULT_SECTIONS = [
+  { title: 'Communication',    rating: 3, notes: '' },
+  { title: 'Technical Skills', rating: 3, notes: '' },
+  { title: 'Problem Solving',  rating: 3, notes: '' },
+  { title: 'Attitude',         rating: 3, notes: '' },
+  { title: 'Culture Fit',      rating: 3, notes: '' },
+];
+
+// GET /admin/interviews — list sessions with filters
+exports.listSessions = async (req, res) => {
+  try {
+    const { userId, date, minRating, maxRating, shared, page = 1, limit = 30 } = req.query;
+    const filter = {};
+
+    if (userId)    filter.user = userId;
+    if (shared !== undefined) filter.sharedWithCandidate = shared === 'true';
+    if (date) {
+      const d = new Date(date);
+      filter.interviewedAt = {
+        $gte: new Date(d.setHours(0, 0, 0, 0)),
+        $lte: new Date(d.setHours(23, 59, 59, 999)),
+      };
+    }
+    if (minRating || maxRating) {
+      filter.overallRating = {};
+      if (minRating) filter.overallRating.$gte = Number(minRating);
+      if (maxRating) filter.overallRating.$lte = Number(maxRating);
+    }
+
+    const sessions = await InterviewSession.find(filter)
+      .populate('user', 'name email avatar regNumber designations familiarTech yearsOfExperience place state')
+      .populate('evaluatedBy', 'name avatar')
+      .sort({ interviewedAt: -1 })
+      .skip((Number(page) - 1) * Number(limit))
+      .limit(Number(limit))
+      .lean();
+
+    const total = await InterviewSession.countDocuments(filter);
+
+    res.json({ sessions, total, page: Number(page), pages: Math.ceil(total / Number(limit)) });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+// GET /admin/interviews/user/:userId — all sessions for one developer
+exports.getUserSessions = async (req, res) => {
+  try {
+    const sessions = await InterviewSession.find({ user: req.params.userId })
+      .populate('evaluatedBy', 'name avatar')
+      .sort({ sessionNumber: -1 })
+      .lean();
+    res.json({ sessions });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+// POST /admin/interviews/user/:userId — create new session
+exports.createSession = async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    const user = await User.findById(userId).lean();
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    // Auto-increment session number for this user
+    const lastSession = await InterviewSession.findOne({ user: userId })
+      .sort({ sessionNumber: -1 }).lean();
+    const sessionNumber = (lastSession?.sessionNumber || 0) + 1;
+
+    const {
+      overallRating, headline, summary,
+      sections, pros, cons, improvementTips, interviewedAt,
+    } = req.body;
+
+    const session = await InterviewSession.create({
+      user:          userId,
+      evaluatedBy:   req.user._id,
+      sessionNumber,
+      overallRating: overallRating ?? 5,
+      headline:      headline ?? '',
+      summary:       summary ?? '',
+      sections:      sections && sections.length ? sections : DEFAULT_SECTIONS,
+      pros:          pros    ?? [],
+      cons:          cons    ?? [],
+      improvementTips: improvementTips ?? [],
+      interviewedAt: interviewedAt ? new Date(interviewedAt) : new Date(),
+    });
+
+    await session.populate('user', 'name email avatar regNumber designations');
+    await session.populate('evaluatedBy', 'name avatar');
+
+    res.status(201).json({ session });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+// PUT /admin/interviews/:sessionId — update session
+exports.updateSession = async (req, res) => {
+  try {
+    const { overallRating, headline, summary, sections, pros, cons, improvementTips, interviewedAt } = req.body;
+
+    const session = await InterviewSession.findByIdAndUpdate(
+      req.params.sessionId,
+      { overallRating, headline, summary, sections, pros, cons, improvementTips, interviewedAt },
+      { new: true }
+    )
+      .populate('user', 'name email avatar regNumber designations')
+      .populate('evaluatedBy', 'name avatar');
+
+    if (!session) return res.status(404).json({ message: 'Session not found' });
+    res.json({ session });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+// DELETE /admin/interviews/:sessionId
+exports.deleteSession = async (req, res) => {
+  try {
+    const session = await InterviewSession.findByIdAndDelete(req.params.sessionId);
+    if (!session) return res.status(404).json({ message: 'Session not found' });
+    res.json({ message: 'Deleted' });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+// PATCH /admin/interviews/:sessionId/share — share tips with developer (in-app + email)
+exports.shareWithCandidate = async (req, res) => {
+  try {
+    const session = await InterviewSession.findById(req.params.sessionId)
+      .populate('user', 'name email avatar regNumber designations');
+
+    if (!session) return res.status(404).json({ message: 'Session not found' });
+
+    session.sharedWithCandidate   = true;
+    session.sharedWithCandidateAt = new Date();
+    await session.save();
+
+    const u = session.user;
+    const CLIENT_URL = process.env.CLIENT_URL || 'http://localhost:3000';
+
+    // 1. In-app notification
+    await Notification.create({
+      user:    u._id,
+      type:    'interview_feedback',
+      title:   `Your Interview Feedback is Ready 🎯`,
+      message: `Session #${session.sessionNumber} feedback has been shared with you. Check your dashboard for personalised improvement tips!`,
+    });
+
+    // 2. Email notification
+    sendInterviewTipsEmail({
+      to:              u.email,
+      name:            u.name,
+      sessionNumber:   session.sessionNumber,
+      overallRating:   session.overallRating,
+      headline:        session.headline,
+      pros:            session.pros,
+      cons:            session.cons,
+      improvementTips: session.improvementTips,
+      dashboardUrl:    `${CLIENT_URL}/dashboard`,
+    }).catch(err => console.error('[Interview Tips Email] failed:', err));
+
+    res.json({ session });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+// GET /api/interview-feedback — developer sees their own sessions (only shared ones)
+exports.getMyFeedback = async (req, res) => {
+  try {
+    const sessions = await InterviewSession.find({
+      user: req.user._id,
+      sharedWithCandidate: true,
+    })
+      .populate('evaluatedBy', 'name avatar')
+      .sort({ sessionNumber: -1 })
+      .lean();
+
+    res.json({ sessions });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};

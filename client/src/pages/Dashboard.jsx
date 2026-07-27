@@ -6,7 +6,7 @@ import {
   LayoutDashboard, FolderOpen,
   Crown, UserCircle, LogOut, Menu, X, Plus,
   Pencil, Trash2, ExternalLink, Clock, CheckCircle, XCircle,
-  AlertCircle, Copy, Check, Eye, EyeOff, Heart, Star,
+  AlertCircle, Copy, Check, Eye, EyeOff, Heart, Star, Target,
   Lock, Briefcase, GraduationCap, Inbox, FileText
 } from 'lucide-react';
 import api from '../api/axios';
@@ -21,6 +21,7 @@ const NAV = [
   { key: 'inbox',              label: 'Inbox',                 icon: Inbox },
   { key: 'applications',       label: 'My Applications',       icon: FileText },
   { key: 'premium',            label: 'Job Assistance Services', icon: Crown, isGolden: true },
+  { key: 'interview-feedback', label: 'Interview Feedback',    icon: Target, isGolden: true },
   { key: 'mentorship',         label: 'Mentorship Program', icon: GraduationCap, isGolden: true },
   { key: 'services',           label: 'Services',         icon: Lock, isPremiumService: true, isGolden: true },
   { key: 'job-alerts',         label: 'Job Alerts',      icon: Briefcase, isJobAlertEligible: true, isGolden: true },

@@ -981,3 +981,83 @@ exports.sendApplicationReviewingEmail = async ({ to, name, vacancyTitle }) => {
     `,
   });
 };
+
+exports.sendInterviewTipsEmail = async ({ to, name, sessionNumber, overallRating, headline, pros, cons, improvementTips, dashboardUrl }) => {
+  const tipsHtml = (improvementTips || []).map((t, i) => `
+    <div style="background:#F0FDF4;border-left:4px solid #00A693;border-radius:0 8px 8px 0;padding:14px 16px;margin-bottom:12px;">
+      <p style="margin:0 0 4px;font-size:13px;font-weight:700;color:#065F46;">💡 ${t.area}</p>
+      <p style="margin:0 0 6px;font-size:14px;color:#374151;">${t.tip}</p>
+      ${t.resourceUrl ? `<a href="${t.resourceUrl}" target="_blank" style="font-size:12px;color:#00A693;font-weight:600;text-decoration:none;">📚 Open Resource →</a>` : ''}
+    </div>
+  `).join('');
+
+  const prosHtml = (pros || []).map(p => `<span style="display:inline-block;background:#D1FAE5;color:#065F46;border-radius:20px;padding:4px 12px;font-size:12px;font-weight:600;margin:3px;">${p}</span>`).join('');
+  const consHtml = (cons || []).map(c => `<span style="display:inline-block;background:#FEF3C7;color:#92400E;border-radius:20px;padding:4px 12px;font-size:12px;font-weight:600;margin:3px;">${c}</span>`).join('');
+
+  const ratingColor = overallRating >= 8 ? '#059669' : overallRating >= 6 ? '#D97706' : '#DC2626';
+
+  await sendEmailWithFallback({
+    sender: FROM,
+    to: [{ email: to, name }],
+    subject: `Your Interview Feedback is Ready – Session #${sessionNumber} | ShareMyApps`,
+    htmlContent: `
+      <div style="font-family:Inter,Arial,sans-serif;max-width:600px;margin:0 auto;background:#fff;border-radius:12px;overflow:hidden;border:1px solid #E5E1DA;">
+        <div style="background:linear-gradient(135deg,#00A693,#0D9488);padding:24px 32px;text-align:center;">
+          <img src="${LOGO_URL}" alt="ShareMyApps" style="height:40px;object-fit:contain;margin-bottom:12px;" />
+          <h1 style="margin:0;color:#fff;font-size:20px;font-weight:700;">Your Interview Feedback</h1>
+          <p style="margin:8px 0 0;color:rgba(255,255,255,0.85);font-size:14px;">Session #${sessionNumber} — Keep growing! 🚀</p>
+        </div>
+
+        <div style="padding:32px;">
+          <p style="color:#374151;margin:0 0 20px;font-size:14px;">Hi <strong>${name}</strong>,</p>
+          <p style="color:#374151;margin:0 0 24px;font-size:14px;">
+            Thank you for your interview with our team today. We have recorded our assessment and prepared personalized improvement tips to help you land your dream job. Here is your feedback summary:
+          </p>
+
+          <!-- Overall Score -->
+          <div style="background:#F8FAFF;border:1px solid #E0E7FF;border-radius:12px;padding:20px;margin-bottom:24px;text-align:center;">
+            <p style="margin:0 0 4px;font-size:13px;color:#6B7280;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;">Overall Interview Score</p>
+            <p style="margin:0;font-size:40px;font-weight:800;color:${ratingColor};">${overallRating}<span style="font-size:20px;color:#9CA3AF;">/10</span></p>
+            ${headline ? `<p style="margin:12px 0 0;font-size:14px;color:#374151;font-style:italic;">"${headline}"</p>` : ''}
+          </div>
+
+          <!-- Pros -->
+          ${prosHtml ? `
+          <div style="margin-bottom:20px;">
+            <p style="margin:0 0 10px;font-size:13px;font-weight:700;color:#1A1A1A;">✅ Your Strengths</p>
+            <div>${prosHtml}</div>
+          </div>` : ''}
+
+          <!-- Cons -->
+          ${consHtml ? `
+          <div style="margin-bottom:24px;">
+            <p style="margin:0 0 10px;font-size:13px;font-weight:700;color:#1A1A1A;">⚠️ Areas to Improve</p>
+            <div>${consHtml}</div>
+          </div>` : ''}
+
+          <!-- Improvement Tips -->
+          ${tipsHtml ? `
+          <div style="margin-bottom:28px;">
+            <p style="margin:0 0 14px;font-size:16px;font-weight:700;color:#1A1A1A;">🎯 Personalised Improvement Tips</p>
+            ${tipsHtml}
+          </div>` : ''}
+
+          <!-- CTA -->
+          <div style="text-align:center;margin-bottom:24px;">
+            <a href="${dashboardUrl || BASE_URL + '/dashboard'}" style="display:inline-block;background:#00A693;color:#fff;text-decoration:none;padding:14px 32px;border-radius:10px;font-weight:700;font-size:15px;">
+              View Full Feedback in Dashboard →
+            </a>
+          </div>
+
+          <div style="background:#FEF9EE;border:1px solid #FDE68A;border-radius:10px;padding:16px;text-align:center;">
+            <p style="margin:0;font-size:13px;color:#92400E;">
+              💪 <strong>Remember:</strong> Our goal is to help you land a job in a reputed company. Work on these tips and we will re-interview you soon to track your progress!
+            </p>
+          </div>
+        </div>
+        ${FOOTER('You received this email because ShareMyApps conducted an interview session with you.')}
+      </div>
+    `,
+  });
+};
+

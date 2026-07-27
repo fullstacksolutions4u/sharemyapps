@@ -30,6 +30,7 @@ const learningFeedbackRoutes = require('./routes/learningFeedback');
 const premiumServicesRoutes = require('./routes/premiumServices');
 const feedRoutes = require('./routes/feed');
 const jobLinkRoutes = require('./routes/jobLinks');
+const showcaseRoutes = require('./routes/showcase');
 const { startJobAlertScheduler } = require('./jobs/jobAlertScheduler');
 const { task: thumbnailTask } = require('./cron/thumbnails');
 const { task: hourlyMetricsTask } = require('./cron/hourlyMetrics');
@@ -99,6 +100,12 @@ app.use('/api/learning-feedback', generalLimiter, learningFeedbackRoutes);
 app.use('/api/premium-services', generalLimiter, premiumServicesRoutes);
 app.use('/api/feed', generalLimiter, feedRoutes);
 app.use('/api/job-links', generalLimiter, jobLinkRoutes);
+app.use('/api/showcase', generalLimiter, showcaseRoutes);
+
+// Developer: view own interview feedback (auth required)
+app.use('/api/interview-feedback', generalLimiter, require('./middleware/auth').protect, (req, res, next) => {
+  require('./controllers/interviewController').getMyFeedback(req, res, next);
+});
 
 app.get('/api/health', (_req, res) => res.json({ status: 'ok' }));
 
