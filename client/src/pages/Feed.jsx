@@ -166,14 +166,14 @@ export default function Feed() {
       
       {/* LEFT: Shared Job Links */}
       <div className="w-full lg:max-w-[25%] flex flex-col sticky top-20 max-h-[calc(100vh-100px)]">
-        <div className="bg-white rounded-xl shadow-sm border border-black/5 overflow-hidden flex flex-col h-full">
-          <div className="p-4 border-b border-black/5 bg-gray-50 flex items-center gap-2 font-bold text-lg text-gray-800 shrink-0">
+        <div className="bg-linear-to-br from-violet-50/80 to-purple-50/50 rounded-xl shadow-sm border border-black/5 overflow-hidden flex flex-col h-full">
+          <div className="p-4 border-b border-black/5 bg-transparent flex items-center gap-2 font-bold text-lg text-gray-800 shrink-0">
             <LinkIcon size={18} className="text-blue-500" />
             External Latest Job Postings
           </div>
 
           {user && (
-            <div className="p-3 border-b border-black/5 bg-white shrink-0">
+            <div className="p-3 border-b border-black/5 bg-white/40 shrink-0">
               <form
                 onSubmit={handleInlineJobLinkSubmit}
                 className="flex items-center gap-1 bg-gray-50 rounded-xl border border-black/5 p-1 pl-1.5 overflow-hidden"
