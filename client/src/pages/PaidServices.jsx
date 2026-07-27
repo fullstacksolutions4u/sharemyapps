@@ -39,6 +39,9 @@ export default function PaidServices() {
   const freeOfferActive = offerConfig?.freeOfferEnabled && (
     !offerConfig.freeOfferDueDate || new Date() <= new Date(offerConfig.freeOfferDueDate)
   );
+  const oldPriceDisplay = offerConfig
+    ? `₹${(offerConfig.premiumServicePricePaise / 100).toLocaleString('en-IN')}`
+    : null;
   const priceDisplay = offerConfig
     ? `₹${((user?.hasRank1Offer ? offerConfig.rank1OfferPricePaise : offerConfig.premiumServicePricePaise) / 100).toLocaleString('en-IN')}`
     : null;
@@ -318,11 +321,28 @@ export default function PaidServices() {
                     {priceDisplay}
                   </span>
                 )}
-                <span style={{ fontFamily: "'Spectral', serif", fontSize: '22px', fontWeight: 700, color: (freeOfferActive || hasPremiumAccess || hasFreeGrant) ? '#0a7373' : '#243433' }}>
+                {!(freeOfferActive || hasPremiumAccess || hasFreeGrant) && user?.hasRank1Offer && oldPriceDisplay && (
+                  <span style={{ fontFamily: "'Spectral', serif", fontSize: '18px', fontWeight: 600, color: '#9aa6a4', textDecoration: 'line-through' }}>
+                    {oldPriceDisplay}
+                  </span>
+                )}
+                <span style={{ fontFamily: "'Spectral', serif", fontSize: '22px', fontWeight: 700, color: (freeOfferActive || hasPremiumAccess || hasFreeGrant || user?.hasRank1Offer) ? '#0a7373' : '#243433' }}>
                   {offerConfig === null ? '…' : (freeOfferActive || hasPremiumAccess || hasFreeGrant) ? '₹0' : priceDisplay}
                 </span>
               </span>
             </div>
+            {user?.hasRank1Offer && !(freeOfferActive || hasPremiumAccess || hasFreeGrant) && (
+              <div style={{ fontSize: '13px', fontWeight: 800, marginBottom: '0px', marginTop: '6px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <span>🎉</span>
+                <span style={{
+                  background: 'linear-gradient(90deg, #9e6f00, #dca818, #9e6f00)',
+                  WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
+                  filter: 'drop-shadow(0px 1px 1px rgba(158, 111, 0, 0.2))'
+                }}>
+                  Congrats! Leaderboard Rank 1 Offer Applied
+                </span>
+              </div>
+            )}
             <div style={{ height: '2px', background: '#0c8c8c', margin: '14px 0 18px' }} />
             <div style={{ display: 'flex', flexDirection: 'column', gap: '11px', flex: 1 }}>
               {PREMIUM_FEATURES.map((f, i) => (
