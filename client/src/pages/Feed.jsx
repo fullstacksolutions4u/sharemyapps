@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import axios from '../api/axios';
 import { formatDistanceToNow } from 'date-fns';
-import { Trophy, MessageCircle, Heart, Star, TrendingUp, Briefcase, ChevronRight, UserPlus, Crown, Sparkles, Link as LinkIcon, Plus, MapPin, Laptop, ExternalLink, Clock } from 'lucide-react';
+import { Trophy, MessageCircle, Heart, Star, TrendingUp, Briefcase, ChevronRight, UserPlus, Crown, Sparkles, Plus, MapPin, Laptop, ExternalLink, Clock } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import _Lottie from 'lottie-react';
 import feedAnimation from '../assets/feed.json';
