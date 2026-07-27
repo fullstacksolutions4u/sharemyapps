@@ -204,7 +204,7 @@ export default function Feed() {
                 <input
                   type="url"
                   required
-                  placeholder="Share job posts here to apply by our members"
+                  placeholder="Share job posts link with our community"
                   value={inlineUrl}
                   onChange={e => setInlineUrl(e.target.value)}
                   className="flex-1 bg-transparent text-[12px] outline-none px-1 text-gray-700 min-w-0 placeholder:text-gray-400"
