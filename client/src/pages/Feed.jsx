@@ -591,7 +591,7 @@ function ActivityCard({ activity, index = 0 }) {
           <UserPlus size={16} />
         </div>
         <p className="text-sm text-black font-medium">
-          Glad you're here, <span className="font-semibold">{displayUser.name}</span>! Welcome to ShareMyApps community as {designation ? <span className="font-medium text-slate-700">{designation}</span> : 'a member'}.
+          Glad you're here, <span className="font-semibold text-blue-600">{displayUser.name}</span>! Welcome to <span className="font-bold text-pink-500">ShareMyApps</span> community.
         </p>
       </div>
     );

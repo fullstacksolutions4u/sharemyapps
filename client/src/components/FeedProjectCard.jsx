@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { formatDistanceToNow } from 'date-fns';
-import { Heart, MessageCircle, Star, CheckCircle, Code, Send } from 'lucide-react';
+import { Heart, MessageCircle, Star, CheckCircle, Code, Send, Briefcase } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import axios from '../api/axios';
 import toast from 'react-hot-toast';
@@ -180,14 +180,14 @@ export default function FeedProjectCard({ activity, index = 0 }) {
             
             {/* Activity Text */}
             <div className="flex items-start gap-2 mb-2 text-sm text-black font-medium">
-              <CheckCircle size={16} className="text-green-500 shrink-0 mt-0.5" />
-              <div className="flex flex-col">
-                <span className="text-gray-700">
-                  Published a new application in <span className="font-semibold text-black capitalize">{project.category || 'General'}</span> category
+              <Briefcase size={16} className="text-blue-500 shrink-0 mt-0.5" />
+              <div className="flex-1">
+                <span className="text-gray-700 leading-relaxed">
+                  Published {/^[aeiou]/i.test(project.category || 'General') ? 'an' : 'a'} <span className="font-semibold text-black capitalize">{project.category || 'General'}</span> application:{' '}
+                  <Link to={`/project/${project._id}`} className="text-blue-600 hover:underline transition font-bold text-[15px]">
+                    {project.title}
+                  </Link>
                 </span>
-                <Link to={`/project/${project._id}`} className="text-blue-600 hover:underline transition font-bold text-[15px] mt-1.5">
-                  {project.title}
-                </Link>
               </div>
             </div>
             {project.techTags && project.techTags.length > 0 && (
@@ -254,12 +254,16 @@ export default function FeedProjectCard({ activity, index = 0 }) {
         </div>
         
         {/* Right Side: Thumbnail */}
-        <div className="w-full md:w-64 shrink-0 flex flex-col">
-          <Link to={`/project/${project._id}`} className="block flex-1 group rounded-lg overflow-hidden border border-border shadow-sm">
+        <div className="w-full md:w-64 shrink-0 relative group p-2 flex flex-col">
+          {/* Decorative back layer for double-layer effect */}
+          <div className="absolute inset-2 bg-black/5 rounded-2xl translate-x-1.5 translate-y-1.5 transition-transform duration-300 group-hover:translate-x-2.5 group-hover:translate-y-2.5 border border-black/10"></div>
+          
+          {/* Front layer with thick white border like portfolio profile photo */}
+          <Link to={`/project/${project._id}`} className="relative z-10 block flex-1 rounded-2xl overflow-hidden border-[6px] border-white shadow-md bg-white">
             {project.bannerImage ? (
-              <img src={optimizeImage(project.bannerImage, 800)} alt={project.title} className="w-full h-full min-h-[140px] object-cover group-hover:scale-105 transition duration-300" />
+              <img src={optimizeImage(project.bannerImage, 800)} alt={project.title} className="w-full h-full min-h-[140px] object-cover transition duration-500 group-hover:scale-105" />
             ) : (
-              <div className="w-full h-full min-h-[140px] bg-gradient-to-r from-gray-200 to-gray-300 flex items-center justify-center group-hover:scale-105 transition duration-300">
+              <div className="w-full h-full min-h-[140px] bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center transition duration-500 group-hover:scale-105">
                 <Code size={40} className="text-gray-400" />
               </div>
             )}

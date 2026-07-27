@@ -387,7 +387,7 @@ export default function Navbar() {
               <span className="text-accent">My</span>
               <span className="text-violet-600">Apps</span>
             </span>
-            <span style={{ fontFamily: "'Caveat', cursive" }} className="text-sm leading-none text-orange-500">where developers meet opportunity</span>
+            <span style={{ fontFamily: "'Caveat', cursive" }} className="text-sm leading-none text-pink-500">where developers meet opportunity</span>
           </div>
         </Link>
 
