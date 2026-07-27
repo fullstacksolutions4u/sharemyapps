@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useParams } from 'react-router-dom';
 import {
   FileText, Star, Globe,
   MapPin, Briefcase, ChevronDown, ChevronUp, Phone,
