@@ -1,8 +1,9 @@
 import { Fragment, useEffect, useState } from 'react';
-import { Building2, Search, X, ChevronDown, ChevronUp, ChevronsLeft, ChevronsRight, Users } from 'lucide-react';
+import { Building2, Search, X, ChevronDown, ChevronUp, ChevronsLeft, ChevronsRight, Users, Download } from 'lucide-react';
 import toast from 'react-hot-toast';
 import api from '../../api/axios';
 import { optimizeImage } from '../../utils/image';
+import * as XLSX from 'xlsx';
 
 export default function AdminCompaniesSection() {
   const [companies, setCompanies] = useState([]);
@@ -37,9 +38,42 @@ export default function AdminCompaniesSection() {
     ? <img src={optimizeImage(d.avatar, 150)} alt={d.name} className="w-8 h-8 rounded-full object-cover shrink-0" />
     : <span className="w-8 h-8 rounded-full bg-[#00A693] text-white text-xs flex items-center justify-center font-medium shrink-0">{d.name?.[0]?.toUpperCase() || '?'}</span>;
 
+  const handleExport = () => {
+    if (list.length === 0) {
+      toast.error("No companies to export");
+      return;
+    }
+
+    const exportData = list.map(c => {
+      const counts = {};
+      for (const d of c.developers) {
+        for (const g of (d.designations || [])) {
+          counts[g] = (counts[g] || 0) + 1;
+        }
+      }
+      const designations = Object.entries(counts)
+        .sort((a, b) => b[1] - a[1])
+        .map(([name, count]) => `${name} (${count})`)
+        .join(', ');
+
+      return {
+        'Company Name': c.name,
+        'Developer Count': c.developerCount,
+        'Designations': designations
+      };
+    });
+
+    const ws = XLSX.utils.json_to_sheet(exportData);
+    ws['!cols'] = [{ wch: 40 }, { wch: 15 }, { wch: 80 }];
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Companies");
+    XLSX.writeFile(wb, "Companies_Export.xlsx");
+    toast.success("Exported successfully!");
+  };
+
   return (
     <div className="space-y-5">
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-3 flex-wrap">
         <div className="flex gap-1 bg-[#F3F0EB] p-1 rounded-xl w-fit shrink-0">
           {[
             { key: 'developers',   label: 'Most Developers' },
@@ -64,6 +98,13 @@ export default function AdminCompaniesSection() {
           )}
         </div>
         {search && <p className="text-xs text-[#6B7280]">{list.length} result{list.length !== 1 ? 's' : ''} for <span className="font-medium text-[#1A1A1A]">"{search}"</span></p>}
+        
+        <button
+          onClick={handleExport}
+          className="ml-auto flex items-center gap-2 px-3 py-1.5 bg-[#00A693] text-white rounded-lg text-sm font-medium hover:bg-[#009282] transition-colors shadow-sm shrink-0"
+        >
+          <Download size={15} /> Export to Excel
+        </button>
       </div>
 
       {loading ? (

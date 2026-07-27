@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
 import { 
   Search, Filter,
-  ChevronLeft, ChevronRight, Copy
+  ChevronLeft, ChevronRight, Copy, Download
 } from 'lucide-react';
 import api from '../../api/axios';
 import toast from 'react-hot-toast';
+import * as XLSX from 'xlsx';
 
 const inp = 'w-full px-3 py-2 border border-[#E5E1DA] rounded-lg text-sm text-[#1A1A1A] bg-white placeholder-[#9CA3AF] focus:outline-none focus:border-[#00A693] focus:ring-2 focus:ring-[#00A693]/10 transition';
 const sel = 'w-full px-3 py-2 border border-[#E5E1DA] rounded-lg text-sm text-[#1A1A1A] bg-white focus:outline-none focus:border-[#00A693] focus:ring-2 focus:ring-[#00A693]/10 transition appearance-none';
@@ -228,6 +229,47 @@ export default function AdminAdvancedUsersFilterSection() {
     setCompany('');
   };
 
+  const handleExportCompanies = () => {
+    const companyMap = new Map();
+    filteredUsers.forEach(u => {
+      const exp = u.resumeData?.experience || u.resumeData?.workExperience;
+      if (exp && Array.isArray(exp)) {
+        exp.forEach(e => {
+          if (e.company) {
+            const c = normalizeCompany(e.company);
+            if (u.name && c.toLowerCase() === u.name.toLowerCase()) return;
+            if (!companyMap.has(c)) {
+              companyMap.set(c, { company: c, userCount: 0, users: [] });
+            }
+            companyMap.get(c).userCount += 1;
+            companyMap.get(c).users.push(u.name);
+          }
+        });
+      }
+    });
+
+    if (companyMap.size === 0) {
+      toast.error("No companies to export");
+      return;
+    }
+
+    const exportData = Array.from(companyMap.values())
+      .sort((a, b) => a.company.localeCompare(b.company))
+      .map((c, index) => ({
+        'S.No.': index + 1,
+        'Company Name': c.company,
+        'Users Working Here': c.userCount,
+        'User Names': c.users.join(', ')
+      }));
+
+    const ws = XLSX.utils.json_to_sheet(exportData);
+    ws['!cols'] = [{ wch: 8 }, { wch: 40 }, { wch: 20 }, { wch: 80 }];
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Companies");
+    XLSX.writeFile(wb, "Companies_Export.xlsx");
+    toast.success("Exported successfully!");
+  };
+
   if (loading) {
     return (
       <div className="flex-1 p-8 flex items-center justify-center bg-[#FDFCFB]">
@@ -292,6 +334,12 @@ export default function AdminAdvancedUsersFilterSection() {
               className="text-[12px] font-medium text-[#6B7280] hover:text-[#1A1A1A] transition px-3 py-1.5 border border-[#E5E1DA] rounded-lg h-8 flex items-center justify-center"
             >
               Reset Filters
+            </button>
+            <button
+              onClick={handleExportCompanies}
+              className="text-[12px] font-medium text-white bg-[#00A693] hover:bg-[#009282] transition px-3 py-1.5 rounded-lg h-8 flex items-center justify-center gap-1.5 shadow-sm"
+            >
+              <Download size={14} /> Export to Excel
             </button>
           </div>
         </div>
