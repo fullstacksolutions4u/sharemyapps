@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { formatDistanceToNow } from 'date-fns';
-import { Heart, MessageCircle, Star, CheckCircle, Code, Send, Briefcase } from 'lucide-react';
+import { Heart, MessageCircle, Star, Code, Send, Briefcase } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import axios from '../api/axios';
 import toast from 'react-hot-toast';
