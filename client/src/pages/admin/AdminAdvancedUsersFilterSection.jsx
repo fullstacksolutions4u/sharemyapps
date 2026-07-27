@@ -105,6 +105,11 @@ export default function AdminAdvancedUsersFilterSection() {
   const [page, setPage] = useState(1);
   const PER_PAGE = 20;
 
+  // Export states
+  const [isExporting, setIsExporting] = useState(false);
+  const [exportProgress, setExportProgress] = useState(0);
+  const [exportTotal, setExportTotal] = useState(0);
+
 
   const toggleUserSelection = (userId) => {
     setSelectedUsers(prev => {
@@ -229,7 +234,13 @@ export default function AdminAdvancedUsersFilterSection() {
     setCompany('');
   };
 
-  const handleExportCompanies = () => {
+  const handleExportCompanies = async () => {
+    const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
+    if (!apiKey || apiKey === 'YOUR_API_KEY_HERE') {
+      toast.error("Please add VITE_GOOGLE_MAPS_API_KEY in client/.env.local");
+      return;
+    }
+
     const companyMap = new Map();
     filteredUsers.forEach(u => {
       const exp = u.resumeData?.experience || u.resumeData?.workExperience;
@@ -253,20 +264,50 @@ export default function AdminAdvancedUsersFilterSection() {
       return;
     }
 
-    const exportData = Array.from(companyMap.values())
-      .sort((a, b) => a.company.localeCompare(b.company))
-      .map((c, index) => ({
-        'S.No.': index + 1,
+    const uniqueCompaniesList = Array.from(companyMap.values()).sort((a, b) => a.company.localeCompare(b.company));
+    
+    setIsExporting(true);
+    setExportTotal(uniqueCompaniesList.length);
+    setExportProgress(0);
+
+    const exportData = [];
+
+    for (let i = 0; i < uniqueCompaniesList.length; i++) {
+      const c = uniqueCompaniesList[i];
+      let locationStr = 'Not Found';
+      
+      try {
+        const res = await fetch(`https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(c.company)}&key=${apiKey}`);
+        const data = await res.json();
+        
+        if (data.status === 'OK' && data.results.length > 0) {
+          locationStr = data.results[0].formatted_address;
+        }
+      } catch (err) {
+        console.error("Geocoding error for", c.company, err);
+      }
+      
+      exportData.push({
+        'S.No.': i + 1,
         'Company Name': c.company,
+        'Location': locationStr,
         'Users Working Here': c.userCount,
         'User Names': c.users.join(', ')
-      }));
+      });
+      
+      setExportProgress(i + 1);
+      
+      // Delay 20ms to safely stay under Google's 50 requests/second limit
+      await new Promise(r => setTimeout(r, 20));
+    }
 
     const ws = XLSX.utils.json_to_sheet(exportData);
-    ws['!cols'] = [{ wch: 8 }, { wch: 40 }, { wch: 20 }, { wch: 80 }];
+    ws['!cols'] = [{ wch: 8 }, { wch: 40 }, { wch: 50 }, { wch: 20 }, { wch: 80 }];
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Companies");
     XLSX.writeFile(wb, "Companies_Export.xlsx");
+    
+    setIsExporting(false);
     toast.success("Exported successfully!");
   };
 
@@ -337,9 +378,19 @@ export default function AdminAdvancedUsersFilterSection() {
             </button>
             <button
               onClick={handleExportCompanies}
-              className="text-[12px] font-medium text-white bg-[#00A693] hover:bg-[#009282] transition px-3 py-1.5 rounded-lg h-8 flex items-center justify-center gap-1.5 shadow-sm"
+              disabled={isExporting}
+              className="text-[12px] font-medium text-white bg-[#00A693] hover:bg-[#009282] disabled:bg-[#00A693]/70 transition px-3 py-1.5 rounded-lg h-8 flex items-center justify-center gap-1.5 shadow-sm min-w-[120px]"
             >
-              <Download size={14} /> Export to Excel
+              {isExporting ? (
+                <>
+                  <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin shrink-0" />
+                  {exportProgress}/{exportTotal}
+                </>
+              ) : (
+                <>
+                  <Download size={14} /> Export to Excel
+                </>
+              )}
             </button>
           </div>
         </div>
