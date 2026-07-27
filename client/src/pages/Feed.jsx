@@ -585,13 +585,15 @@ function ActivityCard({ activity, index = 0 }) {
     );
   }
   else if (type === 'USER_JOINED') {
+    const SHARE_COLORS = ['text-pink-500', 'text-orange-500', 'text-[#ad8ee8]'];
+    const shareColor = SHARE_COLORS[index % SHARE_COLORS.length];
     innerContent = (
       <div className="mt-3 flex items-start gap-3">
         <div className="bg-emerald-50 text-emerald-500 p-1.5 rounded-full shrink-0">
           <UserPlus size={16} />
         </div>
         <p className="text-sm text-black font-medium">
-          Glad you're here, <span className="font-semibold text-blue-600">{displayUser.name}</span>! Welcome to <span className="font-bold text-pink-500">ShareMyApps</span> community.
+          Glad you're here, <span className="font-semibold text-blue-600">{displayUser.name}</span>! Welcome to <span className={`font-bold ${shareColor}`}>ShareMyApps</span> community.
         </p>
       </div>
     );
