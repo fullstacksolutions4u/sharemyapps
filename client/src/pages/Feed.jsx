@@ -199,15 +199,15 @@ export default function Feed() {
             <div className="p-3 border-b border-black/5 bg-white/40 shrink-0">
               <form
                 onSubmit={handleInlineJobLinkSubmit}
-                className="flex items-center gap-1 bg-white rounded-xl border border-black/20 animate-border-gold-shine focus-within:!border-accent/50 focus-within:!shadow-[0_0_0_2px_rgba(0,166,147,0.1)] transition-all p-1 pl-1.5 overflow-hidden relative"
+                className="flex items-center gap-1 bg-white rounded-xl border border-black/20 animate-border-gemini-shine focus-within:!border-accent/50 focus-within:!shadow-[0_0_0_2px_rgba(0,166,147,0.1)] transition-all p-1 pl-1.5 overflow-hidden relative"
               >
                 <input
                   type="url"
                   required
-                  placeholder="Share job posts link with community"
+                  placeholder="Share job posts here to apply by our members"
                   value={inlineUrl}
                   onChange={e => setInlineUrl(e.target.value)}
-                  className="flex-1 bg-transparent text-[13px] outline-none px-1 text-gray-700 min-w-0 placeholder:text-gray-400"
+                  className="flex-1 bg-transparent text-[12px] outline-none px-1 text-gray-700 min-w-0 placeholder:text-gray-400"
                 />
                 <button
                   type="submit"

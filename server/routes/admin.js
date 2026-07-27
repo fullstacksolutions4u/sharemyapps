@@ -1088,26 +1088,9 @@ router.post('/job-recommendations/send', async (req, res) => {
       return res.json({ scheduled: true, scheduledAt: sendAt, total: users.length, sessionNumber });
     }
 
-    const { sendJobAlertEmail } = require('../utils/email');
-    let sent = 0, failed = 0;
-    for (const u of users) {
-      try {
-        await Notification.create({
-          user:     u._id,
-          type:     'job_alert',
-          title:    JOB_ALERT_TITLE,
-          message:  JOB_ALERT_MESSAGE,
-          jobAlert: alert._id,
-        });
-        sendJobAlertEmail({ to: u.email, name: u.name }).catch(err => console.error('Job alert email error:', err));
-        sent++;
-      } catch {
-        failed++;
-      }
-    }
-    alert.notified = true;
-    await alert.save();
-    res.json({ scheduled: false, sent, failed, total: users.length, sessionNumber });
+    // Always defer dispatch to the background scheduler to prevent event loop blocking.
+    // The scheduler runs every minute and will pick up immediately due jobs.
+    res.json({ scheduled: true, scheduledAt: sendAt, total: users.length, sessionNumber });
   } catch (err) { res.status(500).json({ message: err.message }); }
 });
 
