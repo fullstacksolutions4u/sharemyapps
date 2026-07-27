@@ -270,6 +270,27 @@ export default function AdminAdvancedUsersFilterSection() {
     setExportTotal(uniqueCompaniesList.length);
     setExportProgress(0);
 
+    // Load Google Maps JS API to support Website Restrictions
+    try {
+      if (!window.google || !window.google.maps) {
+        await new Promise((resolve, reject) => {
+          const script = document.createElement('script');
+          script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}`;
+          script.async = true;
+          script.defer = true;
+          script.onload = resolve;
+          script.onerror = reject;
+          document.head.appendChild(script);
+        });
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to load Google Maps. Please check your API key.");
+      setIsExporting(false);
+      return;
+    }
+
+    const geocoder = new window.google.maps.Geocoder();
     const exportData = [];
 
     for (let i = 0; i < uniqueCompaniesList.length; i++) {
@@ -277,12 +298,16 @@ export default function AdminAdvancedUsersFilterSection() {
       let locationStr = 'Not Found';
       
       try {
-        const res = await fetch(`https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(c.company)}&key=${apiKey}`);
-        const data = await res.json();
-        
-        if (data.status === 'OK' && data.results.length > 0) {
-          locationStr = data.results[0].formatted_address;
-        }
+        const result = await new Promise((resolve) => {
+          geocoder.geocode({ address: c.company }, (results, status) => {
+            if (status === 'OK' && results && results.length > 0) {
+              resolve(results[0].formatted_address);
+            } else {
+              resolve('Not Found');
+            }
+          });
+        });
+        locationStr = result;
       } catch (err) {
         console.error("Geocoding error for", c.company, err);
       }
