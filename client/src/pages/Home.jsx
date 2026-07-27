@@ -192,7 +192,7 @@ function NetworkGraph({ users, networkLoading }) {
 function NetworkNode({ user, x, y }) {
   const [failed, setFailed] = useState(false);
   const [hovered, setHovered] = useState(false);
-  const src = (!user.avatar || failed) ? defaultAvatar(user.name) : user.avatar;
+  const src = (!user.avatar || failed) ? defaultAvatar(user.name) : optimizeImage(user.avatar, 150);
 
   return (
     <div

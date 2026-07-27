@@ -311,7 +311,7 @@ export default function ProjectDetail() {
         <div className="lg:sticky lg:top-8">
           <div className="relative rounded-2xl overflow-hidden bg-[#F3F0EB] aspect-video">
             <img
-              src={images[imgIdx]}
+              src={optimizeImage(images[imgIdx], 800)}
               alt={`${title} screenshot ${imgIdx + 1}`}
               className="w-full h-full object-cover"
               onError={e => { e.target.src = PLACEHOLDER; }}
@@ -352,7 +352,7 @@ export default function ProjectDetail() {
                   onClick={() => setImgIdx(i)}
                   className={`shrink-0 w-16 h-11 rounded-lg overflow-hidden border-2 transition-all ${i === imgIdx ? 'border-[#00A693]' : 'border-transparent opacity-60 hover:opacity-100'}`}
                 >
-                  <img src={img} alt="" className="w-full h-full object-cover" onError={e => { e.target.src = PLACEHOLDER; }} />
+                  <img src={optimizeImage(img, 150)} alt="" className="w-full h-full object-cover" onError={e => { e.target.src = PLACEHOLDER; }} />
                 </button>
               ))}
             </div>
