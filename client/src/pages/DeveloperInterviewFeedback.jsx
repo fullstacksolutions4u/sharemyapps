@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Target, Star, Briefcase, TrendingUp, HelpCircle } from 'lucide-react';
+import { Target, Briefcase, TrendingUp, HelpCircle } from 'lucide-react';
 import api from '../api/axios';
 import { Link } from 'react-router-dom';
 
@@ -57,7 +57,7 @@ export default function DeveloperInterviewFeedback() {
         <p className="text-muted text-sm mt-1">Review your feedback, focus on improvement areas, and get ready for your dream job.</p>
       </div>
 
-      {sessions.map((session, index) => (
+      {sessions.map((session) => (
         <div key={session._id} className="bg-white rounded-3xl border border-border overflow-hidden shadow-sm">
           {/* Header */}
           <div className="bg-gradient-to-r from-[#0F172A] to-[#1E293B] p-6 text-white flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">

@@ -1,8 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import {
-  Search, ChevronDown, ChevronUp, Star, Plus, Trash2, Send, Check,
-  Copy, ExternalLink, Users, ClipboardList, ToggleLeft, ToggleRight,
-  Briefcase, Award, X, Link as LinkIcon, Eye, Edit3, RefreshCw
+  Search, Plus, Trash2, Send, Check,
+  Copy, ExternalLink, ClipboardList, ToggleLeft, ToggleRight,
+  X, Link as LinkIcon, Edit3, RefreshCw
 } from 'lucide-react';
 import api from '../../api/axios';
 import toast from 'react-hot-toast';
@@ -16,7 +16,6 @@ const SECTIONS = ['Communication', 'Technical Skills', 'Problem Solving', 'Attit
 const DEFAULT_SECTIONS = SECTIONS.map(title => ({ title, rating: 3, notes: '' }));
 
 const ratingColor = (r) => r >= 8 ? 'text-emerald-600' : r >= 6 ? 'text-amber-500' : 'text-red-500';
-const ratingBg = (r) => r >= 8 ? 'bg-emerald-50 border-emerald-200' : r >= 6 ? 'bg-amber-50 border-amber-200' : 'bg-red-50 border-red-200';
 
 // ─── Star Rating Component ────────────────────────────────────────────────────
 function StarRating({ value, onChange, max = 5 }) {
@@ -84,7 +83,6 @@ function ChipInput({ label, chips, setChips, placeholder, colorClass = 'bg-blue-
 // ─── Evaluation Drawer ────────────────────────────────────────────────────────
 function EvaluationDrawer({ user, onClose, onSaved }) {
   const [sessions, setSessions] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [sharing, setSharing] = useState(false);
   const [editingId, setEditingId] = useState(null); // null = new session
@@ -102,16 +100,17 @@ function EvaluationDrawer({ user, onClose, onSaved }) {
 
   const [form, setForm] = useState(emptyForm());
 
-  const fetchSessions = useCallback(async () => {
-    setLoading(true);
-    try {
-      const res = await api.get(`/admin/interviews/user/${user._id}`);
-      setSessions(res.data.sessions || []);
-    } catch { toast.error('Failed to load sessions'); }
-    finally { setLoading(false); }
+  useEffect(() => {
+    let ignore = false;
+    const fetchSessions = async () => {
+      try {
+        const res = await api.get(`/admin/interviews/user/${user._id}`);
+        if (!ignore) setSessions(res.data.sessions || []);
+      } catch { toast.error('Failed to load sessions'); }
+    };
+    fetchSessions();
+    return () => { ignore = true; };
   }, [user._id]);
-
-  useEffect(() => { fetchSessions(); }, [fetchSessions]);
 
   const updateSection = (i, field, value) => {
     const secs = [...form.sections];
@@ -376,7 +375,6 @@ function ShowcasePagesTab() {
   const [saving, setSaving] = useState(false);
   const [userSearch, setUserSearch] = useState('');
   const [searchResults, setSearchResults] = useState([]);
-  const [searching, setSearching] = useState(false);
 
   useEffect(() => {
     api.get('/admin/showcases').then(r => setPages(r.data.pages || [])).catch(() => toast.error('Failed to load')).finally(() => setLoading(false));
@@ -384,21 +382,19 @@ function ShowcasePagesTab() {
 
   const searchUsers = useCallback(async (q) => {
     if (!q.trim()) { setSearchResults([]); return; }
-    setSearching(true);
     try {
       const res = await api.get(`/admin/interviews?limit=20`);
       const sessions = res.data.sessions || [];
       const seen = new Set();
-      const users = sessions.map(s => s.user).filter(u => {
+      const usersList = sessions.map(s => s.user).filter(u => {
         if (!u || seen.has(u._id)) return false;
         seen.add(u._id);
         return u.name?.toLowerCase().includes(q.toLowerCase()) ||
           String(u.regNumber).includes(q) ||
           (u.familiarTech || []).some(t => t.toLowerCase().includes(q.toLowerCase()));
       });
-      setSearchResults(users);
+      setSearchResults(usersList);
     } catch { setSearchResults([]); }
-    finally { setSearching(false); }
   }, []);
 
   useEffect(() => {
@@ -637,27 +633,30 @@ export default function AdminCurationSection() {
   const [drawerUser, setDrawerUser] = useState(null);
   const [sessionCounts, setSessionCounts] = useState({}); // userId → count
 
-  const fetchUsers = useCallback(async () => {
-    setLoading(true);
-    try {
-      const res = await api.get('/admin/users?limit=200&userType=developer');
-      const u = (res.data.users || res.data || []).filter(u => !u.isDeleted && !u.hidden);
-      u.sort((a, b) => (a.regNumber || 99999) - (b.regNumber || 99999));
-      setUsers(u);
+  useEffect(() => {
+    let ignore = false;
+    const fetchUsers = async () => {
+      try {
+        const res = await api.get('/admin/users?limit=200&userType=developer');
+        const u = (res.data.users || res.data || []).filter(uObj => !uObj.isDeleted && !uObj.hidden);
+        u.sort((a, b) => (a.regNumber || 99999) - (b.regNumber || 99999));
+        if (ignore) return;
+        setUsers(u);
 
-      // Fetch sessions to get counts
-      const sessionRes = await api.get('/admin/interviews?limit=500');
-      const counts = {};
-      (sessionRes.data.sessions || []).forEach(s => {
-        const uid = s.user?._id?.toString();
-        if (uid) counts[uid] = (counts[uid] || 0) + 1;
-      });
-      setSessionCounts(counts);
-    } catch { toast.error('Failed to load users'); }
-    finally { setLoading(false); }
+        // Fetch sessions to get counts
+        const sessionRes = await api.get('/admin/interviews?limit=500');
+        const counts = {};
+        (sessionRes.data.sessions || []).forEach(s => {
+          const uid = s.user?._id?.toString();
+          if (uid) counts[uid] = (counts[uid] || 0) + 1;
+        });
+        if (!ignore) setSessionCounts(counts);
+      } catch { toast.error('Failed to load users'); }
+      finally { if (!ignore) setLoading(false); }
+    };
+    fetchUsers();
+    return () => { ignore = true; };
   }, []);
-
-  useEffect(() => { fetchUsers(); }, [fetchUsers]);
 
   const filteredUsers = users.filter(u => {
     const q = search.toLowerCase();

@@ -1,14 +1,15 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import {
-  ExternalLink, Github, Linkedin, FileText, Star, Globe,
-  MapPin, Briefcase, Clock, ChevronDown, ChevronUp, Phone,
-  Mail, Award, Code2, X, TrendingUp, Users, Calendar
+  Github, Linkedin, FileText, Star, Globe,
+  MapPin, Briefcase, ChevronDown, ChevronUp, Phone,
+  Mail, Award, Code2, X, Users, Calendar
 } from 'lucide-react';
 import axios from 'axios';
 import { optimizeImage } from '../utils/image';
 
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+const LOGO_URL = 'https://res.cloudinary.com/di0vbvioi/image/upload/v1780659567/sharemyapp/logo.png';
 
 const SECTION_COLORS = {
   'Communication':    { bg: 'bg-blue-100',    text: 'text-blue-700',    bar: 'bg-blue-500' },
@@ -346,7 +347,6 @@ export default function CurationShowcase() {
   const [jdOpen, setJdOpen] = useState(false);
 
   useEffect(() => {
-    const LOGO_URL = 'https://res.cloudinary.com/di0vbvioi/image/upload/v1780659567/sharemyapp/logo.png';
     axios.get(`${API_BASE}/showcase/${slug}`)
       .then(res => setData(res.data))
       .catch(err => setError(err.response?.data?.message || 'This showcase link is unavailable.'))
@@ -376,8 +376,6 @@ export default function CurationShowcase() {
       </div>
     );
   }
-
-  const LOGO_URL = 'https://res.cloudinary.com/di0vbvioi/image/upload/v1780659567/sharemyapp/logo.png';
 
   return (
     <div className="min-h-screen bg-[#F8F7F4]" style={{ fontFamily: 'Inter, sans-serif' }}>
