@@ -199,7 +199,7 @@ export default function Feed() {
             <div className="p-3 border-b border-black/5 bg-white/40 shrink-0">
               <form
                 onSubmit={handleInlineJobLinkSubmit}
-                className="flex items-center gap-1 bg-gray-50 rounded-xl border border-black/5 p-1 pl-1.5 overflow-hidden"
+                className="flex items-center gap-1 bg-white rounded-xl border border-black/20 animate-border-gold-shine focus-within:!border-accent/50 focus-within:!shadow-[0_0_0_2px_rgba(0,166,147,0.1)] transition-all p-1 pl-1.5 overflow-hidden relative"
               >
                 <input
                   type="url"

@@ -136,6 +136,15 @@
   animation: step-tick 0.25s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
+@keyframes border-gold-shine {
+  0%, 100% { border-color: rgba(0, 0, 0, 0.15); box-shadow: 0 0 0 rgba(255, 215, 0, 0); }
+  50% { border-color: rgba(255, 215, 0, 1); box-shadow: 0 0 8px rgba(255, 215, 0, 0.7); }
+}
+
+.animate-border-gold-shine {
+  animation: border-gold-shine 3s infinite ease-in-out;
+}
+
 * {
   box-sizing: border-box;
 }
