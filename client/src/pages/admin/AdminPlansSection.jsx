@@ -80,6 +80,7 @@ function JdAnalysisCard({ config, onSaved }) {
 function FreeOfferCard({ config, onSaved }) {
   const [enabled, setEnabled] = useState(config?.freeOfferEnabled ?? true);
   const [price, setPrice]     = useState((config?.premiumServicePricePaise ?? 99900) / 100);
+  const [rank1Price, setRank1Price] = useState((config?.rank1OfferPricePaise ?? 49900) / 100);
   const [dueDate, setDueDate] = useState(config?.freeOfferDueDate ? config.freeOfferDueDate.slice(0, 10) : '');
   const [saving, setSaving]   = useState(false);
 
@@ -89,6 +90,7 @@ function FreeOfferCard({ config, onSaved }) {
       const res = await api.put('/admin/config', {
         freeOfferEnabled: enabled,
         premiumServicePricePaise: Math.round(Number(price) * 100),
+        rank1OfferPricePaise: Math.round(Number(rank1Price) * 100),
         freeOfferDueDate: dueDate ? new Date(dueDate).toISOString() : null,
       });
       toast.success('Placement service settings saved.');
@@ -129,6 +131,17 @@ function FreeOfferCard({ config, onSaved }) {
               min={0}
               value={price}
               onChange={e => setPrice(e.target.value)}
+              disabled={enabled}
+              className="w-full border border-border rounded-xl px-3 py-2 text-sm font-semibold text-text focus:outline-none focus:border-accent disabled:opacity-40 disabled:cursor-not-allowed disabled:bg-bg"
+            />
+          </div>
+          <div className="flex-1">
+            <label className="block text-xs font-semibold text-muted mb-1.5">Rank 1 Offer Rate (₹)</label>
+            <input
+              type="number"
+              min={0}
+              value={rank1Price}
+              onChange={e => setRank1Price(e.target.value)}
               disabled={enabled}
               className="w-full border border-border rounded-xl px-3 py-2 text-sm font-semibold text-text focus:outline-none focus:border-accent disabled:opacity-40 disabled:cursor-not-allowed disabled:bg-bg"
             />

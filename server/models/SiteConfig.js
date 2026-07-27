@@ -14,6 +14,7 @@ const siteConfigSchema = new mongoose.Schema({
   freeOfferEnabled:         { type: Boolean, default: true },
   freeOfferDueDate:         { type: Date, default: null },
   premiumServicePricePaise: { type: Number, default: 99900 }, // ₹999 in paise
+  rank1OfferPricePaise:     { type: Number, default: 49900 }, // ₹499 in paise
 }, { timestamps: true });
 
 module.exports = mongoose.model('SiteConfig', siteConfigSchema);

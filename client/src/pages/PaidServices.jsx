@@ -40,7 +40,7 @@ export default function PaidServices() {
     !offerConfig.freeOfferDueDate || new Date() <= new Date(offerConfig.freeOfferDueDate)
   );
   const priceDisplay = offerConfig
-    ? `₹${(offerConfig.premiumServicePricePaise / 100).toLocaleString('en-IN')}`
+    ? `₹${((user?.hasRank1Offer ? offerConfig.rank1OfferPricePaise : offerConfig.premiumServicePricePaise) / 100).toLocaleString('en-IN')}`
     : null;
 
   useEffect(() => {
@@ -202,6 +202,9 @@ export default function PaidServices() {
         const res = await api.get('/plans');
         const plan = res.data?.find(p => p.name === 'Premium') || res.data?.[0];
         if (!plan) { toast.error('No plan available. Please try again.'); return; }
+        if (user?.hasRank1Offer && offerConfig) {
+          plan.price = offerConfig.rank1OfferPricePaise / 100;
+        }
         setPayModal({ ...plan, features: PREMIUM_FEATURES });
       } catch {
         toast.error('Could not load plan. Please try again.');

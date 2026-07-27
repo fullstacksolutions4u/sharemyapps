@@ -10,6 +10,9 @@ const DEFAULTS = {
   jdPaidPackSize:   5,
   jdPackPricePaise: 49900,
   jdFeatureEnabled: true,
+  freeOfferEnabled: true,
+  premiumServicePricePaise: 99900,
+  rank1OfferPricePaise: 49900,
 };
 
 async function getConfig() {

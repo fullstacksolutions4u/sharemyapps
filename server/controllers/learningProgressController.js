@@ -255,6 +255,8 @@ const submitQuizAttempt = async (req, res) => {
 
           // 3. First ranking (prev > 1, new === 1)
           if (prevRank > 1 && newRank === 1) {
+            userDoc.hasRank1Offer = true;
+            await userDoc.save();
             sendRank1Email({ to: userDoc.email, name: userDoc.name }).catch(err => console.error('[Leaderboard Email] Rank 1 failed:', err));
 
             // Generate Leaderboard Top Activity

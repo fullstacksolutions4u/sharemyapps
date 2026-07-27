@@ -881,6 +881,9 @@ exports.sendTop10CongratsEmail = async ({ to, name }) => {
 
 exports.sendRank1Email = async ({ to, name }) => {
   const leaderboardUrl = `${BASE_URL}/quiz-zone`;
+  const { getConfig } = require('./configCache');
+  const cfg = await getConfig();
+  const offerPrice = (cfg.rank1OfferPricePaise / 100).toLocaleString('en-IN');
 
   await sendEmailWithFallback({
     sender: FROM,
@@ -900,6 +903,11 @@ exports.sendRank1Email = async ({ to, name }) => {
           <div style="background:#FEF3C7;border:1px solid #D97706;border-radius:10px;padding:20px;margin-bottom:24px;text-align:center;">
             <p style="margin:0 0 8px;font-size:32px;">👑</p>
             <p style="margin:0;font-size:14px;color:#92400E;font-weight:600;">You are the reigning champion!</p>
+          </div>
+          <div style="background:#F0FAF9;border:1.5px solid #0C8C8C;border-radius:10px;padding:20px;margin-bottom:24px;text-align:center;">
+            <p style="margin:0 0 8px;font-size:20px;">🎁</p>
+            <p style="margin:0 0 8px;font-size:14px;color:#0A5F5F;font-weight:700;">Exclusive Champion Reward</p>
+            <p style="margin:0;font-size:13px;color:#3f4948;">As a special reward for reaching #1, you can claim the Premium Placement Plan for just <strong>₹${offerPrice}</strong>! Go to Placement Services in your dashboard to claim it.</p>
           </div>
           <p style="color:#374151;margin:0 0 24px;font-size:14px;line-height:1.6;">
             Keep earning coins and completing quizzes to maintain your position, as other developers are fighting to overtake you!

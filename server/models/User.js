@@ -70,6 +70,7 @@ const userSchema = new mongoose.Schema({
   // Tick2Test learning tracker fields
   points: { type: Number, default: 0 },
   top5CongratsSent: { type: Boolean, default: false },
+  hasRank1Offer: { type: Boolean, default: false },
   badges: [{ type: String }],
   // Admin invitation to premium services for free — user still applies, then gets
   // activated from Placement Applicants
@@ -156,6 +157,7 @@ userSchema.methods.toPublicJSON = function () {
     deletedAt: this.deletedAt ?? null,
     onboardingComplete: this.onboardingComplete || false,
     points: this.points || 0,
+    hasRank1Offer: this.hasRank1Offer || false,
   };
 };
 

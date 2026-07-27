@@ -13,7 +13,7 @@ const getAdminConfig = async (req, res) => {
 
 const updateAdminConfig = async (req, res) => {
   try {
-    const allowed = ['jdFreeLimit', 'jdPaidPackSize', 'jdPackPricePaise', 'jdFeatureEnabled', 'freeOfferEnabled', 'freeOfferDueDate', 'premiumServicePricePaise'];
+    const allowed = ['jdFreeLimit', 'jdPaidPackSize', 'jdPackPricePaise', 'jdFeatureEnabled', 'freeOfferEnabled', 'freeOfferDueDate', 'premiumServicePricePaise', 'rank1OfferPricePaise'];
     const update = {};
     for (const key of allowed) {
       if (req.body[key] !== undefined) update[key] = req.body[key];
