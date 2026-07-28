@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Search, ToggleLeft, ToggleRight, Save, IndianRupee, Gift, Crown, UserPlus, X } from 'lucide-react';
+import { Search, ToggleLeft, ToggleRight, Save, IndianRupee, Crown, UserPlus, X } from 'lucide-react';
 import api from '../../api/axios';
 import toast from 'react-hot-toast';
 import { optimizeImage } from '../../utils/image';
