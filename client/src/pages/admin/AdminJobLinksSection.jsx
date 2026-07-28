@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import api from '../../api/axios';
 import { toast } from 'react-hot-toast';
-import { Briefcase, Check, X, ExternalLink, Link as LinkIcon, MapPin, Laptop, Edit2, Plus, Save, Clock } from 'lucide-react';
+import { Briefcase, Check, X, ExternalLink, Link as LinkIcon, MapPin, Laptop, Edit2, Plus, Save, Clock, Sparkles } from 'lucide-react';
 import { optimizeImage } from '../../utils/image';
 
 const DESIGNATION_OPTIONS = [
@@ -60,6 +60,72 @@ export default function AdminJobLinksSection() {
     experience: ''
   });
   const [submittingAdd, setSubmittingAdd] = useState(false);
+
+  // AI extraction state — for Add New form
+  const [aiText, setAiText] = useState('');
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiSuccess, setAiSuccess] = useState(false);
+
+  // AI extraction state — for pending/edit forms (keyed by link._id)
+  const [aiTextMap, setAiTextMap] = useState({});
+  const [aiLoadingMap, setAiLoadingMap] = useState({});
+  const [aiSuccessMap, setAiSuccessMap] = useState({});
+
+  const handleAIExtract = async () => {
+    if (!aiText.trim()) { toast.error('Paste the job description first.'); return; }
+    setAiLoading(true);
+    setAiSuccess(false);
+    try {
+      const res = await api.post('/job-links/extract-job-details', { text: aiText });
+      if (res.data.success) {
+        const d = res.data.data;
+        setNewLinkForm(prev => ({
+          ...prev,
+          title: d.title || prev.title,
+          workMode: d.workMode || prev.workMode,
+          location: d.location || prev.location,
+          experience: d.experience || prev.experience,
+        }));
+        setAiSuccess(true);
+        toast.success('Fields auto-filled by AI!');
+        setTimeout(() => setAiSuccess(false), 3000);
+      }
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'AI extraction failed.');
+    } finally {
+      setAiLoading(false);
+    }
+  };
+
+  const handleAIExtractForLink = async (linkId) => {
+    const text = aiTextMap[linkId] || '';
+    if (!text.trim()) { toast.error('Paste the job description first.'); return; }
+    setAiLoadingMap(prev => ({ ...prev, [linkId]: true }));
+    setAiSuccessMap(prev => ({ ...prev, [linkId]: false }));
+    try {
+      const res = await api.post('/job-links/extract-job-details', { text });
+      if (res.data.success) {
+        const d = res.data.data;
+        setEditForms(prev => ({
+          ...prev,
+          [linkId]: {
+            ...prev[linkId],
+            title: d.title || prev[linkId]?.title || '',
+            workMode: d.workMode || prev[linkId]?.workMode || '',
+            location: d.location || prev[linkId]?.location || '',
+            experience: d.experience || prev[linkId]?.experience || '',
+          }
+        }));
+        setAiSuccessMap(prev => ({ ...prev, [linkId]: true }));
+        toast.success('Fields auto-filled by AI!');
+        setTimeout(() => setAiSuccessMap(prev => ({ ...prev, [linkId]: false })), 3000);
+      }
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'AI extraction failed.');
+    } finally {
+      setAiLoadingMap(prev => ({ ...prev, [linkId]: false }));
+    }
+  };
 
   const fetchJobLinks = async () => {
     try {
@@ -207,6 +273,39 @@ export default function AdminJobLinksSection() {
             <Plus size={18} className="text-accent" />
             Add New Job Link Directly
           </h3>
+
+          {/* AI Extract Panel */}
+          <div className="mb-4 bg-gradient-to-r from-violet-50 to-indigo-50 border border-violet-200 rounded-xl p-4">
+            <div className="flex items-center gap-2 mb-2">
+              <Sparkles size={16} className="text-violet-500" />
+              <span className="text-sm font-semibold text-violet-700">AI Auto-Fill</span>
+              <span className="text-xs text-violet-500">— paste job content and let AI fill the fields</span>
+            </div>
+            <textarea
+              rows={3}
+              value={aiText}
+              onChange={e => { setAiText(e.target.value); setAiSuccess(false); }}
+              placeholder="Paste the full job posting content here (copy from LinkedIn, Naukri, etc.)…"
+              className="w-full text-sm border border-violet-200 rounded-lg px-3 py-2 focus:outline-none focus:border-violet-400 bg-white resize-none mb-2"
+            />
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={handleAIExtract}
+                disabled={aiLoading || !aiText.trim()}
+                className="flex items-center gap-1.5 px-4 py-1.5 bg-violet-600 hover:bg-violet-700 disabled:opacity-50 text-white text-sm font-medium rounded-lg transition"
+              >
+                <Sparkles size={14} />
+                {aiLoading ? 'Extracting…' : 'Extract with AI'}
+              </button>
+              {aiSuccess && (
+                <span className="flex items-center gap-1 text-xs font-semibold text-green-600">
+                  <Check size={13} /> Fields auto-filled!
+                </span>
+              )}
+            </div>
+          </div>
+
           <form onSubmit={handleAddNew} className="space-y-4">
             <div className="relative">
               <LinkIcon size={16} className="absolute left-3 top-3 text-gray-400" />
@@ -356,67 +455,103 @@ export default function AdminJobLinksSection() {
 
                   {/* Form for adding details if Pending or Editing */}
                   {isEditing ? (
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-2">
-                      <div className="flex gap-1.5">
-                        <div className="relative flex-1 min-w-0">
-                          <Briefcase size={14} className="absolute left-2.5 top-2.5 text-gray-400" />
+                    <>
+                      {/* AI Extract Panel */}
+                      <div className="mt-3 mb-2 bg-gradient-to-r from-violet-50 to-indigo-50 border border-violet-200 rounded-xl p-3">
+                        <div className="flex items-center gap-2 mb-1.5">
+                          <Sparkles size={14} className="text-violet-500" />
+                          <span className="text-xs font-semibold text-violet-700">AI Auto-Fill</span>
+                          <span className="text-xs text-violet-500">— paste job content to fill fields</span>
+                        </div>
+                        <div className="flex gap-2">
+                          <textarea
+                            rows={2}
+                            value={aiTextMap[link._id] || ''}
+                            onChange={e => setAiTextMap(prev => ({ ...prev, [link._id]: e.target.value }))}
+                            placeholder="Paste job description content here to auto-fill fields…"
+                            className="flex-1 text-xs border border-violet-200 rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-violet-400 bg-white resize-none"
+                          />
+                          <div className="flex flex-col gap-1.5 shrink-0">
+                            <button
+                              type="button"
+                              onClick={() => handleAIExtractForLink(link._id)}
+                              disabled={aiLoadingMap[link._id] || !aiTextMap[link._id]?.trim()}
+                              className="flex items-center gap-1 px-3 py-1.5 bg-violet-600 hover:bg-violet-700 disabled:opacity-50 text-white text-xs font-medium rounded-lg transition whitespace-nowrap"
+                            >
+                              <Sparkles size={12} />
+                              {aiLoadingMap[link._id] ? 'Extracting…' : 'Extract'}
+                            </button>
+                            {aiSuccessMap[link._id] && (
+                              <span className="flex items-center gap-1 text-[10px] font-semibold text-green-600">
+                                <Check size={11} /> Auto-filled!
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-2">
+                        <div className="flex gap-1.5">
+                          <div className="relative flex-1 min-w-0">
+                            <Briefcase size={14} className="absolute left-2.5 top-2.5 text-gray-400" />
+                            <select
+                              value={editForms[link._id]?.title !== undefined ? editForms[link._id].title : link.title}
+                              onChange={(e) => handleFormChange(link._id, 'title', e.target.value)}
+                              className="w-full pl-8 p-1.5 text-sm border rounded bg-white text-gray-700 focus:outline-none focus:border-accent"
+                            >
+                              <option value="" disabled>Select Designation</option>
+                              {[...DESIGNATION_OPTIONS, ...customDesignations].map(opt => (
+                                <option key={opt} value={opt}>{opt}</option>
+                              ))}
+                            </select>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const added = handleAddDesignation();
+                              if (added) handleFormChange(link._id, 'title', added);
+                            }}
+                            className="bg-gray-100 hover:bg-gray-200 text-gray-600 px-2 rounded transition shrink-0 flex items-center justify-center border border-border"
+                            title="Add Custom Designation"
+                          >
+                            <Plus size={14} />
+                          </button>
+                        </div>
+                        <div className="relative">
+                          <Laptop size={14} className="absolute left-2.5 top-2.5 text-gray-400" />
                           <select
-                            value={editForms[link._id]?.title !== undefined ? editForms[link._id].title : link.title}
-                            onChange={(e) => handleFormChange(link._id, 'title', e.target.value)}
+                            value={editForms[link._id]?.workMode !== undefined ? editForms[link._id].workMode : (link.workMode || '')}
+                            onChange={(e) => handleFormChange(link._id, 'workMode', e.target.value)}
                             className="w-full pl-8 p-1.5 text-sm border rounded bg-white text-gray-700 focus:outline-none focus:border-accent"
                           >
-                            <option value="" disabled>Select Designation</option>
-                            {[...DESIGNATION_OPTIONS, ...customDesignations].map(opt => (
-                              <option key={opt} value={opt}>{opt}</option>
-                            ))}
+                            <option value="" disabled>Select Work Mode</option>
+                            <option value="Remote">Remote</option>
+                            <option value="Onsite">Onsite</option>
+                            <option value="Hybrid">Hybrid</option>
                           </select>
                         </div>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            const added = handleAddDesignation();
-                            if (added) handleFormChange(link._id, 'title', added);
-                          }}
-                          className="bg-gray-100 hover:bg-gray-200 text-gray-600 px-2 rounded transition shrink-0 flex items-center justify-center border border-border"
-                          title="Add Custom Designation"
-                        >
-                          <Plus size={14} />
-                        </button>
+                        <div className="relative">
+                          <MapPin size={14} className="absolute left-2.5 top-2.5 text-gray-400" />
+                          <input
+                            type="text"
+                            placeholder="Location (e.g. Bangalore, India) - Optional"
+                            value={editForms[link._id]?.location !== undefined ? editForms[link._id].location : link.location}
+                            onChange={(e) => handleFormChange(link._id, 'location', e.target.value)}
+                            className="w-full pl-8 p-1.5 text-sm border rounded bg-white focus:outline-none focus:border-accent"
+                          />
+                        </div>
+                        <div className="relative">
+                          <Clock size={14} className="absolute left-2.5 top-2.5 text-gray-400" />
+                          <input
+                            type="text"
+                            placeholder="Experience (e.g. 2-5 Yrs) - Optional"
+                            value={editForms[link._id]?.experience !== undefined ? editForms[link._id].experience : link.experience}
+                            onChange={(e) => handleFormChange(link._id, 'experience', e.target.value)}
+                            className="w-full pl-8 p-1.5 text-sm border rounded bg-white focus:outline-none focus:border-accent"
+                          />
+                        </div>
                       </div>
-                      <div className="relative">
-                        <Laptop size={14} className="absolute left-2.5 top-2.5 text-gray-400" />
-                        <select
-                          value={editForms[link._id]?.workMode !== undefined ? editForms[link._id].workMode : (link.workMode || '')}
-                          onChange={(e) => handleFormChange(link._id, 'workMode', e.target.value)}
-                          className="w-full pl-8 p-1.5 text-sm border rounded bg-white text-gray-700 focus:outline-none focus:border-accent"
-                        >
-                          <option value="" disabled>Select Work Mode</option>
-                          <option value="Remote">Remote</option>
-                          <option value="Onsite">Onsite</option>
-                          <option value="Hybrid">Hybrid</option>
-                        </select>
-                      </div>
-                      <div className="relative">
-                        <MapPin size={14} className="absolute left-2.5 top-2.5 text-gray-400" />
-                        <input
-                          type="text"
-                          placeholder="Location (e.g. Bangalore, India) - Optional"
-                          value={editForms[link._id]?.location !== undefined ? editForms[link._id].location : link.location}
-                          onChange={(e) => handleFormChange(link._id, 'location', e.target.value)}
-                          className="w-full pl-8 p-1.5 text-sm border rounded bg-white focus:outline-none focus:border-accent"
-                        />
-                      </div>
-                      <div className="relative">
-                        <Clock size={14} className="absolute left-2.5 top-2.5 text-gray-400" />
-                        <input
-                          type="text"
-                          placeholder="Experience (e.g. 2-5 Yrs) - Optional"
-                          value={editForms[link._id]?.experience !== undefined ? editForms[link._id].experience : link.experience}
-                          onChange={(e) => handleFormChange(link._id, 'experience', e.target.value)}
-                          className="w-full pl-8 p-1.5 text-sm border rounded bg-white focus:outline-none focus:border-accent"
-                        />
-                      </div>
-                    </div>
+                    </>
                   ) : (
                     <div className="flex flex-wrap items-center gap-3 text-sm mt-2 text-gray-600 bg-gray-50 p-2 rounded-lg border border-black/5">
                       {link.title && <div className="flex items-center gap-1 font-semibold text-gray-900"><Briefcase size={14}/>{link.title}</div>}

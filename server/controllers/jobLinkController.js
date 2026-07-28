@@ -1,4 +1,5 @@
 const JobLink = require('../models/JobLink');
+const OpenAI = require('openai');
 
 exports.getJobLinks = async (req, res) => {
   try {
@@ -123,5 +124,68 @@ exports.updateJobLink = async (req, res) => {
   } catch (error) {
     console.error('Error updating job link:', error);
     res.status(500).json({ success: false, message: 'Server error' });
+  }
+};
+
+exports.extractJobDetails = async (req, res) => {
+  try {
+    const { text } = req.body;
+
+    if (!text || text.trim().length < 30) {
+      return res.status(400).json({ success: false, message: 'Please paste more job description content.' });
+    }
+
+    if (!process.env.OPENAI_API_KEY) {
+      return res.status(500).json({ success: false, message: 'OpenAI API key is not configured.' });
+    }
+
+    const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+
+    const prompt = `You are a job description parser. Extract structured information from the following job posting content.
+
+Return ONLY a valid JSON object with these exact keys (no markdown, no explanation, just raw JSON):
+{
+  "title": "most relevant job designation/role (e.g. Full Stack Developer, React Developer, Backend Engineer)",
+  "company": "company name if mentioned, else empty string",
+  "workMode": "one of: Remote, Onsite, Hybrid — infer from context if not explicitly stated",
+  "location": "city and country if mentioned, else empty string",
+  "experience": "experience requirement as a short string (e.g. 2-4 years, 3+ years), else empty string"
+}
+
+Job posting content:
+${text.slice(0, 4000)}`;
+
+    const completion = await openai.chat.completions.create({
+      model: 'gpt-4o-mini',
+      messages: [{ role: 'user', content: prompt }],
+      temperature: 0.1,
+      max_tokens: 300,
+    });
+
+    const responseText = completion.choices[0]?.message?.content?.trim() || '';
+
+    // Strip markdown code fences if present
+    const cleaned = responseText.replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/```\s*$/i, '').trim();
+
+    let extracted;
+    try {
+      extracted = JSON.parse(cleaned);
+    } catch {
+      return res.status(500).json({ success: false, message: 'AI returned unexpected format. Please try again.' });
+    }
+
+    return res.json({
+      success: true,
+      data: {
+        title: extracted.title || '',
+        company: extracted.company || '',
+        workMode: ['Remote', 'Onsite', 'Hybrid'].includes(extracted.workMode) ? extracted.workMode : '',
+        location: extracted.location || '',
+        experience: extracted.experience || '',
+      }
+    });
+  } catch (error) {
+    console.error('Error extracting job details:', error);
+    res.status(500).json({ success: false, message: 'Failed to extract job details. Try again.' });
   }
 };
