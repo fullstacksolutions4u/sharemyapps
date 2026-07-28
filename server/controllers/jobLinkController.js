@@ -114,6 +114,7 @@ exports.updateJobLink = async (req, res) => {
     }
     if (title !== undefined) link.title = title;
     if (company !== undefined) link.company = company;
+    if (postedDate !== undefined) link.postedDate = postedDate;
     if (workMode !== undefined) link.workMode = workMode;
     if (location !== undefined) link.location = location;
     if (url !== undefined) link.url = url;
@@ -141,12 +142,15 @@ exports.extractJobDetails = async (req, res) => {
 
     const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
+    const currentDate = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
     const prompt = `You are a job description parser. Extract structured information from the following job posting content.
+CURRENT DATE: ${currentDate}
 
 Return ONLY a valid JSON object with these exact keys (no markdown, no explanation, just raw JSON):
 {
   "title": "most relevant job designation/role (e.g. Full Stack Developer, React Developer, Backend Engineer)",
   "company": "company name if mentioned, else empty string",
+  "postedDate": "job posting date if mentioned. If relative (e.g. '1w', '2d'), calculate the exact date based on CURRENT DATE and output in 'Month DD' format (e.g. 'July 21'). Else empty string",
   "workMode": "one of: Remote, Onsite, Hybrid — infer from context if not explicitly stated",
   "location": "city and country if mentioned, else empty string",
   "experience": "experience requirement as a short string (e.g. 2-4 years, 3+ years), else empty string"
@@ -179,6 +183,7 @@ ${text.slice(0, 4000)}`;
       data: {
         title: extracted.title || '',
         company: extracted.company || '',
+        postedDate: extracted.postedDate || '',
         workMode: ['Remote', 'Onsite', 'Hybrid'].includes(extracted.workMode) ? extracted.workMode : '',
         location: extracted.location || '',
         experience: extracted.experience || '',

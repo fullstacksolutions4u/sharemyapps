@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const jobLinkSchema = new mongoose.Schema({
   title: { type: String, trim: true, default: '' },
   company: { type: String, trim: true, default: '' },
+  postedDate: { type: String, trim: true, default: '' },
   url: { type: String, required: true, trim: true },
   platform: { 
     type: String, 

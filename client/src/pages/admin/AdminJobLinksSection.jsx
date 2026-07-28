@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import api from '../../api/axios';
 import { toast } from 'react-hot-toast';
-import { Briefcase, Check, X, ExternalLink, Link as LinkIcon, MapPin, Laptop, Edit2, Plus, Save, Clock, Sparkles } from 'lucide-react';
+import { Briefcase, Check, X, ExternalLink, Link as LinkIcon, MapPin, Laptop, Edit2, Plus, Save, Clock, Sparkles, Building, Calendar } from 'lucide-react';
 import { optimizeImage } from '../../utils/image';
 
 const DESIGNATION_OPTIONS = [
@@ -55,6 +55,8 @@ export default function AdminJobLinksSection() {
   const [newLinkForm, setNewLinkForm] = useState({
     url: '',
     title: '',
+    company: '',
+    postedDate: '',
     workMode: '',
     location: '',
     experience: ''
@@ -82,6 +84,8 @@ export default function AdminJobLinksSection() {
         setNewLinkForm(prev => ({
           ...prev,
           title: d.title || prev.title,
+          company: d.company || prev.company,
+          postedDate: d.postedDate || prev.postedDate,
           workMode: d.workMode || prev.workMode,
           location: d.location || prev.location,
           experience: d.experience || prev.experience,
@@ -111,6 +115,8 @@ export default function AdminJobLinksSection() {
           [linkId]: {
             ...prev[linkId],
             title: d.title || prev[linkId]?.title || '',
+            company: d.company || prev[linkId]?.company || '',
+            postedDate: d.postedDate || prev[linkId]?.postedDate || '',
             workMode: d.workMode || prev[linkId]?.workMode || '',
             location: d.location || prev[linkId]?.location || '',
             experience: d.experience || prev[linkId]?.experience || '',
@@ -153,6 +159,8 @@ export default function AdminJobLinksSection() {
       
       if (status === 'approved') {
         const title = editForms[id]?.title !== undefined ? editForms[id].title : link.title;
+        const company = editForms[id]?.company !== undefined ? editForms[id].company : link.company;
+        const postedDate = editForms[id]?.postedDate !== undefined ? editForms[id].postedDate : link.postedDate;
         const workMode = editForms[id]?.workMode !== undefined ? editForms[id].workMode : link.workMode;
         const location = editForms[id]?.location !== undefined ? editForms[id].location : link.location;
         const experience = editForms[id]?.experience !== undefined ? editForms[id].experience : link.experience;
@@ -163,6 +171,8 @@ export default function AdminJobLinksSection() {
           return;
         }
         updates.title = title;
+        updates.company = company;
+        updates.postedDate = postedDate;
         updates.workMode = workMode;
         updates.location = location;
         updates.experience = experience;
@@ -197,6 +207,8 @@ export default function AdminJobLinksSection() {
       [link._id]: {
         url: link.url,
         title: link.title,
+        company: link.company,
+        postedDate: link.postedDate,
         workMode: link.workMode,
         location: link.location,
         experience: link.experience || ''
@@ -372,6 +384,26 @@ export default function AdminJobLinksSection() {
                 />
               </div>
               <div className="relative">
+                <Building size={16} className="absolute left-3 top-3 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="Company Name - Optional"
+                  value={newLinkForm.company}
+                  onChange={e => setNewLinkForm(prev => ({...prev, company: e.target.value}))}
+                  className="w-full pl-9 p-2.5 text-sm border border-border rounded-lg focus:outline-none focus:border-accent"
+                />
+              </div>
+              <div className="relative">
+                <Calendar size={16} className="absolute left-3 top-3 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="Posted Date (e.g. 2 days ago) - Optional"
+                  value={newLinkForm.postedDate}
+                  onChange={e => setNewLinkForm(prev => ({...prev, postedDate: e.target.value}))}
+                  className="w-full pl-9 p-2.5 text-sm border border-border rounded-lg focus:outline-none focus:border-accent"
+                />
+              </div>
+              <div className="relative">
                 <Clock size={16} className="absolute left-3 top-3 text-gray-400" />
                 <input
                   type="text"
@@ -541,6 +573,26 @@ export default function AdminJobLinksSection() {
                           />
                         </div>
                         <div className="relative">
+                          <Building size={14} className="absolute left-2.5 top-2.5 text-gray-400" />
+                          <input
+                            type="text"
+                            placeholder="Company Name - Optional"
+                            value={editForms[link._id]?.company !== undefined ? editForms[link._id].company : link.company}
+                            onChange={(e) => handleFormChange(link._id, 'company', e.target.value)}
+                            className="w-full pl-8 p-1.5 text-sm border rounded bg-white focus:outline-none focus:border-accent"
+                          />
+                        </div>
+                        <div className="relative">
+                          <Calendar size={14} className="absolute left-2.5 top-2.5 text-gray-400" />
+                          <input
+                            type="text"
+                            placeholder="Posted Date - Optional"
+                            value={editForms[link._id]?.postedDate !== undefined ? editForms[link._id].postedDate : link.postedDate}
+                            onChange={(e) => handleFormChange(link._id, 'postedDate', e.target.value)}
+                            className="w-full pl-8 p-1.5 text-sm border rounded bg-white focus:outline-none focus:border-accent"
+                          />
+                        </div>
+                        <div className="relative">
                           <Clock size={14} className="absolute left-2.5 top-2.5 text-gray-400" />
                           <input
                             type="text"
@@ -555,9 +607,11 @@ export default function AdminJobLinksSection() {
                   ) : (
                     <div className="flex flex-wrap items-center gap-3 text-sm mt-2 text-gray-600 bg-gray-50 p-2 rounded-lg border border-black/5">
                       {link.title && <div className="flex items-center gap-1 font-semibold text-gray-900"><Briefcase size={14}/>{link.title}</div>}
+                      {link.company && <div className="flex items-center gap-1"><Building size={14}/>{link.company}</div>}
                       {link.workMode && <div className="flex items-center gap-1"><Laptop size={14}/>{link.workMode}</div>}
                       {link.location && <div className="flex items-center gap-1"><MapPin size={14}/>{link.location}</div>}
                       {link.experience && <div className="flex items-center gap-1"><Clock size={14}/>{link.experience}</div>}
+                      {link.postedDate && <div className="flex items-center gap-1"><Calendar size={14}/>{link.postedDate}</div>}
                     </div>
                   )}
                 </div>
