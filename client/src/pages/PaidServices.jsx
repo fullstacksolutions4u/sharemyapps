@@ -221,9 +221,10 @@ export default function PaidServices() {
         onClick={handlePaidClick}
         disabled={planLoading}
         style={{
-          marginTop: '26px', width: '100%', background: '#0c8c8c', color: '#fff',
-          border: 'none', borderRadius: '8px', padding: '14px', fontSize: '13.5px',
+          marginTop: '26px', width: '100%', background: '#008b74', color: '#fff',
+          border: 'none', borderRadius: '10px', padding: '14px', fontSize: '14px',
           fontWeight: 700, letterSpacing: '.02em', fontFamily: "'Manrope', sans-serif",
+          boxShadow: '0 6px 16px rgba(0, 139, 116, 0.25)',
           cursor: planLoading ? 'default' : 'pointer', opacity: planLoading ? 0.7 : 1,
         }}
       >
@@ -294,9 +295,10 @@ export default function PaidServices() {
             <button
               onClick={() => navigate(user ? '/dashboard' : '/register')}
               style={{
-                marginTop: '26px', width: '100%', background: '#243433', color: '#fff',
-                border: 'none', borderRadius: '8px', padding: '14px', fontSize: '13.5px',
+                marginTop: '26px', width: '100%', background: '#fff', color: '#000',
+                border: '1.5px solid #c9ede6', borderRadius: '10px', padding: '13px 14px', fontSize: '14px',
                 fontWeight: 700, letterSpacing: '.02em', fontFamily: "'Manrope', sans-serif", cursor: 'pointer',
+                boxShadow: '0 4px 14px rgba(0, 166, 147, 0.1)',
               }}
             >
               Get Started for Free

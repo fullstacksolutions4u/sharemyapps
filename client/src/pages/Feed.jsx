@@ -375,9 +375,9 @@ export default function Feed() {
         {user && (
           <button
             onClick={() => setShowReportModal(true)}
-            className="bg-gradient-to-r from-[#00A693] to-[#007D6F] text-white font-bold py-3.5 px-4 rounded-xl flex items-center justify-center gap-2.5 transition-all w-full shrink-0 shadow-[0_4px_14px_0_rgba(0,166,147,0.39)] hover:shadow-[0_6px_20px_rgba(0,166,147,0.23)] hover:-translate-y-0.5"
+            className="bg-white border-[1.5px] border-[#c9ede6] text-black font-bold py-3.5 px-4 rounded-[10px] flex items-center justify-center gap-2.5 transition-all w-full shrink-0 shadow-[0_4px_14px_rgba(0,166,147,0.1)] hover:shadow-[0_6px_20px_rgba(0,166,147,0.15)] hover:-translate-y-0.5"
           >
-            <Briefcase size={18} className="drop-shadow-sm" />
+            <Briefcase size={18} className="text-[#008b74]" />
             Report your company vacancy
           </button>
         )}
