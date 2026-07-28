@@ -1,21 +1,12 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { MapPin, Briefcase, CreditCard, CheckCircle, XCircle, ArrowRight, Laptop, Clock, Crown, Home, Bookmark, IndianRupee } from 'lucide-react';
+import { MapPin, Briefcase, CheckCircle, XCircle, ArrowRight, Laptop, Crown, IndianRupee } from 'lucide-react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
 
-const SKILL_COLORS = [
-  'bg-blue-50 text-blue-700 border-blue-200',
-  'bg-violet-50 text-violet-700 border-violet-200',
-  'bg-amber-50 text-amber-700 border-amber-200',
-  'bg-pink-50 text-pink-700 border-pink-200',
-  'bg-emerald-50 text-emerald-700 border-emerald-200',
-  'bg-orange-50 text-orange-700 border-orange-200',
-  'bg-cyan-50 text-cyan-700 border-cyan-200',
-  'bg-rose-50 text-rose-700 border-rose-200',
-];
+
 
 const getStatusConfig = (status) => {
   const s = (status || '').toLowerCase();
@@ -57,41 +48,7 @@ const getStatusConfig = (status) => {
   };
 };
 
-function SkillsList({ skills, colors }) {
-  const [expanded, setExpanded] = useState(false);
-  const VISIBLE = 3;
-  const shown = expanded ? skills : skills.slice(0, VISIBLE);
-  const extra = skills.length - VISIBLE;
-  return (
-    <div className="flex flex-wrap gap-2">
-      {shown.map((s, i) => (
-        <span key={s} className={`text-sm font-medium px-3 py-1.5 rounded-xl border ${colors[i % colors.length]}`}>{s}</span>
-      ))}
-      {!expanded && extra > 0 && (
-        <button onClick={() => setExpanded(true)} className="text-sm font-medium px-3 py-1.5 rounded-xl border border-accent/40 text-accent bg-accent/5 hover:bg-accent/10 transition-colors">
-          +{extra} more
-        </button>
-      )}
-      {expanded && extra > 0 && (
-        <button onClick={() => setExpanded(false)} className="text-sm font-medium px-3 py-1.5 rounded-xl border border-border text-muted hover:text-text transition-colors">
-          Show less
-        </button>
-      )}
-    </div>
-  );
-}
 
-const TYPE_LABEL = { remote: 'Remote', onsite: 'On-site', hybrid: 'Hybrid' };
-const TYPE_DOT = {
-  remote:  'bg-green-500',
-  onsite:  'bg-blue-500',
-  hybrid:  'bg-purple-500',
-};
-const TYPE_STYLE = {
-  remote:  'bg-green-50 text-green-700 border-green-200',
-  onsite:  'bg-[#E6F7F5] text-accent border-accent/20',
-  hybrid:  'bg-purple-50 text-purple-700 border-purple-200',
-};
 
 function SkeletonCard() {
   return (
@@ -261,7 +218,6 @@ export default function Vacancies() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5 max-w-5xl mx-auto">
           {TAB_CONFIG[activeTab].data.map(v => {
-            const initial = (v.company || v.title || '?')[0].toUpperCase();
             const subLabel = activeTab === 'freelance' ? null : (v.industry || v.company);
             return (
               <div key={v._id} className={`bg-white rounded-2xl shadow-sm border border-border p-6 flex flex-col gap-4 transition-all duration-200 hover:shadow-md ${v.status === 'closed' ? 'opacity-70' : ''}`}>
