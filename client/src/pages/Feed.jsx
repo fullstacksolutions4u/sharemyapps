@@ -50,6 +50,54 @@ const TwinklingStars = () => (
   </div>
 );
 
+const TypingPlaceholderInput = ({ value, onChange, className }) => {
+  const [placeholderText, setPlaceholderText] = useState('');
+  
+  useEffect(() => {
+    const fullText = "Share job posts with community";
+    let currentIndex = 0;
+    let isDeleting = false;
+    let timeoutId;
+
+    const type = () => {
+      if (isDeleting) {
+        setPlaceholderText(fullText.substring(0, currentIndex));
+        currentIndex--;
+        if (currentIndex < 0) {
+          isDeleting = false;
+          timeoutId = setTimeout(type, 500);
+        } else {
+          timeoutId = setTimeout(type, 50);
+        }
+      } else {
+        setPlaceholderText(fullText.substring(0, currentIndex + 1));
+        currentIndex++;
+        if (currentIndex === fullText.length) {
+          isDeleting = true;
+          timeoutId = setTimeout(type, 2000);
+        } else {
+          timeoutId = setTimeout(type, 100);
+        }
+      }
+    };
+
+    timeoutId = setTimeout(type, 500);
+
+    return () => clearTimeout(timeoutId);
+  }, []);
+
+  return (
+    <input
+      type="url"
+      required
+      placeholder={placeholderText}
+      value={value}
+      onChange={onChange}
+      className={className}
+    />
+  );
+};
+
 export default function Feed() {
   const { user } = useAuth();
   const [activities, setActivities] = useState([]);
@@ -201,10 +249,7 @@ export default function Feed() {
                 onSubmit={handleInlineJobLinkSubmit}
                 className="flex items-center gap-1 bg-white rounded-xl border border-black/20 animate-border-gemini-shine focus-within:!border-accent/50 focus-within:!shadow-[0_0_0_2px_rgba(0,166,147,0.1)] transition-all p-1 pl-1.5 overflow-hidden relative"
               >
-                <input
-                  type="url"
-                  required
-                  placeholder="Share job posts link with our community"
+                <TypingPlaceholderInput
                   value={inlineUrl}
                   onChange={e => setInlineUrl(e.target.value)}
                   className="flex-1 bg-transparent text-[12px] outline-none px-1 text-gray-700 min-w-0 placeholder:text-gray-400"

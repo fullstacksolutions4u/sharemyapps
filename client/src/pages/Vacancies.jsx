@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { MapPin, Briefcase, CreditCard, CheckCircle, XCircle, ArrowRight, Laptop, Clock, Crown, Home } from 'lucide-react';
+import { MapPin, Briefcase, CreditCard, CheckCircle, XCircle, ArrowRight, Laptop, Clock, Crown, Home, Bookmark, IndianRupee } from 'lucide-react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
@@ -259,104 +259,73 @@ export default function Vacancies() {
           <p className="text-xs text-[#9CA3AF] mt-1">Check back soon — new listings are posted regularly.</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 max-w-5xl mx-auto">
           {TAB_CONFIG[activeTab].data.map(v => {
             const initial = (v.company || v.title || '?')[0].toUpperCase();
             const subLabel = activeTab === 'freelance' ? null : (v.industry || v.company);
             return (
-              <div key={v._id} className={`bg-white rounded-2xl shadow-[0_2px_16px_rgba(0,0,0,0.08)] hover:shadow-[0_4px_24px_rgba(0,0,0,0.13)] border border-border/60 hover:border-accent/60 p-5 flex flex-col gap-4 transition-all duration-200 ${v.status === 'closed' ? 'opacity-70' : ''}`}>
-
-                {/* Header: avatar + title + type badge */}
-                <div className="flex items-start gap-3">
-                  <div className="w-12 h-12 rounded-xl bg-accent-light flex items-center justify-center shrink-0 text-accent font-bold text-lg">
-                    {initial}
+              <div key={v._id} className={`bg-white rounded-2xl shadow-sm border border-border p-6 flex flex-col gap-4 transition-all duration-200 hover:shadow-md ${v.status === 'closed' ? 'opacity-70' : ''}`}>
+                {/* Header: Title, Company */}
+                <div className="flex justify-between items-start">
+                  <div>
+                    <h2 className="text-[17px] font-semibold text-gray-900">{v.title}</h2>
+                    <p className="text-[14px] text-[#4f6e87] mt-0.5">{subLabel || v.company || 'Company Name'}</p>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <h2 className="font-bold text-text leading-snug">{v.title}</h2>
-                      {v.status === 'closed' && (
-                        <span className="text-xs px-2 py-0.5 rounded-full bg-gray-100 text-gray-500 border border-gray-200 font-medium">Closed</span>
-                      )}
-                    </div>
-                    {subLabel && (
-                      <p className="text-sm text-muted mt-0.5">{subLabel}</p>
-                    )}
-                  </div>
-                  <span className={`shrink-0 flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full border font-medium ${TYPE_STYLE[v.type]}`}>
-                    <span className={`w-1.5 h-1.5 rounded-full ${TYPE_DOT[v.type]}`} />
-                    {TYPE_LABEL[v.type]}
-                  </span>
                 </div>
 
-                {/* Pills: metadata */}
-                {(v.location || v.jobType || v.experience || v.salaryRange || v.budget || v.duration || v.availability) && (
-                  <div className="flex items-center gap-2 flex-wrap">
-                    {v.location && (
-                      <span className="flex items-center gap-1.5 text-sm text-muted bg-[#F3F0EB] border border-border px-3 py-1.5 rounded-full">
-                        {v.location?.toLowerCase() === 'remote' ? <Home size={13} className="shrink-0" /> : <MapPin size={13} className="shrink-0" />} {v.location}
-                      </span>
-                    )}
-                    {v.jobType && (
-                      <span className="flex items-center gap-1.5 text-sm text-muted bg-[#F3F0EB] border border-border px-3 py-1.5 rounded-full">
-                        <Briefcase size={13} className="shrink-0" /> {v.jobType}
-                      </span>
-                    )}
-                    {v.experience && (
-                      <span className="flex items-center gap-1.5 text-sm text-orange-700 bg-orange-50 border border-orange-200 px-3 py-1.5 rounded-full">
-                        <Clock size={13} className="shrink-0" /> {v.experience}
-                      </span>
-                    )}
-                    {v.salaryRange && (
-                      <span className="flex items-center gap-1.5 text-sm font-semibold text-accent bg-accent-light border border-accent/20 px-3 py-1.5 rounded-full">
-                        <CreditCard size={13} className="shrink-0" /> {v.salaryRange}
-                      </span>
-                    )}
-                    {v.budget && (
-                      <span className="flex items-center gap-1.5 text-sm font-semibold text-accent bg-accent-light border border-accent/20 px-3 py-1.5 rounded-full">
-                        <span className="shrink-0 font-bold">₹</span> {v.budget}
-                      </span>
-                    )}
-                    {v.duration && (
-                      <span className="flex items-center gap-1.5 text-sm text-muted bg-[#F3F0EB] border border-border px-3 py-1.5 rounded-full">
-                        {v.duration}
-                      </span>
-                    )}
-                    {v.availability && (
-                      <span className="flex items-center gap-1.5 text-sm text-muted bg-[#F3F0EB] border border-border px-3 py-1.5 rounded-full">
-                        {v.availability}
-                      </span>
-                    )}
+                {/* Info Row: Experience, Salary, Location */}
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-2 text-[13px] text-gray-600 font-medium">
+                  <div className="flex items-center gap-1.5">
+                    <Briefcase size={15} className="text-gray-400" />
+                    {v.experience || '0-5 Yrs'}
                   </div>
-                )}
+                  <div className="w-[1px] h-3.5 bg-gray-300"></div>
+                  <div className="flex items-center gap-1.5">
+                    <IndianRupee size={14} className="text-gray-400" />
+                    {v.salaryRange || v.budget || 'Not specified'}
+                  </div>
+                  <div className="w-[1px] h-3.5 bg-gray-300"></div>
+                  <div className="flex items-center gap-1.5">
+                    <MapPin size={15} className="text-gray-400" />
+                    {v.location || 'Remote'}
+                  </div>
+                </div>
 
                 {/* Description */}
                 <div>
-                  <p className={`text-sm text-muted leading-relaxed ${expanded[v._id] ? '' : 'line-clamp-2'}`}>
+                  <p className={`text-[13.5px] text-gray-600 leading-relaxed ${expanded[v._id] ? '' : 'line-clamp-2'}`}>
                     {v.description}
                   </p>
-                  {v.description?.length > 120 && (
+                  {v.description?.length > 100 && (
                     <button
                       onClick={() => setExpanded(e => ({ ...e, [v._id]: !e[v._id] }))}
-                      className="text-xs font-medium text-accent hover:text-accent-hover mt-1 transition-colors"
+                      className="text-[12.5px] font-medium text-accent hover:text-accent-hover mt-1 transition-colors"
                     >
                       {expanded[v._id] ? 'Read less' : 'Read more'}
                     </button>
                   )}
                 </div>
 
-                {/* Skills / Topics */}
-                {(v.skills?.length > 0 || v.topics?.length > 0) && (
-                  <SkillsList skills={v.skills || v.topics || []} colors={SKILL_COLORS} />
-                )}
+                {/* Skills / Tags */}
+                <div className="text-[13.5px] text-gray-500">
+                  {v.skills && v.skills.length > 0 ? v.skills.join(' · ') : v.topics && v.topics.length > 0 ? v.topics.join(' · ') : 'Skills not specified'}
+                </div>
 
                 {/* Footer */}
-                <div className="border-t border-border pt-4 flex items-center justify-center gap-3 mt-auto">
+                <div className="flex items-center justify-between mt-2 border-t border-transparent">
+                  <div className="text-[12px] text-gray-400">
+                    {v.createdAt ? (() => {
+                      const days = Math.floor((new Date() - new Date(v.createdAt)) / (1000 * 60 * 60 * 24));
+                      return days === 0 ? 'Today' : days === 1 ? '1 Day Ago' : `${days} Days Ago`;
+                    })() : 'Recently'}
+                  </div>
+                  
                   {v.status === 'closed' ? (
                     <span className="text-sm text-gray-400 font-medium px-5 py-2.5">Applications closed</span>
                   ) : !user ? (
                     <Link
                       to="/login"
-                      className="flex items-center gap-2 text-sm font-semibold bg-accent hover:bg-accent-hover text-white px-5 py-2.5 rounded-xl transition-colors"
+                      className="flex items-center gap-2 text-[13.5px] font-semibold bg-accent hover:bg-accent-hover text-white px-5 py-2.5 rounded-xl transition-colors"
                     >
                       Sign in to apply <ArrowRight size={15} />
                     </Link>
@@ -366,7 +335,7 @@ export default function Vacancies() {
                       <button
                         onClick={() => handleInterest(v)}
                         disabled={busy === v._id || !config.canWithdraw}
-                        className={`group flex items-center gap-2 text-sm font-semibold px-5 py-2.5 rounded-xl transition-colors ${
+                        className={`group flex items-center gap-2 text-[13.5px] font-semibold px-5 py-2.5 rounded-xl transition-colors ${
                           !config.canWithdraw ? 'disabled:opacity-100 disabled:cursor-default cursor-default' : 'disabled:opacity-60 disabled:cursor-not-allowed'
                         } ${
                           v.interested
