@@ -208,7 +208,7 @@ export default function MentorshipProgram() {
         onClick={() => { if (!user) { navigate('/register'); return; } setApplyOpen(true); }}
         style={{ width: '100%', background: '#0c8c8c', color: '#fff', border: 'none', borderRadius: '8px', padding: '14px', fontSize: '13.5px', fontWeight: 700, letterSpacing: '.02em', cursor: 'pointer', fontFamily: "'Manrope', sans-serif" }}
       >
-        Apply for Mentorship Program
+        Enroll for Mentorship Program
       </button>
     );
   };

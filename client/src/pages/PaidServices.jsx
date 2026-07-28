@@ -279,15 +279,42 @@ export default function PaidServices() {
       />
     )}
     <div style={{
+      position: 'relative',
       minHeight: 'calc(100vh - 64px)',
       background: '#e9e6df',
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',
       justifyContent: 'center',
-      padding: '0 24px 24px',
+      padding: '60px 24px 24px',
       fontFamily: "'Manrope', system-ui, sans-serif",
     }}>
+      <button
+        onClick={() => navigate('/quiz-zone')}
+        style={{
+          position: 'absolute',
+          top: '24px',
+          right: '32px',
+          background: 'linear-gradient(135deg, #F5A623 0%, #d48a1b 100%)',
+          color: '#fff',
+          border: 'none',
+          borderRadius: '10px',
+          padding: '10px 20px',
+          fontSize: '13.5px',
+          fontWeight: 700,
+          cursor: 'pointer',
+          fontFamily: "'Manrope', sans-serif",
+          boxShadow: '0 4px 14px rgba(245, 166, 35, 0.3)',
+          transition: 'transform 0.2s, box-shadow 0.2s',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px'
+        }}
+        onMouseOver={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 6px 18px rgba(245, 166, 35, 0.4)'; }}
+        onMouseOut={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 14px rgba(245, 166, 35, 0.3)'; }}
+      >
+        Earn Coins & Claim Discount
+      </button>
       <div style={{
         width: '100%',
         maxWidth: '1080px',
