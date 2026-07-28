@@ -37,7 +37,7 @@ function packLabel(p) {
 
 
 export default function AdminOverview({ stats, onNavigate }) {
-  const [deletedIds, setDeletedIds] = useState(new Set());
+
   const [growth, setGrowth] = useState([]);
   const [growthDays, setGrowthDays] = useState(7);
   const [growthLoading, setGrowthLoading] = useState(true);
@@ -190,7 +190,7 @@ export default function AdminOverview({ stats, onNavigate }) {
               </button>
             </div>
             <div className="divide-y divide-border">
-              {payments.payments.filter(p => !deletedIds.has(p._id)).slice(0, 5).map(p => (
+              {payments.payments.slice(0, 5).map(p => (
                 <div key={p._id} className="flex items-center justify-between px-5 py-[14px] hover:bg-bg transition-colors">
                   <div className="flex items-center gap-4 min-w-0">
                     <div className="w-10 h-10 rounded-full bg-[#f0f0fa] text-[#5b5fd8] flex items-center justify-center font-bold text-[13px] shrink-0">
