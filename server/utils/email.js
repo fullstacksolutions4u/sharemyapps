@@ -253,6 +253,40 @@ exports.sendCollaboratorAddedEmail = async ({ to, name, addedByName, projectTitl
   });
 };
 
+const sendCoinDiscountUnlockedEmail = async ({ to, name }) => {
+  const htmlContent = `
+    <div style="font-family:'Manrope',sans-serif;max-width:600px;margin:0 auto;border:1px solid #e5e7eb;border-radius:12px;overflow:hidden;box-shadow:0 4px 6px rgba(0,0,0,0.05);">
+      <div style="background:#0c8c8c;padding:32px 24px;text-align:center;">
+        <h1 style="color:#ffffff;margin:0;font-size:28px;font-weight:800;letter-spacing:-0.5px;">🎉 Discount Unlocked!</h1>
+      </div>
+      <div style="padding:40px 32px;background:#ffffff;">
+        <h2 style="color:#111827;font-size:20px;margin-top:0;">Hi ${name},</h2>
+        <p style="color:#4b5563;font-size:16px;line-height:1.6;margin-bottom:24px;">
+          Congratulations! You've successfully reached <strong>500 coins</strong> in the Quiz Zone.
+        </p>
+        <p style="color:#4b5563;font-size:16px;line-height:1.6;margin-bottom:32px;">
+          As a reward, you've unlocked a permanent <strong>30% discount</strong> on our Job Assistance & Mentorship services! Head over to the Premium Services page to claim your discount. And the best part? Claiming the discount won't deduct your hard-earned coins!
+        </p>
+        <div style="text-align:center;margin-bottom:32px;">
+          <a href="${BASE_URL}/career-services" style="display:inline-block;background:#0c8c8c;color:#ffffff;text-decoration:none;padding:14px 28px;border-radius:8px;font-weight:700;font-size:16px;letter-spacing:0.5px;">Claim Discount Now</a>
+        </div>
+        <p style="color:#6b7280;font-size:14px;margin-top:32px;text-align:center;font-style:italic;">
+          Keep learning and shining!
+        </p>
+      </div>
+      ${FOOTER('You are receiving this because you use ShareMyApps.')}
+    </div>
+  `;
+  return sendEmailWithFallback({
+    sender: FROM,
+    to: [{ email: to, name }],
+    subject: "🎉 You've Unlocked a 30% Discount!",
+    htmlContent,
+  });
+};
+
+exports.sendCoinDiscountUnlockedEmail = sendCoinDiscountUnlockedEmail;
+
 exports.sendPlacementPaymentEmail = async ({ to, name, plan }) => {
   const defaultFeatures = [
     '1:1 Session with Placement Specialist for Job Hunting Guidance',

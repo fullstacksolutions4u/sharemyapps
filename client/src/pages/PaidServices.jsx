@@ -29,6 +29,7 @@ export default function PaidServices() {
   const [applyLoading, setApplyLoading] = useState(false);
   const [applyError, setApplyError] = useState('');
   const [offerConfig, setOfferConfig] = useState(null);
+  const [plans, setPlans] = useState(null);
   const [payModal, setPayModal] = useState(null);
   const [planLoading, setPlanLoading] = useState(false);
   const [paidSuccess, setPaidSuccess] = useState(false);
@@ -39,15 +40,20 @@ export default function PaidServices() {
   const freeOfferActive = offerConfig?.freeOfferEnabled && (
     !offerConfig.freeOfferDueDate || new Date() <= new Date(offerConfig.freeOfferDueDate)
   );
-  const oldPriceDisplay = offerConfig
-    ? `₹${(offerConfig.premiumServicePricePaise / 100).toLocaleString('en-IN')}`
+  
+  const premiumPlan = plans?.find(p => p.name === 'Premium') || plans?.[0];
+  const premiumPrice = premiumPlan ? premiumPlan.price : null;
+  
+  const oldPriceDisplay = premiumPrice
+    ? `₹${premiumPrice.toLocaleString('en-IN')}`
     : null;
-  const priceDisplay = offerConfig
-    ? `₹${((user?.hasRank1Offer ? offerConfig.rank1OfferPricePaise : offerConfig.premiumServicePricePaise) / 100).toLocaleString('en-IN')}`
+  const priceDisplay = premiumPrice
+    ? `₹${(user?.hasCoinDiscount ? Math.round(premiumPrice * 0.70) : premiumPrice).toLocaleString('en-IN')}`
     : null;
 
   useEffect(() => {
     api.get('/offers/config').then(r => setOfferConfig(r.data)).catch(() => {});
+    api.get('/plans').then(r => setPlans(r.data)).catch(() => {});
   }, []);
 
   useEffect(() => {
@@ -200,36 +206,65 @@ export default function PaidServices() {
 
     const handlePaidClick = async () => {
       if (!user) { navigate('/register'); return; }
-      setPlanLoading(true);
-      try {
-        const res = await api.get('/plans');
-        const plan = res.data?.find(p => p.name === 'Premium') || res.data?.[0];
-        if (!plan) { toast.error('No plan available. Please try again.'); return; }
-        if (user?.hasRank1Offer && offerConfig) {
-          plan.price = offerConfig.rank1OfferPricePaise / 100;
-        }
-        setPayModal({ ...plan, features: PREMIUM_FEATURES });
-      } catch {
+      
+      if (!plans) {
         toast.error('Could not load plan. Please try again.');
-      } finally {
+        return;
+      }
+      
+      const plan = { ...premiumPlan }; // Create a copy to safely modify the price for the modal
+      if (!plan || !plan.price) { toast.error('No plan available. Please try again.'); return; }
+      
+      if (user?.hasCoinDiscount) {
+        plan.price = Math.round(plan.price * 0.70);
+      }
+      setPayModal({ ...plan, features: PREMIUM_FEATURES });
+    };
+
+    const handleClaimDiscount = async () => {
+      try {
+        setPlanLoading(true);
+        await api.post('/offers/claim-coin-discount');
+        toast.success('30% discount claimed successfully!');
+        window.location.reload();
+      } catch (err) {
+        toast.error(err.response?.data?.message || 'Failed to claim discount');
         setPlanLoading(false);
       }
     };
 
     return (
-      <button
-        onClick={handlePaidClick}
-        disabled={planLoading}
-        style={{
-          marginTop: '26px', width: '100%', background: '#008b74', color: '#fff',
-          border: 'none', borderRadius: '10px', padding: '14px', fontSize: '14px',
-          fontWeight: 700, letterSpacing: '.02em', fontFamily: "'Manrope', sans-serif",
-          boxShadow: '0 6px 16px rgba(0, 139, 116, 0.25)',
-          cursor: planLoading ? 'default' : 'pointer', opacity: planLoading ? 0.7 : 1,
-        }}
-      >
-        {planLoading ? 'Loading…' : `Get Started — ${priceDisplay ?? '…'}`}
-      </button>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '26px' }}>
+        {user && !user.hasCoinDiscount && !(freeOfferActive || hasPremiumAccess || hasFreeGrant) && (
+          <button
+            onClick={handleClaimDiscount}
+            disabled={planLoading || (user.coins || 0) < 500}
+            style={{
+              width: '100%', background: 'linear-gradient(135deg, #f59e0b, #d97706)', color: '#fff',
+              border: 'none', borderRadius: '10px', padding: '14px', fontSize: '14px',
+              fontWeight: 700, letterSpacing: '.02em', fontFamily: "'Manrope', sans-serif",
+              boxShadow: (user.coins || 0) < 500 ? 'none' : '0 6px 16px rgba(245, 158, 11, 0.25)',
+              cursor: (planLoading || (user.coins || 0) < 500) ? 'not-allowed' : 'pointer', 
+              opacity: (planLoading || (user.coins || 0) < 500) ? 0.5 : 1,
+            }}
+          >
+            {planLoading ? 'Processing…' : `Claim 30% Discount (${user.coins || 0}/500 Coins)`}
+          </button>
+        )}
+        <button
+          onClick={handlePaidClick}
+          disabled={planLoading}
+          style={{
+            width: '100%', background: '#008b74', color: '#fff',
+            border: 'none', borderRadius: '10px', padding: '14px', fontSize: '14px',
+            fontWeight: 700, letterSpacing: '.02em', fontFamily: "'Manrope', sans-serif",
+            boxShadow: '0 6px 16px rgba(0, 139, 116, 0.25)',
+            cursor: planLoading ? 'default' : 'pointer', opacity: planLoading ? 0.7 : 1,
+          }}
+        >
+          {planLoading ? 'Loading…' : `Get Started — ${priceDisplay ?? '…'}`}
+        </button>
+      </div>
     );
   };
 
@@ -323,17 +358,17 @@ export default function PaidServices() {
                     {priceDisplay}
                   </span>
                 )}
-                {!(freeOfferActive || hasPremiumAccess || hasFreeGrant) && user?.hasRank1Offer && oldPriceDisplay && (
+                {!(freeOfferActive || hasPremiumAccess || hasFreeGrant) && user?.hasCoinDiscount && oldPriceDisplay && (
                   <span style={{ fontFamily: "'Spectral', serif", fontSize: '18px', fontWeight: 600, color: '#9aa6a4', textDecoration: 'line-through' }}>
                     {oldPriceDisplay}
                   </span>
                 )}
-                <span style={{ fontFamily: "'Spectral', serif", fontSize: '22px', fontWeight: 700, color: (freeOfferActive || hasPremiumAccess || hasFreeGrant || user?.hasRank1Offer) ? '#0a7373' : '#243433' }}>
+                <span style={{ fontFamily: "'Spectral', serif", fontSize: '22px', fontWeight: 700, color: (freeOfferActive || hasPremiumAccess || hasFreeGrant || user?.hasCoinDiscount) ? '#0a7373' : '#243433' }}>
                   {offerConfig === null ? '…' : (freeOfferActive || hasPremiumAccess || hasFreeGrant) ? '₹0' : priceDisplay}
                 </span>
               </span>
             </div>
-            {user?.hasRank1Offer && !(freeOfferActive || hasPremiumAccess || hasFreeGrant) && (
+            {user?.hasCoinDiscount && !(freeOfferActive || hasPremiumAccess || hasFreeGrant) && (
               <div style={{ fontSize: '13px', fontWeight: 800, marginBottom: '0px', marginTop: '6px', display: 'flex', alignItems: 'center', gap: '6px' }}>
                 <span>🎉</span>
                 <span style={{
@@ -341,7 +376,7 @@ export default function PaidServices() {
                   WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
                   filter: 'drop-shadow(0px 1px 1px rgba(158, 111, 0, 0.2))'
                 }}>
-                  Congrats! Leaderboard Rank 1 Offer Applied
+                  30% Coin Discount Applied!
                 </span>
               </div>
             )}

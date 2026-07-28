@@ -76,114 +76,79 @@ function JdAnalysisCard({ config, onSaved }) {
   );
 }
 
-/* ── Free Offer card ────────────────────────────────────────── */
-function FreeOfferCard({ config, onSaved }) {
-  const [enabled, setEnabled] = useState(config?.freeOfferEnabled ?? true);
-  const [price, setPrice]     = useState((config?.premiumServicePricePaise ?? 99900) / 100);
-  const [rank1Price, setRank1Price] = useState((config?.rank1OfferPricePaise ?? 49900) / 100);
-  const [dueDate, setDueDate] = useState(config?.freeOfferDueDate ? config.freeOfferDueDate.slice(0, 10) : '');
-  const [saving, setSaving]   = useState(false);
+/* ── Plans Pricing card ─────────────────────────────────────── */
+function PlansPricingCard({ plans, onPlanUpdated }) {
+  const [editingPlan, setEditingPlan] = useState(null);
+  const [price, setPrice] = useState('');
+  const [saving, setSaving] = useState(false);
 
-  const handleSave = async () => {
+  const handleEdit = (plan) => {
+    setEditingPlan(plan._id);
+    setPrice(plan.price);
+  };
+
+  const handleSave = async (id) => {
     setSaving(true);
     try {
-      const res = await api.put('/admin/config', {
-        freeOfferEnabled: enabled,
-        premiumServicePricePaise: Math.round(Number(price) * 100),
-        rank1OfferPricePaise: Math.round(Number(rank1Price) * 100),
-        freeOfferDueDate: dueDate ? new Date(dueDate).toISOString() : null,
-      });
-      toast.success('Placement service settings saved.');
-      onSaved(res.data);
+      const res = await api.put(`/admin/plans/${id}`, { price: Number(price) });
+      toast.success('Plan price updated.');
+      onPlanUpdated(res.data);
+      setEditingPlan(null);
     } catch {
-      toast.error('Failed to save.');
+      toast.error('Failed to update plan price.');
     } finally {
       setSaving(false);
     }
   };
 
-  const isExpired = dueDate && new Date(dueDate) < new Date(new Date().toDateString());
-
   return (
     <div className="bg-white border border-border rounded-2xl px-5 py-4 flex flex-col gap-4">
       <div className="flex items-center gap-3">
-        <div className="w-10 h-10 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-center shrink-0">
-          <Gift size={18} className="text-emerald-600" />
+        <div className="w-10 h-10 rounded-xl bg-blue-50 border border-blue-200 flex items-center justify-center shrink-0">
+          <IndianRupee size={18} className="text-blue-600" />
         </div>
-        <p className="text-sm font-semibold text-text">Placement Service</p>
+        <p className="text-sm font-semibold text-text">Plans Pricing</p>
       </div>
-
       <div className="border-t border-border pt-3 space-y-3">
-        {/* Free toggle */}
-        <div className="flex items-center justify-between">
-          <p className="text-xs font-semibold text-text">Free</p>
-          <button onClick={() => setEnabled(v => !v)} className="text-accent">
-            {enabled ? <ToggleRight size={28} /> : <ToggleLeft size={28} className="text-muted" />}
-          </button>
-        </div>
-
-        {/* Rate input */}
-        <div className="flex items-center gap-3">
-          <div className="flex-1">
-            <label className="block text-xs font-semibold text-muted mb-1.5">Rate (₹)</label>
-            <input
-              type="number"
-              min={0}
-              value={price}
-              onChange={e => setPrice(e.target.value)}
-              disabled={enabled}
-              className="w-full border border-border rounded-xl px-3 py-2 text-sm font-semibold text-text focus:outline-none focus:border-accent disabled:opacity-40 disabled:cursor-not-allowed disabled:bg-bg"
-            />
-          </div>
-          <div className="flex-1">
-            <label className="block text-xs font-semibold text-muted mb-1.5">Rank 1 Offer Rate (₹)</label>
-            <input
-              type="number"
-              min={0}
-              value={rank1Price}
-              onChange={e => setRank1Price(e.target.value)}
-              disabled={enabled}
-              className="w-full border border-border rounded-xl px-3 py-2 text-sm font-semibold text-text focus:outline-none focus:border-accent disabled:opacity-40 disabled:cursor-not-allowed disabled:bg-bg"
-            />
-          </div>
-        </div>
-
-        {/* Free offer due date */}
-        {enabled && (
-          <div>
-            <label className="block text-xs font-semibold text-muted mb-1.5">Free Offer Due Date (optional)</label>
-            <div className="flex items-center gap-2">
-              <input
-                type="date"
-                value={dueDate}
-                onChange={e => setDueDate(e.target.value)}
-                className="flex-1 border border-border rounded-xl px-3 py-2 text-sm font-semibold text-text focus:outline-none focus:border-accent"
-              />
-              {dueDate && (
-                <button
-                  onClick={() => setDueDate('')}
-                  className="text-xs font-medium text-muted hover:text-red-500 transition-colors shrink-0"
-                >
-                  Clear
-                </button>
-              )}
+        {!plans ? (
+          <div className="animate-pulse h-10 bg-gray-100 rounded-xl" />
+        ) : plans.length === 0 ? (
+          <p className="text-xs text-muted">No plans found.</p>
+        ) : (
+          plans.map(plan => (
+            <div key={plan._id} className="flex flex-col gap-1.5">
+              <label className="block text-xs font-semibold text-muted">
+                {plan.name === 'Premium' ? 'Placement Services' : plan.name} Fee (₹)
+              </label>
+              <div className="flex gap-2">
+                <input
+                  type="number"
+                  min={0}
+                  value={editingPlan === plan._id ? price : plan.price}
+                  onChange={e => setPrice(e.target.value)}
+                  disabled={editingPlan !== plan._id || saving}
+                  className="flex-1 border border-border rounded-xl px-3 py-2 text-sm font-semibold text-text focus:outline-none focus:border-accent disabled:opacity-40 disabled:cursor-not-allowed disabled:bg-bg"
+                />
+                {editingPlan === plan._id ? (
+                  <button
+                    onClick={() => handleSave(plan._id)}
+                    disabled={saving}
+                    className="bg-accent hover:bg-accent-hover text-white text-xs font-bold px-3 py-2 rounded-xl transition-colors shrink-0"
+                  >
+                    {saving ? 'Saving…' : 'Save'}
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => handleEdit(plan)}
+                    className="bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold px-3 py-2 rounded-xl transition-colors shrink-0"
+                  >
+                    Edit
+                  </button>
+                )}
+              </div>
             </div>
-            {isExpired && (
-              <p className="text-[11px] text-red-500 mt-1.5">
-                This date is in the past — the free offer will show as expired to users even with Free enabled. Clear it or pick a future date.
-              </p>
-            )}
-          </div>
+          ))
         )}
-
-        <button
-          onClick={handleSave}
-          disabled={saving}
-          className="w-full flex items-center justify-center gap-2 bg-accent hover:bg-accent-hover disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm font-semibold px-4 py-2 rounded-xl transition-colors"
-        >
-          {saving ? <span className="w-3.5 h-3.5 border-2 border-white/40 border-t-white rounded-full animate-spin" /> : <Save size={14} />}
-          {saving ? 'Saving…' : 'Save'}
-        </button>
       </div>
     </div>
   );
@@ -570,8 +535,12 @@ export default function AdminPlansSection() {
   const [config, setConfig]         = useState(null);
   const [loadingConfig, setLoadingConfig] = useState(true);
   const [paymentsData, setPaymentsData] = useState(null);
+  const [plans, setPlans] = useState(null);
 
   useEffect(() => {
+    api.get('/admin/plans')
+      .then(r => setPlans(r.data))
+      .catch(() => toast.error('Failed to load plans.'));
     api.get('/admin/config')
       .then(r => setConfig(r.data))
       .catch(() => toast.error('Failed to load config.'))
@@ -588,9 +557,6 @@ export default function AdminPlansSection() {
         {loadingConfig
           ? <div className="bg-white border border-border rounded-2xl px-5 py-4 h-40 animate-pulse" />
           : <JdAnalysisCard key={config?._id ?? 'jd'} config={config} onSaved={setConfig} />}
-        {loadingConfig
-          ? <div className="bg-white border border-border rounded-2xl px-5 py-4 h-40 animate-pulse" />
-          : <FreeOfferCard key={config?._id ?? 'offer'} config={config} onSaved={setConfig} />}
 
         {/* Total Revenue */}
         <div className="bg-white border border-border rounded-2xl px-5 py-4 flex flex-col gap-4">
@@ -606,6 +572,14 @@ export default function AdminPlansSection() {
             </p>
           </div>
         </div>
+
+        {/* Plans Pricing */}
+        <PlansPricingCard 
+          plans={plans} 
+          onPlanUpdated={(updatedPlan) => {
+            setPlans(prev => prev.map(p => p._id === updatedPlan._id ? updatedPlan : p));
+          }} 
+        />
       </div>
 
       {/* Free premium access for selected users */}

@@ -23,4 +23,25 @@ router.get('/my-grant', protect, (req, res) => {
   res.json({ granted: !!req.user.freePremiumGrant?.granted });
 });
 
+const User = require('../models/User');
+
+router.post('/claim-coin-discount', protect, async (req, res) => {
+  try {
+    if (req.user.hasCoinDiscount) {
+      return res.status(400).json({ message: 'Discount already claimed.' });
+    }
+    if (req.user.points < 500) {
+      return res.status(400).json({ message: 'You need at least 500 coins to claim this discount.' });
+    }
+    
+    req.user.hasCoinDiscount = true;
+    await req.user.save();
+    
+    res.json({ success: true, message: '30% discount claimed successfully!' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
 module.exports = router;

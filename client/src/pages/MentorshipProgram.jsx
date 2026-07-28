@@ -100,6 +100,7 @@ export default function MentorshipProgram() {
   const [payModal, setPayModal] = useState(null);
   const [applyOpen, setApplyOpen] = useState(false);
   const [planLoading, setPlanLoading] = useState(false);
+  const [plans, setPlans] = useState(null);
   const [purchased, setPurchased] = useState(false);
   const [application, setApplication] = useState(null);
   const [checking, setChecking] = useState(user != null);
@@ -116,16 +117,37 @@ export default function MentorshipProgram() {
     ]).finally(() => setChecking(false));
   }, [user]);
 
+  useEffect(() => {
+    api.get('/plans').then(r => setPlans(r.data)).catch(() => {});
+  }, []);
+
+  const mentorshipPlan = plans?.find(p => p.name === 'Mentorship');
+  const discountPrice = mentorshipPlan ? Math.round(mentorshipPlan.price * 0.70) : null;
+  const oldPriceDisplay = mentorshipPlan ? `₹${mentorshipPlan.price.toLocaleString('en-IN')}/-` : null;
+  const priceDisplay = mentorshipPlan ? `₹${(user?.hasCoinDiscount ? discountPrice : mentorshipPlan.price).toLocaleString('en-IN')}/-` : '…';
+
   const handlePayClick = async () => {
-    setPlanLoading(true);
-    try {
-      const res = await api.get('/plans');
-      const plan = res.data?.find(p => p.name === 'Mentorship');
-      if (!plan) { toast.error('Mentorship plan is unavailable right now. Please try again later.'); return; }
-      setPayModal({ ...plan, features: MENTORSHIP_FEATURES });
-    } catch {
+    if (!plans) {
       toast.error('Could not load plan. Please try again.');
-    } finally {
+      return;
+    }
+    const plan = { ...mentorshipPlan };
+    if (!plan || !plan.price) { toast.error('Mentorship plan is unavailable right now. Please try again later.'); return; }
+    
+    if (user?.hasCoinDiscount) {
+      plan.price = Math.round(plan.price * 0.70);
+    }
+    setPayModal({ ...plan, features: MENTORSHIP_FEATURES });
+  };
+
+  const handleClaimDiscount = async () => {
+    try {
+      setPlanLoading(true);
+      await api.post('/offers/claim-coin-discount');
+      toast.success('30% discount claimed successfully!');
+      window.location.reload();
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to claim discount');
       setPlanLoading(false);
     }
   };
@@ -151,7 +173,7 @@ export default function MentorshipProgram() {
             disabled={planLoading}
             style={{ width: '100%', background: '#0c8c8c', color: '#fff', border: 'none', borderRadius: '8px', padding: '14px', fontSize: '13.5px', fontWeight: 700, letterSpacing: '.02em', cursor: planLoading ? 'default' : 'pointer', opacity: planLoading ? 0.7 : 1, fontFamily: "'Manrope', sans-serif" }}
           >
-            {planLoading ? 'Loading…' : 'Pay ₹15,000 & Start'}
+            {planLoading ? 'Loading…' : `Pay ${priceDisplay.replace('/-', '')} & Start`}
           </button>
         </>
       );
@@ -249,7 +271,7 @@ export default function MentorshipProgram() {
           onMouseOver={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 6px 18px rgba(245, 166, 35, 0.4)'; }}
           onMouseOut={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 14px rgba(245, 166, 35, 0.3)'; }}
         >
-          Quiz Zone
+          Earn Coins & Claim Discount
         </button>
         <div style={{
           width: '100%',
@@ -282,7 +304,12 @@ export default function MentorshipProgram() {
               fontFamily: "'Manrope', sans-serif",
               letterSpacing: '.02em',
             }}>
-              ₹15,000/-
+              {user?.hasCoinDiscount && oldPriceDisplay && (
+                <span style={{ textDecoration: 'line-through', opacity: 0.7, marginRight: '6px', fontSize: '11px' }}>
+                  {oldPriceDisplay}
+                </span>
+              )}
+              {priceDisplay}
             </div>
 
             <h1 style={{ margin: 0, fontFamily: "'Spectral', serif", fontSize: '26px', fontWeight: 600, color: '#f5efe2' }}>
@@ -319,6 +346,23 @@ export default function MentorshipProgram() {
 
                 <div style={{ height: '1.5px', background: '#dfe6e4', margin: '22px 0 18px' }} />
 
+                {user && !user.hasCoinDiscount && !purchased && (
+                  <button
+                    onClick={handleClaimDiscount}
+                    disabled={planLoading || (user.coins || 0) < 500}
+                    style={{
+                      width: '100%', background: 'linear-gradient(135deg, #f59e0b, #d97706)', color: '#fff',
+                      border: 'none', borderRadius: '10px', padding: '14px', fontSize: '14px',
+                      fontWeight: 700, letterSpacing: '.02em', fontFamily: "'Manrope', sans-serif",
+                      boxShadow: (user.coins || 0) < 500 ? 'none' : '0 6px 16px rgba(245, 158, 11, 0.25)',
+                      cursor: (planLoading || (user.coins || 0) < 500) ? 'not-allowed' : 'pointer', 
+                      opacity: (planLoading || (user.coins || 0) < 500) ? 0.5 : 1,
+                      marginBottom: '14px'
+                    }}
+                  >
+                    {planLoading ? 'Processing…' : `Claim 30% Discount (${user.coins || 0}/500 Coins)`}
+                  </button>
+                )}
                 {renderAction()}
 
                 {status === 'approved' && (

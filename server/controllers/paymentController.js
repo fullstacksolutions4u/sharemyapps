@@ -141,9 +141,8 @@ const createPlacementOrder = async (req, res) => {
     }
 
     let amountPaise = plan.price * 100;
-    if (plan.name === 'Premium' && req.user.hasRank1Offer) {
-      const cfg = await getConfig();
-      amountPaise = cfg.rank1OfferPricePaise;
+    if (req.user.hasCoinDiscount) {
+      amountPaise = Math.round(plan.price * 0.70) * 100;
     }
     const order = await razorpay.orders.create({
       amount: amountPaise,
@@ -180,9 +179,8 @@ const verifyPlacementPayment = async (req, res) => {
     if (!plan) return res.status(404).json({ message: 'Plan not found.' });
 
     let amountPaise = plan.price * 100;
-    if (plan.name === 'Premium' && req.user.hasRank1Offer) {
-      const cfg = await getConfig();
-      amountPaise = cfg.rank1OfferPricePaise;
+    if (req.user.hasCoinDiscount) {
+      amountPaise = Math.round(plan.price * 0.70) * 100;
     }
 
     await Payment.create({
@@ -198,9 +196,6 @@ const verifyPlacementPayment = async (req, res) => {
     // Unlock premium service for the user (pull first to avoid duplicates, then push)
     await User.updateOne({ _id: req.user._id }, { $pull: { premiumServices: { key: 'placement_session' } } });
     const updateQuery = { $push: { premiumServices: { key: 'placement_session', notes: `Payment: ${razorpay_payment_id}` } } };
-    if (plan.name === 'Premium' && req.user.hasRank1Offer) {
-      updateQuery.$set = { hasRank1Offer: false };
-    }
     await User.updateOne({ _id: req.user._id }, updateQuery);
 
     // Create FreeOffer entry so user appears in admin Premium Applicants list
