@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Banknote, Folder, Users, ArrowRight, ExternalLink, Trash2 } from 'lucide-react';
+import { Banknote, Folder, Users } from 'lucide-react';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   LabelList, Rectangle,
@@ -34,13 +34,7 @@ function packLabel(p) {
   return `${p.analysesGranted} JD ${p.analysesGranted === 1 ? 'analysis' : 'analyses'}`;
 }
 
-function timeAgo(date) {
-  const s = Math.floor((Date.now() - new Date(date)) / 1000);
-  if (s < 60)   return `${s}s ago`;
-  if (s < 3600)  return `${Math.floor(s / 60)}m ago`;
-  if (s < 86400) return `${Math.floor(s / 3600)}h ago`;
-  return new Date(date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
-}
+
 
 export default function AdminOverview({ stats, onNavigate }) {
   const [deletedIds, setDeletedIds] = useState(new Set());
@@ -49,15 +43,7 @@ export default function AdminOverview({ stats, onNavigate }) {
   const [growthLoading, setGrowthLoading] = useState(true);
   const [payments, setPayments] = useState(null);
 
-  const handleDelete = async (id) => {
-    if (!window.confirm('Delete this payment?')) return;
-    try {
-      await api.delete(`/admin/payments/${id}`);
-      setDeletedIds(prev => new Set(prev).add(id));
-    } catch (err) {
-      alert(err.response?.data?.message || 'Error deleting payment');
-    }
-  };
+
 
   useEffect(() => {
     let cancelled = false;
