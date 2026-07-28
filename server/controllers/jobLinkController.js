@@ -99,7 +99,7 @@ exports.createAdminJobLink = async (req, res) => {
 exports.updateJobLink = async (req, res) => {
   try {
     const { id } = req.params;
-    const { status, title, company, workMode, location, url, experience } = req.body;
+    const { status, title, company, postedDate, workMode, location, url, experience } = req.body;
 
     const link = await JobLink.findById(id);
     if (!link) {

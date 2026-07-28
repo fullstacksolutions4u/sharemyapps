@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import axios from '../api/axios';
 import { formatDistanceToNow } from 'date-fns';
-import { Trophy, MessageCircle, Heart, Star, TrendingUp, Briefcase, ChevronRight, UserPlus, Crown, Sparkles, Plus, MapPin, Laptop, ExternalLink, Clock } from 'lucide-react';
+import { Trophy, MessageCircle, Heart, Star, TrendingUp, Briefcase, ChevronRight, UserPlus, Crown, Sparkles, Plus, MapPin, Laptop, ExternalLink, Clock, Building, Calendar } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import _Lottie from 'lottie-react';
 import feedAnimation from '../assets/feed.json';
@@ -282,6 +282,11 @@ export default function Feed() {
                         <div className="font-semibold text-gray-800 text-[13px] group-hover:text-blue-600 transition-colors truncate">
                           {link.title || 'Job Opportunity'}
                         </div>
+                        {link.company && (
+                          <div className="text-[11.5px] text-gray-600 font-medium truncate flex items-center gap-1 mt-0.5">
+                            <Building size={11} className="text-gray-400" /> {link.company}
+                          </div>
+                        )}
                         
                         <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-gray-500 mt-0.5">
                           {link.experience && (
@@ -304,6 +309,12 @@ export default function Feed() {
                               <span className="whitespace-nowrap truncate max-w-[160px]">
                                 {link.location}
                               </span>
+                            </div>
+                          )}
+                          {link.postedDate && (
+                            <div className="flex items-center gap-1 text-blue-600/80">
+                              <Calendar size={12} />
+                              <span className="whitespace-nowrap">{link.postedDate}</span>
                             </div>
                           )}
                         </div>

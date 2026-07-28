@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import api from '../../api/axios';
 import { toast } from 'react-hot-toast';
-import { Briefcase, Check, X, ExternalLink, Link as LinkIcon, MapPin, Laptop, Edit2, Plus, Save, Clock, Sparkles, Building, Calendar } from 'lucide-react';
+import { Briefcase, Check, X, ExternalLink, Link as LinkIcon, MapPin, Laptop, Edit2, Plus, Save, Clock, Sparkles, Building, Calendar, Share2 } from 'lucide-react';
 import { optimizeImage } from '../../utils/image';
 
 const DESIGNATION_OPTIONS = [
@@ -432,58 +432,61 @@ export default function AdminJobLinksSection() {
         </div>
       )}
 
-      <div className="bg-white rounded-xl shadow-sm border border-border overflow-hidden">
-        <div className="divide-y divide-border">
-          {activeTab === 'pending' && pendingLinks.length === 0 && (
-            <div className="p-8 text-center text-muted">No pending job links.</div>
-          )}
-          {activeTab === 'approved' && approvedLinks.length === 0 && (
-            <div className="p-8 text-center text-muted">No approved job links.</div>
-          )}
+      <div className="space-y-4">
+        {activeTab === 'pending' && pendingLinks.length === 0 && (
+          <div className="p-8 text-center text-muted bg-white rounded-xl shadow-sm border border-border">No pending job links.</div>
+        )}
+        {activeTab === 'approved' && approvedLinks.length === 0 && (
+          <div className="p-8 text-center text-muted bg-white rounded-xl shadow-sm border border-border">No approved job links.</div>
+        )}
 
-          {(activeTab === 'pending' ? pendingLinks : approvedLinks).map(link => {
-            const isEditing = editingLinkId === link._id || activeTab === 'pending';
-            
-            return (
-              <div key={link._id} className="p-4 sm:p-5 flex flex-col md:flex-row gap-4 items-start md:items-center hover:bg-gray-50/50 transition">
+        {(activeTab === 'pending' ? pendingLinks : approvedLinks).map(link => {
+          const isEditing = editingLinkId === link._id || activeTab === 'pending';
+          
+          return (
+            <div key={link._id} className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 sm:p-5 flex flex-col md:flex-row gap-4 items-start transition hover:shadow-md">
+              
+              {/* Main Content Area */}
+              <div className="flex-1 w-full min-w-0">
                 
-                {/* User Info & URL */}
-                <div className="flex-1 w-full min-w-0">
-                  <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 mb-3">
-                    <div className="flex items-center gap-2 shrink-0">
-                      <img 
-                        src={optimizeImage(link.createdBy?.profileImage || link.createdBy?.avatar, 150) || `https://ui-avatars.com/api/?name=${link.createdBy?.name || 'Admin'}`} 
-                        alt="" 
-                        className="w-6 h-6 rounded-full"
-                      />
-                      <span className="text-sm font-medium text-gray-700 whitespace-nowrap">{link.createdBy?.name || 'Admin'}</span>
+                {/* Header: User / URL / Status */}
+                <div className="flex items-start justify-between mb-4">
+                  <div className="flex items-start gap-3 min-w-0">
+                    <div className="w-10 h-10 bg-blue-50 text-blue-500 rounded-lg flex items-center justify-center shrink-0">
+                      <Share2 size={18} />
                     </div>
-                    
-                    {isEditing ? (
-                      <div className="flex-1 relative min-w-0">
-                        <LinkIcon size={12} className="absolute left-2.5 top-2 text-gray-400" />
-                        <input
-                          type="url"
-                          placeholder="Job URL"
-                          value={editForms[link._id]?.url !== undefined ? editForms[link._id].url : link.url}
-                          onChange={(e) => handleFormChange(link._id, 'url', e.target.value)}
-                          className="w-full pl-7 p-1 text-xs border rounded bg-white text-gray-600 focus:outline-none focus:border-accent"
-                        />
+                    <div className="min-w-0 flex-1">
+                      <div className="text-[15px] font-bold text-[#1f2937] whitespace-nowrap mb-0.5">
+                        {link.createdBy?.name || 'Admin ShareMyApps'}
                       </div>
-                    ) : (
-                      <a href={link.url} target="_blank" rel="noopener noreferrer" className="text-sm text-blue-500 hover:underline flex items-center gap-1 break-all flex-1 min-w-0 line-clamp-1">
-                        {link.url} <ExternalLink size={12} className="shrink-0" />
-                      </a>
-                    )}
-
-                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide shrink-0 self-start sm:self-auto
-                      ${link.status === 'approved' ? 'bg-green-100 text-green-700' : 
-                        link.status === 'rejected' ? 'bg-red-100 text-red-700' : 
-                        'bg-yellow-100 text-yellow-700'}`}
-                    >
-                      {link.status}
-                    </span>
+                      
+                      {isEditing ? (
+                        <div className="relative mt-1">
+                          <LinkIcon size={12} className="absolute left-2.5 top-2 text-gray-400" />
+                          <input
+                            type="url"
+                            placeholder="Job URL"
+                            value={editForms[link._id]?.url !== undefined ? editForms[link._id].url : link.url}
+                            onChange={(e) => handleFormChange(link._id, 'url', e.target.value)}
+                            className="w-full pl-7 p-1 text-xs border rounded bg-white text-gray-600 focus:outline-none focus:border-accent"
+                          />
+                        </div>
+                      ) : (
+                        <a href={link.url} target="_blank" rel="noopener noreferrer" className="text-[13px] text-[#0d9488] hover:underline flex items-center gap-1 font-medium w-fit">
+                          View Original Post <ExternalLink size={12} className="shrink-0" />
+                        </a>
+                      )}
+                    </div>
                   </div>
+                  
+                  <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wide shrink-0 ml-4
+                    ${link.status === 'approved' ? 'bg-[#dcfce7] text-[#166534]' : 
+                      link.status === 'rejected' ? 'bg-red-100 text-red-700' : 
+                      'bg-yellow-100 text-yellow-700'}`}
+                  >
+                    {link.status}
+                  </span>
+                </div>
 
                   {/* Form for adding details if Pending or Editing */}
                   {isEditing ? (
@@ -605,34 +608,34 @@ export default function AdminJobLinksSection() {
                       </div>
                     </>
                   ) : (
-                    <div className="flex flex-wrap items-center gap-3 text-sm mt-2 text-gray-600 bg-gray-50 p-2 rounded-lg border border-black/5">
-                      {link.title && <div className="flex items-center gap-1 font-semibold text-gray-900"><Briefcase size={14}/>{link.title}</div>}
-                      {link.company && <div className="flex items-center gap-1"><Building size={14}/>{link.company}</div>}
-                      {link.workMode && <div className="flex items-center gap-1"><Laptop size={14}/>{link.workMode}</div>}
-                      {link.location && <div className="flex items-center gap-1"><MapPin size={14}/>{link.location}</div>}
-                      {link.experience && <div className="flex items-center gap-1"><Clock size={14}/>{link.experience}</div>}
-                      {link.postedDate && <div className="flex items-center gap-1"><Calendar size={14}/>{link.postedDate}</div>}
+                    <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-[13px] text-gray-500 font-medium bg-[#f4f6fa] p-3.5 rounded-lg border border-gray-100/50 mt-1">
+                      {link.title && <div className="flex items-center gap-2 text-gray-800 font-semibold"><Briefcase size={15} className="text-gray-400"/>{link.title}</div>}
+                      {link.company && <div className="flex items-center gap-2"><Building size={15} className="text-gray-400"/>{link.company}</div>}
+                      {link.workMode && <div className="flex items-center gap-2"><Laptop size={15} className="text-gray-400"/>{link.workMode}</div>}
+                      {link.location && <div className="flex items-center gap-2"><MapPin size={15} className="text-gray-400"/>{link.location}</div>}
+                      {link.experience && <div className="flex items-center gap-2"><Clock size={15} className="text-gray-400"/>{link.experience}</div>}
+                      {link.postedDate && <div className="flex items-center gap-2"><Calendar size={15} className="text-gray-400"/>{link.postedDate}</div>}
                     </div>
                   )}
                 </div>
 
                 {/* Actions */}
-                <div className="flex gap-2 w-full md:w-auto shrink-0 mt-3 md:mt-0 pt-3 md:pt-0 border-t md:border-0 border-border self-end">
+                <div className="flex md:flex-col gap-2 w-full md:w-28 shrink-0 mt-3 md:mt-0 md:pl-4 border-t md:border-t-0 md:border-l border-gray-100 pt-4 md:pt-0">
                   {activeTab === 'pending' && (
                     <button
                       onClick={() => handleUpdate(link._id, 'approved')}
-                      className="flex-1 md:flex-none flex items-center justify-center gap-1 px-3 py-1.5 bg-green-50 text-green-600 hover:bg-green-100 rounded-lg text-sm font-medium transition"
+                      className="flex-1 md:flex-none flex items-center justify-center gap-1.5 px-3 py-2 bg-white border border-[#10b981] text-[#10b981] hover:bg-[#10b981] hover:text-white rounded-md text-sm font-semibold transition"
                     >
-                      <Check size={16} /> Approve
+                      <Check size={14} /> Approve
                     </button>
                   )}
                   
                   {activeTab === 'approved' && !isEditing && (
                     <button
                       onClick={() => startEditing(link)}
-                      className="flex-1 md:flex-none flex items-center justify-center gap-1 px-3 py-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-lg text-sm font-medium transition"
+                      className="flex-1 md:flex-none flex items-center justify-center gap-1.5 px-3 py-2 bg-white border border-[#10b981] text-[#10b981] hover:bg-[#10b981] hover:text-white rounded-md text-sm font-semibold transition"
                     >
-                      <Edit2 size={16} /> Edit
+                      <Edit2 size={14} /> Edit
                     </button>
                   )}
 
@@ -640,15 +643,15 @@ export default function AdminJobLinksSection() {
                     <>
                       <button
                         onClick={() => handleUpdate(link._id, 'approved')}
-                        className="flex-1 md:flex-none flex items-center justify-center gap-1 px-3 py-1.5 bg-green-50 text-green-600 hover:bg-green-100 rounded-lg text-sm font-medium transition"
+                        className="flex-1 md:flex-none flex items-center justify-center gap-1.5 px-3 py-2 bg-white border border-[#10b981] text-[#10b981] hover:bg-[#10b981] hover:text-white rounded-md text-sm font-semibold transition"
                       >
-                        <Save size={16} /> Save
+                        <Save size={14} /> Save
                       </button>
                       <button
                         onClick={cancelEditing}
-                        className="flex-1 md:flex-none flex items-center justify-center gap-1 px-3 py-1.5 bg-gray-100 text-gray-600 hover:bg-gray-200 rounded-lg text-sm font-medium transition"
+                        className="flex-1 md:flex-none flex items-center justify-center gap-1.5 px-3 py-2 bg-white text-gray-500 hover:bg-gray-100 rounded-md text-sm font-semibold transition"
                       >
-                        <X size={16} /> Cancel
+                        <X size={14} /> Cancel
                       </button>
                     </>
                   )}
@@ -656,9 +659,9 @@ export default function AdminJobLinksSection() {
                   {(!isEditing || activeTab === 'pending') && (
                     <button
                       onClick={() => handleUpdate(link._id, 'rejected')}
-                      className="flex-1 md:flex-none flex items-center justify-center gap-1 px-3 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 rounded-lg text-sm font-medium transition"
+                      className="flex-1 md:flex-none flex items-center justify-center gap-1.5 px-3 py-2 bg-white text-[#ef4444] hover:bg-red-50 rounded-md text-sm font-semibold transition"
                     >
-                      <X size={16} /> {activeTab === 'pending' ? 'Reject' : 'Remove'}
+                      <X size={14} /> {activeTab === 'pending' ? 'Reject' : 'Remove'}
                     </button>
                   )}
                 </div>
@@ -667,7 +670,6 @@ export default function AdminJobLinksSection() {
             );
           })}
         </div>
-      </div>
     </div>
   );
 }
