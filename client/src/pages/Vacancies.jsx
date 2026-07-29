@@ -327,6 +327,7 @@ export default function Vacancies() {
       }
       toast.success('Thank you for your feedback!');
     } catch (error) {
+      console.error(error);
       toast.error('Failed to submit feedback');
     }
   };

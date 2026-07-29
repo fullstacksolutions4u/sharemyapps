@@ -146,7 +146,7 @@ export default function Feed() {
         import('react-hot-toast').then(t => t.default.error('Please log in to submit feedback'));
         return;
       }
-      await api.post(`/job-links/${id}/feedback`, { heardBack });
+      await axios.post(`/job-links/${id}/feedback`, { heardBack });
       const updated = { ...feedbackGiven, [id]: heardBack ? 'yes' : 'no' };
       setFeedbackGiven(updated);
       try {
@@ -156,6 +156,7 @@ export default function Feed() {
       }
       import('react-hot-toast').then(t => t.default.success('Thank you for your feedback!'));
     } catch (error) {
+      console.error(error);
       import('react-hot-toast').then(t => t.default.error('Failed to submit feedback'));
     }
   };
