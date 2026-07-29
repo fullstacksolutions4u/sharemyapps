@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
-import { Target, Briefcase, TrendingUp, HelpCircle } from 'lucide-react';
+import { Target, TrendingUp, HelpCircle } from 'lucide-react';
 import api from '../api/axios';
-import { Link } from 'react-router-dom';
+
 
 const SECTION_COLORS = {
   'Communication':    { bg: 'bg-blue-100',    text: 'text-blue-700',    bar: 'bg-blue-500' },
@@ -34,18 +34,7 @@ export default function DeveloperInterviewFeedback() {
   }
 
   if (sessions.length === 0) {
-    return (
-      <div className="p-6 max-w-4xl mx-auto text-center py-20">
-        <Target size={48} className="mx-auto text-muted mb-4 opacity-30" />
-        <h2 className="text-xl font-bold text-text mb-2">No Interview Feedback Yet</h2>
-        <p className="text-muted text-sm max-w-md mx-auto mb-6">
-          When you participate in our developer grooming interviews, your personalized feedback, scores, and improvement tips will appear here.
-        </p>
-        <Link to="/opportunities" className="inline-flex items-center gap-2 bg-accent text-white px-5 py-2.5 rounded-xl text-sm font-medium hover:bg-accent-hover transition">
-          <Briefcase size={16} /> Apply for Jobs
-        </Link>
-      </div>
-    );
+    return null;
   }
 
   return (
