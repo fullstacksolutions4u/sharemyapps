@@ -202,6 +202,7 @@ export default function Vacancies() {
   const jobLinks = (jobLinksData?.data || []).sort((a, b) => parsePostedDate(b.postedDate, b.createdAt) - parsePostedDate(a.postedDate, a.createdAt));
   useEffect(() => { if (errV) toast.error('Failed to load vacancies'); }, [errV]);
   useEffect(() => { if (errF) toast.error('Failed to load freelance projects'); }, [errF]);
+  useEffect(() => { if (errJL) toast.error('Failed to load job links'); }, [errJL]);
 
   const TAB_CONFIG = {
     vacancies:  { data: vacancies,       loading: loadingV, queryKey: 'vacancies',  route: '/vacancies'  },

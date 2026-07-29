@@ -269,7 +269,14 @@ export default function AdminJobLinksSection() {
         </div>
         {activeTab === 'approved' && (
           <button
-            onClick={() => setShowAddForm(!showAddForm)}
+            onClick={() => {
+              if (!showAddForm) {
+                setAiText('');
+                setAiSuccess(false);
+                setNewLinkForm({ url: '', title: '', company: '', postedDate: '', workMode: '', location: '', experience: '' });
+              }
+              setShowAddForm(!showAddForm);
+            }}
             className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium bg-accent text-white rounded-lg hover:bg-accent-hover transition-colors mb-1"
           >
             {showAddForm ? <X size={16} /> : <Plus size={16} />}
