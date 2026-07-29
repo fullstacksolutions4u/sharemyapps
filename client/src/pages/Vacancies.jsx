@@ -1,12 +1,60 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { MapPin, Briefcase, CheckCircle, XCircle, ArrowRight, Laptop, Crown, IndianRupee, ExternalLink, Building, Clock, Calendar } from 'lucide-react';
+import { MapPin, Briefcase, CheckCircle, XCircle, ArrowRight, Laptop, Crown, IndianRupee, ExternalLink, Building, Clock, Calendar, Plus, Info } from 'lucide-react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
 
 
+
+
+const TypingPlaceholderInput = ({ value, onChange, className }) => {
+  const [placeholderText, setPlaceholderText] = useState('');
+  
+  useEffect(() => {
+    const fullText = "Share job posts with community";
+    let currentIndex = 0;
+    let isDeleting = false;
+    let timeoutId;
+
+    const type = () => {
+      if (isDeleting) {
+        setPlaceholderText(fullText.substring(0, currentIndex));
+        currentIndex--;
+        if (currentIndex < 0) {
+          isDeleting = false;
+          timeoutId = setTimeout(type, 500);
+        } else {
+          timeoutId = setTimeout(type, 50);
+        }
+      } else {
+        setPlaceholderText(fullText.substring(0, currentIndex + 1));
+        currentIndex++;
+        if (currentIndex === fullText.length) {
+          isDeleting = true;
+          timeoutId = setTimeout(type, 2000);
+        } else {
+          timeoutId = setTimeout(type, 100);
+        }
+      }
+    };
+
+    timeoutId = setTimeout(type, 500);
+    return () => clearTimeout(timeoutId);
+  }, []);
+
+  return (
+    <input
+      type="url"
+      required
+      placeholder={placeholderText}
+      value={value}
+      onChange={onChange}
+      className={className}
+    />
+  );
+};
 
 const getStatusConfig = (status) => {
   const s = (status || '').toLowerCase();
@@ -134,7 +182,7 @@ function FilterDropdown({ icon: Icon, placeholder, value, onChange, options }) {
   );
 }
 
-const INDIA_STATES = ['Andhra Pradesh','Arunachal Pradesh','Assam','Bihar','Chhattisgarh','Goa','Gujarat','Haryana','Himachal Pradesh','Jharkhand','Karnataka','Kerala','Madhya Pradesh','Maharashtra','Manipur','Meghalaya','Mizoram','Nagaland','Odisha','Punjab','Rajasthan','Sikkim','Tamil Nadu','Telangana','Tripura','Uttar Pradesh','Uttarakhand','West Bengal','Andaman and Nicobar Islands','Chandigarh','Dadra and Nagar Haveli and Daman and Diu','Delhi','Jammu and Kashmir','Ladakh','Lakshadweep','Puducherry'];
+const INDIA_STATES = ['Andhra Pradesh','Arunachal Pradesh','Assam','Bihar','Chhattisgarh','Goa','Gujarat','Haryana','Himachal Pradesh','Jharkhand','Karnataka','Kerala','Madhya Pradesh','Maharashtra','Manipur','Meghalaya','Mizoram','Nagaland','Odisha','Punjab','Rajasthan','Sikkim','Tamil Nadu','Telangana','Tripura','Uttar Pradesh','Uttarakhand','West Bengal','Andaman and Nicobar Islands','Chandigarh','Dadra and Nagar Haveli and Daman and Diu','Delhi','Jammu and Kashmir','Ladakh','Lakshadweep','Puducherry', 'Out of India'];
 
 function SkeletonCard() {
   return (
@@ -183,6 +231,9 @@ export default function Vacancies() {
   const [filterDesignation, setFilterDesignation] = useState('');
   const [filterLocation, setFilterLocation] = useState('');
   const [filterExperience, setFilterExperience] = useState('');
+  
+  const [inlineUrl, setInlineUrl] = useState('');
+  const [submittingLink, setSubmittingLink] = useState(false);
 
   const TABS = [
     { key: 'vacancies',  label: 'Vacancies',          icon: Briefcase },
@@ -276,6 +327,28 @@ export default function Vacancies() {
     }
   };
 
+  const handleInlineJobLinkSubmit = async (e) => {
+    e.preventDefault();
+    if (!inlineUrl) return;
+    setSubmittingLink(true);
+    try {
+      const res = await api.post('/job-links', { url: inlineUrl, platform: 'other' });
+      if (res.data.success) {
+        toast.success('Job link submitted for review!');
+        setInlineUrl('');
+      }
+    } catch (error) {
+      console.error(error);
+      if (error.response?.data?.message) {
+        toast.error(error.response.data.message);
+      } else {
+        toast.error('Failed to share job link.');
+      }
+    } finally {
+      setSubmittingLink(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-linear-to-br from-accent/10 via-white to-violet-50 relative">
       <div className="absolute inset-0 opacity-20 pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle, #00A693 1px, transparent 1px)', backgroundSize: '28px 28px' }} />
@@ -314,8 +387,8 @@ export default function Vacancies() {
       {!TAB_CONFIG[activeTab].loading && TAB_CONFIG[activeTab].data.length > 0 && (
         <div className="bg-white border-b border-border">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3">
-            <div className="flex flex-wrap gap-2.5 items-center justify-center">
-
+            <div className="flex flex-wrap gap-3 items-center justify-center">
+              
               <FilterDropdown
                 icon={Briefcase}
                 placeholder="Designation"
@@ -349,6 +422,46 @@ export default function Vacancies() {
                   Clear all
                 </button>
               )}
+
+              {activeTab === 'job-links' && user && (
+                <div className="w-full sm:w-auto min-w-[280px] ml-0 sm:ml-2 flex items-center gap-2">
+                  <form
+                    onSubmit={handleInlineJobLinkSubmit}
+                    className="flex-1 flex items-center gap-1 bg-white rounded-xl border border-black/20 animate-border-gemini-shine focus-within:!border-accent/50 focus-within:!shadow-[0_0_0_2px_rgba(0,166,147,0.1)] transition-all p-1 pl-1.5 overflow-hidden relative"
+                  >
+                    <TypingPlaceholderInput
+                      value={inlineUrl}
+                      onChange={e => setInlineUrl(e.target.value)}
+                      className="flex-1 bg-transparent text-[12px] outline-none px-1 text-gray-700 min-w-0 placeholder:text-gray-400"
+                    />
+                    <button
+                      type="submit"
+                      disabled={submittingLink}
+                      className="bg-accent hover:bg-accent-hover text-white p-1.5 rounded-md transition-colors disabled:opacity-50 shrink-0 flex items-center justify-center"
+                    >
+                      <Plus size={14} />
+                    </button>
+                  </form>
+                  
+                  <div className="relative group flex items-center justify-center cursor-help shrink-0">
+                    <div className="text-gray-400 hover:text-accent transition-colors p-1">
+                      <Info size={18} />
+                    </div>
+                    
+                    <div className="absolute right-0 top-full mt-2 w-[280px] bg-gray-900 text-white text-[12px] p-3.5 rounded-xl shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 text-left">
+                      <div className="font-semibold text-[13px] mb-2 text-blue-300">Guidelines for sharing:</div>
+                      <ul className="list-disc pl-4 space-y-1.5 text-gray-200">
+                        <li>Software development roles only.</li>
+                        <li>Must be posted within the last 72 hours.</li>
+                        <li>Genuine posts only (no "comment if interested" engagement traps).</li>
+                        <li>Direct job post links only (no generic job portals).</li>
+                      </ul>
+                      <div className="absolute -top-1.5 right-2 w-3 h-3 bg-gray-900 transform rotate-45"></div>
+                    </div>
+                  </div>
+                </div>
+              )}
+              
             </div>
           </div>
         </div>
@@ -386,7 +499,7 @@ export default function Vacancies() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 max-w-7xl mx-auto">
             {filteredData.map(link => (
             <a
-              key={link._id}
+                key={link._id}
               href={link.url}
               target="_blank"
               rel="noopener noreferrer"
@@ -395,10 +508,21 @@ export default function Vacancies() {
               <div className="flex justify-between items-start">
                 <div className="flex-1 min-w-0 pr-2">
                   <h2 className="text-[16px] font-semibold text-gray-900 group-hover:text-blue-600 transition-colors truncate">{link.title || 'Job Opportunity'}</h2>
-                  {link.company && (
+                  {(link.company || link.location) && (
                     <div className="flex items-center gap-1.5 text-[13px] text-gray-600 mt-1">
-                      <Building size={14} className="text-gray-400" />
-                      <span className="truncate">{link.company}</span>
+                      {link.company && (
+                        <>
+                          <Building size={14} className="text-gray-400 shrink-0" />
+                          <span className="truncate">{link.company}</span>
+                        </>
+                      )}
+                      {link.company && link.location && <span className="text-gray-300 mx-0.5 shrink-0">•</span>}
+                      {link.location && (
+                        <>
+                          {!link.company && <MapPin size={14} className="text-gray-400 shrink-0" />}
+                          <span className="truncate">{link.location}</span>
+                        </>
+                      )}
                     </div>
                   )}
                 </div>
@@ -417,13 +541,7 @@ export default function Vacancies() {
                 {link.workMode && (
                   <div className="flex items-center gap-1">
                     <Laptop size={13} />
-                    <span>{link.workMode}{link.location ? `, ${link.location}` : ''}</span>
-                  </div>
-                )}
-                {!link.workMode && link.location && (
-                  <div className="flex items-center gap-1">
-                    <MapPin size={13} />
-                    <span>{link.location}</span>
+                    <span>{link.workMode}</span>
                   </div>
                 )}
                 {link.postedDate && (
@@ -434,8 +552,8 @@ export default function Vacancies() {
                 )}
               </div>
             </a>
-          ))}
-        </div>
+            ))}
+          </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5 max-w-5xl mx-auto">
             {filteredData.map(v => {

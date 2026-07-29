@@ -155,7 +155,7 @@ Return ONLY a valid JSON object with these exact keys (no markdown, no explanati
   "postedDate": "job posting date if mentioned. If relative (e.g. '1w', '2d'), calculate the exact date based on CURRENT DATE and output in 'Month DD' format (e.g. 'July 21'). Else empty string",
   "workMode": "one of: Remote, Onsite, Hybrid — infer from context if not explicitly stated",
   "location": "city and state/country if mentioned. For Indian cities, use the state name instead of 'India' (e.g. 'Jaipur, Rajasthan', 'Bengaluru, Karnataka', 'Mumbai, Maharashtra', 'Hyderabad, Telangana'). For non-Indian locations use city and country. Else empty string.",
-  "state": "the Indian state name — ONLY fill if there is exactly ONE clear Indian city or area mentioned (e.g. 'Bengaluru' → 'Karnataka', 'Hyderabad' → 'Telangana', 'Mumbai' → 'Maharashtra', 'Chennai' → 'Tamil Nadu', 'Delhi' → 'Delhi', 'Pune' → 'Maharashtra'). If multiple locations are mentioned, or if the location is Remote, or if no Indian location is found, return empty string.",
+  "state": "the Indian state name — ONLY fill if there is exactly ONE clear Indian city or area mentioned (e.g. 'Bengaluru' → 'Karnataka', 'Hyderabad' → 'Telangana'). If a non-Indian country/city is mentioned (e.g. 'USA', 'London'), return 'Out of India'. If multiple locations are mentioned, or if the location is Remote, return empty string.",
   "experience": "experience requirement as a short string (e.g. 2-4 years, 3+ years), else empty string"
 }
 
@@ -181,6 +181,27 @@ ${text.slice(0, 4000)}`;
       return res.status(500).json({ success: false, message: 'AI returned unexpected format. Please try again.' });
     }
 
+    let isDuplicate = false;
+    if (extracted.company && extracted.title) {
+      // Escape regex chars to be safe
+      const escapeRegExp = (string) => string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const companyRegex = new RegExp(escapeRegExp(extracted.company.trim()), 'i');
+      const titleRegex = new RegExp(escapeRegExp(extracted.title.trim()), 'i');
+
+      const existingLink = await JobLink.findOne({
+        company: companyRegex,
+        title: titleRegex
+      });
+      
+      const Vacancy = require('../models/Vacancy');
+      const existingVacancy = await Vacancy.findOne({
+        company: companyRegex,
+        title: titleRegex
+      });
+
+      if (existingLink || existingVacancy) isDuplicate = true;
+    }
+
     return res.json({
       success: true,
       data: {
@@ -191,6 +212,7 @@ ${text.slice(0, 4000)}`;
         location: extracted.location || '',
         state: extracted.state || '',
         experience: extracted.experience || '',
+        isDuplicate
       }
     });
   } catch (error) {

@@ -90,7 +90,11 @@ export default function AdminJobLinksSection() {
           experience: d.experience || prev.experience,
         }));
         setAiSuccess(true);
-        toast.success('Fields auto-filled by AI!');
+        if (d.isDuplicate) {
+          toast.error(`Warning: A job link for ${d.title} at ${d.company} might already exist!`, { duration: 5000 });
+        } else {
+          toast.success('Fields auto-filled by AI!');
+        }
         setTimeout(() => setAiSuccess(false), 3000);
       }
     } catch (err) {
@@ -122,7 +126,11 @@ export default function AdminJobLinksSection() {
           }
         }));
         setAiSuccessMap(prev => ({ ...prev, [linkId]: true }));
-        toast.success('Fields auto-filled by AI!');
+        if (d.isDuplicate) {
+          toast.error(`Warning: A job link for ${d.title} at ${d.company} might already exist!`, { duration: 5000 });
+        } else {
+          toast.success('Fields auto-filled by AI!');
+        }
         setTimeout(() => setAiSuccessMap(prev => ({ ...prev, [linkId]: false })), 3000);
       }
     } catch (err) {
