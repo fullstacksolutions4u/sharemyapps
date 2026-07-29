@@ -139,6 +139,32 @@ function FilterDropdown({ icon: Icon, placeholder, value, onChange, options }) {
 
 const INDIA_STATES = ['Andhra Pradesh','Arunachal Pradesh','Assam','Bihar','Chhattisgarh','Goa','Gujarat','Haryana','Himachal Pradesh','Jharkhand','Karnataka','Kerala','Madhya Pradesh','Maharashtra','Manipur','Meghalaya','Mizoram','Nagaland','Odisha','Punjab','Rajasthan','Sikkim','Tamil Nadu','Telangana','Tripura','Uttar Pradesh','Uttarakhand','West Bengal','Andaman and Nicobar Islands','Chandigarh','Dadra and Nagar Haveli and Daman and Diu','Delhi','Jammu and Kashmir','Ladakh','Lakshadweep','Puducherry', 'Out of India'];
 
+const ScrollingPlaceholderInput = ({ value, onChange, className }) => {
+  const fullText = "Found a job opening that isn't relevant to you? Share it here to help others!          ";
+  const [offset, setOffset] = useState(0);
+
+  useEffect(() => {
+    if (value) return;
+    const interval = setInterval(() => {
+      setOffset((prev) => (prev + 1) % fullText.length);
+    }, 180);
+    return () => clearInterval(interval);
+  }, [value]);
+
+  const displayPlaceholder = fullText.slice(offset) + fullText.slice(0, offset);
+
+  return (
+    <input
+      type="url"
+      required
+      placeholder={value ? "" : displayPlaceholder}
+      value={value}
+      onChange={onChange}
+      className={className}
+    />
+  );
+};
+
 const EXPERIENCE_OPTIONS = [
   'Fresher',
   'Less than 1 year',
@@ -470,10 +496,7 @@ export default function Vacancies() {
                     onSubmit={handleInlineJobLinkSubmit}
                     className="flex-1 flex items-center gap-1 bg-white rounded-xl border border-black/20 animate-border-gemini-shine focus-within:!border-accent/50 focus-within:!shadow-[0_0_0_2px_rgba(0,166,147,0.1)] transition-all p-1 pl-1.5 overflow-hidden relative"
                   >
-                    <input
-                      type="url"
-                      required
-                      placeholder="Found a job opening that isn't relevant to you? Share it here to help others!"
+                    <ScrollingPlaceholderInput
                       value={inlineUrl}
                       onChange={e => setInlineUrl(e.target.value)}
                       className="flex-1 bg-transparent text-[12px] outline-none px-1 text-gray-700 min-w-0 placeholder:text-gray-400"

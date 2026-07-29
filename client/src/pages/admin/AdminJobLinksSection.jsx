@@ -80,9 +80,15 @@ export default function AdminJobLinksSection() {
       const res = await api.post('/job-links/extract-job-details', { text: aiText });
       if (res.data.success) {
         const d = res.data.data;
+        const title = d.title || '';
+        if (title && !DESIGNATION_OPTIONS.includes(title) && !customDesignations.includes(title)) {
+          const updated = [...customDesignations, title];
+          setCustomDesignations(updated);
+          localStorage.setItem('customDesignations', JSON.stringify(updated));
+        }
         setNewLinkForm(prev => ({
           ...prev,
-          title: d.title || prev.title,
+          title: title || prev.title,
           company: d.company || prev.company,
           postedDate: d.postedDate || prev.postedDate,
           workMode: d.workMode || prev.workMode,
@@ -113,11 +119,17 @@ export default function AdminJobLinksSection() {
       const res = await api.post('/job-links/extract-job-details', { text });
       if (res.data.success) {
         const d = res.data.data;
+        const title = d.title || '';
+        if (title && !DESIGNATION_OPTIONS.includes(title) && !customDesignations.includes(title)) {
+          const updated = [...customDesignations, title];
+          setCustomDesignations(updated);
+          localStorage.setItem('customDesignations', JSON.stringify(updated));
+        }
         setEditForms(prev => ({
           ...prev,
           [linkId]: {
             ...prev[linkId],
-            title: d.title || prev[linkId]?.title || '',
+            title: title || prev[linkId]?.title || '',
             company: d.company || prev[linkId]?.company || '',
             postedDate: d.postedDate || prev[linkId]?.postedDate || '',
             workMode: d.workMode || prev[linkId]?.workMode || '',
