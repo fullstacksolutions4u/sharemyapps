@@ -366,13 +366,13 @@ export default function Feed() {
                                 </span>
                               </div>
                             )}
-                            {link.postedDate && (
-                              <div className="flex items-center gap-1 text-emerald-700 font-medium">
-                                <Calendar size={12} />
-                                <span className="whitespace-nowrap">Posted: {link.postedDate}</span>
-                              </div>
-                            )}
                           </div>
+                          {link.postedDate && (
+                            <div className="flex items-center gap-1 text-xs text-emerald-700 font-medium mt-1.5">
+                              <Calendar size={12} />
+                              <span className="whitespace-nowrap">Posted: {link.postedDate}</span>
+                            </div>
+                          )}
                         </div>
 
                         <div className={`flex items-center justify-center shrink-0 px-1.5 py-1 rounded-md transition-colors border text-[9px] font-bold uppercase gap-0.5 ${

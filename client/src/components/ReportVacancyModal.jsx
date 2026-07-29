@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { X, Send } from 'lucide-react';
+import { X, Send, Plus } from 'lucide-react';
 import api from '../api/axios';
 import toast from 'react-hot-toast';
 
@@ -78,37 +78,21 @@ export default function ReportVacancyModal({ isOpen, onClose, user }) {
         </button>
 
         <div className="p-6 sm:p-8">
-          {hasActualResumeData && (
-            <div className="flex border-b border-gray-200 mb-6">
-              <button
-                type="button"
-                className={`flex-1 py-2 text-sm font-semibold text-center border-b-2 transition-colors ${
-                  activeTab === 'my-companies'
-                    ? 'border-primary text-primary'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                }`}
-                onClick={() => setActiveTab('my-companies')}
-              >
-                My Companies
-              </button>
-              <button
-                type="button"
-                className={`flex-1 py-2 text-sm font-semibold text-center border-b-2 transition-colors ${
-                  activeTab === 'other-companies'
-                    ? 'border-primary text-primary'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                }`}
-                onClick={() => setActiveTab('other-companies')}
-              >
-                Other Companies
-              </button>
-            </div>
-          )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
             {activeTab === 'my-companies' ? (
               <div>
-                <label className="block text-sm font-semibold text-text mb-1.5">Select Company <span className="text-red-500">*</span></label>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="block text-sm font-semibold text-text">Select Company <span className="text-red-500">*</span></label>
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab('other-companies')}
+                    className="text-[#00A693] hover:text-[#008A7A] transition-colors flex items-center gap-1 text-xs font-semibold"
+                    title="Add new company manually"
+                  >
+                    <Plus size={14} /> Add New
+                  </button>
+                </div>
                 {companies.length > 0 ? (
                   <select
                     value={formData.company}
@@ -127,7 +111,18 @@ export default function ReportVacancyModal({ isOpen, onClose, user }) {
               </div>
             ) : (
               <div className="animate-in fade-in slide-in-from-top-2">
-                <label className="block text-sm font-semibold text-text mb-1.5">Company Name <span className="text-red-500">*</span></label>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="block text-sm font-semibold text-text">Company Name <span className="text-red-500">*</span></label>
+                  {hasActualResumeData && (
+                    <button
+                      type="button"
+                      onClick={() => setActiveTab('my-companies')}
+                      className="text-gray-500 hover:text-gray-700 transition-colors flex items-center gap-1 text-xs font-semibold"
+                    >
+                      Cancel
+                    </button>
+                  )}
+                </div>
                 <input
                   type="text"
                   placeholder="e.g. Google, Meta"

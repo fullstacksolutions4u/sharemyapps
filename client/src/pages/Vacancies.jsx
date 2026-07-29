@@ -622,13 +622,13 @@ export default function Vacancies() {
                           <span>{link.workMode}</span>
                         </div>
                       )}
-                      {link.postedDate && (
-                        <div className="flex items-center gap-1 text-emerald-700 font-medium">
-                          <Calendar size={13} />
-                          <span>Posted: {link.postedDate}</span>
-                        </div>
-                      )}
                     </div>
+                    {link.postedDate && (
+                      <div className="flex items-center gap-1 text-[12px] text-emerald-700 font-medium mt-2">
+                        <Calendar size={13} />
+                        <span>Posted: {link.postedDate}</span>
+                      </div>
+                    )}
                   </div>
 
                   <div className="pt-3 border-t border-gray-100 flex justify-end">
