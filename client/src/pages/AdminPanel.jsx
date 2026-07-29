@@ -3,25 +3,20 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import {
   LayoutDashboard, FolderOpen, ShieldCheck, Menu, LogOut,
-  Users, Briefcase, Megaphone, MessageSquare, Camera, IndianRupee, Crown, BookOpen, Unlock, Mail, Building2, Send, GraduationCap, History, Link as LinkIcon
+  Users, Briefcase, MessageSquare, Camera, IndianRupee, Crown, BookOpen, Unlock, Building2, Link as LinkIcon
 } from 'lucide-react';
 import api from '../api/axios';
 import AdminOverview from './admin/AdminOverview';
 import AdminProjectsSection from './admin/AdminProjectsSection';
 import AdminUsersSection from './admin/AdminUsersSection';
-import AdminAnnouncementsSection from './admin/AdminAnnouncementsSection';
-import AdminMessagesSection from './admin/AdminMessagesSection';
+import AdminCommunicationsWrapperSection from './admin/AdminCommunicationsWrapperSection';
 import AdminOpportunitiesSection from './admin/AdminOpportunitiesSection';
 import AdminResumesSection from './admin/AdminResumesSection';
 import AdminVacanciesSection from './admin/AdminVacanciesSection';
-import AdminOffersSection from './admin/AdminOffersSection';
 import AdminLearningSection from './admin/AdminLearningSection';
-import AdminPremiumServicesSection from './admin/AdminPremiumServicesSection';
 import AdminPlansSection from './admin/AdminPlansSection';
-import AdminJobRecommendationsSection from './admin/AdminJobRecommendationsSection';
-import AdminEmailSection from './admin/AdminEmailSection';
-import AdminMentorshipApplicationsSection from './admin/AdminMentorshipApplicationsSection';
-import AdminJobAlertHistorySection from './admin/AdminJobAlertHistorySection';
+import AdminApplicantsWrapperSection from './admin/AdminApplicantsWrapperSection';
+import AdminServicesWrapperSection from './admin/AdminServicesWrapperSection';
 import AdminAdvancedUsersFilterSection from './admin/AdminAdvancedUsersFilterSection';
 import AdminJobLinksSection from './admin/AdminJobLinksSection';
 import AdminCurationSection from './admin/AdminCurationSection';
@@ -32,19 +27,14 @@ const NAV = [
   { key: 'projects',       label: 'Projects',         icon: FolderOpen },
   { key: 'users',          label: 'Users',            icon: Users },
   { key: 'companies',      label: 'Companies',        icon: Building2 },
-  { key: 'opportunities',  label: 'Opportunities',    icon: Briefcase },
-  { key: 'announcements',  label: 'Announcements',    icon: Megaphone },
-  { key: 'learning',       label: 'Quiz Zone',        icon: BookOpen },
-  { key: 'messages',       label: 'Messages',         icon: MessageSquare },
-  { key: 'plans_payments',  label: 'Plans & Payments',  icon: IndianRupee },
-{ key: 'offers',          label: 'Placement Applicants', icon: Crown },
-  { key: 'mentorship_applications', label: 'Mentorship Applicants', icon: GraduationCap },
-  { key: 'service_access', label: 'Services',           icon: Unlock },
-  { key: 'job_recommendations', label: 'Job Alert', icon: Mail },
   { key: 'job_links',      label: 'Job Links',        icon: LinkIcon },
-  { key: 'job_alert_history', label: 'Job Alert History', icon: History },
+  { key: 'opportunities',  label: 'Opportunities',    icon: Briefcase },
   { key: 'curation',       label: 'Candidate Curation', icon: Briefcase },
-  { key: 'email',          label: 'Email',            icon: Send },
+  { key: 'communications', label: 'Communications',   icon: MessageSquare },
+  { key: 'applicants',      label: 'Applicants',        icon: Crown },
+  { key: 'service_access', label: 'Services',           icon: Unlock },
+  { key: 'plans_payments',  label: 'Plans & Payments',  icon: IndianRupee },
+  { key: 'learning',       label: 'Quiz Zone',        icon: BookOpen },
 ];
 
 export default function AdminPanel() {
@@ -118,7 +108,7 @@ const { user, setUser, logout } = useAuth();
               {key === 'projects' && stats?.pending > 0 && (
                 <span className="ml-auto bg-yellow-500 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full leading-none shrink-0">{stats.pending}</span>
               )}
-              {key === 'messages' && unreadMessages > 0 && (
+              {key === 'communications' && unreadMessages > 0 && (
                 <span className="ml-auto bg-accent text-white text-xs w-5 h-5 flex items-center justify-center rounded-full leading-none shrink-0">{unreadMessages > 9 ? '9+' : unreadMessages}</span>
               )}
               {key === 'opportunities' && stats?.pendingVacancies > 0 && (
@@ -178,15 +168,10 @@ const { user, setUser, logout } = useAuth();
           {section === 'vacancies'        && <AdminVacanciesSection />}
           {section === 'opportunities'    && <AdminOpportunitiesSection stats={stats} />}
           {section === 'resumes'          && <AdminResumesSection />}
-          {section === 'announcements'    && <AdminAnnouncementsSection />}
-          {section === 'messages'         && <AdminMessagesSection onUnreadChange={setUnreadMessages} />}
+          {section === 'communications'   && <AdminCommunicationsWrapperSection onUnreadChange={setUnreadMessages} />}
           {section === 'plans_payments'    && <AdminPlansSection />}
-          {section === 'offers'           && <AdminOffersSection />}
-          {section === 'mentorship_applications' && <AdminMentorshipApplicationsSection />}
-          { section === 'service_access'   && <AdminPremiumServicesSection /> }
-          { section === 'job_recommendations' && <AdminJobRecommendationsSection /> }
-          { section === 'job_alert_history' && <AdminJobAlertHistorySection /> }
-          { section === 'email'            && <AdminEmailSection /> }
+          {section === 'applicants'       && <AdminApplicantsWrapperSection />}
+          { section === 'service_access'   && <AdminServicesWrapperSection /> }
           { section === 'job_links'        && <AdminJobLinksSection /> }
           {section === 'learning'         && <AdminLearningSection />}
           {section === 'curation'         && <AdminCurationSection />}

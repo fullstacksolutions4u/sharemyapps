@@ -46,7 +46,7 @@ export default function AdminJobLinksSection() {
   };
   const [loading, setLoading] = useState(true);
   const [editForms, setEditForms] = useState({});
-  const [activeTab, setActiveTab] = useState('pending');
+  const [activeTab, setActiveTab] = useState('approved');
   
   const [editingLinkId, setEditingLinkId] = useState(null);
   
@@ -61,6 +61,7 @@ export default function AdminJobLinksSection() {
     experience: ''
   });
   const [submittingAdd, setSubmittingAdd] = useState(false);
+  const [companySearch, setCompanySearch] = useState('');
 
   // AI extraction state — for Add New form
   const [aiText, setAiText] = useState('');
@@ -252,7 +253,7 @@ export default function AdminJobLinksSection() {
       const res = await api.post('/job-links/admin', newLinkForm);
       if (res.data.success) {
         toast.success('Job link added successfully!');
-        setNewLinkForm({ url: '', title: '', workMode: '', location: '', experience: '' });
+        setNewLinkForm({ url: '', title: '', company: '', postedDate: '', workMode: '', location: '', experience: '' });
         setShowAddForm(false);
         fetchJobLinks();
       }
@@ -266,8 +267,12 @@ export default function AdminJobLinksSection() {
 
   if (loading) return <div className="p-8 text-center text-muted">Loading...</div>;
 
-  const pendingLinks = jobLinks.filter(l => l.status === 'pending');
-  const approvedLinks = jobLinks.filter(l => l.status === 'approved');
+  const pendingLinks = jobLinks
+    .filter(l => l.status === 'pending')
+    .filter(l => !companySearch.trim() || (l.company || '').toLowerCase().includes(companySearch.trim().toLowerCase()));
+  const approvedLinks = jobLinks
+    .filter(l => l.status === 'approved')
+    .filter(l => !companySearch.trim() || (l.company || '').toLowerCase().includes(companySearch.trim().toLowerCase()));
 
   return (
     <div className="space-y-6 max-w-5xl">
@@ -275,16 +280,16 @@ export default function AdminJobLinksSection() {
       <div className="flex justify-between items-center border-b border-border flex-wrap gap-2">
         <div className="flex">
           <button
-            onClick={() => setActiveTab('pending')}
-            className={`px-4 py-3 font-medium text-sm transition-colors border-b-2 ${activeTab === 'pending' ? 'border-accent text-accent' : 'border-transparent text-muted hover:text-text'}`}
-          >
-            Pending Verification ({pendingLinks.length})
-          </button>
-          <button
             onClick={() => setActiveTab('approved')}
             className={`px-4 py-3 font-medium text-sm transition-colors border-b-2 ${activeTab === 'approved' ? 'border-accent text-accent' : 'border-transparent text-muted hover:text-text'}`}
           >
             Approved Links ({approvedLinks.length})
+          </button>
+          <button
+            onClick={() => setActiveTab('pending')}
+            className={`px-4 py-3 font-medium text-sm transition-colors border-b-2 ${activeTab === 'pending' ? 'border-accent text-accent' : 'border-transparent text-muted hover:text-text'}`}
+          >
+            Pending Verification ({pendingLinks.length})
           </button>
         </div>
         {activeTab === 'approved' && (
@@ -301,6 +306,23 @@ export default function AdminJobLinksSection() {
           >
             {showAddForm ? <X size={16} /> : <Plus size={16} />}
             {showAddForm ? 'Cancel' : 'Add New'}
+          </button>
+        )}
+      </div>
+
+      {/* Company Search */}
+      <div className="relative">
+        <svg className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+        <input
+          type="text"
+          value={companySearch}
+          onChange={e => setCompanySearch(e.target.value)}
+          placeholder="Search by company name…"
+          className="w-full pl-8 pr-4 py-2 text-sm border border-border rounded-lg focus:outline-none focus:border-accent bg-white"
+        />
+        {companySearch && (
+          <button onClick={() => setCompanySearch('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+            <X size={14} />
           </button>
         )}
       </div>

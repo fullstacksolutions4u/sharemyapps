@@ -62,7 +62,7 @@ exports.getAdminJobLinks = async (req, res) => {
 
 exports.createAdminJobLink = async (req, res) => {
   try {
-    const { url, title, workMode, location, platform, experience, state } = req.body;
+    const { url, title, company, postedDate, workMode, location, platform, experience, state } = req.body;
 
     if (!url || !title || !workMode) {
       return res.status(400).json({ success: false, message: 'URL, Designation, and Work Mode are required' });
@@ -76,6 +76,8 @@ exports.createAdminJobLink = async (req, res) => {
     const jobLink = await JobLink.create({
       url,
       title,
+      company: company || '',
+      postedDate: postedDate || '',
       workMode,
       location,
       experience: experience || '',
