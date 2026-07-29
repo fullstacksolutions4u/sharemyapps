@@ -139,6 +139,71 @@ function FilterDropdown({ icon: Icon, placeholder, value, onChange, options }) {
 
 const INDIA_STATES = ['Andhra Pradesh','Arunachal Pradesh','Assam','Bihar','Chhattisgarh','Goa','Gujarat','Haryana','Himachal Pradesh','Jharkhand','Karnataka','Kerala','Madhya Pradesh','Maharashtra','Manipur','Meghalaya','Mizoram','Nagaland','Odisha','Punjab','Rajasthan','Sikkim','Tamil Nadu','Telangana','Tripura','Uttar Pradesh','Uttarakhand','West Bengal','Andaman and Nicobar Islands','Chandigarh','Dadra and Nagar Haveli and Daman and Diu','Delhi','Jammu and Kashmir','Ladakh','Lakshadweep','Puducherry', 'Out of India'];
 
+const EXPERIENCE_OPTIONS = [
+  'Fresher',
+  'Less than 1 year',
+  '1 - 2 years',
+  '2 - 5 years',
+  '5 - 7 years',
+  '7 - 10 years',
+  '10+ years'
+];
+
+const parseExperienceRange = (str) => {
+  if (!str) return { min: 0, max: Infinity };
+  const s = str.toLowerCase();
+  
+  if (s.includes('fresher') || s.includes('0 year') || s.includes('0-0') || s.includes('no experience')) {
+    return { min: 0, max: 0 };
+  }
+  
+  if (s.includes('less than 1') || s.includes('under 1') || s.includes('0-1')) {
+    return { min: 0, max: 1 };
+  }
+
+  const rangeMatch = s.match(/(\d+)\s*(?:-|to)\s*(\d+)/);
+  if (rangeMatch) {
+    return { min: parseInt(rangeMatch[1], 10), max: parseInt(rangeMatch[2], 10) };
+  }
+
+  const plusMatch = s.match(/(\d+)\s*\+/);
+  if (plusMatch) {
+    return { min: parseInt(plusMatch[1], 10), max: Infinity };
+  }
+
+  const singleMatch = s.match(/(\d+)\s*year/);
+  if (singleMatch) {
+    const val = parseInt(singleMatch[1], 10);
+    return { min: val, max: val };
+  }
+
+  return { min: 0, max: Infinity };
+};
+
+const matchExperience = (jobExpStr, filterVal) => {
+  if (!filterVal) return true;
+  const { min: jobMin, max: jobMax } = parseExperienceRange(jobExpStr);
+
+  switch (filterVal) {
+    case 'Fresher':
+      return jobMin === 0 && jobMax === 0;
+    case 'Less than 1 year':
+      return jobMin < 1;
+    case '1 - 2 years':
+      return jobMin <= 2 && jobMax >= 1;
+    case '2 - 5 years':
+      return jobMin <= 5 && jobMax >= 2;
+    case '5 - 7 years':
+      return jobMin <= 7 && jobMax >= 5;
+    case '7 - 10 years':
+      return jobMin <= 10 && jobMax >= 7;
+    case '10+ years':
+      return jobMax >= 10 || jobMin >= 10;
+    default:
+      return true;
+  }
+};
+
 function SkeletonCard() {
   return (
     <div className="bg-white rounded-2xl p-5 shadow-sm border border-border animate-pulse space-y-4">
@@ -386,7 +451,7 @@ export default function Vacancies() {
                 placeholder="Experience"
                 value={filterExperience}
                 onChange={setFilterExperience}
-                options={Array.from(new Set(TAB_CONFIG[activeTab].data.map(d => d.experience).filter(Boolean))).sort()}
+                options={EXPERIENCE_OPTIONS}
               />
 
               {(filterDesignation || filterLocation || filterExperience) && (
@@ -446,7 +511,7 @@ export default function Vacancies() {
         </div>
       )}
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 pb-16">
+      <div className="max-w-[1550px] mx-auto px-4 sm:px-6 py-8 pb-16">
       {(() => {
         const currentData = TAB_CONFIG[activeTab].data;
         const filteredData = currentData.filter(d => {
@@ -463,7 +528,7 @@ export default function Vacancies() {
             }
           }
           
-          if (filterExperience && d.experience !== filterExperience) return false;
+          if (filterExperience && !matchExperience(d.experience, filterExperience)) return false;
           return true;
         });
 
@@ -486,7 +551,7 @@ export default function Vacancies() {
         }
 
         return activeTab === 'job-links' ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 max-w-7xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 max-w-[1550px] mx-auto">
             {filteredData.map(link => {
               const isApplied = clickedLinks.includes(link._id);
               return (
