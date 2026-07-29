@@ -62,7 +62,7 @@ exports.getAdminJobLinks = async (req, res) => {
 
 exports.createAdminJobLink = async (req, res) => {
   try {
-    const { url, title, workMode, location, platform, experience } = req.body;
+    const { url, title, workMode, location, platform, experience, state } = req.body;
 
     if (!url || !title || !workMode) {
       return res.status(400).json({ success: false, message: 'URL, Designation, and Work Mode are required' });
@@ -79,6 +79,7 @@ exports.createAdminJobLink = async (req, res) => {
       workMode,
       location,
       experience: experience || '',
+      state: state || '',
       expiresAt: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000), // 3 days
       platform: platform || 'other',
       createdBy: req.user._id,
@@ -99,7 +100,7 @@ exports.createAdminJobLink = async (req, res) => {
 exports.updateJobLink = async (req, res) => {
   try {
     const { id } = req.params;
-    const { status, title, company, postedDate, workMode, location, url, experience } = req.body;
+    const { status, title, company, postedDate, workMode, location, url, experience, state } = req.body;
 
     const link = await JobLink.findById(id);
     if (!link) {
@@ -119,6 +120,7 @@ exports.updateJobLink = async (req, res) => {
     if (location !== undefined) link.location = location;
     if (url !== undefined) link.url = url;
     if (experience !== undefined) link.experience = experience;
+    if (state !== undefined) link.state = state;
 
     await link.save();
     res.json({ success: true, data: link });
@@ -149,10 +151,11 @@ CURRENT DATE: ${currentDate}
 Return ONLY a valid JSON object with these exact keys (no markdown, no explanation, just raw JSON):
 {
   "title": "most relevant job designation/role (e.g. Full Stack Developer, React Developer, Backend Engineer)",
-  "company": "company name if mentioned, else empty string",
+  "company": "company name if mentioned, if an email ID is present extract the company name from the domain name (e.g., from name@example.com extract 'Example', remove common extensions like .com, .in, .net), else empty string",
   "postedDate": "job posting date if mentioned. If relative (e.g. '1w', '2d'), calculate the exact date based on CURRENT DATE and output in 'Month DD' format (e.g. 'July 21'). Else empty string",
   "workMode": "one of: Remote, Onsite, Hybrid — infer from context if not explicitly stated",
-  "location": "city and country if mentioned, else empty string",
+  "location": "city and state/country if mentioned. For Indian cities, use the state name instead of 'India' (e.g. 'Jaipur, Rajasthan', 'Bengaluru, Karnataka', 'Mumbai, Maharashtra', 'Hyderabad, Telangana'). For non-Indian locations use city and country. Else empty string.",
+  "state": "the Indian state name — ONLY fill if there is exactly ONE clear Indian city or area mentioned (e.g. 'Bengaluru' → 'Karnataka', 'Hyderabad' → 'Telangana', 'Mumbai' → 'Maharashtra', 'Chennai' → 'Tamil Nadu', 'Delhi' → 'Delhi', 'Pune' → 'Maharashtra'). If multiple locations are mentioned, or if the location is Remote, or if no Indian location is found, return empty string.",
   "experience": "experience requirement as a short string (e.g. 2-4 years, 3+ years), else empty string"
 }
 
@@ -186,6 +189,7 @@ ${text.slice(0, 4000)}`;
         postedDate: extracted.postedDate || '',
         workMode: ['Remote', 'Onsite', 'Hybrid'].includes(extracted.workMode) ? extracted.workMode : '',
         location: extracted.location || '',
+        state: extracted.state || '',
         experience: extracted.experience || '',
       }
     });

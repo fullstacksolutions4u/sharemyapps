@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { MapPin, Briefcase, CheckCircle, XCircle, ArrowRight, Laptop, Crown, IndianRupee } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { MapPin, Briefcase, CheckCircle, XCircle, ArrowRight, Laptop, Crown, IndianRupee, ExternalLink, Building, Clock, Calendar } from 'lucide-react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
@@ -48,7 +48,93 @@ const getStatusConfig = (status) => {
   };
 };
 
+const parsePostedDate = (dateStr, createdAt) => {
+  if (!dateStr) return new Date(createdAt || 0).getTime();
+  const d = new Date(dateStr);
+  if (!isNaN(d.getTime())) return d.getTime();
+  const lower = dateStr.toLowerCase();
+  const now = new Date().getTime();
+  if (lower.includes('today') || lower.includes('just now')) return now;
+  if (lower.includes('yesterday')) return now - 86400000;
+  const match = lower.match(/(\d+)\s*(day|week|month|year)s?\s*ago/);
+  if (match) {
+    const amount = parseInt(match[1], 10);
+    const unit = match[2];
+    if (unit === 'day') return now - amount * 86400000;
+    if (unit === 'week') return now - amount * 7 * 86400000;
+    if (unit === 'month') return now - amount * 30 * 86400000;
+    if (unit === 'year') return now - amount * 365 * 86400000;
+  }
+  return new Date(createdAt || 0).getTime();
+};
 
+function FilterDropdown({ icon: Icon, placeholder, value, onChange, options }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+
+  useEffect(() => {
+    const handler = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+  const active = !!value;
+  const label = value || placeholder;
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        onClick={() => setOpen(o => !o)}
+        className={`flex items-center gap-2 pl-3.5 pr-3 py-2 rounded-xl border text-[13px] font-medium transition-all duration-200 select-none ${
+          active
+            ? 'border-accent bg-accent/5 text-accent shadow-sm'
+            : 'border-border bg-white text-gray-500 hover:border-gray-300 hover:text-gray-700 hover:shadow-sm'
+        }`}
+      >
+        <Icon size={13} className={active ? 'text-accent' : 'text-gray-400'} />
+        <span className="whitespace-nowrap">{label}</span>
+        <svg
+          width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"
+          className={`transition-transform duration-200 ${open ? 'rotate-180' : ''} ${active ? 'text-accent' : 'text-gray-400'}`}
+        >
+          <path d="M6 9l6 6 6-6"/>
+        </svg>
+        {active && <span className="w-1.5 h-1.5 rounded-full bg-accent absolute -top-0.5 -right-0.5 animate-pulse" />}
+      </button>
+
+      {open && (
+        <div className="absolute top-full mt-2 left-0 z-50 bg-white border border-border rounded-2xl shadow-xl overflow-hidden min-w-[200px] max-h-72 flex flex-col">
+          <div className="overflow-y-auto custom-scrollbar">
+            <button
+              onClick={() => { onChange(''); setOpen(false); }}
+              className={`w-full text-left px-4 py-2.5 text-[13px] flex items-center gap-2 transition-colors ${
+                !value ? 'bg-accent/5 text-accent font-semibold' : 'text-gray-500 hover:bg-gray-50'
+              }`}
+            >
+              {!value && <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M20 6L9 17l-5-5"/></svg>}
+              {placeholder}
+            </button>
+            <div className="h-px bg-border mx-3" />
+            {options.map(opt => (
+              <button
+                key={opt}
+                onClick={() => { onChange(opt); setOpen(false); }}
+                className={`w-full text-left px-4 py-2.5 text-[13px] flex items-center gap-2 transition-colors ${
+                  value === opt ? 'bg-accent/5 text-accent font-semibold' : 'text-gray-700 hover:bg-gray-50'
+                }`}
+              >
+                {value === opt && <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M20 6L9 17l-5-5"/></svg>}
+                <span className={value === opt ? '' : 'ml-[20px]'}>{opt}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+const INDIA_STATES = ['Andhra Pradesh','Arunachal Pradesh','Assam','Bihar','Chhattisgarh','Goa','Gujarat','Haryana','Himachal Pradesh','Jharkhand','Karnataka','Kerala','Madhya Pradesh','Maharashtra','Manipur','Meghalaya','Mizoram','Nagaland','Odisha','Punjab','Rajasthan','Sikkim','Tamil Nadu','Telangana','Tripura','Uttar Pradesh','Uttarakhand','West Bengal','Andaman and Nicobar Islands','Chandigarh','Dadra and Nagar Haveli and Daman and Diu','Delhi','Jammu and Kashmir','Ladakh','Lakshadweep','Puducherry'];
 
 function SkeletonCard() {
   return (
@@ -89,10 +175,18 @@ export default function Vacancies() {
   const navigate = useNavigate();
   const [busy, setBusy] = useState(null);
   const [expanded, setExpanded] = useState({});
-  const [activeTab, setActiveTab] = useState('vacancies');
+  const location = useLocation();
+  const queryParams = new URLSearchParams(location.search);
+  const initialTab = queryParams.get('tab') || 'vacancies';
+  const [activeTab, setActiveTab] = useState(initialTab);
+
+  const [filterDesignation, setFilterDesignation] = useState('');
+  const [filterLocation, setFilterLocation] = useState('');
+  const [filterExperience, setFilterExperience] = useState('');
 
   const TABS = [
     { key: 'vacancies',  label: 'Vacancies',          icon: Briefcase },
+    { key: 'job-links',  label: 'Job Post Links',      icon: ExternalLink },
     { key: 'freelance',  label: 'Freelance Projects',  icon: Laptop },
   ];
 
@@ -102,12 +196,17 @@ export default function Vacancies() {
   const { data: freelanceItems = [], isLoading: loadingF, isError: errF } = useQuery({
     queryKey: ['freelance'], queryFn: () => api.get('/freelance').then(r => r.data), staleTime: 60000,
   });
+  const { data: jobLinksData, isLoading: loadingJL, isError: errJL } = useQuery({
+    queryKey: ['job-links'], queryFn: () => api.get('/job-links').then(r => r.data), staleTime: 60000,
+  });
+  const jobLinks = (jobLinksData?.data || []).sort((a, b) => parsePostedDate(b.postedDate, b.createdAt) - parsePostedDate(a.postedDate, a.createdAt));
   useEffect(() => { if (errV) toast.error('Failed to load vacancies'); }, [errV]);
   useEffect(() => { if (errF) toast.error('Failed to load freelance projects'); }, [errF]);
 
   const TAB_CONFIG = {
     vacancies:  { data: vacancies,       loading: loadingV, queryKey: 'vacancies',  route: '/vacancies'  },
     freelance:  { data: freelanceItems,  loading: loadingF, queryKey: 'freelance',  route: '/freelance'  },
+    'job-links': { data: jobLinks,       loading: loadingJL, queryKey: 'job-links', route: '/job-links'  },
   };
 
   const isPlaceholderCv = (url) => {
@@ -186,7 +285,13 @@ export default function Vacancies() {
             {TABS.map(({ key, label, icon: Icon }) => (
               <button
                 key={key}
-                onClick={() => setActiveTab(key)}
+                onClick={() => {
+                  setActiveTab(key);
+                  setFilterDesignation('');
+                  setFilterLocation('');
+                  setFilterExperience('');
+                  navigate(`?tab=${key}`, { replace: true });
+                }}
                 className={`flex items-center gap-1.5 px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
                   activeTab === key
                     ? 'border-accent text-accent bg-accent/5'
@@ -203,21 +308,136 @@ export default function Vacancies() {
           </a>
         </div>
       </div>
+      
+      {/* Advanced Filters */}
+      {!TAB_CONFIG[activeTab].loading && TAB_CONFIG[activeTab].data.length > 0 && (
+        <div className="bg-white border-b border-border">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3">
+            <div className="flex flex-wrap gap-2.5 items-center justify-center">
+
+              <FilterDropdown
+                icon={Briefcase}
+                placeholder="Designation"
+                value={filterDesignation}
+                onChange={setFilterDesignation}
+                options={Array.from(new Set(TAB_CONFIG[activeTab].data.map(d => d.title).filter(Boolean))).sort()}
+              />
+
+              <FilterDropdown
+                icon={MapPin}
+                placeholder="All States"
+                value={filterLocation}
+                onChange={setFilterLocation}
+                options={INDIA_STATES}
+              />
+
+              <FilterDropdown
+                icon={Clock}
+                placeholder="Experience"
+                value={filterExperience}
+                onChange={setFilterExperience}
+                options={Array.from(new Set(TAB_CONFIG[activeTab].data.map(d => d.experience).filter(Boolean))).sort()}
+              />
+
+              {(filterDesignation || filterLocation || filterExperience) && (
+                <button
+                  onClick={() => { setFilterDesignation(''); setFilterLocation(''); setFilterExperience(''); }}
+                  className="flex items-center gap-1.5 text-[12px] font-semibold text-red-400 hover:text-red-600 bg-red-50 hover:bg-red-100 border border-red-100 hover:border-red-200 px-3 py-2 rounded-xl transition-all"
+                >
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                  Clear all
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 pb-16">
-      {TAB_CONFIG[activeTab].loading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {Array.from({ length: 4 }).map((_, i) => <SkeletonCard key={i} />)}
+      {(() => {
+        const currentData = TAB_CONFIG[activeTab].data;
+        const filteredData = currentData.filter(d => {
+          if (filterDesignation && d.title !== filterDesignation) return false;
+          if (filterLocation && d.location !== filterLocation) return false;
+          if (filterExperience && d.experience !== filterExperience) return false;
+          return true;
+        });
+
+        if (TAB_CONFIG[activeTab].loading) {
+          return (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+              {Array.from({ length: 4 }).map((_, i) => <SkeletonCard key={i} />)}
+            </div>
+          );
+        }
+
+        if (filteredData.length === 0) {
+          return (
+            <div className="bg-white border border-border rounded-2xl shadow-sm p-16 text-center">
+              {activeTab === 'freelance' ? <Laptop size={32} className="text-[#D1D5DB] mx-auto mb-3" /> : activeTab === 'job-links' ? <ExternalLink size={32} className="text-[#D1D5DB] mx-auto mb-3" /> : <Briefcase size={32} className="text-[#D1D5DB] mx-auto mb-3" />}
+              <p className="text-sm font-medium text-muted">No matching {activeTab === 'freelance' ? 'freelance projects' : activeTab === 'job-links' ? 'job post links' : 'vacancies'} found.</p>
+              <p className="text-xs text-[#9CA3AF] mt-1">Try clearing your filters or check back later.</p>
+            </div>
+          );
+        }
+
+        return activeTab === 'job-links' ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 max-w-7xl mx-auto">
+            {filteredData.map(link => (
+            <a
+              key={link._id}
+              href={link.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="bg-white rounded-2xl shadow-sm border border-border p-5 flex flex-col gap-3 transition-all duration-200 hover:shadow-md hover:border-blue-200 group"
+            >
+              <div className="flex justify-between items-start">
+                <div className="flex-1 min-w-0 pr-2">
+                  <h2 className="text-[16px] font-semibold text-gray-900 group-hover:text-blue-600 transition-colors truncate">{link.title || 'Job Opportunity'}</h2>
+                  {link.company && (
+                    <div className="flex items-center gap-1.5 text-[13px] text-gray-600 mt-1">
+                      <Building size={14} className="text-gray-400" />
+                      <span className="truncate">{link.company}</span>
+                    </div>
+                  )}
+                </div>
+                <div className="bg-blue-50 p-2 rounded-lg text-blue-600 group-hover:bg-blue-600 group-hover:text-white transition-colors shrink-0">
+                  <ExternalLink size={16} />
+                </div>
+              </div>
+              
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-[12px] text-gray-500 mt-1">
+                {link.experience && (
+                  <div className="flex items-center gap-1">
+                    <Clock size={13} />
+                    <span>{link.experience}</span>
+                  </div>
+                )}
+                {link.workMode && (
+                  <div className="flex items-center gap-1">
+                    <Laptop size={13} />
+                    <span>{link.workMode}{link.location ? `, ${link.location}` : ''}</span>
+                  </div>
+                )}
+                {!link.workMode && link.location && (
+                  <div className="flex items-center gap-1">
+                    <MapPin size={13} />
+                    <span>{link.location}</span>
+                  </div>
+                )}
+                {link.postedDate && (
+                  <div className="flex items-center gap-1 text-blue-600/80">
+                    <Calendar size={13} />
+                    <span>{link.postedDate}</span>
+                  </div>
+                )}
+              </div>
+            </a>
+          ))}
         </div>
-      ) : TAB_CONFIG[activeTab].data.length === 0 ? (
-        <div className="bg-white border border-border rounded-2xl shadow-sm p-16 text-center">
-          {activeTab === 'freelance' ? <Laptop size={32} className="text-[#D1D5DB] mx-auto mb-3" /> : <Briefcase size={32} className="text-[#D1D5DB] mx-auto mb-3" />}
-          <p className="text-sm font-medium text-muted">No {activeTab === 'freelance' ? 'freelance projects' : 'vacancies'} available right now</p>
-          <p className="text-xs text-[#9CA3AF] mt-1">Check back soon — new listings are posted regularly.</p>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 max-w-5xl mx-auto">
-          {TAB_CONFIG[activeTab].data.map(v => {
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5 max-w-5xl mx-auto">
+            {filteredData.map(v => {
             const subLabel = activeTab === 'freelance' ? null : (v.industry || v.company);
             return (
               <div key={v._id} className={`bg-white rounded-2xl shadow-sm border border-border p-6 flex flex-col gap-4 transition-all duration-200 hover:shadow-md ${v.status === 'closed' ? 'opacity-70' : ''}`}>
@@ -320,7 +540,8 @@ export default function Vacancies() {
             );
           })}
         </div>
-      )}
+        );
+      })()}
       </div>
     </div>
   );

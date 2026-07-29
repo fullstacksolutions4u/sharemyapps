@@ -98,6 +98,26 @@ const TypingPlaceholderInput = ({ value, onChange, className }) => {
   );
 };
 
+const parsePostedDate = (dateStr, createdAt) => {
+  if (!dateStr) return new Date(createdAt || 0).getTime();
+  const d = new Date(dateStr);
+  if (!isNaN(d.getTime())) return d.getTime();
+  const lower = dateStr.toLowerCase();
+  const now = new Date().getTime();
+  if (lower.includes('today') || lower.includes('just now')) return now;
+  if (lower.includes('yesterday')) return now - 86400000;
+  const match = lower.match(/(\d+)\s*(day|week|month|year)s?\s*ago/);
+  if (match) {
+    const amount = parseInt(match[1], 10);
+    const unit = match[2];
+    if (unit === 'day') return now - amount * 86400000;
+    if (unit === 'week') return now - amount * 7 * 86400000;
+    if (unit === 'month') return now - amount * 30 * 86400000;
+    if (unit === 'year') return now - amount * 365 * 86400000;
+  }
+  return new Date(createdAt || 0).getTime();
+};
+
 export default function Feed() {
   const { user } = useAuth();
   const [activities, setActivities] = useState([]);
@@ -216,9 +236,10 @@ export default function Feed() {
     new Set(jobLinks.map(link => link.title).filter(title => title && title.trim() !== ''))
   ).sort((a, b) => a.localeCompare(b));
 
-  const filteredJobLinks = jobLinksFilter 
+  const filteredJobLinks = (jobLinksFilter 
     ? jobLinks.filter(link => link.title === jobLinksFilter) 
-    : jobLinks;
+    : [...jobLinks]
+  ).sort((a, b) => parsePostedDate(b.postedDate, b.createdAt) - parsePostedDate(a.postedDate, a.createdAt));
 
   return (
     <div className="min-h-screen bg-linear-to-br from-accent/10 via-white to-violet-50 relative">
@@ -269,7 +290,7 @@ export default function Feed() {
               <p className="text-sm text-gray-500 text-center py-6">No job links match this filter.</p>
             ) : (
               <div className="space-y-1">
-                {filteredJobLinks.map(link => (
+                {filteredJobLinks.slice(0, 10).map(link => (
                   <a 
                     key={link._id} 
                     href={link.url} 
@@ -328,6 +349,15 @@ export default function Feed() {
                     </div>
                   </a>
                 ))}
+                
+                {filteredJobLinks.length > 0 && (
+                  <Link
+                    to="/opportunities?tab=job-links"
+                    className="block text-center text-sm text-blue-600 font-medium py-2 mt-2 hover:bg-blue-50 rounded-lg transition-colors border border-transparent hover:border-blue-100"
+                  >
+                    View All Job Links
+                  </Link>
+                )}
               </div>
             )}
           </div>
