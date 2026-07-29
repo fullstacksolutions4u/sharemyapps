@@ -119,6 +119,15 @@ export default function Feed() {
     }
   });
 
+  const [feedbackGiven, setFeedbackGiven] = useState(() => {
+    try {
+      const saved = localStorage.getItem('jobLinkFeedback');
+      return saved ? JSON.parse(saved) : {};
+    } catch {
+      return {};
+    }
+  });
+
   const handleLinkClick = (id) => {
     if (!clickedLinks.includes(id)) {
       const updated = [...clickedLinks, id];
@@ -128,6 +137,26 @@ export default function Feed() {
       } catch (e) {
         console.error(e);
       }
+    }
+  };
+
+  const handleFeedback = async (id, heardBack) => {
+    try {
+      if (!user) {
+        import('react-hot-toast').then(t => t.default.error('Please log in to submit feedback'));
+        return;
+      }
+      await api.post(`/job-links/${id}/feedback`, { heardBack });
+      const updated = { ...feedbackGiven, [id]: heardBack ? 'yes' : 'no' };
+      setFeedbackGiven(updated);
+      try {
+        localStorage.setItem('jobLinkFeedback', JSON.stringify(updated));
+      } catch (e) {
+        console.error(e);
+      }
+      import('react-hot-toast').then(t => t.default.success('Thank you for your feedback!'));
+    } catch (error) {
+      import('react-hot-toast').then(t => t.default.error('Failed to submit feedback'));
     }
   };
   
@@ -375,12 +404,33 @@ export default function Feed() {
                           )}
                         </div>
 
-                        <div className={`flex items-center justify-center shrink-0 px-1.5 py-1 rounded-md transition-colors border text-[9px] font-bold uppercase gap-0.5 ${
-                          isApplied 
-                            ? 'bg-white text-[#006994] border-[#006994]' 
-                            : 'bg-[#006994] text-white border-[#006994] hover:bg-[#005578]'
-                        }`}>
-                          {isApplied ? 'Visited' : 'Apply'} <ExternalLink size={9} />
+                        <div className="flex flex-col items-end gap-2">
+                          <div className={`flex items-center justify-center shrink-0 px-1.5 py-1 rounded-md transition-colors border text-[9px] font-bold uppercase gap-0.5 ${
+                            isApplied 
+                              ? 'bg-white text-[#006994] border-[#006994]' 
+                              : 'bg-[#006994] text-white border-[#006994] hover:bg-[#005578]'
+                          }`}>
+                            {isApplied ? 'Visited' : 'Apply'} <ExternalLink size={9} />
+                          </div>
+                          {isApplied && (
+                            <div className="text-[10px] text-gray-500 flex flex-col items-end gap-1">
+                              <span>Heard back?</span>
+                              <div className="flex gap-1">
+                                <button 
+                                  onClick={(e) => { e.preventDefault(); handleFeedback(link._id, true); }} 
+                                  className={`px-1.5 py-0.5 rounded border transition-colors ${feedbackGiven[link._id] === 'yes' ? 'bg-emerald-50 text-emerald-600 border-emerald-200 font-medium' : 'border-gray-200 hover:bg-emerald-50 hover:text-emerald-600'}`}
+                                >
+                                  Yes
+                                </button>
+                                <button 
+                                  onClick={(e) => { e.preventDefault(); handleFeedback(link._id, false); }} 
+                                  className={`px-1.5 py-0.5 rounded border transition-colors ${feedbackGiven[link._id] === 'no' ? 'bg-red-50 text-red-600 border-red-200 font-medium' : 'border-gray-200 hover:bg-red-50 hover:text-red-600'}`}
+                                >
+                                  No
+                                </button>
+                              </div>
+                            </div>
+                          )}
                         </div>
                       </div>
                     </a>

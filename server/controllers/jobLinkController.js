@@ -1,5 +1,16 @@
 const JobLink = require('../models/JobLink');
+const JobLinkFeedback = require('../models/JobLinkFeedback');
 const OpenAI = require('openai');
+
+function calculateExpirationDate(postedDate) {
+  const defaultExp = Date.now() + 5 * 24 * 60 * 60 * 1000;
+  if (!postedDate || typeof postedDate !== 'string') return new Date(defaultExp);
+  
+  const parsed = new Date(`${postedDate} ${new Date().getFullYear()}`);
+  if (isNaN(parsed.getTime())) return new Date(defaultExp);
+  
+  return new Date(parsed.getTime() + 5 * 24 * 60 * 60 * 1000);
+}
 
 exports.getJobLinks = async (req, res) => {
   try {
@@ -82,7 +93,7 @@ exports.createAdminJobLink = async (req, res) => {
       location,
       experience: experience || '',
       state: state || '',
-      expiresAt: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000), // 5 days
+      expiresAt: calculateExpirationDate(postedDate),
       platform: platform || 'other',
       createdBy: req.user._id,
       status: 'approved'
@@ -112,7 +123,7 @@ exports.updateJobLink = async (req, res) => {
     if (status) {
       link.status = status;
       if (status === 'approved') {
-        link.expiresAt = new Date(Date.now() + 5 * 24 * 60 * 60 * 1000); // 5 days
+        link.expiresAt = calculateExpirationDate(postedDate !== undefined ? postedDate : link.postedDate);
       }
     }
     if (title !== undefined) link.title = title;
@@ -220,5 +231,42 @@ ${text.slice(0, 4000)}`;
   } catch (error) {
     console.error('Error extracting job details:', error);
     res.status(500).json({ success: false, message: 'Failed to extract job details. Try again.' });
+  }
+};
+
+exports.submitFeedback = async (req, res) => {
+  try {
+    const { heardBack } = req.body;
+    const { id: jobLink } = req.params;
+    const user = req.user._id;
+
+    if (typeof heardBack !== 'boolean') {
+      return res.status(400).json({ success: false, message: 'heardBack must be a boolean' });
+    }
+
+    const feedback = await JobLinkFeedback.findOneAndUpdate(
+      { user, jobLink },
+      { heardBack },
+      { new: true, upsert: true }
+    );
+
+    res.json({ success: true, data: feedback });
+  } catch (error) {
+    console.error('Error submitting job link feedback:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+};
+
+exports.getAdminFeedback = async (req, res) => {
+  try {
+    const feedback = await JobLinkFeedback.find()
+      .populate('user', 'name email avatar')
+      .populate('jobLink', 'title company')
+      .sort({ createdAt: -1 })
+      .lean();
+    res.json({ success: true, data: feedback });
+  } catch (error) {
+    console.error('Error fetching admin feedback:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
   }
 };

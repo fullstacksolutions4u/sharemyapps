@@ -62,6 +62,8 @@ export default function AdminJobLinksSection() {
   });
   const [submittingAdd, setSubmittingAdd] = useState(false);
   const [companySearch, setCompanySearch] = useState('');
+  
+  const [feedbackData, setFeedbackData] = useState([]);
 
   // AI extraction state — for Add New form
   const [aiText, setAiText] = useState('');
@@ -167,9 +169,21 @@ export default function AdminJobLinksSection() {
     }
   };
 
+  const fetchFeedback = async () => {
+    try {
+      const res = await api.get('/job-links/admin/feedback');
+      if (res.data.success) {
+        setFeedbackData(res.data.data);
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchJobLinks();
+    fetchFeedback();
   }, []);
 
   const handleUpdate = async (id, status) => {
@@ -663,6 +677,23 @@ export default function AdminJobLinksSection() {
                       {link.location && <div className="flex items-center gap-2"><MapPin size={15} className="text-gray-400"/>{link.location}</div>}
                       {link.experience && <div className="flex items-center gap-2"><Clock size={15} className="text-gray-400"/>{link.experience}</div>}
                       {link.postedDate && <div className="flex items-center gap-2"><Calendar size={15} className="text-gray-400"/>{link.postedDate}</div>}
+                    </div>
+                  )}
+
+                  {activeTab === 'approved' && !isEditing && (
+                    <div className="mt-3 text-[11px] text-gray-500 bg-gray-50/80 p-2 rounded border border-gray-100">
+                      {feedbackData.filter(f => f.jobLink?._id === link._id).length > 0 ? (
+                        <div className="flex flex-wrap gap-2 items-center">
+                          <span className="font-semibold text-gray-600">Applicant Feedback (Heard back?):</span>
+                          {feedbackData.filter(f => f.jobLink?._id === link._id).map(f => (
+                            <span key={f._id} className={`px-1.5 py-0.5 rounded-sm border ${f.heardBack ? 'bg-emerald-50 text-emerald-600 border-emerald-200' : 'bg-red-50 text-red-600 border-red-200'}`}>
+                              {f.user?.name || 'Unknown'}: {f.heardBack ? 'Yes' : 'No'}
+                            </span>
+                          ))}
+                        </div>
+                      ) : (
+                        <span className="italic text-gray-400">No applicant feedback yet.</span>
+                      )}
                     </div>
                   )}
                 </div>

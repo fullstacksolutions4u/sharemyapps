@@ -290,6 +290,15 @@ export default function Vacancies() {
     }
   });
 
+  const [feedbackGiven, setFeedbackGiven] = useState(() => {
+    try {
+      const saved = localStorage.getItem('jobLinkFeedback');
+      return saved ? JSON.parse(saved) : {};
+    } catch {
+      return {};
+    }
+  });
+
   const handleLinkClick = (id) => {
     if (!clickedLinks.includes(id)) {
       const updated = [...clickedLinks, id];
@@ -299,6 +308,26 @@ export default function Vacancies() {
       } catch (e) {
         console.error(e);
       }
+    }
+  };
+
+  const handleFeedback = async (id, heardBack) => {
+    try {
+      if (!user) {
+        toast.error('Please log in to submit feedback');
+        return;
+      }
+      await api.post(`/job-links/${id}/feedback`, { heardBack });
+      const updated = { ...feedbackGiven, [id]: heardBack ? 'yes' : 'no' };
+      setFeedbackGiven(updated);
+      try {
+        localStorage.setItem('jobLinkFeedback', JSON.stringify(updated));
+      } catch (e) {
+        console.error(e);
+      }
+      toast.success('Thank you for your feedback!');
+    } catch (error) {
+      toast.error('Failed to submit feedback');
     }
   };
 
@@ -631,7 +660,26 @@ export default function Vacancies() {
                     )}
                   </div>
 
-                  <div className="pt-3 border-t border-gray-100 flex justify-end">
+                  <div className={`pt-3 border-t border-gray-100 flex ${isApplied ? 'items-center justify-between' : 'justify-end'}`}>
+                    {isApplied && (
+                      <div className="text-[11px] text-gray-500 flex items-center gap-2">
+                        <span>Did you hear back?</span>
+                        <div className="flex gap-1">
+                          <button 
+                            onClick={(e) => { e.preventDefault(); handleFeedback(link._id, true); }} 
+                            className={`px-2 py-0.5 rounded border transition-colors ${feedbackGiven[link._id] === 'yes' ? 'bg-emerald-50 text-emerald-600 border-emerald-200 font-medium' : 'border-gray-200 hover:bg-emerald-50 hover:text-emerald-600'}`}
+                          >
+                            Yes
+                          </button>
+                          <button 
+                            onClick={(e) => { e.preventDefault(); handleFeedback(link._id, false); }} 
+                            className={`px-2 py-0.5 rounded border transition-colors ${feedbackGiven[link._id] === 'no' ? 'bg-red-50 text-red-600 border-red-200 font-medium' : 'border-gray-200 hover:bg-red-50 hover:text-red-600'}`}
+                          >
+                            No
+                          </button>
+                        </div>
+                      </div>
+                    )}
                     <a
                       href={link.url}
                       target="_blank"
