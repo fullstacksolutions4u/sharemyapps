@@ -9,52 +9,7 @@ import toast from 'react-hot-toast';
 
 
 
-const TypingPlaceholderInput = ({ value, onChange, className }) => {
-  const [placeholderText, setPlaceholderText] = useState('');
-  
-  useEffect(() => {
-    const fullText = "Share job posts with community";
-    let currentIndex = 0;
-    let isDeleting = false;
-    let timeoutId;
 
-    const type = () => {
-      if (isDeleting) {
-        setPlaceholderText(fullText.substring(0, currentIndex));
-        currentIndex--;
-        if (currentIndex < 0) {
-          isDeleting = false;
-          timeoutId = setTimeout(type, 500);
-        } else {
-          timeoutId = setTimeout(type, 50);
-        }
-      } else {
-        setPlaceholderText(fullText.substring(0, currentIndex + 1));
-        currentIndex++;
-        if (currentIndex === fullText.length) {
-          isDeleting = true;
-          timeoutId = setTimeout(type, 2000);
-        } else {
-          timeoutId = setTimeout(type, 100);
-        }
-      }
-    };
-
-    timeoutId = setTimeout(type, 500);
-    return () => clearTimeout(timeoutId);
-  }, []);
-
-  return (
-    <input
-      type="url"
-      required
-      placeholder={placeholderText}
-      value={value}
-      onChange={onChange}
-      className={className}
-    />
-  );
-};
 
 const getStatusConfig = (status) => {
   const s = (status || '').toLowerCase();
@@ -234,6 +189,27 @@ export default function Vacancies() {
   
   const [inlineUrl, setInlineUrl] = useState('');
   const [submittingLink, setSubmittingLink] = useState(false);
+
+  const [clickedLinks, setClickedLinks] = useState(() => {
+    try {
+      const saved = localStorage.getItem('clicked_job_links');
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  const handleLinkClick = (id) => {
+    if (!clickedLinks.includes(id)) {
+      const updated = [...clickedLinks, id];
+      setClickedLinks(updated);
+      try {
+        localStorage.setItem('clicked_job_links', JSON.stringify(updated));
+      } catch (e) {
+        console.error(e);
+      }
+    }
+  };
 
   const TABS = [
     { key: 'vacancies',  label: 'Vacancies',          icon: Briefcase },
@@ -424,12 +400,15 @@ export default function Vacancies() {
               )}
 
               {activeTab === 'job-links' && user && (
-                <div className="w-full sm:w-auto min-w-[280px] ml-0 sm:ml-2 flex items-center gap-2">
+                <div className="w-full sm:w-auto min-w-[320px] sm:w-[580px] md:w-[610px] ml-0 sm:ml-2 flex items-center gap-2">
                   <form
                     onSubmit={handleInlineJobLinkSubmit}
                     className="flex-1 flex items-center gap-1 bg-white rounded-xl border border-black/20 animate-border-gemini-shine focus-within:!border-accent/50 focus-within:!shadow-[0_0_0_2px_rgba(0,166,147,0.1)] transition-all p-1 pl-1.5 overflow-hidden relative"
                   >
-                    <TypingPlaceholderInput
+                    <input
+                      type="url"
+                      required
+                      placeholder="Found a job opening that isn't relevant to you? Share it here to help others!"
                       value={inlineUrl}
                       onChange={e => setInlineUrl(e.target.value)}
                       className="flex-1 bg-transparent text-[12px] outline-none px-1 text-gray-700 min-w-0 placeholder:text-gray-400"
@@ -448,15 +427,15 @@ export default function Vacancies() {
                       <Info size={18} />
                     </div>
                     
-                    <div className="absolute right-0 top-full mt-2 w-[280px] bg-gray-900 text-white text-[12px] p-3.5 rounded-xl shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 text-left">
-                      <div className="font-semibold text-[13px] mb-2 text-blue-300">Guidelines for sharing:</div>
-                      <ul className="list-disc pl-4 space-y-1.5 text-gray-200">
-                        <li>Software development roles only.</li>
+                    <div className="absolute right-0 top-full mt-2 w-[280px] bg-white border border-gray-200 text-gray-700 text-[12px] p-3.5 rounded-xl shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 text-left">
+                      <div className="font-semibold text-[13px] mb-2 text-accent">Guidelines for sharing:</div>
+                      <ul className="list-disc pl-4 space-y-1.5 text-gray-600">
+                        <li>Share software job post links only.</li>
                         <li>Must be posted within the last 72 hours.</li>
                         <li>Genuine posts only (no "comment if interested" engagement traps).</li>
-                        <li>Direct job post links only (no generic job portals).</li>
+                        <li>Direct job post links only (no generic job portal links).</li>
                       </ul>
-                      <div className="absolute -top-1.5 right-2 w-3 h-3 bg-gray-900 transform rotate-45"></div>
+                      <div className="absolute -top-1.5 right-2 w-3 h-3 bg-white border-t border-l border-gray-200 transform rotate-45"></div>
                     </div>
                   </div>
                 </div>
@@ -472,7 +451,18 @@ export default function Vacancies() {
         const currentData = TAB_CONFIG[activeTab].data;
         const filteredData = currentData.filter(d => {
           if (filterDesignation && d.title !== filterDesignation) return false;
-          if (filterLocation && d.location !== filterLocation) return false;
+          
+          if (filterLocation) {
+            const loc = (d.location || '').toLowerCase();
+            if (filterLocation === 'Out of India') {
+              const states = INDIA_STATES.filter(s => s !== 'Out of India').map(s => s.toLowerCase());
+              const isInIndia = loc.includes('india') || states.some(state => loc.includes(state));
+              if (isInIndia) return false;
+            } else {
+              if (!d.location || !loc.includes(filterLocation.toLowerCase())) return false;
+            }
+          }
+          
           if (filterExperience && d.experience !== filterExperience) return false;
           return true;
         });
@@ -497,62 +487,81 @@ export default function Vacancies() {
 
         return activeTab === 'job-links' ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 max-w-7xl mx-auto">
-            {filteredData.map(link => (
-            <a
-                key={link._id}
-              href={link.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="bg-white rounded-2xl shadow-sm border border-border p-5 flex flex-col gap-3 transition-all duration-200 hover:shadow-md hover:border-blue-200 group"
-            >
-              <div className="flex justify-between items-start">
-                <div className="flex-1 min-w-0 pr-2">
-                  <h2 className="text-[16px] font-semibold text-gray-900 group-hover:text-blue-600 transition-colors truncate">{link.title || 'Job Opportunity'}</h2>
-                  {(link.company || link.location) && (
-                    <div className="flex items-center gap-1.5 text-[13px] text-gray-600 mt-1">
-                      {link.company && (
-                        <>
-                          <Building size={14} className="text-gray-400 shrink-0" />
-                          <span className="truncate">{link.company}</span>
-                        </>
+            {filteredData.map(link => {
+              const isApplied = clickedLinks.includes(link._id);
+              return (
+                <div
+                  key={link._id}
+                  className={`bg-white rounded-2xl shadow-sm border p-5 flex flex-col justify-between gap-4 transition-all duration-200 hover:shadow-md ${
+                    isApplied ? 'border-[#006994]/30 bg-[#006994]/5' : 'border-border hover:border-accent/30'
+                  }`}
+                >
+                  <div className="flex flex-col gap-2">
+                    <div className="flex justify-between items-start">
+                      <h2 className="text-[16px] font-semibold text-gray-900 line-clamp-2">
+                        {link.title || 'Job Opportunity'}
+                      </h2>
+                    </div>
+
+                    {(link.company || link.location) && (
+                      <div className="flex items-center gap-1.5 text-[13px] text-gray-600">
+                        {link.company && (
+                          <>
+                            <Building size={14} className="text-gray-400 shrink-0" />
+                            <span className="truncate">{link.company}</span>
+                          </>
+                        )}
+                        {link.company && link.location && <span className="text-gray-300 mx-0.5 shrink-0">•</span>}
+                        {link.location && (
+                          <>
+                            <MapPin size={14} className="text-gray-400 shrink-0" />
+                            <span className="truncate">{link.location}</span>
+                          </>
+                        )}
+                      </div>
+                    )}
+
+                    <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-[12px] text-gray-500 mt-1">
+                      {link.experience && (
+                        <div className="flex items-center gap-1">
+                          <Clock size={13} />
+                          <span>{link.experience}</span>
+                        </div>
                       )}
-                      {link.company && link.location && <span className="text-gray-300 mx-0.5 shrink-0">•</span>}
-                      {link.location && (
-                        <>
-                          {!link.company && <MapPin size={14} className="text-gray-400 shrink-0" />}
-                          <span className="truncate">{link.location}</span>
-                        </>
+                      {link.workMode && (
+                        <div className="flex items-center gap-1">
+                          <Laptop size={13} />
+                          <span>{link.workMode}</span>
+                        </div>
+                      )}
+                      {link.postedDate && (
+                        <div className="flex items-center gap-1 text-emerald-700 font-medium">
+                          <Calendar size={13} />
+                          <span>Posted: {link.postedDate}</span>
+                        </div>
                       )}
                     </div>
-                  )}
+                  </div>
+
+                  <div className="pt-3 border-t border-gray-100 flex justify-end">
+                    <a
+                      href={link.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={() => handleLinkClick(link._id)}
+                      className={`py-1.5 px-3 rounded-lg text-[12px] font-semibold flex items-center justify-center gap-1.5 transition-all duration-200 ${
+                        isApplied
+                          ? 'bg-white text-[#006994] border border-[#006994]'
+                          : 'bg-[#006994] hover:bg-[#005578] text-white'
+                      }`}
+                    >
+                      <span>{isApplied ? 'Visited' : 'Apply Now'}</span>
+                      <ExternalLink size={12} />
+                    </a>
+                  </div>
                 </div>
-                <div className="bg-blue-50 p-2 rounded-lg text-blue-600 group-hover:bg-blue-600 group-hover:text-white transition-colors shrink-0">
-                  <ExternalLink size={16} />
-                </div>
-              </div>
-              
-              <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-[12px] text-gray-500 mt-1">
-                {link.experience && (
-                  <div className="flex items-center gap-1">
-                    <Clock size={13} />
-                    <span>{link.experience}</span>
-                  </div>
-                )}
-                {link.workMode && (
-                  <div className="flex items-center gap-1">
-                    <Laptop size={13} />
-                    <span>{link.workMode}</span>
-                  </div>
-                )}
-                {link.postedDate && (
-                  <div className="flex items-center gap-1 text-blue-600/80">
-                    <Calendar size={13} />
-                    <span>{link.postedDate}</span>
-                  </div>
-                )}
-              </div>
-            </a>
-            ))}
+              );
+            })}
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5 max-w-5xl mx-auto">

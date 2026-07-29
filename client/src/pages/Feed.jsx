@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import axios from '../api/axios';
 import { formatDistanceToNow } from 'date-fns';
-import { Trophy, MessageCircle, Heart, Star, TrendingUp, Briefcase, ChevronRight, UserPlus, Crown, Sparkles, Plus, MapPin, Laptop, ExternalLink, Clock, Building, Calendar } from 'lucide-react';
+import { Trophy, MessageCircle, Heart, Star, TrendingUp, Briefcase, ChevronRight, UserPlus, Crown, Sparkles, Plus, MapPin, Laptop, ExternalLink, Clock, Building, Calendar, Info } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import _Lottie from 'lottie-react';
 import feedAnimation from '../assets/feed.json';
@@ -50,53 +50,7 @@ const TwinklingStars = () => (
   </div>
 );
 
-const TypingPlaceholderInput = ({ value, onChange, className }) => {
-  const [placeholderText, setPlaceholderText] = useState('');
-  
-  useEffect(() => {
-    const fullText = "Share job posts with community";
-    let currentIndex = 0;
-    let isDeleting = false;
-    let timeoutId;
 
-    const type = () => {
-      if (isDeleting) {
-        setPlaceholderText(fullText.substring(0, currentIndex));
-        currentIndex--;
-        if (currentIndex < 0) {
-          isDeleting = false;
-          timeoutId = setTimeout(type, 500);
-        } else {
-          timeoutId = setTimeout(type, 50);
-        }
-      } else {
-        setPlaceholderText(fullText.substring(0, currentIndex + 1));
-        currentIndex++;
-        if (currentIndex === fullText.length) {
-          isDeleting = true;
-          timeoutId = setTimeout(type, 2000);
-        } else {
-          timeoutId = setTimeout(type, 100);
-        }
-      }
-    };
-
-    timeoutId = setTimeout(type, 500);
-
-    return () => clearTimeout(timeoutId);
-  }, []);
-
-  return (
-    <input
-      type="url"
-      required
-      placeholder={placeholderText}
-      value={value}
-      onChange={onChange}
-      className={className}
-    />
-  );
-};
 
 const parsePostedDate = (dateStr, createdAt) => {
   if (!dateStr) return new Date(createdAt || 0).getTime();
@@ -129,6 +83,27 @@ export default function Feed() {
   const [inlineUrl, setInlineUrl] = useState('');
   const [submittingLink, setSubmittingLink] = useState(false);
   const [jobLinksFilter, setJobLinksFilter] = useState('');
+
+  const [clickedLinks, setClickedLinks] = useState(() => {
+    try {
+      const saved = localStorage.getItem('clicked_job_links');
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  const handleLinkClick = (id) => {
+    if (!clickedLinks.includes(id)) {
+      const updated = [...clickedLinks, id];
+      setClickedLinks(updated);
+      try {
+        localStorage.setItem('clicked_job_links', JSON.stringify(updated));
+      } catch (e) {
+        console.error(e);
+      }
+    }
+  };
   
   // Infinite scroll state
   const [page, setPage] = useState(1);
@@ -248,7 +223,7 @@ export default function Feed() {
       
       {/* LEFT: Shared Job Links */}
       <div className="w-full lg:max-w-[25%] flex flex-col sticky top-20 max-h-[calc(100vh-100px)]">
-        <div className="bg-linear-to-br from-violet-50/80 to-purple-50/50 rounded-xl shadow-sm border border-black/5 overflow-hidden flex flex-col h-full">
+        <div className="bg-linear-to-br from-violet-50/80 to-purple-50/50 rounded-xl shadow-sm border border-black/5 flex flex-col h-full relative">
           <div className="p-4 border-b border-black/5 bg-transparent flex flex-col gap-3 shrink-0">
             {uniqueJobLinkDesignations.length > 0 && (
               <select 
@@ -265,12 +240,15 @@ export default function Feed() {
           </div>
 
           {user && (
-            <div className="p-3 border-b border-black/5 bg-white/40 shrink-0">
+            <div className="p-3 border-b border-black/5 bg-white/40 shrink-0 flex items-center gap-2">
               <form
                 onSubmit={handleInlineJobLinkSubmit}
-                className="flex items-center gap-1 bg-white rounded-xl border border-black/20 animate-border-gemini-shine focus-within:!border-accent/50 focus-within:!shadow-[0_0_0_2px_rgba(0,166,147,0.1)] transition-all p-1 pl-1.5 overflow-hidden relative"
+                className="flex-1 flex items-center gap-1 bg-white rounded-xl border border-black/20 animate-border-gemini-shine focus-within:!border-accent/50 focus-within:!shadow-[0_0_0_2px_rgba(0,166,147,0.1)] transition-all p-1 pl-1.5 overflow-hidden relative"
               >
-                <TypingPlaceholderInput
+                <input
+                  type="url"
+                  required
+                  placeholder="Found a job opening that isn't relevant to you? Share it here to help others!"
                   value={inlineUrl}
                   onChange={e => setInlineUrl(e.target.value)}
                   className="flex-1 bg-transparent text-[12px] outline-none px-1 text-gray-700 min-w-0 placeholder:text-gray-400"
@@ -283,6 +261,23 @@ export default function Feed() {
                   <Plus size={14} />
                 </button>
               </form>
+
+              <div className="relative group flex items-center justify-center cursor-help shrink-0">
+                <div className="text-gray-400 hover:text-accent transition-colors p-1">
+                  <Info size={18} />
+                </div>
+                
+                <div className="absolute right-0 top-full mt-2 w-[270px] bg-white border border-gray-200 text-gray-700 text-[12px] p-3.5 rounded-xl shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 text-left">
+                  <div className="font-semibold text-[13px] mb-2 text-accent">Guidelines for sharing:</div>
+                  <ul className="list-disc pl-4 space-y-1.5 text-gray-600">
+                    <li>Share software job post links only.</li>
+                    <li>Must be posted within the last 72 hours.</li>
+                    <li>Genuine posts only (no "comment if interested" engagement traps).</li>
+                    <li>Direct job post links only (no generic job portal links).</li>
+                  </ul>
+                  <div className="absolute -top-1.5 right-2 w-3 h-3 bg-white border-t border-l border-gray-200 transform rotate-45"></div>
+                </div>
+              </div>
             </div>
           )}
           <div className="overflow-y-auto custom-scrollbar p-2 flex-1">
@@ -290,65 +285,75 @@ export default function Feed() {
               <p className="text-sm text-gray-500 text-center py-6">No job links match this filter.</p>
             ) : (
               <div className="space-y-1">
-                {filteredJobLinks.slice(0, 10).map(link => (
-                  <a 
-                    key={link._id} 
-                    href={link.url} 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="block pl-3 pr-1 py-2.5 rounded-lg hover:bg-blue-50/50 border border-transparent hover:border-blue-100 transition group"
-                  >
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="flex flex-col gap-0.5 flex-1 min-w-0">
-                        <div className="font-semibold text-gray-800 text-[13px] group-hover:text-blue-600 transition-colors truncate">
-                          {link.title || 'Job Opportunity'}
-                        </div>
-                        {link.company && (
-                          <div className="text-[11.5px] text-gray-600 font-medium truncate flex items-center gap-1 mt-0.5">
-                            <Building size={11} className="text-gray-400" /> {link.company}
+                {filteredJobLinks.slice(0, 10).map(link => {
+                  const isApplied = clickedLinks.includes(link._id);
+                  return (
+                    <a 
+                      key={link._id} 
+                      href={link.url} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      onClick={() => handleLinkClick(link._id)}
+                      className={`block pl-3 pr-2 py-2.5 rounded-lg border transition group ${
+                        isApplied ? 'bg-[#006994]/5 border-[#006994]/30' : 'hover:bg-blue-50/50 border-transparent hover:border-blue-100'
+                      }`}
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex flex-col gap-0.5 flex-1 min-w-0">
+                          <div className={`font-semibold text-[13px] transition-colors truncate ${
+                            isApplied ? 'text-[#006994] font-semibold' : 'text-gray-800 group-hover:text-blue-600'
+                          }`}>
+                            {link.title || 'Job Opportunity'}
                           </div>
-                        )}
-                        
-                        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-gray-500 mt-0.5">
-                          {link.experience && (
-                            <div className="flex items-center gap-1">
-                              <Clock size={12} />
-                              <span className="whitespace-nowrap">{link.experience}</span>
+                          {link.company && (
+                            <div className="text-[11.5px] text-gray-600 font-medium truncate flex items-center gap-1 mt-0.5">
+                              <Building size={11} className="text-gray-400" /> {link.company}
                             </div>
                           )}
-                          {link.workMode && (
-                            <div className="flex items-center gap-1">
-                              <Laptop size={12} />
-                              <span className="whitespace-nowrap truncate max-w-[160px]">
-                                {link.workMode}{link.location ? `, ${link.location}` : ''}
-                              </span>
-                            </div>
-                          )}
-                          {!link.workMode && link.location && (
-                            <div className="flex items-center gap-1">
-                              <MapPin size={12} />
-                              <span className="whitespace-nowrap truncate max-w-[160px]">
-                                {link.location}
-                              </span>
-                            </div>
-                          )}
-                          {link.postedDate && (
-                            <div className="flex items-center gap-1 text-blue-600/80">
-                              <Calendar size={12} />
-                              <span className="whitespace-nowrap">{link.postedDate}</span>
-                            </div>
-                          )}
+                          
+                          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-gray-500 mt-0.5">
+                            {link.experience && (
+                              <div className="flex items-center gap-1">
+                                <Clock size={12} />
+                                <span className="whitespace-nowrap">{link.experience}</span>
+                              </div>
+                            )}
+                            {link.workMode && (
+                              <div className="flex items-center gap-1">
+                                <Laptop size={12} />
+                                <span className="whitespace-nowrap truncate max-w-[160px]">
+                                  {link.workMode}{link.location ? `, ${link.location}` : ''}
+                                </span>
+                              </div>
+                            )}
+                            {!link.workMode && link.location && (
+                              <div className="flex items-center gap-1">
+                                <MapPin size={12} />
+                                <span className="whitespace-nowrap truncate max-w-[160px]">
+                                  {link.location}
+                                </span>
+                              </div>
+                            )}
+                            {link.postedDate && (
+                              <div className="flex items-center gap-1 text-emerald-700 font-medium">
+                                <Calendar size={12} />
+                                <span className="whitespace-nowrap">Posted: {link.postedDate}</span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className={`flex items-center justify-center shrink-0 px-1.5 py-1 rounded-md transition-colors border text-[9px] font-bold uppercase gap-0.5 ${
+                          isApplied 
+                            ? 'bg-white text-[#006994] border-[#006994]' 
+                            : 'bg-[#006994] text-white border-[#006994] hover:bg-[#005578]'
+                        }`}>
+                          {isApplied ? 'Visited' : 'Apply'} <ExternalLink size={9} />
                         </div>
                       </div>
-
-                      <div className="flex flex-col items-center justify-center shrink-0 bg-blue-50 group-hover:bg-blue-100 px-2.5 py-1.5 rounded-lg transition-colors border border-blue-100/50 group-hover:border-blue-200">
-                        <span className="flex items-center gap-1 text-[10px] font-bold text-blue-600 uppercase">
-                          Apply <ExternalLink size={11} />
-                        </span>
-                      </div>
-                    </div>
-                  </a>
-                ))}
+                    </a>
+                  );
+                })}
                 
                 {filteredJobLinks.length > 0 && (
                   <Link
