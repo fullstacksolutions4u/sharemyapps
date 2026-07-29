@@ -4,6 +4,7 @@ const User = require('../models/User');
 const SessionRequest = require('../models/SessionRequest');
 const FreeOffer = require('../models/FreeOffer');
 const JobAlert = require('../models/JobAlert');
+const ApplicantJobStatus = require('../models/ApplicantJobStatus');
 const CandidateIntake = require('../models/CandidateIntake');
 const CATALOG = require('../config/services');
 
@@ -122,7 +123,25 @@ router.get('/job-alerts', protect, async (req, res) => {
     if (!delivery) return res.status(403).json({ message: 'Not eligible for job alerts' });
 
     const alerts = await JobAlert.find({ notified: true, recipients: req.user._id }).sort({ createdAt: -1 }).limit(30).lean();
-    res.json({ alerts, eligibleSince: delivery.updatedAt });
+    const statuses = await ApplicantJobStatus.find({ user: req.user._id }).lean();
+    res.json({ alerts, statuses, eligibleSince: delivery.updatedAt });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// Upsert a job alert status for a specific company
+router.put('/job-alerts/status', protect, async (req, res) => {
+  try {
+    const { alertId, company, status, comment } = req.body;
+    if (!alertId || !company) return res.status(400).json({ message: 'alertId and company are required' });
+
+    const updated = await ApplicantJobStatus.findOneAndUpdate(
+      { user: req.user._id, alertId, company },
+      { user: req.user._id, alertId, company, status: status || 'Sent', comment: comment || '' },
+      { new: true, upsert: true, setDefaultsOnInsert: true }
+    );
+    res.json({ success: true, status: updated });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

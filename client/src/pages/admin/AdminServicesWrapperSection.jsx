@@ -2,6 +2,7 @@ import { useState } from 'react';
 import AdminPremiumServicesSection from './AdminPremiumServicesSection';
 import AdminJobRecommendationsSection from './AdminJobRecommendationsSection';
 import AdminJobAlertHistorySection from './AdminJobAlertHistorySection';
+import AdminApplicantStatusesSection from './AdminApplicantStatusesSection';
 
 export default function AdminServicesWrapperSection() {
   const [tab, setTab] = useState('send_alert');
@@ -30,6 +31,16 @@ export default function AdminServicesWrapperSection() {
           Job Alert History
         </button>
         <button
+          onClick={() => setTab('applicant_status')}
+          className={`px-4 py-3 text-sm font-semibold transition-colors border-b-2 ${
+            tab === 'applicant_status'
+              ? 'border-[#0a7373] text-[#0a7373]'
+              : 'border-transparent text-gray-500 hover:text-gray-700'
+          }`}
+        >
+          Applicant Status
+        </button>
+        <button
           onClick={() => setTab('premium')}
           className={`px-4 py-3 text-sm font-semibold transition-colors border-b-2 ${
             tab === 'premium'
@@ -42,9 +53,10 @@ export default function AdminServicesWrapperSection() {
       </div>
 
       <div>
-        {tab === 'premium' && <AdminPremiumServicesSection />}
         {tab === 'send_alert' && <AdminJobRecommendationsSection />}
         {tab === 'alert_history' && <AdminJobAlertHistorySection />}
+        {tab === 'applicant_status' && <AdminApplicantStatusesSection />}
+        {tab === 'premium' && <AdminPremiumServicesSection />}
       </div>
     </div>
   );

@@ -1238,4 +1238,16 @@ router.put('/showcases/:id',       showcase.updateShowcase);
 router.delete('/showcases/:id',    showcase.deleteShowcase);
 router.patch('/showcases/:id/toggle', showcase.toggleShowcase);
 
+// ── Applicant Job Statuses ───────────────────────────────────────────────────
+router.get('/job-alerts/applicant-statuses', async (req, res) => {
+  try {
+    const ApplicantJobStatus = require('../models/ApplicantJobStatus');
+    const statuses = await ApplicantJobStatus.find()
+      .populate('user', 'name email avatar')
+      .sort({ updatedAt: -1 })
+      .lean();
+    res.json({ statuses });
+  } catch (err) { res.status(500).json({ message: err.message }); }
+});
+
 module.exports = router;

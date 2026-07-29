@@ -254,19 +254,25 @@ export default function JobAlerts() {
   const getStatusKey = (alertId, company) => `${alertId}::${company}`;
 
   const setStatus = (alertId, company, status) => {
+    const key = getStatusKey(alertId, company);
+    const comment = companyComments[key] || '';
     setCompanyStatuses(prev => {
-      const next = { ...prev, [getStatusKey(alertId, company)]: status };
+      const next = { ...prev, [key]: status };
       localStorage.setItem('jobAlertStatuses', JSON.stringify(next));
       return next;
     });
+    api.put('/premium-services/job-alerts/status', { alertId, company, status, comment }).catch(console.error);
   };
 
   const setComment = (alertId, company, comment) => {
+    const key = getStatusKey(alertId, company);
+    const status = companyStatuses[key] || 'Sent';
     setCompanyComments(prev => {
-      const next = { ...prev, [getStatusKey(alertId, company)]: comment };
+      const next = { ...prev, [key]: comment };
       localStorage.setItem('jobAlertComments', JSON.stringify(next));
       return next;
     });
+    api.put('/premium-services/job-alerts/status', { alertId, company, status, comment }).catch(console.error);
   };
 
 
@@ -275,6 +281,26 @@ export default function JobAlerts() {
       .then(res => {
         setAlerts(res.data.alerts || []);
         setEligibleSince(res.data.eligibleSince || null);
+        
+        if (res.data.statuses && res.data.statuses.length > 0) {
+          const newStatuses = {};
+          const newComments = {};
+          res.data.statuses.forEach(s => {
+            const key = getStatusKey(s.alertId, s.company);
+            newStatuses[key] = s.status || 'Sent';
+            if (s.comment) newComments[key] = s.comment;
+          });
+          setCompanyStatuses(prev => {
+            const next = { ...prev, ...newStatuses };
+            localStorage.setItem('jobAlertStatuses', JSON.stringify(next));
+            return next;
+          });
+          setCompanyComments(prev => {
+            const next = { ...prev, ...newComments };
+            localStorage.setItem('jobAlertComments', JSON.stringify(next));
+            return next;
+          });
+        }
       })
       .catch(err => { if (err.response?.status === 403) setForbidden(true); })
       .finally(() => setLoading(false));
