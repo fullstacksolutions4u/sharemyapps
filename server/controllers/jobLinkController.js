@@ -65,6 +65,7 @@ exports.getAdminJobLinks = async (req, res) => {
     const jobLinks = await JobLink.find()
       .sort({ createdAt: -1 })
       .populate('createdBy', 'name email avatar profileImage')
+      .populate('clicks', 'name email')
       .lean();
     res.json({ success: true, data: jobLinks });
   } catch (error) {
@@ -316,6 +317,26 @@ exports.getAdminCompanies = async (req, res) => {
     res.json({ success: true, data: companies });
   } catch (error) {
     console.error('Error fetching admin companies:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+};
+
+exports.recordClick = async (req, res) => {
+  try {
+    const jobLink = await JobLink.findById(req.params.id);
+    if (!jobLink) {
+      return res.status(404).json({ success: false, message: 'Job link not found' });
+    }
+    if (!jobLink.clicks) {
+      jobLink.clicks = [];
+    }
+    if (!jobLink.clicks.includes(req.user._id)) {
+      jobLink.clicks.push(req.user._id);
+      await jobLink.save();
+    }
+    res.json({ success: true, message: 'Click recorded successfully' });
+  } catch (error) {
+    console.error('Error recording job link click:', error);
     res.status(500).json({ success: false, message: 'Server error' });
   }
 };

@@ -1,10 +1,13 @@
 const express = require('express');
 const router = express.Router();
-const { getJobLinks, createJobLink, getAdminJobLinks, updateJobLink, createAdminJobLink, extractJobDetails, submitFeedback, getAdminFeedback, getAdminCompanies } = require('../controllers/jobLinkController');
+const { getJobLinks, createJobLink, getAdminJobLinks, updateJobLink, createAdminJobLink, extractJobDetails, submitFeedback, getAdminFeedback, getAdminCompanies, recordClick } = require('../controllers/jobLinkController');
 const { protect, requireAdmin } = require('../middleware/auth');
 
 router.get('/', getJobLinks);
 router.post('/', protect, createJobLink);
+
+// User Click / Apply Route
+router.post('/:id/click', protect, recordClick);
 
 // Admin Routes
 router.get('/admin/companies', protect, requireAdmin, getAdminCompanies);

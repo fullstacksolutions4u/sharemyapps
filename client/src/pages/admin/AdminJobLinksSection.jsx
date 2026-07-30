@@ -70,6 +70,7 @@ export default function AdminJobLinksSection() {
   const [companySearch, setCompanySearch] = useState('');
   
   const [feedbackData, setFeedbackData] = useState([]);
+  const [expandedClicks, setExpandedClicks] = useState({});
 
   // AI extraction state — for Add New form
   const [aiText, setAiText] = useState('');
@@ -885,18 +886,44 @@ export default function AdminJobLinksSection() {
                   )}
 
                   {activeTab === 'approved' && !isEditing && (
-                    <div className="mt-3 text-[11px] text-gray-500 bg-gray-50/80 p-2 rounded border border-gray-100">
-                      {feedbackData.filter(f => f.jobLink?._id === link._id).length > 0 ? (
-                        <div className="flex flex-wrap gap-2 items-center">
-                          <span className="font-semibold text-gray-600">Applicant Feedback (Heard back?):</span>
-                          {feedbackData.filter(f => f.jobLink?._id === link._id).map(f => (
-                            <span key={f._id} className={`px-1.5 py-0.5 rounded-sm border ${f.heardBack ? 'bg-emerald-50 text-emerald-600 border-emerald-200' : 'bg-red-50 text-red-600 border-red-200'}`}>
-                              {f.user?.name || 'Unknown'}: {f.heardBack ? 'Yes' : 'No'}
-                            </span>
-                          ))}
+                    <div className="mt-3 flex flex-col gap-2">
+                      <div className="flex justify-between items-center bg-gray-50/80 p-2 rounded border border-gray-100 text-[11px] text-gray-500">
+                        {feedbackData.filter(f => f.jobLink?._id === link._id).length > 0 ? (
+                          <div className="flex flex-wrap gap-2 items-center">
+                            <span className="font-semibold text-gray-600">Applicant Feedback (Heard back?):</span>
+                            {feedbackData.filter(f => f.jobLink?._id === link._id).map(f => (
+                              <span key={f._id} className={`px-1.5 py-0.5 rounded-sm border ${f.heardBack ? 'bg-emerald-50 text-emerald-600 border-emerald-200' : 'bg-red-50 text-red-600 border-red-200'}`}>
+                                {f.user?.name || 'Unknown'}: {f.heardBack ? 'Yes' : 'No'}
+                              </span>
+                            ))}
+                          </div>
+                        ) : (
+                          <span className="italic text-gray-400">No applicant feedback yet.</span>
+                        )}
+                        
+                        <button
+                          onClick={() => setExpandedClicks(prev => ({ ...prev, [link._id]: !prev[link._id] }))}
+                          className="flex items-center gap-1 text-[11px] font-semibold text-violet-600 hover:text-violet-800 transition-colors"
+                        >
+                          <span>Tracked Clicks ({link.clicks?.length || 0})</span>
+                          <ChevronDown size={14} className={`transform transition-transform ${expandedClicks[link._id] ? 'rotate-180' : ''}`} />
+                        </button>
+                      </div>
+
+                      {expandedClicks[link._id] && (
+                        <div className="bg-violet-50/50 border border-violet-100 rounded-lg p-3 text-[12px]">
+                          {link.clicks && link.clicks.length > 0 ? (
+                            <div className="flex flex-wrap gap-2">
+                              {link.clicks.map(u => (
+                                <span key={u._id} className="bg-white border border-violet-200 text-gray-700 px-2 py-1 rounded-md shadow-xs">
+                                  {u.name} ({u.email})
+                                </span>
+                              ))}
+                            </div>
+                          ) : (
+                            <div className="text-gray-400 italic">No users have clicked "Apply Now" yet.</div>
+                          )}
                         </div>
-                      ) : (
-                        <span className="italic text-gray-400">No applicant feedback yet.</span>
                       )}
                     </div>
                   )}

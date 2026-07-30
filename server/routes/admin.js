@@ -1169,6 +1169,20 @@ router.put('/job-recommendations/sessions/:id', async (req, res) => {
       const cleanLinks = careerLinks !== undefined ? cleanCareerLinks(careerLinks) : alert.careerLinks;
       if (cleanJobs.length === 0 && cleanLinks.length === 0)
         return res.status(400).json({ message: 'Add at least one job (company name + email id) or one career page link' });
+
+      // Clean up corresponding ApplicantJobStatus entries for removed jobs
+      const remainingCompanies = new Set();
+      cleanJobs.forEach(j => {
+        if (j.emailId) remainingCompanies.add(j.emailId);
+        if (j.subject) remainingCompanies.add(j.subject);
+      });
+
+      const ApplicantJobStatus = require('../models/ApplicantJobStatus');
+      await ApplicantJobStatus.deleteMany({
+        alertId: alert._id,
+        company: { $nin: Array.from(remainingCompanies) }
+      });
+
       alert.jobs = cleanJobs;
       alert.careerLinks = cleanLinks;
     }
@@ -1244,9 +1258,37 @@ router.get('/job-alerts/applicant-statuses', async (req, res) => {
     const ApplicantJobStatus = require('../models/ApplicantJobStatus');
     const statuses = await ApplicantJobStatus.find()
       .populate('user', 'name email avatar')
+      .populate('alertId', 'jobs')
       .sort({ updatedAt: -1 })
       .lean();
-    res.json({ statuses });
+
+    const formatted = statuses.map(s => {
+      let companyName = s.company;
+      let emailId = '';
+      if (s.alertId && Array.isArray(s.alertId.jobs)) {
+        const match = s.alertId.jobs.find(j => j.emailId === s.company || j.subject === s.company);
+        if (match) {
+          companyName = match.subject || s.company;
+          emailId = match.emailId;
+        }
+      }
+      return {
+        ...s,
+        companyName,
+        emailId,
+      };
+    });
+
+    res.json({ statuses: formatted });
+  } catch (err) { res.status(500).json({ message: err.message }); }
+});
+
+router.delete('/job-alerts/applicant-statuses/:id', async (req, res) => {
+  try {
+    const ApplicantJobStatus = require('../models/ApplicantJobStatus');
+    const status = await ApplicantJobStatus.findByIdAndDelete(req.params.id);
+    if (!status) return res.status(404).json({ message: 'Status entry not found' });
+    res.json({ success: true, message: 'Removed successfully' });
   } catch (err) { res.status(500).json({ message: err.message }); }
 });
 

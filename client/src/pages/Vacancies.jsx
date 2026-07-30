@@ -280,6 +280,11 @@ export default function Vacancies() {
   
   const [inlineUrl, setInlineUrl] = useState('');
   const [submittingLink, setSubmittingLink] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filterDesignation, filterLocation, filterExperience, activeTab]);
 
   const [clickedLinks, setClickedLinks] = useState(() => {
     try {
@@ -300,6 +305,9 @@ export default function Vacancies() {
   });
 
   const handleLinkClick = (id) => {
+    if (user) {
+      api.post(`/job-links/${id}/click`).catch(console.error);
+    }
     if (!clickedLinks.includes(id)) {
       const updated = [...clickedLinks, id];
       setClickedLinks(updated);
@@ -585,6 +593,11 @@ export default function Vacancies() {
           return true;
         });
 
+        const ITEMS_PER_PAGE = 12;
+        const totalItems = filteredData.length;
+        const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
+        const paginatedData = filteredData.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
+
         if (TAB_CONFIG[activeTab].loading) {
           return (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -603,208 +616,257 @@ export default function Vacancies() {
           );
         }
 
-        return activeTab === 'job-links' ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 max-w-[1550px] mx-auto">
-            {filteredData.map(link => {
-              const isApplied = clickedLinks.includes(link._id);
-              return (
-                <div
-                  key={link._id}
-                  className={`bg-white rounded-2xl shadow-sm border p-5 flex flex-col justify-between gap-4 transition-all duration-200 hover:shadow-md ${
-                    isApplied ? 'border-[#006994]/30 bg-[#006994]/5' : 'border-border hover:border-accent/30'
-                  }`}
-                >
-                  <div className="flex flex-col gap-2">
-                    <div className="flex justify-between items-start">
-                      <h2 className="text-[16px] font-semibold text-gray-900 line-clamp-2">
-                        {link.title || 'Job Opportunity'}
-                      </h2>
-                    </div>
-
-                    {(link.company || link.location) && (
-                      <div className="flex items-center gap-1.5 text-[13px] text-gray-600">
-                        {link.company && (
-                          <>
-                            <Building size={14} className="text-gray-400 shrink-0" />
-                            <span className="truncate">{link.company}</span>
-                          </>
-                        )}
-                        {link.company && link.location && <span className="text-gray-300 mx-0.5 shrink-0">•</span>}
-                        {link.location && (
-                          <>
-                            <MapPin size={14} className="text-gray-400 shrink-0" />
-                            <span className="truncate">{link.location}</span>
-                          </>
-                        )}
-                      </div>
-                    )}
-
-                    <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-[12px] text-gray-500 mt-1">
-                      {link.experience && (
-                        <div className="flex items-center gap-1">
-                          <Clock size={13} />
-                          <span>{link.experience}</span>
-                        </div>
-                      )}
-                      {link.workMode && (
-                        <div className="flex items-center gap-1">
-                          <Laptop size={13} />
-                          <span>{link.workMode}</span>
-                        </div>
-                      )}
-                    </div>
-                    {link.postedDate && (
-                      <div className="flex items-center gap-1 text-[12px] text-emerald-700 font-medium mt-2">
-                        <Calendar size={13} />
-                        <span>Posted: {link.postedDate}</span>
-                      </div>
-                    )}
-                  </div>
-
-                  <div className={`pt-3 border-t border-gray-100 flex ${isApplied ? 'items-center justify-between' : 'justify-end'}`}>
-                    {isApplied && (
-                      <div className="text-[11px] text-gray-500 flex items-center gap-2">
-                        <span>Did you hear back?</span>
-                        <div className="flex gap-1">
-                          <button 
-                            onClick={(e) => { e.preventDefault(); handleFeedback(link._id, true); }} 
-                            className={`px-2 py-0.5 rounded border transition-colors ${feedbackGiven[link._id] === 'yes' ? 'bg-emerald-50 text-emerald-600 border-emerald-200 font-medium' : 'border-gray-200 hover:bg-emerald-50 hover:text-emerald-600'}`}
-                          >
-                            Yes
-                          </button>
-                          <button 
-                            onClick={(e) => { e.preventDefault(); handleFeedback(link._id, false); }} 
-                            className={`px-2 py-0.5 rounded border transition-colors ${feedbackGiven[link._id] === 'no' ? 'bg-red-50 text-red-600 border-red-200 font-medium' : 'border-gray-200 hover:bg-red-50 hover:text-red-600'}`}
-                          >
-                            No
-                          </button>
-                        </div>
-                      </div>
-                    )}
-                    <a
-                      href={link.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      onClick={() => handleLinkClick(link._id)}
-                      className={`py-1.5 px-3 rounded-lg text-[12px] font-semibold flex items-center justify-center gap-1.5 transition-all duration-200 ${
-                        isApplied
-                          ? 'bg-white text-[#006994] border border-[#006994]'
-                          : 'bg-[#006994] hover:bg-[#005578] text-white'
+        return (
+          <div className="space-y-8">
+            {activeTab === 'job-links' ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 max-w-[1550px] mx-auto">
+                {paginatedData.map(link => {
+                  const isApplied = clickedLinks.includes(link._id);
+                  return (
+                    <div
+                      key={link._id}
+                      className={`bg-white rounded-2xl shadow-sm border p-5 flex flex-col justify-between gap-4 transition-all duration-200 hover:shadow-md ${
+                        isApplied ? 'border-[#006994]/30 bg-[#006994]/5' : 'border-border hover:border-accent/30'
                       }`}
                     >
-                      <span>{isApplied ? 'Visited' : 'Apply Now'}</span>
-                      <ExternalLink size={12} />
-                    </a>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5 max-w-5xl mx-auto">
-            {filteredData.map(v => {
-            const subLabel = activeTab === 'freelance' ? null : (v.industry || v.company);
-            return (
-              <div key={v._id} className={`bg-white rounded-2xl shadow-sm border border-border p-6 flex flex-col gap-4 transition-all duration-200 hover:shadow-md ${v.status === 'closed' ? 'opacity-70' : ''}`}>
-                {/* Header: Title, Company */}
-                <div className="flex justify-between items-start">
-                  <div>
-                    <h2 className="text-[17px] font-semibold text-gray-900">{v.title}</h2>
-                    <p className="text-[14px] text-[#4f6e87] mt-0.5">{subLabel || v.company || 'Company Name'}</p>
-                  </div>
-                </div>
+                      <div className="flex flex-col gap-2">
+                        <div className="flex justify-between items-start">
+                          <h2 className="text-[16px] font-semibold text-gray-900 line-clamp-2">
+                            {link.title || 'Job Opportunity'}
+                          </h2>
+                        </div>
 
-                {/* Info Row: Experience, Salary, Location */}
-                <div className="flex flex-wrap items-center gap-x-3 gap-y-2 text-[13px] text-gray-600 font-medium">
-                  <div className="flex items-center gap-1.5">
-                    <Briefcase size={15} className="text-gray-400" />
-                    {v.experience || '0-5 Yrs'}
-                  </div>
-                  <div className="w-[1px] h-3.5 bg-gray-300"></div>
-                  <div className="flex items-center gap-1.5">
-                    <IndianRupee size={14} className="text-gray-400" />
-                    {v.salaryRange || v.budget || 'Not specified'}
-                  </div>
-                  <div className="w-[1px] h-3.5 bg-gray-300"></div>
-                  <div className="flex items-center gap-1.5">
-                    <MapPin size={15} className="text-gray-400" />
-                    {v.location || 'Remote'}
-                  </div>
-                </div>
-
-                {/* Description */}
-                <div>
-                  <p className={`text-[13.5px] text-gray-600 leading-relaxed ${expanded[v._id] ? '' : 'line-clamp-2'}`}>
-                    {v.description}
-                  </p>
-                  {v.description?.length > 100 && (
-                    <button
-                      onClick={() => setExpanded(e => ({ ...e, [v._id]: !e[v._id] }))}
-                      className="text-[12.5px] font-medium text-accent hover:text-accent-hover mt-1 transition-colors"
-                    >
-                      {expanded[v._id] ? 'Read less' : 'Read more'}
-                    </button>
-                  )}
-                </div>
-
-                {/* Skills / Tags */}
-                <div className="text-[13.5px] text-gray-500">
-                  {v.skills && v.skills.length > 0 ? v.skills.join(' · ') : v.topics && v.topics.length > 0 ? v.topics.join(' · ') : 'Skills not specified'}
-                </div>
-
-                {/* Footer */}
-                <div className="flex items-center justify-between mt-2 border-t border-transparent">
-                  <div className="text-[12px] text-gray-400">
-                    {v.createdAt ? (() => {
-                      const days = Math.floor((new Date() - new Date(v.createdAt)) / (1000 * 60 * 60 * 24));
-                      return days === 0 ? 'Today' : days === 1 ? '1 Day Ago' : `${days} Days Ago`;
-                    })() : 'Recently'}
-                  </div>
-                  
-                  {v.status === 'closed' ? (
-                    <span className="text-sm text-gray-400 font-medium px-5 py-2.5">Applications closed</span>
-                  ) : !user ? (
-                    <Link
-                      to="/login"
-                      className="flex items-center gap-2 text-[13.5px] font-semibold bg-accent hover:bg-accent-hover text-white px-5 py-2.5 rounded-xl transition-colors"
-                    >
-                      Sign in to apply <ArrowRight size={15} />
-                    </Link>
-                  ) : (() => {
-                    const config = getStatusConfig(v.applicationStatus);
-                    return (
-                      <button
-                        onClick={() => handleInterest(v)}
-                        disabled={busy === v._id || !config.canWithdraw}
-                        className={`group flex items-center gap-2 text-[13.5px] font-semibold px-5 py-2.5 rounded-xl transition-colors ${
-                          !config.canWithdraw ? 'disabled:opacity-100 disabled:cursor-default cursor-default' : 'disabled:opacity-60 disabled:cursor-not-allowed'
-                        } ${
-                          v.interested
-                            ? config.classes
-                            : 'bg-white text-accent border border-accent hover:bg-accent hover:text-white'
-                        }`}
-                      >
-                        {busy === v._id ? (
-                          <span className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                        ) : v.interested ? (
-                          <>
-                            {config.icon}
-                            <span className={!config.canWithdraw ? '' : 'group-hover:hidden'}>
-                              {v.applicationStatus ? v.applicationStatus.charAt(0).toUpperCase() + v.applicationStatus.slice(1) : 'Applied'}
-                            </span>
-                            {config.canWithdraw && <span className="hidden group-hover:inline">Withdraw</span>}
-                          </>
-                        ) : (
-                          <>Show Interest <ArrowRight size={15} /></>
+                        {(link.company || link.location) && (
+                          <div className="flex items-center gap-1.5 text-[13px] text-gray-600">
+                            {link.company && (
+                              <>
+                                <Building size={14} className="text-gray-400 shrink-0" />
+                                <span className="truncate">{link.company}</span>
+                              </>
+                            )}
+                            {link.company && link.location && <span className="text-gray-300 mx-0.5 shrink-0">•</span>}
+                            {link.location && (
+                              <>
+                                <MapPin size={14} className="text-gray-400 shrink-0" />
+                                <span className="truncate">{link.location}</span>
+                              </>
+                            )}
+                          </div>
                         )}
-                      </button>
-                    );
-                  })()}
-                </div>
+
+                        <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-[12px] text-gray-500 mt-1">
+                          {link.experience && (
+                            <div className="flex items-center gap-1">
+                              <Clock size={13} />
+                              <span>{link.experience}</span>
+                            </div>
+                          )}
+                          {link.workMode && (
+                            <div className="flex items-center gap-1">
+                              <Laptop size={13} />
+                              <span>{link.workMode}</span>
+                            </div>
+                          )}
+                        </div>
+                        {link.postedDate && (
+                          <div className="flex items-center gap-1 text-[12px] text-emerald-700 font-medium mt-2">
+                            <Calendar size={13} />
+                            <span>Posted: {link.postedDate}</span>
+                          </div>
+                        )}
+                      </div>
+
+                      <div className={`pt-3 border-t border-gray-100 flex ${isApplied ? 'items-center justify-between' : 'justify-end'}`}>
+                        {isApplied && (
+                          <div className="text-[11px] text-gray-500 flex items-center gap-2">
+                            <span>Did you hear back?</span>
+                            <div className="flex gap-1">
+                              <button 
+                                onClick={(e) => { e.preventDefault(); handleFeedback(link._id, true); }} 
+                                className={`px-2 py-0.5 rounded border transition-colors ${feedbackGiven[link._id] === 'yes' ? 'bg-emerald-50 text-emerald-600 border-emerald-200 font-medium' : 'border-gray-200 hover:bg-emerald-50 hover:text-emerald-600'}`}
+                              >
+                                Yes
+                              </button>
+                              <button 
+                                onClick={(e) => { e.preventDefault(); handleFeedback(link._id, false); }} 
+                                className={`px-2 py-0.5 rounded border transition-colors ${feedbackGiven[link._id] === 'no' ? 'bg-red-50 text-red-600 border-red-200 font-medium' : 'border-gray-200 hover:bg-red-50 hover:text-red-600'}`}
+                              >
+                                No
+                              </button>
+                            </div>
+                          </div>
+                        )}
+                        {!user ? (
+                          <Link
+                            to="/login"
+                            className="py-1.5 px-3 rounded-lg text-[12px] font-semibold flex items-center justify-center gap-1.5 bg-[#006994] hover:bg-[#005578] text-white transition-all duration-200"
+                          >
+                            <span>Sign in to apply</span>
+                            <ArrowRight size={12} />
+                          </Link>
+                        ) : (
+                          <a
+                            href={link.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={() => handleLinkClick(link._id)}
+                            className={`py-1.5 px-3 rounded-lg text-[12px] font-semibold flex items-center justify-center gap-1.5 transition-all duration-200 ${
+                              isApplied
+                                ? 'bg-white text-[#006994] border border-[#006994]'
+                                : 'bg-[#006994] hover:bg-[#005578] text-white'
+                            }`}
+                          >
+                            <span>{isApplied ? 'Visited' : 'Apply Now'}</span>
+                            <ExternalLink size={12} />
+                          </a>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
-            );
-          })}
-        </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5 max-w-5xl mx-auto">
+                {paginatedData.map(v => {
+                  const subLabel = activeTab === 'freelance' ? null : (v.industry || v.company);
+                  return (
+                    <div key={v._id} className={`bg-white rounded-2xl shadow-sm border border-border p-6 flex flex-col gap-4 transition-all duration-200 hover:shadow-md ${v.status === 'closed' ? 'opacity-70' : ''}`}>
+                      {/* Header: Title, Company */}
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <h2 className="text-[17px] font-semibold text-gray-900">{v.title}</h2>
+                          <p className="text-[14px] text-[#4f6e87] mt-0.5">{subLabel || v.company || 'Company Name'}</p>
+                        </div>
+                      </div>
+
+                      {/* Info Row: Experience, Salary, Location */}
+                      <div className="flex flex-wrap items-center gap-x-3 gap-y-2 text-[13px] text-gray-600 font-medium">
+                        <div className="flex items-center gap-1.5">
+                          <Briefcase size={15} className="text-gray-400" />
+                          {v.experience || '0-5 Yrs'}
+                        </div>
+                        <div className="w-[1px] h-3.5 bg-gray-300"></div>
+                        <div className="flex items-center gap-1.5">
+                          <IndianRupee size={14} className="text-gray-400" />
+                          {v.salaryRange || v.budget || 'Not specified'}
+                        </div>
+                        <div className="w-[1px] h-3.5 bg-gray-300"></div>
+                        <div className="flex items-center gap-1.5">
+                          <MapPin size={15} className="text-gray-400" />
+                          {v.location || 'Remote'}
+                        </div>
+                      </div>
+
+                      {/* Description */}
+                      <div>
+                        <p className={`text-[13.5px] text-gray-600 leading-relaxed ${expanded[v._id] ? '' : 'line-clamp-2'}`}>
+                          {v.description}
+                        </p>
+                        {v.description?.length > 100 && (
+                          <button
+                            onClick={() => setExpanded(e => ({ ...e, [v._id]: !e[v._id] }))}
+                            className="text-[12.5px] font-medium text-accent hover:text-accent-hover mt-1 transition-colors"
+                          >
+                            {expanded[v._id] ? 'Read less' : 'Read more'}
+                          </button>
+                        )}
+                      </div>
+
+                      {/* Skills / Tags */}
+                      <div className="text-[13.5px] text-gray-500">
+                        {v.skills && v.skills.length > 0 ? v.skills.join(' · ') : v.topics && v.topics.length > 0 ? v.topics.join(' · ') : 'Skills not specified'}
+                      </div>
+
+                      {/* Footer */}
+                      <div className="flex items-center justify-between mt-2 border-t border-transparent">
+                        <div className="text-[12px] text-gray-400">
+                          {v.createdAt ? (() => {
+                            const days = Math.floor((new Date() - new Date(v.createdAt)) / (1000 * 60 * 60 * 24));
+                            return days === 0 ? 'Today' : days === 1 ? '1 Day Ago' : `${days} Days Ago`;
+                          })() : 'Recently'}
+                        </div>
+                        
+                        {v.status === 'closed' ? (
+                          <span className="text-sm text-gray-400 font-medium px-5 py-2.5">Applications closed</span>
+                        ) : !user ? (
+                          <Link
+                            to="/login"
+                            className="flex items-center gap-2 text-[13.5px] font-semibold bg-accent hover:bg-accent-hover text-white px-5 py-2.5 rounded-xl transition-colors"
+                          >
+                            Sign in to apply <ArrowRight size={15} />
+                          </Link>
+                        ) : (() => {
+                          const config = getStatusConfig(v.applicationStatus);
+                          return (
+                            <button
+                              onClick={() => handleInterest(v)}
+                              disabled={busy === v._id || !config.canWithdraw}
+                              className={`group flex items-center gap-2 text-[13.5px] font-semibold px-5 py-2.5 rounded-xl transition-colors ${
+                                !config.canWithdraw ? 'disabled:opacity-100 disabled:cursor-default cursor-default' : 'disabled:opacity-60 disabled:cursor-not-allowed'
+                              } ${
+                                v.interested
+                                  ? config.classes
+                                  : 'bg-white text-accent border border-accent hover:bg-accent hover:text-white'
+                              }`}
+                            >
+                              {busy === v._id ? (
+                                <span className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                              ) : v.interested ? (
+                                <>
+                                  {config.icon}
+                                  <span className={!config.canWithdraw ? '' : 'group-hover:hidden'}>
+                                    {v.applicationStatus ? v.applicationStatus.charAt(0).toUpperCase() + v.applicationStatus.slice(1) : 'Applied'}
+                                  </span>
+                                  {config.canWithdraw && <span className="hidden group-hover:inline">Withdraw</span>}
+                                </>
+                              ) : (
+                                <>Show Interest <ArrowRight size={15} /></>
+                              )}
+                            </button>
+                          );
+                        })()}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            {totalPages > 1 && (
+              <div className="flex items-center justify-center gap-2 mt-8 flex-wrap">
+                <button
+                  onClick={() => { setCurrentPage(p => Math.max(1, p - 1)); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                  disabled={currentPage === 1}
+                  className="px-3.5 py-2 rounded-xl border border-border bg-white text-gray-500 hover:border-gray-300 hover:text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all text-sm font-medium"
+                >
+                  Previous
+                </button>
+                {Array.from({ length: totalPages }).map((_, idx) => {
+                  const p = idx + 1;
+                  return (
+                    <button
+                      key={p}
+                      onClick={() => { setCurrentPage(p); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                      className={`w-10 h-10 rounded-xl border text-sm font-semibold transition-all ${
+                        currentPage === p
+                          ? 'bg-accent border-accent text-white shadow-sm'
+                          : 'border-border bg-white text-gray-700 hover:border-gray-300'
+                      }`}
+                    >
+                      {p}
+                    </button>
+                  );
+                })}
+                <button
+                  onClick={() => { setCurrentPage(p => Math.min(totalPages, p + 1)); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                  disabled={currentPage === totalPages}
+                  className="px-3.5 py-2 rounded-xl border border-border bg-white text-gray-500 hover:border-gray-300 hover:text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all text-sm font-medium"
+                >
+                  Next
+                </button>
+              </div>
+            )}
+          </div>
         );
       })()}
       </div>

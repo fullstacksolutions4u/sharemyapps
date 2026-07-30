@@ -21,6 +21,7 @@ const jobLinkSchema = new mongoose.Schema({
   state: { type: String, trim: true, default: '' },
   adminNote: { type: String, trim: true, default: '' },
   expiresAt: { type: Date, expires: 0 },
+  clicks: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
   createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }
 }, { timestamps: true });
 

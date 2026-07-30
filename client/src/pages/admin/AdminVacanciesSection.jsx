@@ -1,7 +1,7 @@
 import { useState, useEffect, forwardRef, useImperativeHandle } from 'react';
 import {
   Plus, Save, Check, Trash2, Pencil, ToggleLeft, ToggleRight,
-  MapPin, Briefcase, ChevronDown, Users as UsersIcon, Send, MessageCircle, Home, X, Eye, FileText
+  MapPin, Briefcase, ChevronDown, Users as UsersIcon, Send, MessageCircle, Home, X, Eye, FileText, Crown
 } from 'lucide-react';
 import api from '../../api/axios';
 import toast from 'react-hot-toast';
@@ -14,6 +14,17 @@ const TYPE_STYLE = {
   onsite: 'bg-blue-50 text-blue-700 border-blue-200',
   hybrid: 'bg-purple-50 text-purple-700 border-purple-200',
 };
+const STATUS_SELECT_STYLES = {
+  applied: 'border-blue-200 text-blue-700 bg-blue-50/50 focus:border-blue-400 focus:ring-2 focus:ring-blue-100',
+  reviewing: 'border-amber-200 text-amber-700 bg-amber-50/50 focus:border-amber-400 focus:ring-2 focus:ring-amber-100',
+  contacted: 'border-emerald-200 text-emerald-700 bg-emerald-50/50 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100',
+  '1 round interview': 'border-indigo-200 text-indigo-700 bg-indigo-50/50 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100',
+  '2nd round interview': 'border-purple-200 text-purple-700 bg-purple-50/50 focus:border-purple-400 focus:ring-2 focus:ring-purple-100',
+  '3rd round interview': 'border-pink-200 text-pink-700 bg-pink-50/50 focus:border-pink-400 focus:ring-2 focus:ring-pink-100',
+  selected: 'border-accent/30 text-accent bg-[#E6F7F5]/50 focus:border-accent focus:ring-2 focus:ring-accent/10',
+  rejected: 'border-red-200 text-red-700 bg-red-50/50 focus:border-red-400 focus:ring-2 focus:ring-red-100',
+};
+
 const EMPTY_FORM = { title: '', company: '', description: '', skills: '', location: '', type: 'remote', industry: '', jobType: '', experience: '', salaryRange: '', status: 'active' };
 const EXPERIENCE_OPTIONS = ['Fresher', '0-1 years', '0-2 years', '1-3 years', '3-5 years', '5-8 years', '8+ years'];
 const inp = 'w-full px-3.5 py-2.5 border border-[#E5E1DA] rounded-xl text-sm text-[#1A1A1A] bg-white placeholder-[#9CA3AF] focus:outline-none focus:border-[#00A693] focus:ring-2 focus:ring-[#00A693]/10 transition';
@@ -367,6 +378,11 @@ const AdminVacanciesSection = forwardRef(function AdminVacanciesSection({ hideTi
                                   <p className="text-sm font-medium text-[#1A1A1A] truncate">
                                     {u.name}
                                     {u.regNumber && <span className="ml-1.5 text-xs font-medium text-accent">{u.userType === 'client' ? 'C' : 'D'}{u.regNumber}</span>}
+                                    {(u.freePremiumGrant?.granted || (u.premiumServices && u.premiumServices.length > 0)) && (
+                                      <span className="ml-2 inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-amber-50 border border-amber-200 text-[10px] font-bold text-amber-700 uppercase tracking-wide shrink-0">
+                                        <Crown size={10} className="fill-amber-400 text-amber-500" /> Premium
+                                      </span>
+                                    )}
                                   </p>
                                   <p className="text-xs text-[#6B7280] truncate">{u.email}</p>
                                 </div>
@@ -374,16 +390,18 @@ const AdminVacanciesSection = forwardRef(function AdminVacanciesSection({ hideTi
                                   <select
                                     value={v.applicantStatus?.[u._id] || 'applied'}
                                     onChange={(e) => handleStatusChange(v._id, u._id, e.target.value)}
-                                    className="px-2 py-1.5 text-xs font-medium border border-border rounded-lg text-text bg-white focus:outline-none focus:border-accent"
+                                    className={`px-2.5 py-1.5 text-xs font-semibold border rounded-lg focus:outline-none transition-all duration-200 cursor-pointer ${
+                                      STATUS_SELECT_STYLES[v.applicantStatus?.[u._id] || 'applied'] || STATUS_SELECT_STYLES.applied
+                                    }`}
                                   >
-                                    <option value="applied">Applied</option>
-                                    <option value="reviewing">Reviewing</option>
-                                    <option value="contacted">Contacted</option>
-                                    <option value="1 round interview">1st Round Interview</option>
-                                    <option value="2nd round interview">2nd Round Interview</option>
-                                    <option value="3rd round interview">3rd Round Interview</option>
-                                    <option value="selected">Selected</option>
-                                    <option value="rejected">Not Selected This Time</option>
+                                    <option value="applied" className="text-[#1A1A1A] bg-white font-medium">Applied</option>
+                                    <option value="reviewing" className="text-[#1A1A1A] bg-white font-medium">Reviewing</option>
+                                    <option value="contacted" className="text-[#1A1A1A] bg-white font-medium">Contacted</option>
+                                    <option value="1 round interview" className="text-[#1A1A1A] bg-white font-medium">1st Round Interview</option>
+                                    <option value="2nd round interview" className="text-[#1A1A1A] bg-white font-medium">2nd Round Interview</option>
+                                    <option value="3rd round interview" className="text-[#1A1A1A] bg-white font-medium">3rd Round Interview</option>
+                                    <option value="selected" className="text-[#1A1A1A] bg-white font-medium">Selected</option>
+                                    <option value="rejected" className="text-[#1A1A1A] bg-white font-medium">Not Selected This Time</option>
                                   </select>
 
                                   <button
