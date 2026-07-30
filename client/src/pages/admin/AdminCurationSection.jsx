@@ -638,7 +638,7 @@ export default function AdminCurationSection() {
     const fetchUsers = async () => {
       try {
         const res = await api.get('/admin/users?limit=200&userType=developer&onlyContacted=true');
-        const u = (res.data.users || res.data || []).filter(uObj => !uObj.isDeleted && !uObj.hidden);
+        const u = (res.data.users || res.data || []).filter(uObj => !uObj.isDeleted);
         u.sort((a, b) => (a.regNumber || 99999) - (b.regNumber || 99999));
         if (ignore) return;
         setUsers(u);
