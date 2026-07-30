@@ -273,7 +273,7 @@ export default function Vacancies() {
   const [expanded, setExpanded] = useState({});
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
-  const initialTab = queryParams.get('tab') || 'vacancies';
+  const initialTab = queryParams.get('tab') || 'job-links';
   const [activeTab, setActiveTab] = useState(initialTab);
 
   const [filterDesignation, setFilterDesignation] = useState('');
@@ -339,8 +339,8 @@ export default function Vacancies() {
   };
 
   const TABS = [
-    { key: 'vacancies',  label: 'Vacancies',          icon: Briefcase },
     { key: 'job-links',  label: 'Job Post Links',      icon: ExternalLink },
+    { key: 'vacancies',  label: 'Our Client Vacancies',          icon: Briefcase },
     { key: 'freelance',  label: 'Freelance Projects',  icon: Laptop },
   ];
 

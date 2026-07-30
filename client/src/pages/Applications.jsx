@@ -192,11 +192,6 @@ export default function Applications() {
                 </div>
                 
                 <div className="flex flex-col items-end gap-2 shrink-0">
-                  {app.jobStatus === 'closed' && (
-                    <span className="text-[10px] uppercase font-bold tracking-wider text-red-500 bg-red-50 px-2 py-0.5 rounded border border-red-100">
-                      Job Closed
-                    </span>
-                  )}
                 </div>
               </div>
               
