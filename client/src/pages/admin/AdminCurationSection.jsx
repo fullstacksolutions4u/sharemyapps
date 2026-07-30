@@ -2,7 +2,8 @@ import { useState, useEffect, useCallback } from 'react';
 import {
   Search, Plus, Trash2, Send, Check,
   Copy, ExternalLink, ClipboardList, ToggleLeft, ToggleRight,
-  X, Link as LinkIcon, Edit3, RefreshCw
+  X, Link as LinkIcon, Edit3, RefreshCw,
+  Calendar, Video, ChevronLeft, ChevronRight
 } from 'lucide-react';
 import api from '../../api/axios';
 import toast from 'react-hot-toast';
@@ -442,6 +443,319 @@ function EvaluationDrawer({ user, onClose, onSaved }) {
   );
 }
 
+// ─── Calendar Tab ─────────────────────────────────────────────────────────────
+function CalendarTab() {
+  const [currentDate, setCurrentDate] = useState(new Date());
+  const [sessions, setSessions] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [sidebarTab, setSidebarTab] = useState('selected'); // 'selected' | 'upcoming'
+
+  useEffect(() => {
+    api.get('/admin/interviews', { params: { limit: 200 } })
+      .then(res => setSessions(res.data.sessions || []))
+      .catch(() => toast.error('Failed to load interviews'))
+      .finally(() => setLoading(false));
+  }, []);
+
+  const getDaysInMonth = () => {
+    const year = currentDate.getFullYear();
+    const month = currentDate.getMonth();
+    const startOfMonth = new Date(year, month, 1);
+    const endOfMonth = new Date(year, month + 1, 0);
+    const days = [];
+    
+    // Previous month padding
+    const startDayOfWeek = startOfMonth.getDay();
+    for (let i = startDayOfWeek - 1; i >= 0; i--) {
+      days.push({
+        date: new Date(year, month, -i),
+        isCurrentMonth: false,
+      });
+    }
+    
+    // Current month
+    const totalDays = endOfMonth.getDate();
+    for (let i = 1; i <= totalDays; i++) {
+      days.push({
+        date: new Date(year, month, i),
+        isCurrentMonth: true,
+      });
+    }
+    
+    // Next month padding
+    const remainingDays = 42 - days.length;
+    for (let i = 1; i <= remainingDays; i++) {
+      days.push({
+        date: new Date(year, month + 1, i),
+        isCurrentMonth: false,
+      });
+    }
+    
+    return days;
+  };
+
+  const getSessionsForDay = (d) => {
+    return sessions.filter(s => {
+      if (!s.interviewedAt) return false;
+      const sDate = new Date(s.interviewedAt);
+      return sDate.getDate() === d.getDate() &&
+             sDate.getMonth() === d.getMonth() &&
+             sDate.getFullYear() === d.getFullYear();
+    });
+  };
+
+  const nextMonth = () => {
+    setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1));
+  };
+
+  const prevMonth = () => {
+    setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1));
+  };
+
+  const isToday = (d) => {
+    const today = new Date();
+    return today.getDate() === d.getDate() &&
+           today.getMonth() === d.getMonth() &&
+           today.getFullYear() === d.getFullYear();
+  };
+
+  const days = getDaysInMonth();
+  const monthName = currentDate.toLocaleString('en-US', { month: 'long', year: 'numeric' });
+  
+  // Sort sessions chronologically for upcoming list
+  const upcomingSessions = [...sessions]
+    .filter(s => s.interviewedAt && new Date(s.interviewedAt) >= new Date(new Date().setHours(0,0,0,0)))
+    .sort((a, b) => new Date(a.interviewedAt) - new Date(b.interviewedAt));
+
+  const selectedDaySessions = getSessionsForDay(selectedDate);
+
+  return (
+    <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+      {/* Calendar Grid */}
+      <div className="lg:col-span-3 bg-white border border-[#E5E1DA] rounded-2xl p-5 shadow-sm">
+        {/* Month Navigation */}
+        <div className="flex items-center justify-between mb-6">
+          <h3 className="text-lg font-bold text-[#1A1A1A]">{monthName}</h3>
+          <div className="flex gap-2">
+            <button onClick={prevMonth} className="p-1.5 hover:bg-gray-100 border border-[#E5E1DA] rounded-xl transition text-gray-500">
+              <ChevronLeft size={16} />
+            </button>
+            <button onClick={nextMonth} className="p-1.5 hover:bg-gray-100 border border-[#E5E1DA] rounded-xl transition text-gray-500">
+              <ChevronRight size={16} />
+            </button>
+          </div>
+        </div>
+
+        {/* Calendar Headers */}
+        <div className="grid grid-cols-7 gap-1 text-center font-semibold text-xs text-[#6B7280] mb-2">
+          {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
+            <div key={day} className="py-1">{day}</div>
+          ))}
+        </div>
+
+        {/* Days Grid */}
+        {loading ? (
+          <div className="text-center py-24 text-gray-400">Loading interview schedules...</div>
+        ) : (
+          <div className="grid grid-cols-7 gap-1.5">
+            {days.map((dayObj, idx) => {
+              const daySessions = getSessionsForDay(dayObj.date);
+              const today = isToday(dayObj.date);
+              const isSelected = selectedDate &&
+                selectedDate.getDate() === dayObj.date.getDate() &&
+                selectedDate.getMonth() === dayObj.date.getMonth() &&
+                selectedDate.getFullYear() === dayObj.date.getFullYear();
+              return (
+                <div
+                  key={idx}
+                  onClick={() => {
+                    setSelectedDate(dayObj.date);
+                    setSidebarTab('selected');
+                  }}
+                  className={`min-h-[95px] border rounded-xl p-2 transition flex flex-col justify-between cursor-pointer ${
+                    dayObj.isCurrentMonth ? 'bg-[#FAF9F6]/40 hover:bg-[#FAF9F6]' : 'opacity-30 bg-transparent'
+                  } ${
+                    isSelected 
+                      ? 'border-[#00A693] ring-2 ring-[#00A693]/20 shadow-sm bg-white' 
+                      : 'border-[#FAF9F6]'
+                  }`}
+                >
+                  <div className="flex justify-between items-center mb-1">
+                    <span className={`text-xs font-semibold px-1.5 py-0.5 rounded-full ${
+                      today ? 'bg-[#00A693] text-white' : 'text-[#6B7280]'
+                    }`}>
+                      {dayObj.date.getDate()}
+                    </span>
+                    {daySessions.length > 0 && (
+                      <span className="text-[10px] bg-[#00A693]/10 text-[#00A693] font-bold px-1.5 py-0.5 rounded-full">
+                        {daySessions.length}
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="space-y-1 overflow-y-auto max-h-[60px] scrollbar-thin">
+                    {daySessions.map((s, sIdx) => (
+                      <div
+                        key={sIdx}
+                        className="text-[9px] bg-white border border-[#E5E1DA] hover:border-[#00A693] text-gray-700 px-1 py-0.5 rounded shadow-sm truncate cursor-pointer relative group/calItem"
+                        title={`${s.user?.name || 'Developer'} - ${new Date(s.interviewedAt).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}`}
+                      >
+                        <span className="font-semibold text-[#00A693]">
+                          {new Date(s.interviewedAt).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: true }).replace(':00', '')}
+                        </span>
+                        {' '}{s.user?.name}
+
+                        {/* Interactive Tooltip Card on Hover */}
+                        <div className="absolute left-1/2 bottom-full mb-2 -translate-x-1/2 w-56 bg-white border border-[#E5E1DA] text-[#1A1A1A] p-3 rounded-xl shadow-xl opacity-0 invisible group-hover/calItem:opacity-100 group-hover/calItem:visible transition-all duration-200 z-50 pointer-events-auto cursor-default">
+                          <div className="flex items-center gap-2 mb-2">
+                            <img
+                              src={optimizeImage(s.user?.avatar, 40) || 'https://www.gravatar.com/avatar?d=mp'}
+                              className="w-7 h-7 rounded-full object-cover border border-[#E5E1DA]"
+                              alt="Avatar"
+                            />
+                            <div>
+                              <div className="text-xs font-bold truncate w-36">{s.user?.name}</div>
+                              <div className="text-[10px] text-[#6B7280] truncate w-36">{s.user?.email}</div>
+                            </div>
+                          </div>
+                          <div className="space-y-1 text-[10px] text-gray-600 mb-2 border-t border-gray-100 pt-1.5">
+                            <div><strong>Session:</strong> #{s.sessionNumber}</div>
+                            <div><strong>Time:</strong> {new Date(s.interviewedAt).toLocaleString()}</div>
+                            {s.googleMeetLink && (
+                              <div className="truncate"><strong>Meet:</strong> <a href={s.googleMeetLink} target="_blank" rel="noopener noreferrer" className="text-[#00A693] hover:underline">{s.googleMeetLink}</a></div>
+                            )}
+                          </div>
+                          {s.googleMeetLink && (
+                            <a
+                              href={s.googleMeetLink}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="w-full py-1 bg-[#00A693] hover:bg-[#008f7e] text-white rounded-lg text-[10px] font-semibold flex items-center justify-center gap-1 transition"
+                            >
+                              <Video size={10} /> Join Meeting
+                            </a>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
+      {/* Sidebar - Schedules List */}
+      <div className="bg-white border border-[#E5E1DA] rounded-2xl p-4 shadow-sm flex flex-col max-h-[640px]">
+        {/* Toggle tabs in sidebar */}
+        <div className="flex gap-1 bg-[#F3F0EB] rounded-xl p-1 mb-4">
+          <button
+            onClick={() => setSidebarTab('selected')}
+            className={`flex-1 text-center py-1.5 rounded-lg text-xs font-semibold transition ${
+              sidebarTab === 'selected' ? 'bg-white shadow text-[#00A693]' : 'text-[#6B7280] hover:text-[#1A1A1A]'
+            }`}
+          >
+            Day View
+          </button>
+          <button
+            onClick={() => setSidebarTab('upcoming')}
+            className={`flex-1 text-center py-1.5 rounded-lg text-xs font-semibold transition ${
+              sidebarTab === 'upcoming' ? 'bg-white shadow text-[#00A693]' : 'text-[#6B7280] hover:text-[#1A1A1A]'
+            }`}
+          >
+            Upcoming ({upcomingSessions.length})
+          </button>
+        </div>
+
+        <div className="flex-1 overflow-y-auto space-y-2.5 scrollbar-thin">
+          {sidebarTab === 'selected' ? (
+            <div>
+              <h4 className="text-xs font-bold text-[#6B7280] mb-3">
+                Interviews on {selectedDate.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}
+              </h4>
+              {selectedDaySessions.length === 0 ? (
+                <div className="text-center py-16 text-gray-400 border border-dashed border-[#E5E1DA] bg-[#FAF9F6]/20 rounded-xl">
+                  <Calendar size={22} className="mx-auto text-gray-300 mb-2" />
+                  <p className="text-xs">No interviews scheduled</p>
+                </div>
+              ) : (
+                selectedDaySessions.map((s, idx) => (
+                  <div key={idx} className="border border-[#E5E1DA] bg-white rounded-xl p-3 shadow-sm hover:border-[#00A693] transition">
+                    <div className="flex items-center gap-2 mb-2">
+                      <img
+                        src={optimizeImage(s.user?.avatar, 40) || 'https://www.gravatar.com/avatar?d=mp'}
+                        className="w-6 h-6 rounded-full object-cover border border-[#E5E1DA]"
+                        alt="Avatar"
+                      />
+                      <div className="truncate">
+                        <h4 className="text-xs font-bold text-[#1A1A1A] truncate">{s.user?.name}</h4>
+                        <p className="text-[10px] text-gray-500 truncate">{s.user?.email}</p>
+                      </div>
+                    </div>
+                    <div className="text-[10px] text-gray-600 space-y-0.5 mb-2.5 border-t border-gray-100 pt-1.5">
+                      <div><strong>Session Number:</strong> #{s.sessionNumber}</div>
+                      <div><strong>Time:</strong> {new Date(s.interviewedAt).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: true })}</div>
+                      {s.googleMeetLink && (
+                        <div className="truncate"><strong>Meet:</strong> <a href={s.googleMeetLink} target="_blank" rel="noopener noreferrer" className="text-[#00A693] hover:underline">{s.googleMeetLink}</a></div>
+                      )}
+                    </div>
+                    {s.googleMeetLink && (
+                      <a
+                        href={s.googleMeetLink}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="w-full py-1.5 bg-[#00A693] hover:bg-[#008f7e] text-white rounded-lg text-[10px] font-semibold flex items-center justify-center gap-1 transition shadow-sm"
+                      >
+                        <Video size={10} /> Join Meeting
+                      </a>
+                    )}
+                  </div>
+                ))
+              )}
+            </div>
+          ) : (
+            upcomingSessions.length === 0 ? (
+              <p className="text-xs text-gray-400 text-center py-8">No upcoming interviews scheduled</p>
+            ) : (
+              upcomingSessions.map((s, idx) => (
+                <div key={idx} className="border border-[#FAF9F6] bg-[#FAF9F6]/50 rounded-xl p-3 hover:bg-[#FAF9F6] transition">
+                  <div className="flex items-center gap-2 mb-1.5">
+                    <img
+                      src={optimizeImage(s.user?.avatar, 40) || 'https://www.gravatar.com/avatar?d=mp'}
+                      className="w-6 h-6 rounded-full object-cover border border-[#E5E1DA]"
+                      alt="Avatar"
+                    />
+                    <div className="truncate">
+                      <h4 className="text-xs font-bold text-[#1A1A1A] truncate">{s.user?.name}</h4>
+                      <p className="text-[10px] text-gray-500 truncate">{s.user?.email}</p>
+                    </div>
+                  </div>
+                  <div className="text-[10px] text-gray-600 space-y-0.5 mb-2">
+                    <div><strong>Date:</strong> {new Date(s.interviewedAt).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })}</div>
+                    <div><strong>Time:</strong> {new Date(s.interviewedAt).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: true })}</div>
+                  </div>
+                  {s.googleMeetLink && (
+                    <a
+                      href={s.googleMeetLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-full py-1.5 bg-[#00A693] hover:bg-[#008f7e] text-white rounded-lg text-[10px] font-semibold flex items-center justify-center gap-1 transition shadow-sm"
+                    >
+                      <Video size={10} /> Join Meeting
+                    </a>
+                  )}
+                </div>
+              ))
+            )
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── Showcase Pages Tab ───────────────────────────────────────────────────────
 function ShowcasePagesTab() {
   const [pages, setPages] = useState([]);
@@ -753,6 +1067,7 @@ export default function AdminCurationSection() {
         {[
           { key: 'interviews', label: 'Interview Evaluations', icon: ClipboardList },
           { key: 'showcases', label: 'Showcase Pages', icon: LinkIcon },
+          { key: 'calendar', label: 'Calendar', icon: Calendar },
         ].map(t => (
           <button
             key={t.key}
@@ -764,7 +1079,7 @@ export default function AdminCurationSection() {
         ))}
       </div>
 
-      {tab === 'showcases' ? <ShowcasePagesTab /> : (
+      {tab === 'showcases' ? <ShowcasePagesTab /> : tab === 'calendar' ? <CalendarTab /> : (
         <>
           {/* Filters */}
           <div className="flex flex-col sm:flex-row gap-3 mb-4">
