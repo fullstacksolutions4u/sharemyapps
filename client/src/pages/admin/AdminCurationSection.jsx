@@ -166,18 +166,23 @@ function EvaluationDrawer({ user, onClose, onSaved }) {
   const handleSave = async () => {
     setSaving(true);
     try {
+      const payload = {
+        ...form,
+        interviewedAt: form.interviewedAt ? new Date(form.interviewedAt).toISOString() : new Date().toISOString()
+      };
       let res;
       if (editingId) {
-        res = await api.put(`/admin/interviews/${editingId}`, form);
+        res = await api.put(`/admin/interviews/${editingId}`, payload);
         setSessions(prev => prev.map(s => s._id === editingId ? res.data.session : s));
         toast.success('Session updated');
       } else {
-        res = await api.post(`/admin/interviews/user/${user._id}`, form);
+        res = await api.post(`/admin/interviews/user/${user._id}`, payload);
         setSessions(prev => [res.data.session, ...prev]);
         toast.success('Interview session saved');
       }
       setEditingId(null);
       setForm(emptyForm());
+      setActiveTabIdx(0);
       onSaved?.();
     } catch (err) { toast.error(err.response?.data?.message || 'Failed to save'); }
     finally { setSaving(false); }
