@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import axios from '../api/axios';
 import { formatDistanceToNow } from 'date-fns';
-import { Trophy, MessageCircle, Heart, Star, TrendingUp, Briefcase, ChevronRight, UserPlus, Crown, Sparkles, Plus, MapPin, Laptop, ExternalLink, Clock, Building, Calendar, Info, Megaphone } from 'lucide-react';
+import { Trophy, MessageCircle, Heart, Star, TrendingUp, Briefcase, ChevronRight, UserPlus, Crown, Sparkles, Plus, MapPin, Laptop, ExternalLink, Clock, Building, Calendar, Info, Coins } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import _Lottie from 'lottie-react';
 import feedAnimation from '../assets/feed.json';
@@ -490,7 +490,7 @@ export default function Feed() {
       <div className="w-full lg:max-w-[25%] flex-1 flex flex-col gap-6 sticky top-20 max-h-[calc(100vh-100px)] overflow-y-auto custom-scrollbar pb-4 pr-1">
         
         {/* LEADERBOARD (Top 5) */}
-        <div className="bg-linear-to-br from-violet-50/80 to-purple-50/50 rounded-xl shadow-sm border border-black/5 overflow-hidden shrink-0 flex flex-col h-[360px]">
+        <div className="bg-linear-to-br from-violet-50/80 to-purple-50/50 rounded-xl shadow-sm border border-[#5a788b] overflow-hidden shrink-0 flex flex-col h-[360px]">
           <div className="p-4 border-b border-black/5 bg-transparent flex items-center justify-between">
             <div className="flex items-center gap-2 font-bold text-lg text-text">
               <Trophy size={20} className="text-violet-600" />
@@ -498,9 +498,9 @@ export default function Feed() {
             </div>
             <Link 
               to="/quiz-zone" 
-              className="text-xs bg-accent hover:bg-accent-hover text-white px-3 py-1.5 rounded-lg transition-colors font-medium flex items-center gap-1"
+              className="bg-[#fbfcfa] border border-gray-100/60 px-3 py-1.5 rounded-[12px] shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all flex items-center justify-center group"
             >
-              Quiz Zone
+              <span className="text-xs font-bold text-transparent bg-clip-text bg-gradient-to-r from-slate-900 to-slate-600 tracking-wide drop-shadow-sm">Quiz Zone</span>
             </Link>
           </div>
           
@@ -534,9 +534,9 @@ export default function Feed() {
                       <p className="text-sm font-medium text-text truncate">{user.name}</p>
                     </div>
                     
-                    <div className="flex flex-col items-end">
-                      <span className="text-sm font-bold text-primary">{user.points}</span>
-                      <span className="text-[10px] text-muted">pts</span>
+                    <div className="flex items-center gap-1.5 bg-amber-50 px-2.5 py-1 rounded-full border border-amber-100/50 shadow-[0_2px_8px_rgba(245,158,11,0.1)] shrink-0 transition-transform group-hover:scale-105">
+                      <span className="text-[13px] font-extrabold text-amber-600">{user.points}</span>
+                      <Coins size={14} className="text-amber-500 drop-shadow-sm" strokeWidth={2.5} />
                     </div>
                   </Link>
                 ))}
@@ -545,7 +545,7 @@ export default function Feed() {
           </div>
         </div>
 
-        <div className="bg-white rounded-[32px] p-5 pb-6 flex flex-col relative overflow-hidden shrink-0 shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-gray-50/50 w-full sm:w-[340px]">
+        <div className="bg-white rounded-[32px] p-5 pb-6 flex flex-col relative overflow-hidden shrink-0 shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-[#5a788b] w-full sm:w-[340px]">
           {/* Abstract wavy background at the bottom */}
           <div className="absolute bottom-0 left-0 right-0 h-32 pointer-events-none opacity-50 flex items-end">
             <svg viewBox="0 0 1440 320" className="absolute bottom-0 w-full h-full object-cover" preserveAspectRatio="none">
@@ -559,32 +559,21 @@ export default function Feed() {
             {user && (
               <button
                 onClick={() => setShowReportModal(true)}
-                className="bg-[#fbfcfa] border border-gray-100/60 p-2 pr-3.5 rounded-[18px] flex items-center gap-3.5 transition-all w-full shrink-0 shadow-sm hover:shadow-md hover:-translate-y-0.5 group"
+                className="bg-[#fbfcfa] border border-gray-100/60 p-4 rounded-[18px] flex items-center justify-center transition-all w-full shrink-0 shadow-sm hover:shadow-md hover:-translate-y-0.5 group"
               >
-                <div className="w-[44px] h-[44px] rounded-xl bg-[#ebf7f3] flex items-center justify-center shrink-0">
-                  <Megaphone size={20} className="text-[#008b74]" strokeWidth={1.75} />
-                </div>
-                <span className="text-[14px] font-semibold text-[#111827] flex-1 text-left tracking-tight">Report your company vacancy</span>
-                <ChevronRight size={18} className="text-[#008b74] shrink-0" strokeWidth={2.5} />
+                <span className="text-[14px] font-bold text-transparent bg-clip-text bg-gradient-to-r from-slate-900 to-slate-600 tracking-wide drop-shadow-sm">Report your company vacancy &gt;</span>
               </button>
             )}
 
             {/* OPPORTUNITIES (Jobs) */}
             <div className="flex flex-col gap-3.5">
-              <div className="flex items-center justify-between px-1 mb-0.5">
-                <span className="text-[15px] font-bold text-[#111827] tracking-tight">Active Job Opportunities</span>
-                <Link 
-                  to="/vacancies" 
-                  className="text-[12px] font-bold text-[#008b74] flex items-center hover:underline"
-                >
-                  View All <ChevronRight size={14} strokeWidth={2.5} className="ml-0.5" />
-                </Link>
+              <div className="flex items-center justify-center px-1 mb-1">
+                <span className="text-[15px] font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-[#008b74] to-[#5a788b] tracking-wider drop-shadow-sm text-center uppercase">Active Job Opportunities</span>
               </div>
               
               <div className="flex flex-col gap-2.5">
                 {opportunities.length === 0 ? (
                    <div className="py-6 flex flex-col items-center justify-center text-slate-400 bg-[#fbfcfa] rounded-2xl border border-gray-100/60 shadow-sm">
-                     <Briefcase size={24} className="opacity-40 mb-2" />
                      <p className="text-xs font-medium">No active opportunities</p>
                    </div>
                 ) : (
@@ -592,21 +581,19 @@ export default function Feed() {
                     <Link 
                       key={job._id} 
                       to="/vacancies" 
-                      className="bg-[#fbfcfa] border border-gray-100/60 p-2 pr-3.5 rounded-[18px] shadow-sm hover:shadow-md transition-all flex items-center gap-3.5 group"
+                      className="bg-[#fbfcfa] border border-gray-100/60 p-4 rounded-[18px] shadow-sm hover:shadow-md transition-all flex items-center justify-center group"
                     >
-                      <div className="w-[44px] h-[44px] rounded-xl bg-[#ebf7f3] flex items-center justify-center shrink-0">
-                        <Briefcase size={20} className="text-[#008b74]" strokeWidth={1.75} />
-                      </div>
-                      
-                      {/* Vertical separator */}
-                      <div className="w-[1.5px] h-6 bg-gray-100 shrink-0"></div>
-                      
-                      <span className="text-[13px] font-medium text-[#111827] flex-1 text-left line-clamp-2 leading-tight pr-1">{job.title}</span>
-                      <ChevronRight size={16} className="text-[#008b74] shrink-0 transition-transform group-hover:translate-x-0.5" strokeWidth={2.5} />
+                      <span className="text-[13.5px] font-semibold text-slate-800 text-center line-clamp-2 leading-tight tracking-wide drop-shadow-sm">{job.title}</span>
                     </Link>
                   ))
                 )}
               </div>
+              <Link 
+                to="/vacancies" 
+                className="mt-3 text-[12.5px] font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-[#008b74] to-teal-600 hover:opacity-80 text-center tracking-wider uppercase transition-opacity drop-shadow-sm"
+              >
+                View All
+              </Link>
             </div>
           </div>
         </div>
