@@ -200,8 +200,6 @@ export default function PublicPortfolio() {
   const { user, projects } = data;
   const initials = user.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
   const approvedCount = projects.length;
-  const hasContact = user.email || user.phone;
-  const hasSocial = user.linkedinUrl || user.githubUrl || user.leetcodeUrl || user.portfolioUrl || user.cvUrl;
 
   // Aggregate unique tech tags from all projects (max 12)
   const techStack = [...new Set(projects.flatMap(p => p.techTags || []))].slice(0, 12); // hard cap at 12
@@ -283,10 +281,8 @@ export default function PublicPortfolio() {
                 )}
               </div>
             </div>
-
             {/* Contact + Social row */}
-            <div className="flex flex-wrap items-center justify-center gap-3">
-
+            <div className="flex flex-wrap items-center justify-center gap-3 mt-6 pt-4 border-t border-slate-100/80">
               {user.email && (
                 <a href={`mailto:${user.email}`}
                   className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full border bg-teal-50 text-teal-700 border-teal-200 hover:border-teal-400 hover:scale-105 transition-all">
@@ -315,52 +311,48 @@ export default function PublicPortfolio() {
                   </a>
                 </div>
               )}
-
-              {/* Divider */}
-              {(hasContact && hasSocial) && (
-                <div className="hidden sm:block w-px h-6 bg-border" />
+              {user.linkedinUrl && (
+                <SocialPill
+                  href={toAbsoluteUrl(user.linkedinUrl)}
+                  label="LinkedIn"
+                  colorClass="bg-[#EEF4FF] text-[#0A66C2] border-[#0A66C2]/20 hover:border-[#0A66C2]/50 hover:shadow-sm"
+                  dotClass="bg-[#0A66C2]"
+                />
               )}
-
-              {hasSocial && (
-                <div className="flex items-center gap-2 flex-wrap">
-                  <SocialPill
-                    href={toAbsoluteUrl(user.linkedinUrl)}
-                    label="LinkedIn"
-                    colorClass="bg-[#EEF4FF] text-[#0A66C2] border-[#0A66C2]/20 hover:border-[#0A66C2]/50 hover:shadow-sm"
-                    dotClass="bg-[#0A66C2]"
-                  />
-                  <SocialPill
-                    href={toAbsoluteUrl(user.githubUrl)}
-                    label="GitHub"
-                    colorClass="bg-slate-50 text-slate-700 border-slate-200 hover:border-slate-400 hover:shadow-sm"
-                    dotClass="bg-slate-700"
-                  />
-                  <SocialPill
-                    href={toAbsoluteUrl(user.leetcodeUrl)}
-                    label="LeetCode"
-                    colorClass="bg-[#FFF7ED] text-[#EA580C] border-[#EA580C]/20 hover:border-[#EA580C]/50 hover:shadow-sm"
-                    dotClass="bg-[#EA580C]"
-                  />
-                  {user.portfolioUrl && (
-                    <SocialPill
-                      href={toAbsoluteUrl(user.portfolioUrl)}
-                      label="Portfolio"
-                      colorClass="bg-[#F3E8FF] text-[#9333EA] border-[#9333EA]/20 hover:border-[#9333EA]/50 hover:shadow-sm"
-                      dotClass="bg-[#9333EA]"
-                    />
-                  )}
-                  {user.cvUrl && (
-                    <a
-                      href={toAbsoluteUrl(user.cvUrl)}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1.5 text-[12.5px] font-bold px-4 py-1.5 rounded-full border border-slate-200/80 bg-white text-slate-700 shadow-sm hover:shadow hover:-translate-y-0.5 transition-all"
-                    >
-                      <AiFillFilePdf size={20} className="text-red-500" />
-                      View Resume
-                    </a>
-                  )}
-                </div>
+              {user.githubUrl && (
+                <SocialPill
+                  href={toAbsoluteUrl(user.githubUrl)}
+                  label="GitHub"
+                  colorClass="bg-slate-50 text-slate-700 border-slate-200 hover:border-slate-400 hover:shadow-sm"
+                  dotClass="bg-slate-700"
+                />
+              )}
+              {user.leetcodeUrl && (
+                <SocialPill
+                  href={toAbsoluteUrl(user.leetcodeUrl)}
+                  label="LeetCode"
+                  colorClass="bg-[#FFF7ED] text-[#EA580C] border-[#EA580C]/20 hover:border-[#EA580C]/50 hover:shadow-sm"
+                  dotClass="bg-[#EA580C]"
+                />
+              )}
+              {user.portfolioUrl && (
+                <SocialPill
+                  href={toAbsoluteUrl(user.portfolioUrl)}
+                  label="Portfolio"
+                  colorClass="bg-[#F3E8FF] text-[#9333EA] border-[#9333EA]/20 hover:border-[#9333EA]/50 hover:shadow-sm"
+                  dotClass="bg-[#9333EA]"
+                />
+              )}
+              {user.cvUrl && (
+                <a
+                  href={toAbsoluteUrl(user.cvUrl)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 text-[12.5px] font-bold px-4 py-1.5 rounded-full border border-slate-200/80 bg-white text-slate-700 shadow-sm hover:shadow hover:-translate-y-0.5 transition-all"
+                >
+                  <AiFillFilePdf size={20} className="text-red-500" />
+                  View Resume
+                </a>
               )}
             </div>
           </div>
@@ -447,7 +439,8 @@ export default function PublicPortfolio() {
                   </div>
                 </div>
               </div>
-            ))}
+            )
+          )}
           </div>
         )}
 
