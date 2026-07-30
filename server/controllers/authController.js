@@ -4,7 +4,7 @@ const User = require('../models/User');
 const Project = require('../models/Project');
 const Comment = require('../models/Comment');
 const Activity = require('../models/Activity');
-const { cloudinary } = require('../middleware/upload');
+const { cloudinary, deleteImage } = require('../middleware/upload');
 const { sendOtpEmail } = require('../utils/email');
 
 const signToken = (id) =>
@@ -204,9 +204,8 @@ exports.updateProfile = async (req, res) => {
     }
 
     if (req.file) {
-      if (user.avatar && user.avatar.includes('cloudinary')) {
-        const pid = user.avatar.split('/').pop().split('.')[0];
-        await cloudinary.uploader.destroy(`sharemyapp/${pid}`).catch(() => {});
+      if (user.avatar) {
+        await deleteImage(user.avatar);
       }
       user.avatar = req.file.path;
     }
@@ -222,9 +221,8 @@ exports.deleteAvatar = async (req, res) => {
   try {
     const user = await User.findById(req.user._id);
     if (!user) return res.status(404).json({ message: 'User not found' });
-    if (user.avatar && user.avatar.includes('cloudinary')) {
-      const pid = user.avatar.split('/').pop().split('.')[0];
-      await cloudinary.uploader.destroy(`sharemyapp/${pid}`).catch(() => {});
+    if (user.avatar) {
+      await deleteImage(user.avatar);
     }
     user.avatar = '';
     await user.save();
@@ -241,8 +239,7 @@ exports.deleteAccount = async (req, res) => {
     for (const project of projects) {
       const images = [project.bannerImage, ...project.screenshots].filter(Boolean);
       for (const url of images) {
-        const pid = url.split('/').pop().split('.')[0];
-        await cloudinary.uploader.destroy(`sharemyapp/${pid}`).catch(() => {});
+        await deleteImage(url);
       }
       await Comment.deleteMany({ project: project._id });
       await project.deleteOne();

@@ -3,7 +3,7 @@ const Comment = require('../models/Comment');
 const User = require('../models/User');
 const Notification = require('../models/Notification');
 const Activity = require('../models/Activity');
-const { cloudinary } = require('../middleware/upload');
+const { cloudinary, deleteImage } = require('../middleware/upload');
 const { sendCollaboratorAddedEmail } = require('../utils/email');
 
 async function notifyCollaborators(collaboratorIds, addedBy, project) {
@@ -344,8 +344,7 @@ exports.updateProject = async (req, res) => {
 
     if (files.banner?.[0]) {
       if (project.bannerImage) {
-        const pid = project.bannerImage.split('/').pop().split('.')[0];
-        await cloudinary.uploader.destroy(`sharemyapp/${pid}`).catch(() => {});
+        await deleteImage(project.bannerImage);
       }
       project.bannerImage = files.banner[0].path;
     }
@@ -353,8 +352,7 @@ exports.updateProject = async (req, res) => {
     if (removeScreenshots) {
       const toRemove = Array.isArray(removeScreenshots) ? removeScreenshots : [removeScreenshots];
       for (const url of toRemove) {
-        const pid = url.split('/').pop().split('.')[0];
-        await cloudinary.uploader.destroy(`sharemyapp/${pid}`).catch(() => {});
+        await deleteImage(url);
       }
       project.screenshots = project.screenshots.filter(s => !toRemove.includes(s));
     }
@@ -582,8 +580,7 @@ exports.deleteProject = async (req, res) => {
 
     const images = [project.bannerImage, ...project.screenshots].filter(Boolean);
     for (const url of images) {
-      const pid = url.split('/').pop().split('.')[0];
-      await cloudinary.uploader.destroy(`sharemyapp/${pid}`).catch(() => {});
+      await deleteImage(url);
     }
 
     await project.deleteOne();

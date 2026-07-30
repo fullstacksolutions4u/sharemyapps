@@ -1,5 +1,7 @@
 const multer = require('multer');
 const cloudinary = require('cloudinary').v2;
+const { uploadToFirebase, deleteFromFirebase } = require('../utils/firebase');
+const crypto = require('crypto');
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -7,31 +9,52 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-// Custom multer storage engine for Cloudinary v2 (replaces multer-storage-cloudinary)
-class CloudinaryStorage {
+// Custom multer storage engine for Firebase Storage
+class FirebaseStorage {
   _handleFile(_req, file, cb) {
-    const uploadStream = cloudinary.uploader.upload_stream(
-      {
-        folder: 'sharemyapp',
-        allowed_formats: ['jpg', 'jpeg', 'png', 'webp'],
-        transformation: [{ width: 1200, crop: 'limit' }],
-      },
-      (error, result) => {
-        if (error) return cb(error);
-        cb(null, { path: result.secure_url, filename: result.public_id, size: result.bytes });
+    const chunks = [];
+    file.stream.on('data', chunk => chunks.push(chunk));
+    file.stream.on('end', async () => {
+      try {
+        const buffer = Buffer.concat(chunks);
+        const uniqueSuffix = crypto.randomBytes(16).toString('hex');
+        const parts = file.originalname.split('.');
+        const extension = parts.length > 1 ? parts.pop() : 'png';
+        const filename = `uploads/${uniqueSuffix}.${extension}`;
+
+        const publicUrl = await uploadToFirebase(buffer, file.mimetype, filename);
+        cb(null, { path: publicUrl, filename: filename, size: buffer.length });
+      } catch (err) {
+        cb(err);
       }
-    );
-    file.stream.pipe(uploadStream);
+    });
+    file.stream.on('error', err => cb(err));
   }
 
   _removeFile(_req, file, cb) {
-    cloudinary.uploader.destroy(file.filename, cb);
+    deleteFromFirebase(`https://storage.googleapis.com/${process.env.FIREBASE_STORAGE_BUCKET}/${file.filename}`)
+      .then(() => cb(null))
+      .catch(err => cb(err));
   }
 }
 
 const upload = multer({
-  storage: new CloudinaryStorage(),
+  storage: new FirebaseStorage(),
   limits: { fileSize: 5 * 1024 * 1024 },
 });
 
-module.exports = { upload, cloudinary };
+const deleteImage = async (url) => {
+  if (!url) return;
+  try {
+    if (url.includes('cloudinary')) {
+      const pid = url.split('/').pop().split('.')[0];
+      await cloudinary.uploader.destroy(`sharemyapp/${pid}`).catch(() => {});
+    } else if (url.includes('storage.googleapis.com')) {
+      await deleteFromFirebase(url);
+    }
+  } catch (err) {
+    console.error('Error deleting image:', err);
+  }
+};
+
+module.exports = { upload, cloudinary, deleteImage };
