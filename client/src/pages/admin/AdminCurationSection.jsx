@@ -12,7 +12,7 @@ import { formatDistanceToNow } from 'date-fns';
 const CLIENT_URL = window.location.origin;
 const inp = 'w-full px-3.5 py-2.5 border border-[#E5E1DA] rounded-xl text-sm text-[#1A1A1A] bg-white placeholder-[#9CA3AF] focus:outline-none focus:border-[#00A693] focus:ring-2 focus:ring-[#00A693]/10 transition';
 
-const SECTIONS = ['Communication', 'Technical Skills', 'Problem Solving', 'Attitude', 'Culture Fit'];
+const SECTIONS = ['Frontend', 'Backend'];
 const DEFAULT_SECTIONS = SECTIONS.map(title => ({ title, rating: 3, notes: '' }));
 
 const ratingColor = (r) => r >= 8 ? 'text-emerald-600' : r >= 6 ? 'text-amber-500' : 'text-red-500';
@@ -89,8 +89,7 @@ function EvaluationDrawer({ user, onClose, onSaved }) {
 
   const emptyForm = () => ({
     overallRating: 7,
-    headline: '',
-    summary: '',
+    googleMeetLink: '',
     sections: DEFAULT_SECTIONS.map(s => ({ ...s })),
     pros: [],
     cons: [],
@@ -99,6 +98,32 @@ function EvaluationDrawer({ user, onClose, onSaved }) {
   });
 
   const [form, setForm] = useState(emptyForm());
+  const [activeTabIdx, setActiveTabIdx] = useState(0);
+  const [newTabName, setNewTabName] = useState('');
+
+  const addTab = () => {
+    const name = newTabName.trim();
+    if (name) {
+      if (form.sections.some(s => s.title.toLowerCase() === name.toLowerCase())) {
+        toast.error('Section already exists');
+        return;
+      }
+      const newSecs = [...form.sections, { title: name, rating: 3, notes: '' }];
+      setForm(f => ({ ...f, sections: newSecs }));
+      setActiveTabIdx(newSecs.length - 1);
+      setNewTabName('');
+    }
+  };
+
+  const removeTab = (idx) => {
+    if (form.sections.length <= 1) {
+      toast.error('You must keep at least one section');
+      return;
+    }
+    const newSecs = form.sections.filter((_, i) => i !== idx);
+    setForm(f => ({ ...f, sections: newSecs }));
+    setActiveTabIdx(prev => Math.max(0, Math.min(prev, newSecs.length - 1)));
+  };
 
   useEffect(() => {
     let ignore = false;
@@ -164,10 +189,10 @@ function EvaluationDrawer({ user, onClose, onSaved }) {
 
   const handleEdit = (session) => {
     setEditingId(session._id);
+    setActiveTabIdx(0);
     setForm({
       overallRating: session.overallRating,
-      headline: session.headline || '',
-      summary: session.summary || '',
+      googleMeetLink: session.googleMeetLink || '',
       sections: session.sections?.length ? session.sections : DEFAULT_SECTIONS.map(s => ({ ...s })),
       pros: session.pros || [],
       cons: session.cons || [],
@@ -268,38 +293,85 @@ function EvaluationDrawer({ user, onClose, onSaved }) {
             </div>
           </div>
 
-          {/* Headline */}
-          <div className="mb-3">
-            <label className="block text-xs font-semibold text-[#6B7280] mb-1.5">Headline</label>
-            <input value={form.headline} onChange={e => setForm(f => ({ ...f, headline: e.target.value }))}
-              placeholder="e.g. Strong React developer with good communication skills" className={inp} />
+          {/* Google Meet Link */}
+          <div className="mb-4">
+            <label className="block text-xs font-semibold text-[#6B7280] mb-1.5">Google Meet Link</label>
+            <input value={form.googleMeetLink} onChange={e => setForm(f => ({ ...f, googleMeetLink: e.target.value }))}
+              placeholder="https://meet.google.com/..." className={inp} />
           </div>
 
-          {/* Summary */}
+          {/* Technical Skills Sections (Tabs) */}
           <div className="mb-4">
-            <label className="block text-xs font-semibold text-[#6B7280] mb-1.5">Detailed Summary</label>
-            <textarea value={form.summary} onChange={e => setForm(f => ({ ...f, summary: e.target.value }))}
-              placeholder="Write detailed observation notes from the interview..." rows={3} className={`${inp} resize-none`} />
-          </div>
-
-          {/* Section Ratings */}
-          <div className="mb-4">
-            <label className="block text-xs font-semibold text-[#6B7280] mb-2">Section Ratings</label>
-            <div className="space-y-3">
+            <label className="block text-xs font-semibold text-[#6B7280] mb-2">Technical Skills</label>
+            
+            {/* Tab Headers */}
+            <div className="flex flex-wrap items-center gap-1.5 border-b border-[#E5E1DA] pb-2 mb-3">
               {form.sections.map((sec, i) => (
-                <div key={i} className="bg-[#FAF7F2] rounded-xl p-3">
-                  <div className="flex items-center justify-between mb-1.5">
-                    <span className="text-sm font-medium text-[#374151]">{sec.title}</span>
-                    <StarRating value={sec.rating} onChange={v => updateSection(i, 'rating', v)} />
-                  </div>
-                  <input
-                    value={sec.notes} onChange={e => updateSection(i, 'notes', e.target.value)}
-                    placeholder={`Notes for ${sec.title}...`}
-                    className="w-full text-xs border border-[#E5E1DA] rounded-lg px-3 py-1.5 bg-white focus:outline-none focus:border-[#00A693] transition"
-                  />
+                <div key={i} className="flex items-center">
+                  <button
+                    type="button"
+                    onClick={() => setActiveTabIdx(i)}
+                    className={`px-3 py-1.5 text-xs font-semibold rounded-t-lg transition flex items-center gap-1.5 ${
+                      activeTabIdx === i 
+                        ? 'bg-[#00A693] text-white font-bold' 
+                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    }`}
+                  >
+                    {sec.title}
+                    {form.sections.length > 1 && (
+                      <span 
+                        onClick={(e) => { 
+                          e.stopPropagation(); 
+                          removeTab(i); 
+                        }} 
+                        className="hover:text-red-200 text-white/70 font-bold ml-1 cursor-pointer"
+                      >
+                        ×
+                      </span>
+                    )}
+                  </button>
                 </div>
               ))}
+              
+              {/* Add New Section Inline Input */}
+              <div className="flex items-center gap-1 ml-2">
+                <input
+                  type="text"
+                  value={newTabName}
+                  onChange={e => setNewTabName(e.target.value)}
+                  onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addTab(); } }}
+                  placeholder="New section..."
+                  className="px-2 py-1 text-xs border border-[#E5E1DA] rounded-lg focus:outline-none focus:border-[#00A693]"
+                  style={{ width: '100px' }}
+                />
+                <button
+                  type="button"
+                  onClick={addTab}
+                  className="p-1 bg-[#00A693] text-white rounded-lg hover:bg-[#008f7e] transition"
+                  title="Add technical skill section"
+                >
+                  <Plus size={12} />
+                </button>
+              </div>
             </div>
+
+            {/* Active Tab Panel */}
+            {form.sections[activeTabIdx] && (
+              <div className="bg-[#FAF7F2] rounded-xl p-4 border border-[#E5E1DA]">
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-sm font-semibold text-[#1A1A1A]">{form.sections[activeTabIdx].title} Rating</span>
+                  <StarRating value={form.sections[activeTabIdx].rating} onChange={v => updateSection(activeTabIdx, 'rating', v)} />
+                </div>
+                <label className="block text-[11px] font-semibold text-[#6B7280] mb-1">Notes for {form.sections[activeTabIdx].title}</label>
+                <textarea
+                  value={form.sections[activeTabIdx].notes || ''} 
+                  onChange={e => updateSection(activeTabIdx, 'notes', e.target.value)}
+                  placeholder={`Write technical evaluation notes for ${form.sections[activeTabIdx].title}...`}
+                  rows={3}
+                  className="w-full text-xs border border-[#E5E1DA] rounded-lg px-3 py-2 bg-white focus:outline-none focus:border-[#00A693] transition resize-none"
+                />
+              </div>
+            )}
           </div>
 
           {/* Pros */}

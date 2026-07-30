@@ -4,11 +4,8 @@ const Notification = require('../models/Notification');
 const { sendInterviewTipsEmail } = require('../utils/email');
 
 const DEFAULT_SECTIONS = [
-  { title: 'Communication',    rating: 3, notes: '' },
-  { title: 'Technical Skills', rating: 3, notes: '' },
-  { title: 'Problem Solving',  rating: 3, notes: '' },
-  { title: 'Attitude',         rating: 3, notes: '' },
-  { title: 'Culture Fit',      rating: 3, notes: '' },
+  { title: 'Frontend', rating: 3, notes: '' },
+  { title: 'Backend',  rating: 3, notes: '' },
 ];
 
 // GET /admin/interviews — list sessions with filters
@@ -75,7 +72,7 @@ exports.createSession = async (req, res) => {
     const sessionNumber = (lastSession?.sessionNumber || 0) + 1;
 
     const {
-      overallRating, headline, summary,
+      overallRating, headline, summary, googleMeetLink,
       sections, pros, cons, improvementTips, interviewedAt,
     } = req.body;
 
@@ -86,6 +83,7 @@ exports.createSession = async (req, res) => {
       overallRating: overallRating ?? 5,
       headline:      headline ?? '',
       summary:       summary ?? '',
+      googleMeetLink: googleMeetLink ?? '',
       sections:      sections && sections.length ? sections : DEFAULT_SECTIONS,
       pros:          pros    ?? [],
       cons:          cons    ?? [],
@@ -105,11 +103,11 @@ exports.createSession = async (req, res) => {
 // PUT /admin/interviews/:sessionId — update session
 exports.updateSession = async (req, res) => {
   try {
-    const { overallRating, headline, summary, sections, pros, cons, improvementTips, interviewedAt } = req.body;
+    const { overallRating, headline, summary, googleMeetLink, sections, pros, cons, improvementTips, interviewedAt } = req.body;
 
     const session = await InterviewSession.findByIdAndUpdate(
       req.params.sessionId,
-      { overallRating, headline, summary, sections, pros, cons, improvementTips, interviewedAt },
+      { overallRating, headline, summary, googleMeetLink, sections, pros, cons, improvementTips, interviewedAt },
       { new: true }
     )
       .populate('user', 'name email avatar regNumber designations')

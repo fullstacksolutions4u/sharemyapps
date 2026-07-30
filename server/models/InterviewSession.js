@@ -20,6 +20,7 @@ const interviewSessionSchema = new mongoose.Schema({
   overallRating: { type: Number, min: 1, max: 10, default: 5 },
   headline:      { type: String, trim: true, default: '' },
   summary:       { type: String, trim: true, default: '' },
+  googleMeetLink: { type: String, trim: true, default: '' },
 
   sections: {
     type: [sectionSchema],
