@@ -1,10 +1,11 @@
 import { useEffect, useState, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { ExternalLink, Layers, AlertCircle, Mail, Phone, Monitor, Smartphone, FileText, Camera } from 'lucide-react';
+import { ExternalLink, Layers, AlertCircle, Mail, Phone, Monitor, Smartphone, Camera, Briefcase, Clock } from 'lucide-react';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
 import { optimizeImage } from '../utils/image';
+import { AiFillFilePdf } from 'react-icons/ai';
 
 const PLACEHOLDER = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI4MDAiIGhlaWdodD0iNDUwIiB2aWV3Qm94PSIwIDAgODAwIDQ1MCI+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0iI2YxZjVmOSIgLz48ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSg0MDAsMjEwKSIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjOTRhM2I4IiBzdHJva2Utd2lkdGg9IjMiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCI+PHJlY3QgeD0iLTM1IiB5PSItNDUiIHdpZHRoPSI3MCIgaGVpZ2h0PSI1MCIgcng9IjQiIC8+PGxpbmUgeDE9Ii0xNSIgeTE9IjUiIHgyPSIxNSIgeTI9IjUiIC8+PGxpbmUgeDE9Ii01IiB5MT0iNSIgeDI9Ii0xMCIgeTI9IjE1IiAvPjxsaW5lIHgxPSI1IiB5MT0iNSIgeDI9IjEwIiB5Mj0iMTUiIC8+PGxpbmUgeDE9Ii0yMCIgeTE9IjE1IiB4Mj0iMjAiIHkyPSIxNSIgLz48L2c+PHRleHQgeD0iNTAlIiB5PSIyNzUiIGRvbWluYW50LWJhc2VsaW5lPSJtaWRkbGUiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZvbnQtZmFtaWx5PSJzeXN0ZW0tdWksIC1hcHBsZS1zeXN0ZW0sIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTYiIGZvbnQtd2VpZ2h0PSI2MDAiIGZpbGw9IiM2NDc0OGIiPlByZXZpZXcgR2VuZXJhdGluZy4uLjwvdGV4dD48L3N2Zz4=';
 
@@ -100,6 +101,19 @@ const APP_TYPE_CFG = {
   mobile: { label: 'Mobile App', Icon: Smartphone, cls: 'bg-violet-500/90 text-white' },
   web:    { label: 'Web App',    Icon: Monitor,    cls: 'bg-sky-500/90 text-white' },
 };
+
+const TAG_COLORS = [
+  'bg-blue-50 text-blue-700 border-blue-200',
+  'bg-purple-50 text-purple-700 border-purple-200',
+  'bg-emerald-50 text-emerald-700 border-emerald-200',
+  'bg-amber-50 text-amber-700 border-amber-200',
+  'bg-rose-50 text-rose-700 border-rose-200',
+  'bg-cyan-50 text-cyan-700 border-cyan-200',
+  'bg-indigo-50 text-indigo-700 border-indigo-200',
+  'bg-orange-50 text-orange-700 border-orange-200',
+];
+
+
 const getbanner = (bannerImage) => bannerImage || PLACEHOLDER;
 
 const toAbsoluteUrl = (url) => {
@@ -187,7 +201,7 @@ export default function PublicPortfolio() {
   const initials = user.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
   const approvedCount = projects.length;
   const hasContact = user.email || user.phone;
-  const hasSocial = user.linkedinUrl || user.githubUrl || user.leetcodeUrl || user.cvUrl;
+  const hasSocial = user.linkedinUrl || user.githubUrl || user.leetcodeUrl || user.portfolioUrl || user.cvUrl;
 
   // Aggregate unique tech tags from all projects (max 12)
   const techStack = [...new Set(projects.flatMap(p => p.techTags || []))].slice(0, 12); // hard cap at 12
@@ -248,19 +262,25 @@ export default function PublicPortfolio() {
                 )}
               </div>
               <div className="pb-1 flex flex-row items-center gap-3">
-                <h1 style={{ fontFamily: "'Fredoka One', cursive", letterSpacing: '0.05em', lineHeight: 1 }}
+                <h1 style={{ fontFamily: "'Fredoka One', cursive", letterSpacing: '0.05em', lineHeight: 1, color: '#5a788b' }}
                   className="text-4xl">
-                  {user.name.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ').split('').map((ch, i) => {
-                    const colors = ['#E53935','#FB8C00','#FDD835','#43A047','#1E88E5','#5C6BC0','#EC407A'];
-                    return ch === ' '
-                      ? <span key={i}>&nbsp;</span>
-                      : <span key={i} style={{ color: colors[i % colors.length] }}>{ch}</span>;
-                  })}
+                  {user.name.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ')}
                 </h1>
-                <span className="inline-flex items-center gap-1 text-xs font-semibold bg-accent-light text-accent px-2.5 py-0.5 rounded-full border border-accent/20">
-                  <span className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse" />
-                  {approvedCount} deployed project{approvedCount !== 1 ? 's' : ''}
-                </span>
+
+                {user.yearsOfExperience && (
+                  <span className="inline-flex items-center gap-1 text-xs font-semibold bg-blue-50 text-blue-600 px-2.5 py-0.5 rounded-full border border-blue-200">
+                    <Briefcase size={12} className="shrink-0" />
+                    {user.yearsOfExperience.toLowerCase() === 'fresher' ? 'Fresher' : 
+                     user.yearsOfExperience.toLowerCase().includes('year') ? `${user.yearsOfExperience} of experience` : 
+                     `${user.yearsOfExperience} years of experience`}
+                  </span>
+                )}
+                {user.joiningAvailability && (
+                  <span className="inline-flex items-center gap-1 text-xs font-semibold bg-amber-50 text-amber-600 px-2.5 py-0.5 rounded-full border border-amber-200">
+                    <Clock size={12} className="shrink-0" />
+                    {user.joiningAvailability === 'Immediately' ? 'Immediate Joiner' : user.joiningAvailability}
+                  </span>
+                )}
               </div>
             </div>
 
@@ -321,14 +341,23 @@ export default function PublicPortfolio() {
                     colorClass="bg-[#FFF7ED] text-[#EA580C] border-[#EA580C]/20 hover:border-[#EA580C]/50 hover:shadow-sm"
                     dotClass="bg-[#EA580C]"
                   />
+                  {user.portfolioUrl && (
+                    <SocialPill
+                      href={toAbsoluteUrl(user.portfolioUrl)}
+                      label="Portfolio"
+                      colorClass="bg-[#F3E8FF] text-[#9333EA] border-[#9333EA]/20 hover:border-[#9333EA]/50 hover:shadow-sm"
+                      dotClass="bg-[#9333EA]"
+                    />
+                  )}
                   {user.cvUrl && (
                     <a
                       href={toAbsoluteUrl(user.cvUrl)}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full border bg-emerald-50 text-emerald-700 border-emerald-200 hover:border-emerald-400 hover:scale-105 transition-all"
+                      className="inline-flex items-center gap-1.5 text-[12.5px] font-bold px-4 py-1.5 rounded-full border border-slate-200/80 bg-white text-slate-700 shadow-sm hover:shadow hover:-translate-y-0.5 transition-all"
                     >
-                      <FileText size={11} /> View Resume
+                      <AiFillFilePdf size={20} className="text-red-500" />
+                      View Resume
                     </a>
                   )}
                 </div>
@@ -350,30 +379,38 @@ export default function PublicPortfolio() {
             <p className="text-sm text-muted mt-1">Check back later.</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            {projects.map(project => (
-              <div key={project._id} className="bg-white border border-border rounded-xl overflow-hidden hover:border-accent/40 hover:shadow-md transition-all flex flex-col group">
-                {/* Banner */}
-                <div className="relative h-40 bg-[#F3F0EB] overflow-hidden">
-                  <img
-                    src={optimizeImage(getbanner(project.bannerImage, project.liveUrl), 800)}
-                    alt={project.title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                    onError={e => { e.target.src = PLACEHOLDER; }}
-                  />
-                  <div className="absolute top-2 left-2">
-                    <span className="inline-flex items-center gap-1 text-[10px] font-semibold bg-white/90 backdrop-blur-sm text-accent px-2 py-0.5 rounded-full border border-accent/20">
-                      <span className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse" /> Live
-                    </span>
-                  </div>
-                  {(() => {
-                    const cfg = APP_TYPE_CFG[project.appType] || APP_TYPE_CFG.web;
-                    return (
-                      <span className={`absolute top-2 right-2 inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full shadow backdrop-blur-sm ${cfg.cls}`}>
-                        <cfg.Icon size={9} /> {cfg.label}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 pt-4">
+            {projects.map((project) => (
+              <div 
+                key={project._id} 
+                className="bg-white rounded-3xl p-3 shadow-[0_8px_30px_rgb(0,0,0,0.08)] border border-slate-100/80 transition-all hover:-translate-y-1 hover:shadow-[0_12px_40px_rgb(0,0,0,0.12)] flex flex-col h-full group"
+              >
+                {/* Thumbnail with glass border frame — same as Feed */}
+                <div className="relative p-1.5 group/thumb">
+                  {/* Decorative back shadow layer */}
+                  <div className="absolute inset-1.5 bg-black/10 rounded-2xl translate-x-1.5 translate-y-1.5 transition-transform duration-300 group-hover/thumb:translate-x-2.5 group-hover/thumb:translate-y-2.5 border border-black/10" />
+                  {/* Front: thick white border + overflow clip */}
+                  <div className="relative z-10 rounded-2xl overflow-hidden border-[5px] border-white shadow-md bg-white h-44">
+                    <img
+                      src={optimizeImage(getbanner(project.bannerImage, project.liveUrl), 800)}
+                      alt={project.title}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      onError={e => { e.target.src = PLACEHOLDER; }}
+                    />
+                    <div className="absolute top-2 left-2">
+                      <span className="inline-flex items-center gap-1 text-[10px] font-semibold bg-white/90 backdrop-blur-sm text-accent px-2 py-0.5 rounded-full border border-accent/20">
+                        <span className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse" /> Live
                       </span>
-                    );
-                  })()}
+                    </div>
+                    {(() => {
+                      const cfg = APP_TYPE_CFG[project.appType] || APP_TYPE_CFG.web;
+                      return (
+                        <span className={`absolute top-2 right-2 inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full shadow backdrop-blur-sm ${cfg.cls}`}>
+                          <cfg.Icon size={9} /> {cfg.label}
+                        </span>
+                      );
+                    })()}
+                  </div>
                 </div>
 
                 {/* Body */}
@@ -383,11 +420,11 @@ export default function PublicPortfolio() {
 
                   {project.techTags?.length > 0 && (
                     <div className="flex flex-wrap gap-1 mt-2.5">
-                      {project.techTags.slice(0, 4).map(t => (
-                        <span key={t} className="text-xs bg-[#F3F0EB] text-muted px-2 py-0.5 rounded-full">{t}</span>
+                      {project.techTags.slice(0, 5).map((t, i) => (
+                        <span key={t} className={`text-[11px] font-semibold px-2 py-0.5 rounded-full border uppercase tracking-wide ${TAG_COLORS[i % TAG_COLORS.length]}`}>{t}</span>
                       ))}
-                      {project.techTags.length > 4 && (
-                        <span className="text-xs text-muted px-1">+{project.techTags.length - 4}</span>
+                      {project.techTags.length > 5 && (
+                        <span className="text-[11px] text-muted px-1">+{project.techTags.length - 5}</span>
                       )}
                     </div>
                   )}

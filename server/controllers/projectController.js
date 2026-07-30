@@ -207,7 +207,7 @@ exports.getProject = async (req, res) => {
 exports.getUserProjects = async (req, res) => {
   try {
     const targetUserId = req.params.userId;
-    const user = await User.findById(targetUserId).select('name avatar linkedinUrl githubUrl leetcodeUrl phone email cvUrl hidden');
+    const user = await User.findById(targetUserId).select('name avatar linkedinUrl githubUrl leetcodeUrl portfolioUrl phone email cvUrl hidden yearsOfExperience joiningAvailability');
     if (!user) return res.status(404).json({ message: 'User not found' });
     const canSeeHidden = req.user && (req.user.role === 'admin' || req.user.hidden);
     if (user.hidden && !canSeeHidden) return res.status(404).json({ message: 'User not found' });
@@ -230,7 +230,6 @@ exports.getUserProjects = async (req, res) => {
     if (!hasAccess) {
       delete userJSON.email;
       delete userJSON.phone;
-      delete userJSON.cvUrl;
     }
 
     res.json({ user: userJSON, projects });

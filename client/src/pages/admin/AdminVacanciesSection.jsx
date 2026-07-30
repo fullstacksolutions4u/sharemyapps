@@ -1,7 +1,7 @@
 import { useState, useEffect, forwardRef, useImperativeHandle } from 'react';
 import {
   Plus, Save, Check, Trash2, Pencil, ToggleLeft, ToggleRight,
-  MapPin, Briefcase, ChevronDown, Users as UsersIcon, Send, MessageCircle, Home, X, Eye
+  MapPin, Briefcase, ChevronDown, Users as UsersIcon, Send, MessageCircle, Home, X, Eye, FileText
 } from 'lucide-react';
 import api from '../../api/axios';
 import toast from 'react-hot-toast';
@@ -416,6 +416,27 @@ const AdminVacanciesSection = forwardRef(function AdminVacanciesSection({ hideTi
                                   >
                                     <Send size={11} /> Reply
                                   </button>
+
+                                  <button
+                                    onClick={() => window.open(`/portfolio/${u._id}`, '_blank')}
+                                    className="shrink-0 flex items-center gap-1 text-xs font-medium px-2.5 py-1.5 rounded-lg border text-indigo-500 border-indigo-200 hover:bg-indigo-50 transition-colors"
+                                    title="View Developer Portfolio"
+                                  >
+                                    <Eye size={11} /> Portfolio
+                                  </button>
+
+                                  {u.cvUrl && (
+                                    <button
+                                      onClick={() => {
+                                        const url = u.cvUrl.startsWith('http') ? u.cvUrl : `https://${u.cvUrl}`;
+                                        window.open(url, '_blank');
+                                      }}
+                                      className="shrink-0 flex items-center gap-1 text-xs font-medium px-2.5 py-1.5 rounded-lg border text-rose-500 border-rose-200 hover:bg-rose-50 transition-colors"
+                                      title="View CV / Resume"
+                                    >
+                                      <FileText size={11} /> Resume
+                                    </button>
+                                  )}
                                 </div>
                               </div>
                               {replyOpen?.key === `${v._id}-${u._id}` && (

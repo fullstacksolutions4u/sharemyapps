@@ -93,7 +93,7 @@ exports.getAllVacanciesAdmin = async (req, res) => {
   try {
     const vacancies = await Vacancy.find()
       .sort({ createdAt: -1 })
-      .populate('interests', 'name email phone regNumber userType avatar')
+      .populate('interests', 'name email phone regNumber userType avatar cvUrl')
       .populate('createdBy', 'name email phone companyName userType')
       .lean();
     res.json(vacancies);
@@ -120,7 +120,7 @@ exports.updateVacancy = async (req, res) => {
       req.params.id,
       { title, company, description, skills: parseSkills(skills), location, type, industry, jobType, experience, salaryRange, status },
       { new: true, runValidators: true }
-    ).populate('interests', 'name email regNumber userType avatar');
+    ).populate('interests', 'name email phone regNumber userType avatar cvUrl');
     if (!vacancy) return res.status(404).json({ message: 'Vacancy not found' });
     res.json(vacancy);
   } catch (err) { res.status(400).json({ message: err.message }); }
