@@ -920,9 +920,6 @@ export default function AdminJobLinksSection() {
               </button>
             </div>
             <div className="p-5">
-              <p className="text-[13px] text-gray-600 mb-3">
-                Please provide a reason for rejecting this job link. This will be sent to the user via email.
-              </p>
               <textarea
                 value={rejectComment}
                 onChange={(e) => setRejectComment(e.target.value)}

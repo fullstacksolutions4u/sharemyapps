@@ -25,7 +25,7 @@ function ApplicationStepper({ status, history = [], appliedAt }) {
   const baseStages = [
     { label: 'Applied', note: appliedData.note, date: appliedData.date || (appliedAt ? new Date(appliedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: '2-digit' }) : null) },
     { label: 'Reviewing', ...getStageData(['reviewing']) },
-    { label: 'Contacting', ...getStageData(['contacting']) },
+    { label: 'Contacted', ...getStageData(['contacted']) },
     { label: s.includes('interview') ? s.replace(/\b\w/g, l => l.toUpperCase()) : 'Interviewing', ...getStageData(['interview']) },
   ];
 
@@ -38,7 +38,7 @@ function ApplicationStepper({ status, history = [], appliedAt }) {
       if (prev) {
         const ps = prev.status.toLowerCase();
         if (ps === 'reviewing') lastValidIndex = 1;
-        else if (ps === 'contacting') lastValidIndex = 2;
+        else if (ps === 'contacted') lastValidIndex = 2;
         else if (ps.includes('interview')) lastValidIndex = 3;
       }
     }
@@ -57,7 +57,7 @@ function ApplicationStepper({ status, history = [], appliedAt }) {
   } else {
     let currIndex = 0;
     if (s === 'reviewing') currIndex = 1;
-    else if (s === 'contacting') currIndex = 2;
+    else if (s === 'contacted') currIndex = 2;
     else if (s.includes('interview')) currIndex = 3;
     
     stages = baseStages.slice(0, currIndex + 1);

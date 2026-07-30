@@ -182,6 +182,24 @@ const AdminVacanciesSection = forwardRef(function AdminVacanciesSection({ hideTi
     }
   };
 
+  const updateStatusDirectly = async (vacancyId, userId, status) => {
+    try {
+      await api.patch(`/admin/vacancies/${vacancyId}/applicant-status`, { userId, status, note: '' });
+      setVacancies(prev => prev.map(v => {
+        if (v._id !== vacancyId) return v;
+        const history = v.applicantStatusHistory?.[userId] || [];
+        return {
+          ...v,
+          applicantStatus: { ...v.applicantStatus, [userId]: status },
+          applicantStatusHistory: { ...v.applicantStatusHistory, [userId]: [...history, { status, date: new Date().toISOString() }] }
+        };
+      }));
+      toast.success('Applicant status automatically updated');
+    } catch {
+      toast.error('Failed to automatically update status');
+    }
+  };
+
   const submitStatusChange = async () => {
     setSaving(true);
     try {
@@ -360,7 +378,7 @@ const AdminVacanciesSection = forwardRef(function AdminVacanciesSection({ hideTi
                                   >
                                     <option value="applied">Applied</option>
                                     <option value="reviewing">Reviewing</option>
-                                    <option value="contacting">Contacting</option>
+                                    <option value="contacted">Contacted</option>
                                     <option value="1 round interview">1st Round Interview</option>
                                     <option value="2nd round interview">2nd Round Interview</option>
                                     <option value="3rd round interview">3rd Round Interview</option>
@@ -380,6 +398,7 @@ const AdminVacanciesSection = forwardRef(function AdminVacanciesSection({ hideTi
                                       const msg = `Congrats ${devName}. its me ${adminName} from sharemyapps. its a response of ${v.title} application. you have been selected for next steps of interview. hope still you looking job. need to check your availability tomorrow for next round online interview`;
                                       const phone = u.phone.replace(/\D/g, '');
                                       window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank');
+                                      updateStatusDirectly(v._id, u._id, 'contacted');
                                     }}
                                     className="shrink-0 flex items-center gap-1 text-xs font-medium px-2.5 py-1.5 rounded-lg border border-[#25D366] text-[#25D366] hover:bg-[#25D366] hover:text-white transition-colors"
                                     title="WhatsApp"
