@@ -282,10 +282,6 @@ export default function Vacancies() {
   const [submittingLink, setSubmittingLink] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
 
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [filterDesignation, filterLocation, filterExperience, activeTab]);
-
   const [clickedLinks, setClickedLinks] = useState(() => {
     try {
       const saved = localStorage.getItem('clicked_job_links');
@@ -469,6 +465,7 @@ export default function Vacancies() {
                   setFilterDesignation('');
                   setFilterLocation('');
                   setFilterExperience('');
+                  setCurrentPage(1);
                   navigate(`?tab=${key}`, { replace: true });
                 }}
                 className={`flex items-center gap-1.5 px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
@@ -498,7 +495,7 @@ export default function Vacancies() {
                 icon={Briefcase}
                 placeholder="Designation"
                 value={filterDesignation}
-                onChange={setFilterDesignation}
+                onChange={(val) => { setFilterDesignation(val); setCurrentPage(1); }}
                 options={Array.from(new Set(TAB_CONFIG[activeTab].data.map(d => d.title).filter(Boolean))).sort()}
               />
 
@@ -506,7 +503,7 @@ export default function Vacancies() {
                 icon={MapPin}
                 placeholder="All States"
                 value={filterLocation}
-                onChange={setFilterLocation}
+                onChange={(val) => { setFilterLocation(val); setCurrentPage(1); }}
                 options={INDIA_STATES}
               />
 
@@ -514,13 +511,13 @@ export default function Vacancies() {
                 icon={Clock}
                 placeholder="Experience"
                 value={filterExperience}
-                onChange={setFilterExperience}
+                onChange={(val) => { setFilterExperience(val); setCurrentPage(1); }}
                 options={EXPERIENCE_OPTIONS}
               />
 
               {(filterDesignation || filterLocation || filterExperience) && (
                 <button
-                  onClick={() => { setFilterDesignation(''); setFilterLocation(''); setFilterExperience(''); }}
+                  onClick={() => { setFilterDesignation(''); setFilterLocation(''); setFilterExperience(''); setCurrentPage(1); }}
                   className="flex items-center gap-1.5 text-[12px] font-semibold text-red-400 hover:text-red-600 bg-red-50 hover:bg-red-100 border border-red-100 hover:border-red-200 px-3 py-2 rounded-xl transition-all"
                 >
                   <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M18 6L6 18M6 6l12 12"/></svg>

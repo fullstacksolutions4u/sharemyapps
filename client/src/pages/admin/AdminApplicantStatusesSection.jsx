@@ -28,7 +28,10 @@ export default function AdminApplicantStatusesSection() {
   };
 
   useEffect(() => {
-    loadStatuses();
+    const timer = setTimeout(() => {
+      loadStatuses();
+    }, 0);
+    return () => clearTimeout(timer);
   }, []);
 
   const handleRemove = async (id) => {
