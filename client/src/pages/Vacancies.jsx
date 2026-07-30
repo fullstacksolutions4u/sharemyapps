@@ -140,7 +140,7 @@ function FilterDropdown({ icon: Icon, placeholder, value, onChange, options }) {
 const INDIA_STATES = ['Andhra Pradesh','Arunachal Pradesh','Assam','Bihar','Chhattisgarh','Goa','Gujarat','Haryana','Himachal Pradesh','Jharkhand','Karnataka','Kerala','Madhya Pradesh','Maharashtra','Manipur','Meghalaya','Mizoram','Nagaland','Odisha','Punjab','Rajasthan','Sikkim','Tamil Nadu','Telangana','Tripura','Uttar Pradesh','Uttarakhand','West Bengal','Andaman and Nicobar Islands','Chandigarh','Dadra and Nagar Haveli and Daman and Diu','Delhi','Jammu and Kashmir','Ladakh','Lakshadweep','Puducherry', 'Out of India'];
 
 const ScrollingPlaceholderInput = ({ value, onChange, className }) => {
-  const fullText = "Found a job opening that isn't relevant to you? Share it here to help others!          ";
+  const fullText = "Found a job opening posted somewhere that isn't relevant to you? Share it here to help others!          ";
   const [offset, setOffset] = useState(0);
 
   useEffect(() => {

@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import axios from '../api/axios';
 import { formatDistanceToNow } from 'date-fns';
-import { Trophy, MessageCircle, Heart, Star, TrendingUp, Briefcase, ChevronRight, UserPlus, Crown, Sparkles, Plus, MapPin, Laptop, ExternalLink, Clock, Building, Calendar, Info } from 'lucide-react';
+import { Trophy, MessageCircle, Heart, Star, TrendingUp, Briefcase, ChevronRight, ChevronDown, UserPlus, Crown, Sparkles, Plus, MapPin, Laptop, ExternalLink, Clock, Building, Calendar, Info, Megaphone } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import _Lottie from 'lottie-react';
 import feedAnimation from '../assets/feed.json';
@@ -53,7 +53,7 @@ const TwinklingStars = () => (
 
 
 const ScrollingPlaceholderInput = ({ value, onChange, className }) => {
-  const fullText = "Found a job opening that isn't relevant to you? Share it here to help others!          ";
+  const fullText = "Found a job opening posted somewhere that isn't relevant to you? Share it here to help others!          ";
   const [offset, setOffset] = useState(0);
 
   useEffect(() => {
@@ -545,59 +545,69 @@ export default function Feed() {
           </div>
         </div>
 
-        {/* REPORT VACANCY BUTTON */}
-        {user && (
-          <button
-            onClick={() => setShowReportModal(true)}
-            className="bg-white border-[1.5px] border-[#c9ede6] text-black font-bold py-3.5 px-4 rounded-[10px] flex items-center justify-center gap-2.5 transition-all w-full shrink-0 shadow-[0_4px_14px_rgba(0,166,147,0.1)] hover:shadow-[0_6px_20px_rgba(0,166,147,0.15)] hover:-translate-y-0.5"
-          >
-            <Briefcase size={18} className="text-[#008b74]" />
-            Report your company vacancy
-          </button>
-        )}
-
-        {/* OPPORTUNITIES (Jobs) */}
-        <div className="bg-linear-to-br from-amber-50/80 to-yellow-50/50 rounded-xl shadow-sm border border-black/5 flex flex-col overflow-hidden shrink-0 h-[360px]">
-          
-          <div className="p-4 border-b border-black/5 bg-transparent flex items-center justify-between shrink-0">
-            <div className="flex items-center gap-2 font-bold text-lg text-text">
-              <TrendingUp size={20} className="text-primary" />
-              Active Job Opportunities
-            </div>
-            <Link 
-              to="/vacancies" 
-              className="text-xs bg-primary hover:bg-primary-hover text-white px-3 py-1.5 rounded-lg transition-colors font-medium flex items-center gap-1 relative z-10"
-            >
-              View All
-            </Link>
+        <div className="bg-white rounded-[32px] p-5 pb-6 flex flex-col relative overflow-hidden shrink-0 shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-gray-50/50 w-full sm:w-[340px]">
+          {/* Abstract wavy background at the bottom */}
+          <div className="absolute bottom-0 left-0 right-0 h-32 pointer-events-none opacity-50 flex items-end">
+            <svg viewBox="0 0 1440 320" className="absolute bottom-0 w-full h-full object-cover" preserveAspectRatio="none">
+              <path fill="#008b74" fillOpacity="0.08" d="M0,192L48,181.3C96,171,192,149,288,144C384,139,480,149,576,165.3C672,181,768,203,864,197.3C960,192,1056,160,1152,149.3C1248,139,1344,149,1392,154.7L1440,160L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path>
+              <path fill="#008b74" fillOpacity="0.12" d="M0,256L48,250.7C96,245,192,235,288,213.3C384,192,480,160,576,149.3C672,139,768,149,864,170.7C960,192,1056,224,1152,234.7C1248,245,1344,235,1392,229.3L1440,224L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path>
+            </svg>
           </div>
-          <div className="p-0 flex-1 overflow-y-auto custom-scrollbar relative">
-            {opportunities.length === 0 ? (
-               <div className="p-10 flex flex-col items-center justify-center text-muted">
-                 <Briefcase size={32} className="opacity-20 mb-3" />
-                 <p className="text-sm">No active opportunities</p>
-               </div>
-            ) : (
-               <div className="divide-y divide-black/5">
-                 {opportunities.slice(0, 5).map(job => (
+          
+          <div className="relative z-10 flex flex-col gap-6">
+            {/* REPORT VACANCY BUTTON */}
+            {user && (
+              <button
+                onClick={() => setShowReportModal(true)}
+                className="bg-[#fbfcfa] border border-gray-100/60 p-2 pr-3.5 rounded-[18px] flex items-center gap-3.5 transition-all w-full shrink-0 shadow-sm hover:shadow-md hover:-translate-y-0.5 group"
+              >
+                <div className="w-[44px] h-[44px] rounded-xl bg-[#ebf7f3] flex items-center justify-center shrink-0">
+                  <Megaphone size={20} className="text-[#008b74]" strokeWidth={1.75} />
+                </div>
+                <span className="text-[14px] font-semibold text-[#111827] flex-1 text-left tracking-tight">Report your company vacancy</span>
+                <ChevronRight size={18} className="text-[#008b74] shrink-0" strokeWidth={2.5} />
+              </button>
+            )}
+
+            {/* OPPORTUNITIES (Jobs) */}
+            <div className="flex flex-col gap-3.5">
+              <div className="flex items-center justify-between px-1 mb-0.5">
+                <span className="text-[15px] font-bold text-[#111827] tracking-tight">Active Job Opportunities</span>
+                <Link 
+                  to="/vacancies" 
+                  className="text-[12px] font-bold text-[#008b74] flex items-center hover:underline"
+                >
+                  View All <ChevronRight size={14} strokeWidth={2.5} className="ml-0.5" />
+                </Link>
+              </div>
+              
+              <div className="flex flex-col gap-2.5">
+                {opportunities.length === 0 ? (
+                   <div className="py-6 flex flex-col items-center justify-center text-slate-400 bg-[#fbfcfa] rounded-2xl border border-gray-100/60 shadow-sm">
+                     <Briefcase size={24} className="opacity-40 mb-2" />
+                     <p className="text-xs font-medium">No active opportunities</p>
+                   </div>
+                ) : (
+                  opportunities.slice(0, 3).map(job => (
                     <Link 
                       key={job._id} 
                       to="/vacancies" 
-                      className="group flex items-center justify-between p-4 hover:bg-black/5 transition-all duration-300 relative overflow-hidden"
+                      className="bg-[#fbfcfa] border border-gray-100/60 p-2 pr-3.5 rounded-[18px] shadow-sm hover:shadow-md transition-all flex items-center gap-3.5 group"
                     >
-                      <div className="flex items-start gap-3 relative z-10 w-full pr-6">
-                        <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center shrink-0 group-hover:bg-primary/20 transition-colors shadow-sm">
-                          <Briefcase size={16} className="text-primary" />
-                        </div>
-                        <div className="flex flex-col flex-1 min-w-0 justify-center">
-                          <p className="text-sm font-medium text-text line-clamp-2 group-hover:text-primary transition-colors leading-snug">{job.title}</p>
-                        </div>
+                      <div className="w-[44px] h-[44px] rounded-xl bg-[#ebf7f3] flex items-center justify-center shrink-0">
+                        <Briefcase size={20} className="text-[#008b74]" strokeWidth={1.75} />
                       </div>
-                      <ChevronRight size={16} className="text-primary opacity-0 -translate-x-3 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300 absolute right-4 z-10" />
+                      
+                      {/* Vertical separator */}
+                      <div className="w-[1.5px] h-6 bg-gray-100 shrink-0"></div>
+                      
+                      <span className="text-[13px] font-medium text-[#111827] flex-1 text-left line-clamp-2 leading-tight pr-1">{job.title}</span>
+                      <ChevronRight size={16} className="text-[#008b74] shrink-0 transition-transform group-hover:translate-x-0.5" strokeWidth={2.5} />
                     </Link>
-                 ))}
-               </div>
-            )}
+                  ))
+                )}
+              </div>
+            </div>
           </div>
         </div>
 

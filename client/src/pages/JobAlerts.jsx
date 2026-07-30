@@ -38,14 +38,17 @@ function dayCount(eligibleSince) {
   return Math.max(1, Math.floor(diff / 86400000) + 1);
 }
 
-const STATUSES = ['Sent', 'Send Failed', 'Response Mail', 'Interview Call', 'Interview Scheduled'];
+const STATUSES = ['Sent', 'Send Failed', 'Response Mail', 'Task Assigned', 'Interview Call', 'Interview Scheduled', 'Offer Received', 'Offer Rejected'];
 
 const STATUS_STYLE = {
   'Sent':                 'bg-blue-50 text-blue-700 border-blue-200',
   'Send Failed':          'bg-red-50 text-red-600 border-red-200',
   'Response Mail':        'bg-amber-50 text-amber-700 border-amber-200',
+  'Task Assigned':        'bg-indigo-50 text-indigo-700 border-indigo-200',
   'Interview Call':       'bg-purple-50 text-purple-700 border-purple-200',
   'Interview Scheduled':  'bg-emerald-50 text-emerald-700 border-emerald-200',
+  'Offer Received':       'bg-teal-50 text-teal-700 border-teal-200',
+  'Offer Rejected':       'bg-slate-50 text-slate-700 border-slate-200',
 };
 
 
@@ -80,7 +83,7 @@ function MiniCalendar({ alerts, companyStatuses, getStatusKey, selectedDate, onS
     dayAlerts.forEach(a => {
       (a.jobs || []).forEach(j => {
         received++;
-        const status = companyStatuses[getStatusKey(a._id, j.subject)];
+        const status = companyStatuses[getStatusKey(a._id, j.emailId)];
         if (status === 'Send Failed') failed++;
       });
     });
@@ -190,7 +193,7 @@ function AlertsChart({ alerts, companyStatuses, getStatusKey }) {
       const entry = dataMap[wd];
       a.jobs.forEach(j => {
         entry.Received++;
-        const status = companyStatuses[getStatusKey(a._id, j.subject)];
+        const status = companyStatuses[getStatusKey(a._id, j.emailId)];
         if (status === 'Send Failed') {
           entry.Failed++;
         } else {
@@ -346,7 +349,7 @@ export default function JobAlerts() {
 
   // Flat list of { alertId, name } for selected day
   const selectedCompanyRows = selectedAlerts.flatMap(a =>
-    (a.jobs || []).map(j => ({ alertId: a._id, name: j.subject }))
+    (a.jobs || []).map(j => ({ alertId: a._id, name: j.emailId }))
   );
 
   return (
