@@ -186,7 +186,7 @@ const AdminVacanciesSection = forwardRef(function AdminVacanciesSection({ hideTi
     setSaving(true);
     try {
       const { vacancyId, userId, status, note } = statusModal;
-      await api.put(`/admin/vacancies/${vacancyId}/applicant-status`, { userId, status, note });
+      await api.patch(`/admin/vacancies/${vacancyId}/applicant-status`, { userId, status, note });
       setVacancies(prev => prev.map(v => {
         if (v._id !== vacancyId) return v;
         const history = v.applicantStatusHistory?.[userId] || [];
@@ -377,7 +377,7 @@ const AdminVacanciesSection = forwardRef(function AdminVacanciesSection({ hideTi
                                       const namePart = user?.name?.split(' ')[0];
                                       const adminName = (!namePart || namePart.toLowerCase() === 'admin') ? 'Kevin' : namePart;
                                       const devName = u.name?.split(' ')[0] || 'there';
-                                      const msg = `Hi ${devName}. its me ${adminName} from sharemyapps. thank you for applying for ${v.title} position. need some more details from you for further process`;
+                                      const msg = `Congrats ${devName}. its me ${adminName} from sharemyapps. its a response of ${v.title} application. you have been selected for next steps of interview. hope still you looking job. need to check your availability tomorrow for next round online interview`;
                                       const phone = u.phone.replace(/\D/g, '');
                                       window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank');
                                     }}

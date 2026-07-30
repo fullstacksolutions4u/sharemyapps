@@ -288,7 +288,7 @@ export default function Feed() {
       
       {/* LEFT: Shared Job Links */}
       <div className="w-full lg:max-w-[25%] flex flex-col sticky top-20 max-h-[calc(100vh-100px)]">
-        <div className="bg-linear-to-br from-violet-50/80 to-purple-50/50 rounded-xl shadow-sm border border-black/5 flex flex-col h-full relative">
+        <div className="bg-linear-to-br from-violet-50/80 to-purple-50/50 rounded-xl shadow-sm border border-[#5a788b] flex flex-col h-full relative">
           <div className="p-4 border-b border-black/5 bg-transparent flex flex-col gap-3 shrink-0">
             {uniqueJobLinkDesignations.length > 0 && (
               <select 
