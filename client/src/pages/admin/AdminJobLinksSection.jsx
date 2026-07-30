@@ -73,7 +73,6 @@ export default function AdminJobLinksSection() {
   // AI extraction state — for pending/edit forms (keyed by link._id)
   const [aiTextMap, setAiTextMap] = useState({});
   const [aiLoadingMap, setAiLoadingMap] = useState({});
-  const [aiSuccessMap, setAiSuccessMap] = useState({});
 
   const handleAIExtract = async () => {
     if (!aiText.trim()) { toast.error('Paste the job description first.'); return; }
@@ -117,7 +116,6 @@ export default function AdminJobLinksSection() {
     const text = aiTextMap[linkId] || '';
     if (!text.trim()) { toast.error('Paste the job description first.'); return; }
     setAiLoadingMap(prev => ({ ...prev, [linkId]: true }));
-    setAiSuccessMap(prev => ({ ...prev, [linkId]: false }));
     try {
       const res = await api.post('/job-links/extract-job-details', { text });
       if (res.data.success) {
@@ -140,13 +138,11 @@ export default function AdminJobLinksSection() {
             experience: d.experience || prev[linkId]?.experience || '',
           }
         }));
-        setAiSuccessMap(prev => ({ ...prev, [linkId]: true }));
         if (d.isDuplicate) {
           toast.error(`Warning: A job link for ${d.title} at ${d.company} might already exist!`, { duration: 5000 });
         } else {
           toast.success('Fields auto-filled by AI!');
         }
-        setTimeout(() => setAiSuccessMap(prev => ({ ...prev, [linkId]: false })), 3000);
       }
     } catch (err) {
       toast.error(err.response?.data?.message || 'AI extraction failed.');
