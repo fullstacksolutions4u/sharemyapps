@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import api from '../../api/axios';
 import { toast } from 'react-hot-toast';
-import { Briefcase, Check, X, ExternalLink, Link as LinkIcon, MapPin, Laptop, Edit2, Plus, Save, Clock, Sparkles, Building, Calendar, Share2 } from 'lucide-react';
+import { Briefcase, Check, X, ExternalLink, Link as LinkIcon, MapPin, Laptop, Edit2, Plus, Save, Clock, Sparkles, Building, Calendar, Share2, ChevronDown } from 'lucide-react';
 
 const DESIGNATION_OPTIONS = [
   "Frontend Developer",
@@ -325,17 +325,17 @@ export default function AdminJobLinksSection() {
       </div>
 
       {/* Company Search */}
-      <div className="relative">
-        <svg className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+      <div className="relative mb-6">
+        <svg className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
         <input
           type="text"
           value={companySearch}
           onChange={e => setCompanySearch(e.target.value)}
-          placeholder="Search by company name…"
-          className="w-full pl-8 pr-4 py-2 text-sm border border-border rounded-lg focus:outline-none focus:border-accent bg-white"
+          placeholder="Search by company name..."
+          className="w-full pl-10 pr-4 py-3 text-[13px] text-gray-700 border border-gray-100 rounded-xl focus:outline-none focus:border-violet-400 focus:ring-1 focus:ring-violet-400 bg-white shadow-sm transition-all"
         />
         {companySearch && (
-          <button onClick={() => setCompanySearch('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+          <button onClick={() => setCompanySearch('')} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
             <X size={14} />
           </button>
         )}
@@ -506,171 +506,229 @@ export default function AdminJobLinksSection() {
           const isEditing = editingLinkId === link._id || activeTab === 'pending';
           
           return (
-            <div key={link._id} className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 sm:p-5 flex flex-col md:flex-row gap-4 items-start transition hover:shadow-md">
+            <div key={link._id} className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 sm:p-5 flex flex-col gap-4 transition hover:shadow-md mb-2">
               
-              {/* Main Content Area */}
-              <div className="flex-1 w-full min-w-0">
+              {/* Header Row: Single Line Row */}
+              <div className="flex flex-row items-center gap-3 sm:gap-4 w-full overflow-hidden">
                 
-                {/* Header: User / URL / Status */}
-                <div className="flex items-start justify-between mb-4">
-                  <div className="flex items-start gap-3 min-w-0">
-                    <div className="w-10 h-10 bg-blue-50 text-blue-500 rounded-lg flex items-center justify-center shrink-0">
-                      <Share2 size={18} />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <div className="text-[15px] font-bold text-[#1f2937] whitespace-nowrap mb-0.5">
-                        {link.createdBy?.name || 'Admin ShareMyApps'}
-                      </div>
-                      
-                      {isEditing ? (
-                        <div className="relative mt-1">
-                          <LinkIcon size={12} className="absolute left-2.5 top-2 text-gray-400" />
-                          <input
-                            type="url"
-                            placeholder="Job URL"
-                            value={editForms[link._id]?.url !== undefined ? editForms[link._id].url : link.url}
-                            onChange={(e) => handleFormChange(link._id, 'url', e.target.value)}
-                            className="w-full pl-7 p-1 text-xs border rounded bg-white text-gray-600 focus:outline-none focus:border-accent"
-                          />
-                        </div>
-                      ) : (
-                        <a href={link.url} target="_blank" rel="noopener noreferrer" className="text-[13px] text-[#0d9488] hover:underline flex items-center gap-1 font-medium w-fit">
-                          View Original Post <ExternalLink size={12} className="shrink-0" />
-                        </a>
-                      )}
-                    </div>
-                  </div>
-                  
-                  <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wide shrink-0 ml-4
+                {/* 1. Share Icon */}
+                <div className="w-10 h-10 bg-[#f4f7ff] text-[#4f70fa] rounded-xl flex items-center justify-center shrink-0">
+                  <Share2 size={18} />
+                </div>
+                
+                {/* 2. Name */}
+                <div className="text-[14px] font-bold text-[#1f2937] whitespace-nowrap shrink-0">
+                  {link.createdBy?.name || 'Admin ShareMyApps'}
+                </div>
+                
+                {/* 3. Link */}
+                <div className="flex items-center min-w-0 flex-1">
+                  <a href={editForms[link._id]?.url !== undefined ? editForms[link._id].url : link.url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 rounded-lg text-[12px] font-semibold transition shadow-sm w-fit" title="Open Job Link">
+                    <ExternalLink size={14} className="text-gray-400" /> Open Link
+                  </a>
+                </div>
+
+                {/* 4. Status and Actions */}
+                <div className="flex flex-row items-center gap-3 shrink-0 ml-auto">
+                  <span className={`text-[10px] font-bold px-3 py-1.5 rounded-full uppercase tracking-wide shrink-0
                     ${link.status === 'approved' ? 'bg-[#dcfce7] text-[#166534]' : 
                       link.status === 'rejected' ? 'bg-red-100 text-red-700' : 
-                      'bg-yellow-100 text-yellow-700'}`}
+                      'bg-[#fff7d1] text-[#b4710a]'}`}
                   >
                     {link.status}
                   </span>
-                </div>
 
+                  <div className="flex flex-row items-center gap-2 shrink-0">
+                    {activeTab === 'pending' && (
+                      <>
+                        <button
+                          onClick={() => handleUpdate(link._id, 'approved')}
+                          className="flex items-center justify-center gap-1.5 px-3.5 py-1.5 bg-white border border-[#10b981] text-[#10b981] hover:bg-[#10b981] hover:text-white rounded-lg text-[12px] font-bold transition shadow-sm"
+                        >
+                          <Check size={14} /> Approve
+                        </button>
+                        <button
+                          onClick={() => handleUpdate(link._id, 'rejected')}
+                          className="flex items-center justify-center gap-1.5 px-3.5 py-1.5 bg-white border border-red-500 text-red-500 hover:bg-red-500 hover:text-white rounded-lg text-[12px] font-bold transition shadow-sm"
+                        >
+                          <X size={14} /> Reject
+                        </button>
+                      </>
+                    )}
+                    
+                    {activeTab === 'approved' && !isEditing && (
+                      <button
+                        onClick={() => startEditing(link)}
+                        className="flex items-center justify-center gap-1.5 px-3.5 py-1.5 bg-white border border-blue-500 text-blue-500 hover:bg-blue-500 hover:text-white rounded-lg text-[12px] font-bold transition shadow-sm"
+                      >
+                        <Edit2 size={14} /> Edit
+                      </button>
+                    )}
+
+                    {activeTab === 'approved' && isEditing && (
+                      <>
+                        <button
+                          onClick={() => handleUpdate(link._id, 'approved')}
+                          className="flex items-center justify-center gap-1.5 px-3.5 py-1.5 bg-white border border-[#10b981] text-[#10b981] hover:bg-[#10b981] hover:text-white rounded-lg text-[12px] font-bold transition shadow-sm"
+                        >
+                          <Save size={14} /> Save
+                        </button>
+                        <button
+                          onClick={cancelEditing}
+                          className="flex items-center justify-center gap-1.5 px-3.5 py-1.5 bg-white border border-gray-300 text-gray-600 hover:bg-gray-50 rounded-lg text-[12px] font-bold transition shadow-sm"
+                        >
+                          <X size={14} /> Cancel
+                        </button>
+                      </>
+                    )}
+
+                    {activeTab === 'approved' && !isEditing && (
+                      <button
+                        onClick={() => handleUpdate(link._id, 'rejected')}
+                        className="flex items-center justify-center gap-1.5 px-3.5 py-1.5 bg-white border border-red-500 text-red-500 hover:bg-red-500 hover:text-white rounded-lg text-[12px] font-bold transition shadow-sm"
+                      >
+                        <X size={14} /> Remove
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Form Content Area */}
+              <div className="w-full mt-1">
                   {/* Form for adding details if Pending or Editing */}
                   {isEditing ? (
                     <>
-                      {/* AI Extract Panel */}
-                      <div className="mt-3 mb-2 bg-gradient-to-r from-violet-50 to-indigo-50 border border-violet-200 rounded-xl p-3">
-                        <div className="flex items-center gap-2 mb-1.5">
-                          <Sparkles size={14} className="text-violet-500" />
-                          <span className="text-xs font-semibold text-violet-700">AI Auto-Fill</span>
-                          <span className="text-xs text-violet-500">— paste job content to fill fields</span>
-                        </div>
-                        <div className="flex gap-2">
+                      {/* Form Container */}
+                      <div className="flex flex-col gap-3">
+                        {/* AI Extract Panel */}
+                        <div className="flex items-center gap-3 bg-[#f8f6fe] border border-[#e4dcf9] rounded-xl p-2.5">
+                          <div className="shrink-0 pl-1">
+                            <Sparkles size={16} className="text-violet-500" />
+                          </div>
                           <textarea
-                            rows={2}
+                            rows={1}
                             value={aiTextMap[link._id] || ''}
                             onChange={e => setAiTextMap(prev => ({ ...prev, [link._id]: e.target.value }))}
                             placeholder="Paste job description content here to auto-fill fields…"
-                            className="flex-1 text-xs border border-violet-200 rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-violet-400 bg-white resize-none"
+                            className="flex-1 bg-transparent text-[13px] text-gray-700 border-0 p-0 focus:ring-0 outline-none resize-none placeholder-gray-500 min-h-[20px] overflow-hidden leading-tight"
                           />
-                          <div className="flex flex-col gap-1.5 shrink-0">
-                            <button
-                              type="button"
-                              onClick={() => handleAIExtractForLink(link._id)}
-                              disabled={aiLoadingMap[link._id] || !aiTextMap[link._id]?.trim()}
-                              className="flex items-center gap-1 px-3 py-1.5 bg-violet-600 hover:bg-violet-700 disabled:opacity-50 text-white text-xs font-medium rounded-lg transition whitespace-nowrap"
-                            >
-                              <Sparkles size={12} />
-                              {aiLoadingMap[link._id] ? 'Extracting…' : 'Extract'}
-                            </button>
-                            {aiSuccessMap[link._id] && (
-                              <span className="flex items-center gap-1 text-[10px] font-semibold text-green-600">
-                                <Check size={11} /> Auto-filled!
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-2">
-                        <div className="flex gap-1.5">
-                          <div className="relative flex-1 min-w-0">
-                            <Briefcase size={14} className="absolute left-2.5 top-2.5 text-gray-400" />
-                            <select
-                              value={editForms[link._id]?.title !== undefined ? editForms[link._id].title : link.title}
-                              onChange={(e) => handleFormChange(link._id, 'title', e.target.value)}
-                              className="w-full pl-8 p-1.5 text-sm border rounded bg-white text-gray-700 focus:outline-none focus:border-accent"
-                            >
-                              <option value="" disabled>Select Designation</option>
-                              {[...DESIGNATION_OPTIONS, ...customDesignations].map(opt => (
-                                <option key={opt} value={opt}>{opt}</option>
-                              ))}
-                            </select>
-                          </div>
                           <button
                             type="button"
-                            onClick={() => {
-                              const added = handleAddDesignation();
-                              if (added) handleFormChange(link._id, 'title', added);
-                            }}
-                            className="bg-gray-100 hover:bg-gray-200 text-gray-600 px-2 rounded transition shrink-0 flex items-center justify-center border border-border"
-                            title="Add Custom Designation"
+                            onClick={() => handleAIExtractForLink(link._id)}
+                            disabled={aiLoadingMap[link._id] || !aiTextMap[link._id]?.trim()}
+                            className="flex items-center gap-2 px-4 py-2 bg-violet-600 hover:bg-violet-700 disabled:opacity-50 text-white text-[12px] font-medium rounded-lg transition shrink-0"
                           >
-                            <Plus size={14} />
+                            <Sparkles size={14} className={aiLoadingMap[link._id] ? 'animate-pulse' : ''} />
+                            {aiLoadingMap[link._id] ? 'Extracting…' : 'Auto-fill'}
                           </button>
                         </div>
-                        <div className="relative">
-                          <Laptop size={14} className="absolute left-2.5 top-2.5 text-gray-400" />
-                          <select
-                            value={editForms[link._id]?.workMode !== undefined ? editForms[link._id].workMode : (link.workMode || '')}
-                            onChange={(e) => handleFormChange(link._id, 'workMode', e.target.value)}
-                            className="w-full pl-8 p-1.5 text-sm border rounded bg-white text-gray-700 focus:outline-none focus:border-accent"
-                          >
-                            <option value="" disabled>Select Work Mode</option>
-                            <option value="Remote">Remote</option>
-                            <option value="Onsite">Onsite</option>
-                            <option value="Hybrid">Hybrid</option>
-                          </select>
-                        </div>
-                        <div className="relative">
-                          <MapPin size={14} className="absolute left-2.5 top-2.5 text-gray-400" />
-                          <input
-                            type="text"
-                            placeholder="Location (e.g. Bangalore, India) - Optional"
-                            value={editForms[link._id]?.location !== undefined ? editForms[link._id].location : link.location}
-                            onChange={(e) => handleFormChange(link._id, 'location', e.target.value)}
-                            className="w-full pl-8 p-1.5 text-sm border rounded bg-white focus:outline-none focus:border-accent"
-                          />
-                        </div>
-                        <div className="relative">
-                          <Building size={14} className="absolute left-2.5 top-2.5 text-gray-400" />
-                          <input
-                            type="text"
-                            placeholder="Company Name - Optional"
-                            value={editForms[link._id]?.company !== undefined ? editForms[link._id].company : link.company}
-                            onChange={(e) => handleFormChange(link._id, 'company', e.target.value)}
-                            className="w-full pl-8 p-1.5 text-sm border rounded bg-white focus:outline-none focus:border-accent"
-                          />
-                        </div>
-                        <div className="relative">
-                          <Calendar size={14} className="absolute left-2.5 top-2.5 text-gray-400" />
-                          <input
-                            type="text"
-                            placeholder="Posted Date - Optional"
-                            value={editForms[link._id]?.postedDate !== undefined ? editForms[link._id].postedDate : link.postedDate}
-                            onChange={(e) => handleFormChange(link._id, 'postedDate', e.target.value)}
-                            className="w-full pl-8 p-1.5 text-sm border rounded bg-white focus:outline-none focus:border-accent"
-                          />
-                        </div>
-                        <div className="relative">
-                          <Clock size={14} className="absolute left-2.5 top-2.5 text-gray-400" />
-                          <input
-                            type="text"
-                            placeholder="Experience (e.g. 2-5 Yrs) - Optional"
-                            value={editForms[link._id]?.experience !== undefined ? editForms[link._id].experience : link.experience}
-                            onChange={(e) => handleFormChange(link._id, 'experience', e.target.value)}
-                            className="w-full pl-8 p-1.5 text-sm border rounded bg-white focus:outline-none focus:border-accent"
-                          />
+
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                          {/* Designation */}
+                          <div className="relative border border-gray-100 rounded-xl p-3 flex items-start gap-3 bg-white focus-within:border-violet-400 focus-within:ring-1 focus-within:ring-violet-400 transition-colors shadow-xs">
+                            <Briefcase size={16} className="text-violet-600 shrink-0 mt-0.5" />
+                            <div className="flex flex-col flex-1 min-w-0">
+                              <label className="text-[11px] font-semibold text-gray-800 mb-0.5">Designation</label>
+                              <select
+                                value={editForms[link._id]?.title !== undefined ? editForms[link._id].title : link.title}
+                                onChange={(e) => handleFormChange(link._id, 'title', e.target.value)}
+                                className="w-full bg-transparent border-0 p-0 text-[13px] text-gray-600 focus:ring-0 outline-none cursor-pointer placeholder-gray-400 appearance-none"
+                              >
+                                <option value="" disabled>Select designation</option>
+                                {[...DESIGNATION_OPTIONS, ...customDesignations].map(opt => (
+                                  <option key={opt} value={opt}>{opt}</option>
+                                ))}
+                              </select>
+                            </div>
+                            <ChevronDown size={14} className="text-gray-400 shrink-0 pointer-events-none mt-2" />
+                          </div>
+
+                          {/* Work Mode */}
+                          <div className="relative border border-gray-100 rounded-xl p-3 flex items-start gap-3 bg-white focus-within:border-violet-400 focus-within:ring-1 focus-within:ring-violet-400 transition-colors shadow-xs">
+                            <Laptop size={16} className="text-violet-600 shrink-0 mt-0.5" />
+                            <div className="flex flex-col flex-1 min-w-0">
+                              <label className="text-[11px] font-semibold text-gray-800 mb-0.5">Work Mode</label>
+                              <select
+                                value={editForms[link._id]?.workMode !== undefined ? editForms[link._id].workMode : (link.workMode || '')}
+                                onChange={(e) => handleFormChange(link._id, 'workMode', e.target.value)}
+                                className="w-full bg-transparent border-0 p-0 text-[13px] text-gray-600 focus:ring-0 outline-none cursor-pointer appearance-none"
+                              >
+                                <option value="" disabled>Select work mode</option>
+                                <option value="Remote">Remote</option>
+                                <option value="Onsite">Onsite</option>
+                                <option value="Hybrid">Hybrid</option>
+                              </select>
+                            </div>
+                            <ChevronDown size={14} className="text-gray-400 shrink-0 pointer-events-none mt-2" />
+                          </div>
+
+                          {/* Location */}
+                          <div className="relative border border-gray-100 rounded-xl p-3 flex items-start gap-3 bg-white focus-within:border-violet-400 focus-within:ring-1 focus-within:ring-violet-400 transition-colors shadow-xs">
+                            <MapPin size={16} className="text-violet-600 shrink-0 mt-0.5" />
+                            <div className="flex flex-col flex-1 min-w-0">
+                              <label className="text-[11px] font-semibold text-gray-800 mb-0.5">Location</label>
+                              <input
+                                type="text"
+                                placeholder="e.g. Bangalore, India"
+                                value={editForms[link._id]?.location !== undefined ? editForms[link._id].location : link.location}
+                                onChange={(e) => handleFormChange(link._id, 'location', e.target.value)}
+                                className="w-full bg-transparent border-0 p-0 text-[13px] text-gray-600 focus:ring-0 outline-none placeholder-gray-500"
+                              />
+                            </div>
+                          </div>
+
+                          {/* Company Name */}
+                          <div className="relative border border-gray-100 rounded-xl p-3 flex items-start gap-3 bg-white focus-within:border-violet-400 focus-within:ring-1 focus-within:ring-violet-400 transition-colors shadow-xs">
+                            <Building size={16} className="text-violet-600 shrink-0 mt-0.5" />
+                            <div className="flex flex-col flex-1 min-w-0">
+                              <label className="text-[11px] font-semibold text-gray-800 mb-0.5">Company Name <span className="font-normal text-gray-400">(Optional)</span></label>
+                              <input
+                                type="text"
+                                placeholder="Enter company name"
+                                value={editForms[link._id]?.company !== undefined ? editForms[link._id].company : link.company}
+                                onChange={(e) => handleFormChange(link._id, 'company', e.target.value)}
+                                className="w-full bg-transparent border-0 p-0 text-[13px] text-gray-600 focus:ring-0 outline-none placeholder-gray-500"
+                              />
+                            </div>
+                          </div>
+
+                          {/* Posted Date */}
+                          <div className="relative border border-gray-100 rounded-xl p-3 flex items-start gap-3 bg-white focus-within:border-violet-400 focus-within:ring-1 focus-within:ring-violet-400 transition-colors shadow-xs">
+                            <Calendar size={16} className="text-violet-600 shrink-0 mt-0.5" />
+                            <div className="flex flex-col flex-1 min-w-0">
+                              <label className="text-[11px] font-semibold text-gray-800 mb-0.5">Posted Date <span className="font-normal text-gray-400">(Optional)</span></label>
+                              <input
+                                type="text"
+                                placeholder="Select date"
+                                value={editForms[link._id]?.postedDate !== undefined ? editForms[link._id].postedDate : link.postedDate}
+                                onChange={(e) => handleFormChange(link._id, 'postedDate', e.target.value)}
+                                className="w-full bg-transparent border-0 p-0 text-[13px] text-gray-600 focus:ring-0 outline-none placeholder-gray-500"
+                              />
+                            </div>
+                            <Calendar size={14} className="text-gray-400 shrink-0 pointer-events-none mt-2" />
+                          </div>
+
+                          {/* Experience */}
+                          <div className="relative border border-gray-100 rounded-xl p-3 flex items-start gap-3 bg-white focus-within:border-violet-400 focus-within:ring-1 focus-within:ring-violet-400 transition-colors shadow-xs">
+                            <Clock size={16} className="text-violet-600 shrink-0 mt-0.5" />
+                            <div className="flex flex-col flex-1 min-w-0">
+                              <label className="text-[11px] font-semibold text-gray-800 mb-0.5">Experience <span className="font-normal text-gray-400">(Optional)</span></label>
+                              <input
+                                type="text"
+                                placeholder="e.g. 2-5 Yrs"
+                                value={editForms[link._id]?.experience !== undefined ? editForms[link._id].experience : link.experience}
+                                onChange={(e) => handleFormChange(link._id, 'experience', e.target.value)}
+                                className="w-full bg-transparent border-0 p-0 text-[13px] text-gray-600 focus:ring-0 outline-none placeholder-gray-500"
+                              />
+                            </div>
+                            <ChevronDown size={14} className="text-gray-400 shrink-0 pointer-events-none mt-2" />
+                          </div>
                         </div>
                       </div>
                     </>
                   ) : (
-                    <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-[13px] text-gray-500 font-medium bg-[#f4f6fa] p-3.5 rounded-lg border border-gray-100/50 mt-1">
+                    <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-[13px] text-gray-500 font-medium bg-[#f4f6fa] p-3.5 rounded-lg border border-gray-100/50">
                       {link.title && <div className="flex items-center gap-2 text-gray-800 font-semibold"><Briefcase size={15} className="text-gray-400"/>{link.title}</div>}
                       {link.company && <div className="flex items-center gap-2"><Building size={15} className="text-gray-400"/>{link.company}</div>}
                       {link.workMode && <div className="flex items-center gap-2"><Laptop size={15} className="text-gray-400"/>{link.workMode}</div>}
@@ -696,59 +754,11 @@ export default function AdminJobLinksSection() {
                       )}
                     </div>
                   )}
-                </div>
-
-                {/* Actions */}
-                <div className="flex md:flex-col gap-2 w-full md:w-28 shrink-0 mt-3 md:mt-0 md:pl-4 border-t md:border-t-0 md:border-l border-gray-100 pt-4 md:pt-0">
-                  {activeTab === 'pending' && (
-                    <button
-                      onClick={() => handleUpdate(link._id, 'approved')}
-                      className="flex-1 md:flex-none flex items-center justify-center gap-1.5 px-3 py-2 bg-white border border-[#10b981] text-[#10b981] hover:bg-[#10b981] hover:text-white rounded-md text-sm font-semibold transition"
-                    >
-                      <Check size={14} /> Approve
-                    </button>
-                  )}
-                  
-                  {activeTab === 'approved' && !isEditing && (
-                    <button
-                      onClick={() => startEditing(link)}
-                      className="flex-1 md:flex-none flex items-center justify-center gap-1.5 px-3 py-2 bg-white border border-[#10b981] text-[#10b981] hover:bg-[#10b981] hover:text-white rounded-md text-sm font-semibold transition"
-                    >
-                      <Edit2 size={14} /> Edit
-                    </button>
-                  )}
-
-                  {activeTab === 'approved' && isEditing && (
-                    <>
-                      <button
-                        onClick={() => handleUpdate(link._id, 'approved')}
-                        className="flex-1 md:flex-none flex items-center justify-center gap-1.5 px-3 py-2 bg-white border border-[#10b981] text-[#10b981] hover:bg-[#10b981] hover:text-white rounded-md text-sm font-semibold transition"
-                      >
-                        <Save size={14} /> Save
-                      </button>
-                      <button
-                        onClick={cancelEditing}
-                        className="flex-1 md:flex-none flex items-center justify-center gap-1.5 px-3 py-2 bg-white text-gray-500 hover:bg-gray-100 rounded-md text-sm font-semibold transition"
-                      >
-                        <X size={14} /> Cancel
-                      </button>
-                    </>
-                  )}
-
-                  {(!isEditing || activeTab === 'pending') && (
-                    <button
-                      onClick={() => handleUpdate(link._id, 'rejected')}
-                      className="flex-1 md:flex-none flex items-center justify-center gap-1.5 px-3 py-2 bg-white text-[#ef4444] hover:bg-red-50 rounded-md text-sm font-semibold transition"
-                    >
-                      <X size={14} /> {activeTab === 'pending' ? 'Reject' : 'Remove'}
-                    </button>
-                  )}
-                </div>
-
               </div>
-            );
-          })}
-        </div>
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }
