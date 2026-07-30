@@ -598,6 +598,38 @@ exports.sendProjectRejectedEmail = async ({ to, name, projectTitle, projectId, a
   });
 };
 
+exports.sendJobLinkRejectedEmail = async ({ to, name, linkUrl, adminNote }) => {
+  const dashboardUrl = `${BASE_URL}/dashboard`;
+
+  await sendEmailWithFallback({
+    sender: FROM,
+    to: [{ email: to, name }],
+    subject: `Update on your submitted Job Link`,
+    htmlContent: `
+      <div style="font-family:Inter,Arial,sans-serif;max-width:560px;margin:0 auto;background:#fff;border-radius:12px;overflow:hidden;border:1px solid #E5E1DA;">
+        <div style="background:#00A693;padding:12px 32px;text-align:center;">
+          <img src="${LOGO_URL}" alt="ShareMyApps" style="height:40px;object-fit:contain;" />
+        </div>
+        <div style="padding:32px;">
+          <h2 style="margin:0 0 8px;font-size:18px;color:#1A1A1A;">Your job link submission</h2>
+          <p style="color:#374151;margin:0 0 16px;">Hi ${name},</p>
+          <p style="color:#374151;margin:0 0 16px;">
+            Thank you for sharing a job link with the community. Unfortunately, the link you submitted (${linkUrl}) was not approved at this time.
+          </p>
+          ${adminNote ? `
+          <div style="background:#FEF2F2;border:1px solid #FECACA;border-radius:8px;padding:14px 16px;margin-bottom:16px;">
+            <p style="margin:0;font-size:13px;color:#991B1B;"><strong>Reason for rejection:</strong> ${adminNote}</p>
+          </div>` : ''}
+          <p style="color:#6B7280;font-size:13px;margin:0;">
+            We appreciate your effort in helping the community! If you have other opportunities to share, please submit them through your dashboard.
+          </p>
+        </div>
+        ${FOOTER('You received this email because you submitted a job link on ShareMyApps.')}
+      </div>
+    `,
+  });
+};
+
 exports.sendResumeReadyEmail = async ({ to, name, serviceLabel, completionLink, coverLetterLink }) => {
   const buttons = coverLetterLink
     ? `

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import api from '../../api/axios';
 import { toast } from 'react-hot-toast';
-import { Briefcase, Check, X, ExternalLink, Link as LinkIcon, MapPin, Laptop, Edit2, Plus, Save, Clock, Sparkles, Building, Calendar, Share2, ChevronDown } from 'lucide-react';
+import { Briefcase, Check, X, ExternalLink, Link as LinkIcon, MapPin, Laptop, Edit2, Plus, Save, Clock, Sparkles, Building, Calendar, Share2, ChevronDown, Copy, Download } from 'lucide-react';
 
 const DESIGNATION_OPTIONS = [
   "Frontend Developer",
@@ -47,8 +47,14 @@ export default function AdminJobLinksSection() {
   const [loading, setLoading] = useState(true);
   const [editForms, setEditForms] = useState({});
   const [activeTab, setActiveTab] = useState('approved');
+  const [companies, setCompanies] = useState([]);
   
   const [editingLinkId, setEditingLinkId] = useState(null);
+  
+  const [rejectModalOpen, setRejectModalOpen] = useState(false);
+  const [linkToReject, setLinkToReject] = useState(null);
+  const [rejectComment, setRejectComment] = useState('');
+  const [rejecting, setRejecting] = useState(false);
   
   const [showAddForm, setShowAddForm] = useState(false);
   const [newLinkForm, setNewLinkForm] = useState({
@@ -104,6 +110,7 @@ export default function AdminJobLinksSection() {
           toast.success('Fields auto-filled by AI!');
         }
         setTimeout(() => setAiSuccess(false), 3000);
+        fetchCompanies();
       }
     } catch (err) {
       toast.error(err.response?.data?.message || 'AI extraction failed.');
@@ -143,6 +150,7 @@ export default function AdminJobLinksSection() {
         } else {
           toast.success('Fields auto-filled by AI!');
         }
+        fetchCompanies();
       }
     } catch (err) {
       toast.error(err.response?.data?.message || 'AI extraction failed.');
@@ -176,10 +184,51 @@ export default function AdminJobLinksSection() {
     }
   };
 
+  const fetchCompanies = async () => {
+    try {
+      const res = await api.get('/job-links/admin/companies');
+      if (res.data.success) {
+        setCompanies(res.data.data);
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const handleExportCompanies = () => {
+    if (companies.length === 0) {
+      toast.error('No companies to export');
+      return;
+    }
+    
+    let csvContent = "data:text/csv;charset=utf-8,";
+    csvContent += "Company Name,Email IDs\n";
+    
+    companies.forEach(company => {
+      const name = `"${(company.name || '').replace(/"/g, '""')}"`;
+      const emails = company.emails && company.emails.length > 0 ? `"${company.emails.join(', ')}"` : '""';
+      csvContent += `${name},${emails}\n`;
+    });
+    
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `extracted_companies_${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const handleCopy = (text) => {
+    navigator.clipboard.writeText(text);
+    toast.success('Copied to clipboard!');
+  };
+
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchJobLinks();
     fetchFeedback();
+    fetchCompanies();
   }, []);
 
   const handleUpdate = async (id, status) => {
@@ -218,6 +267,28 @@ export default function AdminJobLinksSection() {
     } catch (error) {
       console.error(error);
       toast.error(`Failed to update job link`);
+    }
+  };
+
+  const handleConfirmReject = async () => {
+    if (!linkToReject) return;
+    setRejecting(true);
+    try {
+      const res = await api.put(`/job-links/${linkToReject._id}`, { 
+        status: 'rejected',
+        adminNote: rejectComment
+      });
+      if (res.data.success) {
+        toast.success(`Job link rejected`);
+        fetchJobLinks();
+        setRejectModalOpen(false);
+        setRejectComment('');
+        setLinkToReject(null);
+      }
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to reject job link');
+    } finally {
+      setRejecting(false);
     }
   };
 
@@ -284,6 +355,9 @@ export default function AdminJobLinksSection() {
     .filter(l => l.status === 'approved')
     .filter(l => !companySearch.trim() || (l.company || '').toLowerCase().includes(companySearch.trim().toLowerCase()));
 
+  const filteredCompanies = companies
+    .filter(c => !companySearch.trim() || (c.name || '').toLowerCase().includes(companySearch.trim().toLowerCase()));
+
   return (
     <div className="space-y-6 max-w-5xl">
       {/* Tabs */}
@@ -301,6 +375,12 @@ export default function AdminJobLinksSection() {
           >
             Pending Verification ({pendingLinks.length})
           </button>
+          <button
+            onClick={() => setActiveTab('companies')}
+            className={`px-4 py-3 font-medium text-sm transition-colors border-b-2 ${activeTab === 'companies' ? 'border-accent text-accent' : 'border-transparent text-muted hover:text-text'}`}
+          >
+            Companies ({filteredCompanies.length})
+          </button>
         </div>
         {activeTab === 'approved' && (
           <button
@@ -316,6 +396,15 @@ export default function AdminJobLinksSection() {
           >
             {showAddForm ? <X size={16} /> : <Plus size={16} />}
             {showAddForm ? 'Cancel' : 'Add New'}
+          </button>
+        )}
+        {activeTab === 'companies' && (
+          <button
+            onClick={handleExportCompanies}
+            className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors mb-1"
+          >
+            <Download size={16} />
+            Export to Excel
           </button>
         )}
       </div>
@@ -490,15 +579,76 @@ export default function AdminJobLinksSection() {
         </div>
       )}
 
+
       <div className="space-y-4">
-        {activeTab === 'pending' && pendingLinks.length === 0 && (
+        {activeTab === 'companies' && (
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+            {filteredCompanies.length === 0 ? (
+              <div className="p-8 text-center text-muted">No companies found.</div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="bg-gray-50 border-b border-gray-100 text-[13px] text-gray-500 uppercase tracking-wider">
+                      <th className="px-5 py-3 font-medium">Company Name</th>
+                      <th className="px-5 py-3 font-medium">Extracted Emails</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100">
+                    {filteredCompanies.map(company => (
+                      <tr key={company._id} className="hover:bg-gray-50/50 transition">
+                        <td className="px-5 py-4">
+                          <div className="flex items-center gap-2 group">
+                            <Building size={16} className="text-gray-400" />
+                            <span className="font-semibold text-gray-800 text-[14px]">{company.name}</span>
+                            <button
+                              onClick={() => handleCopy(company.name)}
+                              className="text-gray-400 hover:text-gray-600 opacity-0 group-hover:opacity-100 transition-opacity"
+                              title="Copy company name"
+                            >
+                              <Copy size={14} />
+                            </button>
+                          </div>
+                        </td>
+                        <td className="px-5 py-4">
+                          {company.emails && company.emails.length > 0 ? (
+                            <div className="flex flex-wrap gap-2">
+                              {company.emails.map((email, idx) => (
+                                <div key={idx} className="flex items-center gap-1 px-2.5 py-1 bg-violet-50 text-violet-700 rounded-md text-[13px] font-medium border border-violet-100 group">
+                                  <a href={`mailto:${email}`} className="hover:underline">
+                                    {email}
+                                  </a>
+                                  <button
+                                    onClick={() => handleCopy(email)}
+                                    className="text-violet-400 hover:text-violet-700 opacity-0 group-hover:opacity-100 transition-opacity ml-1"
+                                    title="Copy email"
+                                  >
+                                    <Copy size={13} />
+                                  </button>
+                                </div>
+                              ))}
+                            </div>
+                          ) : (
+                            <span className="text-gray-400 italic text-[13px]">No emails found</span>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        )}
+
+        {activeTab !== 'companies' && activeTab === 'pending' && pendingLinks.length === 0 && (
           <div className="p-8 text-center text-muted bg-white rounded-xl shadow-sm border border-border">No pending job links.</div>
         )}
         {activeTab === 'approved' && approvedLinks.length === 0 && (
           <div className="p-8 text-center text-muted bg-white rounded-xl shadow-sm border border-border">No approved job links.</div>
         )}
 
-        {(activeTab === 'pending' ? pendingLinks : approvedLinks).map(link => {
+        {activeTab !== 'companies' && (activeTab === 'pending' ? pendingLinks : approvedLinks).map(link => {
           const isEditing = editingLinkId === link._id || activeTab === 'pending';
           
           return (
@@ -544,7 +694,7 @@ export default function AdminJobLinksSection() {
                           <Check size={14} /> Approve
                         </button>
                         <button
-                          onClick={() => handleUpdate(link._id, 'rejected')}
+                          onClick={() => { setLinkToReject(link); setRejectModalOpen(true); }}
                           className="flex items-center justify-center gap-1.5 px-3.5 py-1.5 bg-white border border-red-500 text-red-500 hover:bg-red-500 hover:text-white rounded-lg text-[12px] font-bold transition shadow-sm"
                         >
                           <X size={14} /> Reject
@@ -580,7 +730,7 @@ export default function AdminJobLinksSection() {
 
                     {activeTab === 'approved' && !isEditing && (
                       <button
-                        onClick={() => handleUpdate(link._id, 'rejected')}
+                        onClick={() => { setLinkToReject(link); setRejectModalOpen(true); }}
                         className="flex items-center justify-center gap-1.5 px-3.5 py-1.5 bg-white border border-red-500 text-red-500 hover:bg-red-500 hover:text-white rounded-lg text-[12px] font-bold transition shadow-sm"
                       >
                         <X size={14} /> Remove
@@ -755,6 +905,49 @@ export default function AdminJobLinksSection() {
           );
         })}
       </div>
+
+      {/* Reject Modal */}
+      {rejectModalOpen && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-md overflow-hidden">
+            <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
+              <h3 className="font-bold text-gray-800">Reject Job Link</h3>
+              <button 
+                onClick={() => setRejectModalOpen(false)}
+                className="text-gray-400 hover:text-gray-600 p-1"
+              >
+                <X size={18} />
+              </button>
+            </div>
+            <div className="p-5">
+              <p className="text-[13px] text-gray-600 mb-3">
+                Please provide a reason for rejecting this job link. This will be sent to the user via email.
+              </p>
+              <textarea
+                value={rejectComment}
+                onChange={(e) => setRejectComment(e.target.value)}
+                placeholder="e.g. This link is no longer active, or not relevant..."
+                className="w-full border border-gray-200 rounded-lg p-3 text-[13px] focus:outline-none focus:border-red-400 min-h-[100px] resize-y"
+              />
+            </div>
+            <div className="px-5 py-4 border-t border-gray-100 bg-gray-50 flex justify-end gap-3">
+              <button
+                onClick={() => setRejectModalOpen(false)}
+                className="px-4 py-2 text-[13px] font-semibold text-gray-600 hover:bg-gray-200 rounded-lg transition"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleConfirmReject}
+                disabled={rejecting}
+                className="px-4 py-2 text-[13px] font-semibold text-white bg-red-500 hover:bg-red-600 rounded-lg transition disabled:opacity-50 flex items-center gap-2"
+              >
+                {rejecting ? 'Rejecting...' : 'Confirm Rejection'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -1,6 +1,8 @@
 const JobLink = require('../models/JobLink');
 const JobLinkFeedback = require('../models/JobLinkFeedback');
+const CompanyContact = require('../models/CompanyContact');
 const OpenAI = require('openai');
+const { sendJobLinkRejectedEmail } = require('../utils/email');
 
 function calculateExpirationDate(postedDate) {
   const defaultExp = Date.now() + 5 * 24 * 60 * 60 * 1000;
@@ -134,8 +136,23 @@ exports.updateJobLink = async (req, res) => {
     if (url !== undefined) link.url = url;
     if (experience !== undefined) link.experience = experience;
     if (state !== undefined) link.state = state;
+    if (req.body.adminNote !== undefined) link.adminNote = req.body.adminNote;
 
     await link.save();
+
+    if (status === 'rejected' && link.createdBy) {
+      const User = require('../models/User');
+      const user = await User.findById(link.createdBy);
+      if (user && user.email) {
+        await sendJobLinkRejectedEmail({
+          to: user.email,
+          name: user.name,
+          linkUrl: link.url,
+          adminNote: link.adminNote
+        }).catch(err => console.error('Error sending rejection email:', err));
+      }
+    }
+
     res.json({ success: true, data: link });
   } catch (error) {
     console.error('Error updating job link:', error);
@@ -169,7 +186,8 @@ Return ONLY a valid JSON object with these exact keys (no markdown, no explanati
   "workMode": "one of: Remote, Onsite, Hybrid — infer from context if not explicitly stated",
   "location": "city and state/country if mentioned. For Indian cities, use the state name instead of 'India' (e.g. 'Jaipur, Rajasthan', 'Bengaluru, Karnataka', 'Mumbai, Maharashtra', 'Hyderabad, Telangana'). For non-Indian locations use city and country. Else empty string.",
   "state": "the Indian state name — ONLY fill if there is exactly ONE clear Indian city or area mentioned (e.g. 'Bengaluru' → 'Karnataka', 'Hyderabad' → 'Telangana'). If a non-Indian country/city is mentioned (e.g. 'USA', 'London'), return 'Out of India'. If multiple locations are mentioned, or if the location is Remote, return empty string.",
-  "experience": "experience requirement as a short string (e.g. 2-4 years, 3+ years), else empty string"
+  "experience": "experience requirement as a short string (e.g. 2-4 years, 3+ years), else empty string",
+  "email": "any email address found in the job posting (e.g. hr@company.com), else empty string"
 }
 
 Job posting content:
@@ -215,6 +233,26 @@ ${text.slice(0, 4000)}`;
       if (existingLink || existingVacancy) isDuplicate = true;
     }
 
+    if (extracted.company) {
+      const companyName = extracted.company.trim();
+      try {
+        const updateDoc = {};
+        if (extracted.email) {
+          updateDoc.$addToSet = { emails: extracted.email.trim().toLowerCase() };
+        }
+        await CompanyContact.findOneAndUpdate(
+          { name: { $regex: new RegExp(`^${companyName}$`, 'i') } },
+          { 
+            $setOnInsert: { name: companyName },
+            ...updateDoc
+          },
+          { upsert: true, new: true }
+        );
+      } catch (err) {
+        console.error('Error saving company contact:', err);
+      }
+    }
+
     return res.json({
       success: true,
       data: {
@@ -225,6 +263,7 @@ ${text.slice(0, 4000)}`;
         location: extracted.location || '',
         state: extracted.state || '',
         experience: extracted.experience || '',
+        email: extracted.email || '',
         isDuplicate
       }
     });
@@ -267,6 +306,16 @@ exports.getAdminFeedback = async (req, res) => {
     res.json({ success: true, data: feedback });
   } catch (error) {
     console.error('Error fetching admin feedback:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+};
+
+exports.getAdminCompanies = async (req, res) => {
+  try {
+    const companies = await CompanyContact.find().sort({ createdAt: -1 }).lean();
+    res.json({ success: true, data: companies });
+  } catch (error) {
+    console.error('Error fetching admin companies:', error);
     res.status(500).json({ success: false, message: 'Server error' });
   }
 };
