@@ -545,6 +545,16 @@ export default function Feed() {
           </div>
         </div>
 
+        {/* REPORT VACANCY BUTTON */}
+        {user && (
+          <button
+            onClick={() => setShowReportModal(true)}
+            className="bg-[#fbfcfa] border border-[#5a788b] p-4 rounded-[18px] flex items-center justify-center transition-all w-full shrink-0 shadow-sm hover:shadow-md hover:-translate-y-0.5 group"
+          >
+            <span className="text-[14px] font-bold text-transparent bg-clip-text bg-gradient-to-r from-slate-900 to-slate-600 tracking-wide drop-shadow-sm">Report your company vacancy &gt;</span>
+          </button>
+        )}
+
         <div className="bg-white rounded-[32px] p-5 pb-6 flex flex-col relative overflow-hidden shrink-0 shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-[#5a788b] w-full sm:w-[340px]">
           {/* Abstract wavy background at the bottom */}
           <div className="absolute bottom-0 left-0 right-0 h-32 pointer-events-none opacity-50 flex items-end">
@@ -555,16 +565,6 @@ export default function Feed() {
           </div>
           
           <div className="relative z-10 flex flex-col gap-6">
-            {/* REPORT VACANCY BUTTON */}
-            {user && (
-              <button
-                onClick={() => setShowReportModal(true)}
-                className="bg-[#fbfcfa] border border-gray-100/60 p-4 rounded-[18px] flex items-center justify-center transition-all w-full shrink-0 shadow-sm hover:shadow-md hover:-translate-y-0.5 group"
-              >
-                <span className="text-[14px] font-bold text-transparent bg-clip-text bg-gradient-to-r from-slate-900 to-slate-600 tracking-wide drop-shadow-sm">Report your company vacancy &gt;</span>
-              </button>
-            )}
-
             {/* OPPORTUNITIES (Jobs) */}
             <div className="flex flex-col gap-3.5">
               <div className="flex items-center justify-center px-1 mb-1">

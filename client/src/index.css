@@ -214,3 +214,16 @@ body {
   border-radius: 4px 0 0 0;
   filter: drop-shadow(-3px -3px 4px rgba(0,0,0,0.3));
 }
+
+/* Navbar text color overrides */
+header nav a,
+header button.text-muted,
+header .md\:hidden a {
+  color: #5a788b !important;
+}
+
+header nav a:hover,
+header button.text-muted:hover,
+header .md\:hidden a:hover {
+  color: var(--color-text) !important;
+}

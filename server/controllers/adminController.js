@@ -167,8 +167,29 @@ exports.adminUpdateProject = async (req, res) => {
 
 exports.getAllUsers = async (req, res) => {
   try {
+    const query = {};
+    if (req.query.userType) {
+      query.userType = req.query.userType;
+    }
+    if (req.query.onlyContacted === 'true') {
+      const Vacancy = require('../models/Vacancy');
+      const vacancies = await Vacancy.find({}, 'applicantStatus');
+      const contactedUserIds = new Set();
+      vacancies.forEach(v => {
+        if (v.applicantStatus) {
+          const statusObj = v.applicantStatus instanceof Map ? Object.fromEntries(v.applicantStatus) : v.applicantStatus;
+          for (const userId in statusObj) {
+            if (statusObj[userId] === 'contacted') {
+              contactedUserIds.add(userId);
+            }
+          }
+        }
+      });
+      query._id = { $in: Array.from(contactedUserIds) };
+    }
+
     const [users, stats] = await Promise.all([
-      User.find().select('-password').sort({ createdAt: -1 }),
+      User.find(query).select('-password').sort({ createdAt: -1 }),
       Project.aggregate([
         { $match: { status: 'approved' } },
         {

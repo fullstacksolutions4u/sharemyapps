@@ -48,6 +48,7 @@ export default function AdminJobLinksSection() {
   const [editForms, setEditForms] = useState({});
   const [activeTab, setActiveTab] = useState('approved');
   const [companies, setCompanies] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
   
   const [editingLinkId, setEditingLinkId] = useState(null);
   
@@ -359,25 +360,34 @@ export default function AdminJobLinksSection() {
   const filteredCompanies = companies
     .filter(c => !companySearch.trim() || (c.name || '').toLowerCase().includes(companySearch.trim().toLowerCase()));
 
+  const ITEMS_PER_PAGE = 10;
+  const activeList = activeTab === 'companies' 
+    ? filteredCompanies 
+    : (activeTab === 'pending' ? pendingLinks : approvedLinks);
+
+  const totalItems = activeList.length;
+  const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
+  const paginatedList = activeList.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
+
   return (
     <div className="space-y-6 max-w-5xl">
       {/* Tabs */}
       <div className="flex justify-between items-center border-b border-border flex-wrap gap-2">
         <div className="flex">
           <button
-            onClick={() => setActiveTab('approved')}
+            onClick={() => { setActiveTab('approved'); setCurrentPage(1); }}
             className={`px-4 py-3 font-medium text-sm transition-colors border-b-2 ${activeTab === 'approved' ? 'border-accent text-accent' : 'border-transparent text-muted hover:text-text'}`}
           >
             Approved Links ({approvedLinks.length})
           </button>
           <button
-            onClick={() => setActiveTab('pending')}
+            onClick={() => { setActiveTab('pending'); setCurrentPage(1); }}
             className={`px-4 py-3 font-medium text-sm transition-colors border-b-2 ${activeTab === 'pending' ? 'border-accent text-accent' : 'border-transparent text-muted hover:text-text'}`}
           >
             Pending Verification ({pendingLinks.length})
           </button>
           <button
-            onClick={() => setActiveTab('companies')}
+            onClick={() => { setActiveTab('companies'); setCurrentPage(1); }}
             className={`px-4 py-3 font-medium text-sm transition-colors border-b-2 ${activeTab === 'companies' ? 'border-accent text-accent' : 'border-transparent text-muted hover:text-text'}`}
           >
             Companies ({filteredCompanies.length})
@@ -416,12 +426,12 @@ export default function AdminJobLinksSection() {
         <input
           type="text"
           value={companySearch}
-          onChange={e => setCompanySearch(e.target.value)}
+          onChange={e => { setCompanySearch(e.target.value); setCurrentPage(1); }}
           placeholder="Search by company name..."
           className="w-full pl-10 pr-4 py-3 text-[13px] text-gray-700 border border-gray-100 rounded-xl focus:outline-none focus:border-violet-400 focus:ring-1 focus:ring-violet-400 bg-white shadow-sm transition-all"
         />
         {companySearch && (
-          <button onClick={() => setCompanySearch('')} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+          <button onClick={() => { setCompanySearch(''); setCurrentPage(1); }} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
             <X size={14} />
           </button>
         )}
@@ -596,7 +606,7 @@ export default function AdminJobLinksSection() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-100">
-                    {filteredCompanies.map(company => (
+                    {paginatedList.map(company => (
                       <tr key={company._id} className="hover:bg-gray-50/50 transition">
                         <td className="px-5 py-4">
                           <div className="flex items-center gap-2 group">
@@ -649,7 +659,7 @@ export default function AdminJobLinksSection() {
           <div className="p-8 text-center text-muted bg-white rounded-xl shadow-sm border border-border">No approved job links.</div>
         )}
 
-        {activeTab !== 'companies' && (activeTab === 'pending' ? pendingLinks : approvedLinks).map(link => {
+        {activeTab !== 'companies' && paginatedList.map(link => {
           const isEditing = editingLinkId === link._id || activeTab === 'pending';
           
           return (
@@ -932,6 +942,41 @@ export default function AdminJobLinksSection() {
           );
         })}
       </div>
+
+      {totalPages > 1 && (
+        <div className="flex items-center justify-center gap-2 mt-8 flex-wrap">
+          <button
+            onClick={() => { setCurrentPage(p => Math.max(1, p - 1)); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+            disabled={currentPage === 1}
+            className="px-3.5 py-2 rounded-xl border border-border bg-white text-gray-500 hover:border-gray-300 hover:text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all text-sm font-medium"
+          >
+            Previous
+          </button>
+          {Array.from({ length: totalPages }).map((_, idx) => {
+            const p = idx + 1;
+            return (
+              <button
+                key={p}
+                onClick={() => { setCurrentPage(p); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                className={`w-10 h-10 rounded-xl border text-sm font-semibold transition-all ${
+                  currentPage === p
+                    ? 'bg-accent border-accent text-white shadow-sm'
+                    : 'border-border bg-white text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                {p}
+              </button>
+            );
+          })}
+          <button
+            onClick={() => { setCurrentPage(p => Math.min(totalPages, p + 1)); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+            disabled={currentPage === totalPages}
+            className="px-3.5 py-2 rounded-xl border border-border bg-white text-gray-500 hover:border-gray-300 hover:text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all text-sm font-medium"
+          >
+            Next
+          </button>
+        </div>
+      )}
 
       {/* Reject Modal */}
       {rejectModalOpen && (
