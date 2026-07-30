@@ -501,13 +501,15 @@ function CalendarTab() {
   };
 
   const getSessionsForDay = (d) => {
-    return sessions.filter(s => {
-      if (!s.interviewedAt) return false;
-      const sDate = new Date(s.interviewedAt);
-      return sDate.getDate() === d.getDate() &&
-             sDate.getMonth() === d.getMonth() &&
-             sDate.getFullYear() === d.getFullYear();
-    });
+    return sessions
+      .filter(s => {
+        if (!s.interviewedAt) return false;
+        const sDate = new Date(s.interviewedAt);
+        return sDate.getDate() === d.getDate() &&
+               sDate.getMonth() === d.getMonth() &&
+               sDate.getFullYear() === d.getFullYear();
+      })
+      .sort((a, b) => new Date(a.interviewedAt) - new Date(b.interviewedAt));
   };
 
   const nextMonth = () => {
