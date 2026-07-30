@@ -53,7 +53,9 @@ const getStatusConfig = (status) => {
 
 const parsePostedDate = (dateStr, createdAt) => {
   if (!dateStr) return new Date(createdAt || 0).getTime();
-  const d = new Date(dateStr);
+  const year = createdAt ? new Date(createdAt).getFullYear() : new Date().getFullYear();
+  const dateWithYear = dateStr.match(/^[A-Za-z]+\s+\d+$/) ? `${dateStr} ${year}` : dateStr;
+  const d = new Date(dateWithYear);
   if (!isNaN(d.getTime())) return d.getTime();
   const lower = dateStr.toLowerCase();
   const now = new Date().getTime();
@@ -573,6 +575,11 @@ export default function Vacancies() {
       {(() => {
         const currentData = TAB_CONFIG[activeTab].data;
         const filteredData = currentData.filter(d => {
+          if (activeTab === 'job-links') {
+            const postedTime = parsePostedDate(d.postedDate, d.createdAt);
+            const fiveDaysAgoTime = new Date().getTime() - 5 * 24 * 60 * 60 * 1000;
+            if (postedTime < fiveDaysAgoTime) return false;
+          }
           if (filterDesignation && d.title !== filterDesignation) return false;
           
           if (filterLocation) {

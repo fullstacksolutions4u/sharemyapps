@@ -16,9 +16,18 @@ function calculateExpirationDate(postedDate) {
 
 exports.getJobLinks = async (req, res) => {
   try {
-    const jobLinks = await JobLink.find({ status: 'approved' })
+    const activeThreshold = new Date();
+    activeThreshold.setDate(activeThreshold.getDate() - 15);
+    activeThreshold.setHours(0, 0, 0, 0);
+
+    const jobLinks = await JobLink.find({
+      status: 'approved',
+      $or: [
+        { expiresAt: { $gt: new Date() } },
+        { expiresAt: { $exists: false }, createdAt: { $gte: activeThreshold } }
+      ]
+    })
       .sort({ createdAt: -1 })
-      .limit(20)
       .populate('createdBy', 'name avatar profileImage designations linkedinUrl')
       .lean();
 
