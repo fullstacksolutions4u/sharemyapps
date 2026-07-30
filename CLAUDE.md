@@ -30,6 +30,9 @@ cd client && npm run lint
 
 ### No test suite is configured. CI runs lint + build only.
 
+## Git Policy
+- **DO NOT run git operations**: The user will handle all git commits, pushes, and branch management manually. Do not execute any git commands.
+
 ## Architecture
 
 **ShareMyApps** is a full-stack platform for developers to showcase and share side projects with clients/recruiters.

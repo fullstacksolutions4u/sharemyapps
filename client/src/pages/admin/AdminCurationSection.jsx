@@ -17,6 +17,11 @@ const DEFAULT_SECTIONS = SECTIONS.map(title => ({ title, rating: 3, notes: '' })
 
 const ratingColor = (r) => r >= 8 ? 'text-emerald-600' : r >= 6 ? 'text-amber-500' : 'text-red-500';
 
+const getLocalDatetimeString = (date = new Date()) => {
+  const tzOffset = date.getTimezoneOffset() * 60000;
+  return new Date(date.getTime() - tzOffset).toISOString().slice(0, 16);
+};
+
 // ─── Star Rating Component ────────────────────────────────────────────────────
 function StarRating({ value, onChange, max = 5 }) {
   return (
@@ -94,7 +99,7 @@ function EvaluationDrawer({ user, onClose, onSaved }) {
     pros: [],
     cons: [],
     improvementTips: [],
-    interviewedAt: new Date().toISOString().slice(0, 10),
+    interviewedAt: getLocalDatetimeString(),
   });
 
   const [form, setForm] = useState(emptyForm());
@@ -197,7 +202,7 @@ function EvaluationDrawer({ user, onClose, onSaved }) {
       pros: session.pros || [],
       cons: session.cons || [],
       improvementTips: session.improvementTips || [],
-      interviewedAt: session.interviewedAt ? session.interviewedAt.slice(0, 10) : new Date().toISOString().slice(0, 10),
+      interviewedAt: session.interviewedAt ? getLocalDatetimeString(new Date(session.interviewedAt)) : getLocalDatetimeString(),
     });
   };
 
@@ -278,8 +283,8 @@ function EvaluationDrawer({ user, onClose, onSaved }) {
           {/* Date & Rating */}
           <div className="grid grid-cols-2 gap-3 mb-4">
             <div>
-              <label className="block text-xs font-semibold text-[#6B7280] mb-1.5">Interview Date</label>
-              <input type="date" value={form.interviewedAt} onChange={e => setForm(f => ({ ...f, interviewedAt: e.target.value }))} className={inp} />
+              <label className="block text-xs font-semibold text-[#6B7280] mb-1.5">Interview Date & Time</label>
+              <input type="datetime-local" value={form.interviewedAt} onChange={e => setForm(f => ({ ...f, interviewedAt: e.target.value }))} className={inp} />
             </div>
             <div>
               <label className="block text-xs font-semibold text-[#6B7280] mb-1.5">Overall Rating (1–10)</label>

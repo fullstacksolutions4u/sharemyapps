@@ -27,6 +27,14 @@ router.get('/applications', protect, async (req, res) => {
       .sort({ createdAt: -1 })
       .lean();
 
+    const InterviewSession = require('../models/InterviewSession');
+    const latestSession = await InterviewSession.findOne({ user: userId })
+      .sort({ interviewedAt: -1 })
+      .select('googleMeetLink interviewedAt')
+      .lean();
+    const meetLink = latestSession?.googleMeetLink || '';
+    const interviewedAt = latestSession?.interviewedAt || null;
+
     // Map the results to include the user's specific status
     const applications = vacancies.map(v => ({
       _id: v._id,
@@ -38,7 +46,9 @@ router.get('/applications', protect, async (req, res) => {
       jobStatus: v.status, // The status of the job itself (active/closed)
       applicantStatus: v.applicantStatus && v.applicantStatus[userId.toString()] ? v.applicantStatus[userId.toString()] : 'pending',
       statusHistory: v.applicantStatusHistory && v.applicantStatusHistory[userId.toString()] ? v.applicantStatusHistory[userId.toString()] : [],
-      appliedAt: v.createdAt // We use job created at for now, or could just show it.
+      appliedAt: v.createdAt, // We use job created at for now, or could just show it.
+      googleMeetLink: meetLink,
+      interviewedAt: interviewedAt
     }));
 
     res.json(applications);

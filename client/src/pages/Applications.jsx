@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FileText, MapPin, Check, X, ChevronRight, Home, Info } from 'lucide-react';
+import { FileText, MapPin, Check, X, ChevronRight, Home, Info, Video } from 'lucide-react';
 import api from '../api/axios';
 import AppSpinner from '../components/AppSpinner';
 
@@ -145,6 +145,22 @@ function ApplicationStepper({ status, history = [], appliedAt }) {
   );
 }
 
+const formatInterviewTime = (dateStr) => {
+  if (!dateStr) return '';
+  const d = new Date(dateStr);
+  const month = d.toLocaleString('en-US', { month: 'long' });
+  const day = d.getDate();
+  
+  let hours = d.getHours();
+  const minutes = d.getMinutes();
+  const ampm = hours >= 12 ? 'PM' : 'AM';
+  hours = hours % 12;
+  hours = hours ? hours : 12;
+  const minStr = minutes < 10 ? '0' + minutes : minutes;
+  
+  return `${month} ${day}, ${hours}.${minStr} ${ampm}`;
+};
+
 export default function Applications() {
   const [applications, setApplications] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -192,6 +208,40 @@ export default function Applications() {
                 </div>
                 
                 <div className="flex flex-col items-end gap-2 shrink-0">
+                  {app.applicantStatus === 'contacted' && app.googleMeetLink && (
+                    <div className="relative mt-2.5">
+                      {/* Info Icon absolute positioned at top right with hover group wrapper */}
+                      <div className="absolute -top-3 -right-3 z-20 group/info pointer-events-none">
+                        <div className="bg-white border border-[#E5E1DA] hover:bg-gray-50 text-gray-500 rounded-full p-0.5 shadow-sm cursor-pointer transition pointer-events-auto">
+                          <Info size={10} className="text-[#486081]" />
+                        </div>
+
+                        {/* Tooltip dropdown on hover */}
+                        <div className="absolute right-0 top-full mt-2 w-[270px] bg-white border border-[#E5E1DA] text-[#1A1A1A] text-[11px] rounded-xl p-3 shadow-xl opacity-0 invisible group-hover/info:opacity-100 group-hover/info:visible transition-all duration-200 pointer-events-none z-30">
+                          <ul className="space-y-1.5 text-[#4A4A4A]">
+                            <li>• Join 5 minutes before scheduled time</li>
+                            <li>• Attend using a laptop or PC</li>
+                            <li>• Join from a quiet, private environment</li>
+                            <li>• Keep your camera/webcam always on</li>
+                            <li>• Ensure a stable internet connection</li>
+                          </ul>
+                          {/* Tooltip arrow pointing up */}
+                          <div className="absolute bottom-full right-1 border-4 border-transparent border-b-white z-40"></div>
+                          <div className="absolute bottom-full right-1 border-4 border-transparent border-b-[#E5E1DA] -z-10 -mb-[1px]"></div>
+                        </div>
+                      </div>
+
+                      <a
+                        href={app.googleMeetLink}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center justify-center gap-1.5 px-4 py-2 bg-[#00A693] text-white rounded-xl text-xs font-semibold hover:bg-[#008f7e] transition shadow-sm w-full sm:w-auto min-w-[250px]"
+                      >
+                        <Video size={13} className="shrink-0" />
+                        <span>Join interview @ {formatInterviewTime(app.interviewedAt)}</span>
+                      </a>
+                    </div>
+                  )}
                 </div>
               </div>
               
