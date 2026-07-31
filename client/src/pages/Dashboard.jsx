@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { useNavigate, useOutlet, useLocation, useOutletContext } from 'react-router-dom';
+import { useNavigate, useLocation, useOutletContext, Outlet } from 'react-router-dom';
 import {
   LayoutDashboard, FolderOpen,
   Crown, UserCircle, LogOut, Menu, X, Plus,
@@ -276,7 +276,6 @@ export default function Dashboard() {
   const confirm = useConfirm();
   const queryClient = useQueryClient();
   const nav = useNavigate();
-  const outlet = useOutlet();
   const location = useLocation();
   const activeSection = location.pathname.split('/').filter(Boolean)[1] || 'overview';
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -375,7 +374,7 @@ export default function Dashboard() {
         </div>
 
         <div className="flex-1 overflow-y-auto">
-          {outlet}
+          <Outlet context={{ confirm, queryClient }} />
         </div>
       </div>
     </div>

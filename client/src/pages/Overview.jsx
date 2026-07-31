@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { 
   FileText, ExternalLink, GraduationCap, Coins, 
-  Loader2, ChevronRight 
+  Loader2 
 } from 'lucide-react';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
@@ -118,8 +118,6 @@ export default function Overview() {
     }
   ];
 
-  const skillPathTitle = user?.designations?.[0] || 'MERN Stack Developer';
-  
   const skillsList = stats?.skillPathStats || [];
 
   return (
