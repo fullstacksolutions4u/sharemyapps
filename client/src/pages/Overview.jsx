@@ -6,10 +6,7 @@ import {
   Loader2 
 } from 'lucide-react';
 import api from '../api/axios';
-import { useAuth } from '../context/AuthContext';
-
 export default function Overview() {
-  const { user } = useAuth();
   const [filter, setFilter] = useState('daily'); // 'daily' | 'weekly' | 'monthly'
   
   const { data: stats, isLoading: loading } = useQuery({
