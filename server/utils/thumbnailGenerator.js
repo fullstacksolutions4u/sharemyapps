@@ -1,12 +1,12 @@
-const { uploadToFirebase } = require('./firebase');
+const { cloudinary } = require('../middleware/upload');
 const crypto = require('crypto');
 
 /**
  * Captures a screenshot of the given URL using Thum.io API,
- * uploads it to Firebase Storage, and returns the public URL.
+ * uploads it to Cloudinary, and returns the secure URL.
  * 
  * @param {string} liveUrl - The URL of the hosted app.
- * @returns {Promise<string|null>} - The Firebase image URL or null if failed.
+ * @returns {Promise<string|null>} - The Cloudinary image URL or null if failed.
  */
 async function generateAndUploadThumbnail(liveUrl) {
   try {
@@ -21,12 +21,23 @@ async function generateAndUploadThumbnail(liveUrl) {
     const arrayBuffer = await response.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
 
-    const uniqueSuffix = crypto.randomBytes(16).toString('hex');
-    const filename = `thumbnails/${uniqueSuffix}.webp`;
+    // Upload buffer to Cloudinary using upload_stream
+    const secureUrl = await new Promise((resolve, reject) => {
+      const stream = cloudinary.uploader.upload_stream(
+        {
+          folder: 'sharemyapp',
+          resource_type: 'image',
+          format: 'webp',
+        },
+        (error, result) => {
+          if (error) return reject(error);
+          resolve(result.secure_url);
+        }
+      );
+      stream.end(buffer);
+    });
 
-    // Upload to Firebase Storage
-    const publicUrl = await uploadToFirebase(buffer, 'image/webp', filename);
-    return publicUrl;
+    return secureUrl;
   } catch (err) {
     console.error('[Thumbnail] Error generating thumbnail:', err.message);
     return null;

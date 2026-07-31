@@ -1,6 +1,6 @@
 const multer = require('multer');
 const cloudinary = require('cloudinary').v2;
-const { uploadToFirebase, deleteFromFirebase } = require('../utils/firebase');
+const { deleteFromFirebase } = require('../utils/firebase');
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
