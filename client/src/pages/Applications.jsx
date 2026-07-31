@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { FileText, MapPin, Check, X, ChevronRight, Home, Info, Video } from 'lucide-react';
+import { FileText, MapPin, Check, X, ChevronRight, Home, Info, Video, Clock } from 'lucide-react';
 import api from '../api/axios';
 import AppSpinner from '../components/AppSpinner';
 
-function ApplicationStepper({ status, history = [], appliedAt, googleMeetLink, interviewedAt }) {
+function ApplicationStepper({ status, history = [], appliedAt, sessions = [] }) {
   const s = (status || 'applied').toLowerCase();
   
   const getStageData = (stageKeys) => {
@@ -23,17 +23,33 @@ function ApplicationStepper({ status, history = [], appliedAt, googleMeetLink, i
 
   const appliedData = getStageData(['applied']);
   const baseStages = [
-    { label: 'Applied', note: appliedData.note, date: appliedData.date || (appliedAt ? new Date(appliedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: '2-digit' }) : null) },
-    { label: 'Reviewing', ...getStageData(['reviewing']) },
-    { label: 'Contacted', ...getStageData(['contacted']) },
-    { 
-      label: s.includes('interview') 
-        ? (s.includes('1') || s.includes('1st') ? 'Interview Round 1' : s.includes('2') || s.includes('2nd') ? 'Interview Round 2' : s.includes('3') || s.includes('3rd') ? 'Interview Round 3' : s.replace(/\b\w/g, l => l.toUpperCase()))
-        : 'Interview Round 1', 
-      ...getStageData(['interview']),
-      date: interviewedAt ? formatInterviewTime(interviewedAt) : getStageData(['interview']).date
-    },
+    { label: 'Applied', note: appliedData.note, date: appliedData.date || (appliedAt ? new Date(appliedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: '2-digit' }) : null), status: 'completed' },
+    { label: 'Reviewing', ...getStageData(['reviewing']), status: (s === 'applied' ? 'pending' : 'completed') },
+    { label: 'Contacted', ...getStageData(['contacted']), status: (s === 'applied' || s === 'reviewing' ? 'pending' : 'completed') },
   ];
+
+  // Dynamically add interview sessions to base stages
+  if (!sessions || sessions.length === 0) {
+    baseStages.push({
+      label: 'Interview Round 1',
+      date: null,
+      googleMeetLink: null,
+      status: 'pending'
+    });
+  } else {
+    sessions.forEach((sess, idx) => {
+      // Find completed sessions before this index
+      const completedBefore = sessions.slice(0, idx).filter(sess2 => sess2.status === 'completed').length;
+      const roundNum = completedBefore + 1;
+
+      baseStages.push({
+        label: `Interview Round ${roundNum}`,
+        date: sess.interviewedAt ? formatInterviewTime(sess.interviewedAt) : null,
+        googleMeetLink: sess.googleMeetLink || '',
+        status: sess.status || 'completed'
+      });
+    });
+  }
 
   let stages = [];
   let currentIndex = 0;
@@ -58,7 +74,8 @@ function ApplicationStepper({ status, history = [], appliedAt, googleMeetLink, i
       ...baseStages.slice(0, lastValidIndex + 1),
       { 
         label: isRejected ? 'Not Selected This Time' : 'Selected', 
-        ...getStageData([isRejected ? 'rejected' : 'selected']) 
+        ...getStageData([isRejected ? 'rejected' : 'selected']),
+        status: isRejected ? 'rejected' : 'selected'
       }
     ];
     currentIndex = stages.length - 1;
@@ -66,7 +83,9 @@ function ApplicationStepper({ status, history = [], appliedAt, googleMeetLink, i
     stages = baseStages;
     if (s === 'reviewing') currentIndex = 1;
     else if (s === 'contacted') currentIndex = 2;
-    else if (s.includes('interview')) currentIndex = 3;
+    else if (s.includes('interview') || (sessions && sessions.length > 0)) {
+      currentIndex = 3 + Math.max(0, (sessions?.length || 1) - 1);
+    }
   }
 
   return (
@@ -76,11 +95,26 @@ function ApplicationStepper({ status, history = [], appliedAt, googleMeetLink, i
           const isCompleted = index < currentIndex;
           const isCurrent = index === currentIndex;
           
+          const isPostponed = stage.status === 'postponed';
+          const isCancelled = stage.status === 'cancelled';
+          const isScheduled = stage.status === 'scheduled';
+
           let circleClasses = 'w-6 h-6 rounded-full flex items-center justify-center shrink-0 transition-colors z-10 bg-white border-2 border-[#E5E1DA]';
           let textColor = 'text-[#9CA3AF]';
           let icon = null;
 
-          if (isCompleted) {
+          if (isPostponed) {
+            circleClasses = 'w-6 h-6 rounded-full flex items-center justify-center shrink-0 transition-colors z-10 bg-[#F97316] border-[#F97316] text-white';
+            textColor = 'text-[#F97316] font-semibold';
+            icon = <Clock size={12} className="text-white" />;
+          } else if (isCancelled) {
+            circleClasses = 'w-6 h-6 rounded-full flex items-center justify-center shrink-0 transition-colors z-10 bg-red-500 border-red-500 text-white';
+            textColor = 'text-red-600 font-semibold';
+            icon = <X size={14} className="text-white" strokeWidth={3} />;
+          } else if (isScheduled) {
+            circleClasses = 'w-6 h-6 rounded-full flex items-center justify-center shrink-0 transition-colors z-10 bg-blue-500 border-blue-500 text-white';
+            textColor = 'text-blue-600 font-semibold';
+          } else if (isCompleted || stage.status === 'completed') {
             circleClasses = `w-6 h-6 rounded-full flex items-center justify-center shrink-0 transition-colors z-10 bg-[#00A693] border-[#00A693]`;
             textColor = 'text-[#1A1A1A] font-medium';
             icon = <Check size={16} className="text-white" strokeWidth={3} />;
@@ -98,7 +132,7 @@ function ApplicationStepper({ status, history = [], appliedAt, googleMeetLink, i
           }
 
           const isInterviewStage = stage.label.toLowerCase().includes('interview');
-          const hasMeet = isInterviewStage && googleMeetLink;
+          const hasMeet = isInterviewStage && stage.googleMeetLink;
 
           let circleElement = (
             <div className={circleClasses}>
@@ -107,11 +141,19 @@ function ApplicationStepper({ status, history = [], appliedAt, googleMeetLink, i
           );
 
           if (hasMeet) {
-            circleClasses = `w-8 h-8 rounded-full flex items-center justify-center shrink-0 transition bg-[#00A693] hover:bg-[#008f7e] text-white shadow hover:scale-105 cursor-pointer z-10`;
+            let meetColor = 'bg-[#00A693] hover:bg-[#008f7e] border-[#00A693]';
+            if (isPostponed) {
+              meetColor = 'bg-[#F97316] hover:bg-[#ea580c] border-[#F97316]';
+            } else if (isCancelled) {
+              meetColor = 'bg-red-500 hover:bg-red-600 border-red-500';
+            } else if (isScheduled) {
+              meetColor = 'bg-blue-500 hover:bg-blue-600 border-blue-500';
+            }
+            circleClasses = `w-8 h-8 rounded-full flex items-center justify-center shrink-0 transition ${meetColor} text-white shadow hover:scale-105 cursor-pointer z-10`;
             icon = <Video size={14} />;
             circleElement = (
               <a
-                href={googleMeetLink.startsWith('http') ? googleMeetLink : `https://${googleMeetLink}`}
+                href={stage.googleMeetLink.startsWith('http') ? stage.googleMeetLink : `https://${stage.googleMeetLink}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className={circleClasses}
@@ -127,7 +169,7 @@ function ApplicationStepper({ status, history = [], appliedAt, googleMeetLink, i
               <div className="flex flex-col items-center relative w-16 group z-10 shrink-0">
                 <div className="relative flex items-center justify-center h-8">
                   {circleElement}
-                  {stage.note && !hasMeet && (
+                  {stage.note && !isInterviewStage && (
                     <span className="absolute -top-1.5 -right-2.5 group/tooltip z-50">
                       <Info size={14} className="text-[#6B7280] hover:text-[#1A1A1A] bg-white rounded-full cursor-help transition-colors shadow-sm" />
                       <span className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-64 p-3 bg-white text-[#1A1A1A] text-[11px] font-medium leading-relaxed rounded-xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.15)] opacity-0 invisible group-hover/tooltip:opacity-100 group-hover/tooltip:visible transition-all text-left pointer-events-none z-[100] border border-[#E5E1DA]">
@@ -137,7 +179,7 @@ function ApplicationStepper({ status, history = [], appliedAt, googleMeetLink, i
                       </span>
                     </span>
                   )}
-                  {hasMeet && (
+                  {isInterviewStage && (
                     <span className="absolute -top-1.5 -right-3.5 group/tooltip z-50">
                       <div className="bg-white border border-[#E5E1DA] hover:bg-gray-50 text-gray-500 rounded-full p-0.5 shadow-sm cursor-pointer transition">
                         <Info size={10} className="text-[#486081]" />
@@ -169,12 +211,24 @@ function ApplicationStepper({ status, history = [], appliedAt, googleMeetLink, i
               </div>
 
               {index < stages.length - 1 && (
-                <div className="w-16 sm:w-24 md:w-32 lg:w-40 shrink-0 flex items-center justify-center relative h-6 z-0">
+                <div className="w-8 sm:w-12 md:w-16 lg:w-24 shrink-0 flex items-center justify-center relative h-6 z-0">
                   {/* Solid line connecting the steps */}
-                  <div className={`absolute left-0 right-0 h-1 -translate-y-1/2 top-1/2 ${isRejected && index === currentIndex - 1 ? 'bg-red-500' : 'bg-[#00A693]'}`}></div>
+                  <div className={`absolute left-0 right-0 h-1 -translate-y-1/2 top-1/2 ${
+                    isRejected && index === currentIndex - 1 ? 'bg-red-500' :
+                    stages[index].status === 'postponed' ? 'bg-[#F97316]' :
+                    stages[index].status === 'cancelled' ? 'bg-red-500' :
+                    stages[index].status === 'scheduled' ? 'bg-blue-500' :
+                    'bg-[#00A693]'
+                  }`}></div>
                   
                   {/* Chevron overlaid on the line */}
-                  <div className={`bg-white relative z-10 flex items-center justify-center w-5 h-5 rounded-full border-2 ${isRejected && index === currentIndex - 1 ? 'border-red-500 text-red-500' : 'border-[#00A693] text-[#00A693]'}`}>
+                  <div className={`bg-white relative z-10 flex items-center justify-center w-5 h-5 rounded-full border-2 ${
+                    isRejected && index === currentIndex - 1 ? 'border-red-500 text-red-500' :
+                    stages[index].status === 'postponed' ? 'border-[#F97316] text-[#F97316]' :
+                    stages[index].status === 'cancelled' ? 'border-red-500 text-red-500' :
+                    stages[index].status === 'scheduled' ? 'border-blue-500 text-blue-500' :
+                    'border-[#00A693] text-[#00A693]'
+                  }`}>
                     <ChevronRight 
                       size={14} 
                       strokeWidth={3} 
@@ -257,8 +311,7 @@ export default function Applications() {
                 status={app.applicantStatus} 
                 history={app.statusHistory} 
                 appliedAt={app.appliedAt} 
-                googleMeetLink={app.googleMeetLink} 
-                interviewedAt={app.interviewedAt} 
+                sessions={app.sessions} 
               />
             </div>
           ))}

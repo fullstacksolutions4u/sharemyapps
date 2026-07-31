@@ -96,6 +96,7 @@ function EvaluationDrawer({ user, onClose, onSaved }) {
   const emptyForm = () => ({
     overallRating: 7,
     googleMeetLink: '',
+    status: 'completed',
     sections: DEFAULT_SECTIONS.map(s => ({ ...s })),
     pros: [],
     cons: [],
@@ -204,6 +205,7 @@ function EvaluationDrawer({ user, onClose, onSaved }) {
     setForm({
       overallRating: session.overallRating,
       googleMeetLink: session.googleMeetLink || '',
+      status: session.status || 'completed',
       sections: session.sections?.length ? session.sections : DEFAULT_SECTIONS.map(s => ({ ...s })),
       pros: session.pros || [],
       cons: session.cons || [],
@@ -234,7 +236,14 @@ function EvaluationDrawer({ user, onClose, onSaved }) {
           />
           <div className="flex-1 min-w-0">
             <h2 className="font-bold text-[#1A1A1A] text-base truncate">{user.name}</h2>
-            <p className="text-xs text-[#6B7280]">#{user.regNumber} • {(user.designations || []).join(', ') || 'Developer'}</p>
+            <p className="text-xs text-[#6B7280] flex items-center flex-wrap gap-1.5">
+              <span>#{user.regNumber} • {(user.designations || []).join(', ') || 'Developer'}</span>
+              {sessions.length > 0 && (
+                <span className={`px-2 py-0.5 rounded-full font-bold bg-[#FAF7F2] border border-[#E5E1DA] ${ratingColor(sessions[0].overallRating)}`}>
+                  Rating: {sessions[0].overallRating}/10
+                </span>
+              )}
+            </p>
           </div>
           <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-lg transition">
             <X size={18} />
@@ -252,6 +261,14 @@ function EvaluationDrawer({ user, onClose, onSaved }) {
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-2">
                     <span className="text-xs font-bold text-[#00A693]">Session #{s.sessionNumber}</span>
+                    <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold uppercase border ${
+                      s.status === 'scheduled' ? 'bg-blue-50 text-blue-700 border-blue-200' :
+                      s.status === 'postponed' ? 'bg-amber-50 text-amber-700 border-amber-200' :
+                      s.status === 'cancelled' ? 'bg-red-50 text-red-700 border-red-200' :
+                      'bg-emerald-50 text-emerald-700 border-emerald-200'
+                    }`}>
+                      {s.status || 'completed'}
+                    </span>
                     {s.googleMeetLink && (
                       <a
                         href={s.googleMeetLink.startsWith('http') ? s.googleMeetLink : `https://${s.googleMeetLink}`}
@@ -318,11 +335,22 @@ function EvaluationDrawer({ user, onClose, onSaved }) {
             </div>
           </div>
 
-          {/* Google Meet Link */}
-          <div className="mb-4">
-            <label className="block text-xs font-semibold text-[#6B7280] mb-1.5">Google Meet Link</label>
-            <input value={form.googleMeetLink} onChange={e => setForm(f => ({ ...f, googleMeetLink: e.target.value }))}
-              placeholder="https://meet.google.com/..." className={inp} />
+          {/* Google Meet Link & Status */}
+          <div className="grid grid-cols-2 gap-3 mb-4">
+            <div>
+              <label className="block text-xs font-semibold text-[#6B7280] mb-1.5">Google Meet Link</label>
+              <input value={form.googleMeetLink} onChange={e => setForm(f => ({ ...f, googleMeetLink: e.target.value }))}
+                placeholder="https://meet.google.com/..." className={inp} />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-[#6B7280] mb-1.5">Session Status</label>
+              <select value={form.status || 'completed'} onChange={e => setForm(f => ({ ...f, status: e.target.value }))} className={inp}>
+                <option value="scheduled">Scheduled</option>
+                <option value="postponed">Postponed</option>
+                <option value="cancelled">Cancelled</option>
+                <option value="completed">Completed</option>
+              </select>
+            </div>
           </div>
 
           {/* Technical Skills Sections (Tabs) */}

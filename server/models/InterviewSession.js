@@ -21,6 +21,11 @@ const interviewSessionSchema = new mongoose.Schema({
   headline:      { type: String, trim: true, default: '' },
   summary:       { type: String, trim: true, default: '' },
   googleMeetLink: { type: String, trim: true, default: '' },
+  status: { 
+    type: String, 
+    enum: ['scheduled', 'postponed', 'cancelled', 'completed'], 
+    default: 'completed' 
+  },
 
   sections: {
     type: [sectionSchema],

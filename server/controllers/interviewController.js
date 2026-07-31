@@ -72,7 +72,7 @@ exports.createSession = async (req, res) => {
     const sessionNumber = (lastSession?.sessionNumber || 0) + 1;
 
     const {
-      overallRating, headline, summary, googleMeetLink,
+      overallRating, headline, summary, googleMeetLink, status,
       sections, pros, cons, improvementTips, interviewedAt,
     } = req.body;
 
@@ -84,6 +84,7 @@ exports.createSession = async (req, res) => {
       headline:      headline ?? '',
       summary:       summary ?? '',
       googleMeetLink: googleMeetLink ?? '',
+      status:        status ?? 'completed',
       sections:      sections && sections.length ? sections : DEFAULT_SECTIONS,
       pros:          pros    ?? [],
       cons:          cons    ?? [],
@@ -103,11 +104,11 @@ exports.createSession = async (req, res) => {
 // PUT /admin/interviews/:sessionId — update session
 exports.updateSession = async (req, res) => {
   try {
-    const { overallRating, headline, summary, googleMeetLink, sections, pros, cons, improvementTips, interviewedAt } = req.body;
+    const { overallRating, headline, summary, googleMeetLink, status, sections, pros, cons, improvementTips, interviewedAt } = req.body;
 
     const session = await InterviewSession.findByIdAndUpdate(
       req.params.sessionId,
-      { overallRating, headline, summary, googleMeetLink, sections, pros, cons, improvementTips, interviewedAt },
+      { overallRating, headline, summary, googleMeetLink, status, sections, pros, cons, improvementTips, interviewedAt },
       { new: true }
     )
       .populate('user', 'name email avatar regNumber designations')
