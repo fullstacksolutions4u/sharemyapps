@@ -183,7 +183,7 @@ function EvaluationDrawer({ user, onClose, onSaved }) {
       setEditingId(null);
       setForm(emptyForm());
       setActiveTabIdx(0);
-      onSaved?.();
+      onSaved?.(res.data.session);
     } catch (err) { toast.error(err.response?.data?.message || 'Failed to save'); }
     finally { setSaving(false); }
   };
@@ -250,7 +250,21 @@ function EvaluationDrawer({ user, onClose, onSaved }) {
             {sessions.map(s => (
               <div key={s._id} className={`rounded-xl border p-4 ${s.sharedWithCandidate ? 'bg-emerald-50 border-emerald-200' : 'bg-[#FAF7F2] border-[#E5E1DA]'}`}>
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-xs font-bold text-[#00A693]">Session #{s.sessionNumber}</span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-bold text-[#00A693]">Session #{s.sessionNumber}</span>
+                    {s.googleMeetLink && (
+                      <a
+                        href={s.googleMeetLink.startsWith('http') ? s.googleMeetLink : `https://${s.googleMeetLink}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1.5 px-2 py-0.5 bg-red-50 hover:bg-red-100 border border-red-200 text-red-600 rounded-lg text-[10px] font-bold uppercase transition"
+                        title="Join Meet"
+                      >
+                        <Video size={10} className="shrink-0" />
+                        Join Meet
+                      </a>
+                    )}
+                  </div>
                   <div className="flex items-center gap-2">
                     <span className={`text-lg font-bold ${ratingColor(s.overallRating)}`}>{s.overallRating}/10</span>
                     {s.sharedWithCandidate
@@ -1030,6 +1044,7 @@ export default function AdminCurationSection() {
   const [filter, setFilter] = useState('all'); // all | evaluated | pending
   const [drawerUser, setDrawerUser] = useState(null);
   const [sessionCounts, setSessionCounts] = useState({}); // userId → count
+  const [meetLinks, setMeetLinks] = useState({}); // userId → googleMeetLink
 
   useEffect(() => {
     let ignore = false;
@@ -1039,16 +1054,33 @@ export default function AdminCurationSection() {
         const u = (res.data.users || res.data || []).filter(uObj => !uObj.isDeleted);
         u.sort((a, b) => (a.regNumber || 99999) - (b.regNumber || 99999));
         if (ignore) return;
-        setUsers(u);
 
-        // Fetch sessions to get counts
+        // Fetch sessions to get counts and meet links
         const sessionRes = await api.get('/admin/interviews?limit=500');
         const counts = {};
+        const links = {};
+        const latestTimes = {};
+        
         (sessionRes.data.sessions || []).forEach(s => {
           const uid = s.user?._id?.toString();
-          if (uid) counts[uid] = (counts[uid] || 0) + 1;
+          if (uid) {
+            counts[uid] = (counts[uid] || 0) + 1;
+            const currentLatestTime = latestTimes[uid];
+            const sessionTime = new Date(s.interviewedAt).getTime();
+            if (!currentLatestTime || sessionTime > currentLatestTime) {
+              latestTimes[uid] = sessionTime;
+              if (s.googleMeetLink) {
+                links[uid] = s.googleMeetLink;
+              } else {
+                delete links[uid];
+              }
+            }
+          }
         });
-        if (!ignore) setSessionCounts(counts);
+        
+        setUsers(u);
+        setSessionCounts(counts);
+        setMeetLinks(links);
       } catch { toast.error('Failed to load users'); }
       finally { if (!ignore) setLoading(false); }
     };
@@ -1144,9 +1176,24 @@ export default function AdminCurationSection() {
                       ))}
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className={`text-xs font-medium ${count > 0 ? 'text-emerald-600' : 'text-[#9CA3AF]'}`}>
-                        {count > 0 ? `${count} session${count > 1 ? 's' : ''}` : 'Not yet interviewed'}
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <span className={`text-xs font-medium ${count > 0 ? 'text-emerald-600' : 'text-[#9CA3AF]'}`}>
+                          {count > 0 ? `${count} session${count > 1 ? 's' : ''}` : 'Not yet interviewed'}
+                        </span>
+                        {meetLinks[user._id] && (
+                          <a
+                            href={meetLinks[user._id].startsWith('http') ? meetLinks[user._id] : `https://${meetLinks[user._id]}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={(e) => e.stopPropagation()}
+                            className="inline-flex items-center gap-1 px-2.5 py-1 bg-red-50 hover:bg-red-100 border border-red-200 text-red-600 rounded-lg text-[10px] font-bold uppercase transition"
+                            title="Join Meet Session"
+                          >
+                            <Video size={10} className="shrink-0" />
+                            Join
+                          </a>
+                        )}
+                      </div>
                       <span className="text-xs text-[#00A693] font-medium opacity-0 group-hover:opacity-100 transition">Open →</span>
                     </div>
                   </button>
@@ -1162,8 +1209,11 @@ export default function AdminCurationSection() {
         <EvaluationDrawer
           user={drawerUser}
           onClose={() => setDrawerUser(null)}
-          onSaved={() => {
+          onSaved={(newSession) => {
             setSessionCounts(prev => ({ ...prev, [drawerUser._id]: (prev[drawerUser._id] || 0) + 1 }));
+            if (newSession && newSession.googleMeetLink) {
+              setMeetLinks(prev => ({ ...prev, [drawerUser._id]: newSession.googleMeetLink }));
+            }
           }}
         />
       )}

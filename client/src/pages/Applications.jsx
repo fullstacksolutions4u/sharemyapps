@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { FileText, MapPin, Check, X, ChevronRight, Home, Info, Video } from 'lucide-react';
+import { FileText, MapPin, Check, X, ChevronRight, Home, Info, Video, Calendar } from 'lucide-react';
 import api from '../api/axios';
 import AppSpinner from '../components/AppSpinner';
 
-function ApplicationStepper({ status, history = [], appliedAt }) {
+function ApplicationStepper({ status, history = [], appliedAt, googleMeetLink, interviewedAt }) {
   const s = (status || 'applied').toLowerCase();
   
   const getStageData = (stageKeys) => {
@@ -26,10 +26,17 @@ function ApplicationStepper({ status, history = [], appliedAt }) {
     { label: 'Applied', note: appliedData.note, date: appliedData.date || (appliedAt ? new Date(appliedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: '2-digit' }) : null) },
     { label: 'Reviewing', ...getStageData(['reviewing']) },
     { label: 'Contacted', ...getStageData(['contacted']) },
-    { label: s.includes('interview') ? s.replace(/\b\w/g, l => l.toUpperCase()) : 'Interviewing', ...getStageData(['interview']) },
+    { 
+      label: s.includes('interview') 
+        ? (s.includes('1') || s.includes('1st') ? 'Interview Round 1' : s.includes('2') || s.includes('2nd') ? 'Interview Round 2' : s.includes('3') || s.includes('3rd') ? 'Interview Round 3' : s.replace(/\b\w/g, l => l.toUpperCase()))
+        : 'Interview Round 1', 
+      ...getStageData(['interview']),
+      date: interviewedAt ? formatInterviewTime(interviewedAt) : getStageData(['interview']).date
+    },
   ];
 
   let stages = [];
+  let currentIndex = 0;
 
   if (isRejected || isSelected) {
     let lastValidIndex = 0;
@@ -54,16 +61,13 @@ function ApplicationStepper({ status, history = [], appliedAt }) {
         ...getStageData([isRejected ? 'rejected' : 'selected']) 
       }
     ];
+    currentIndex = stages.length - 1;
   } else {
-    let currIndex = 0;
-    if (s === 'reviewing') currIndex = 1;
-    else if (s === 'contacted') currIndex = 2;
-    else if (s.includes('interview')) currIndex = 3;
-    
-    stages = baseStages.slice(0, currIndex + 1);
+    stages = baseStages;
+    if (s === 'reviewing') currentIndex = 1;
+    else if (s === 'contacted') currentIndex = 2;
+    else if (s.includes('interview')) currentIndex = 3;
   }
-
-  const currentIndex = stages.length - 1;
 
   return (
     <div className="w-full overflow-x-auto pb-32 -mb-28 pt-8 -mt-6 z-10 relative">
@@ -93,18 +97,59 @@ function ApplicationStepper({ status, history = [], appliedAt }) {
             icon = <Check size={16} className="text-white" strokeWidth={3} />;
           }
 
+          const isInterviewStage = stage.label.toLowerCase().includes('interview');
+          const hasMeet = isInterviewStage && googleMeetLink;
+
+          let circleElement = (
+            <div className={circleClasses}>
+              {icon}
+            </div>
+          );
+
+          if (hasMeet) {
+            circleClasses = `w-8 h-8 rounded-full flex items-center justify-center shrink-0 transition bg-[#00A693] hover:bg-[#008f7e] text-white shadow hover:scale-105 cursor-pointer z-10`;
+            icon = <Video size={14} />;
+            circleElement = (
+              <a
+                href={googleMeetLink.startsWith('http') ? googleMeetLink : `https://${googleMeetLink}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={circleClasses}
+                title="Join Interview Meet"
+              >
+                {icon}
+              </a>
+            );
+          }
+
           return (
             <React.Fragment key={index}>
               <div className="flex flex-col items-center relative w-16 group z-10 shrink-0">
-                <div className="relative">
-                  <div className={circleClasses}>
-                    {icon}
-                  </div>
-                  {stage.note && (
+                <div className="relative flex items-center justify-center h-8">
+                  {circleElement}
+                  {stage.note && !hasMeet && (
                     <span className="absolute -top-1.5 -right-2.5 group/tooltip z-50">
                       <Info size={14} className="text-[#6B7280] hover:text-[#1A1A1A] bg-white rounded-full cursor-help transition-colors shadow-sm" />
                       <span className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-64 p-3 bg-white text-[#1A1A1A] text-[11px] font-medium leading-relaxed rounded-xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.15)] opacity-0 invisible group-hover/tooltip:opacity-100 group-hover/tooltip:visible transition-all text-left pointer-events-none z-[100] border border-[#E5E1DA]">
                         {stage.note}
+                        <span className="absolute bottom-full left-1/2 -translate-x-1/2 border-[6px] border-transparent border-b-[#E5E1DA]"></span>
+                        <span className="absolute bottom-full left-1/2 -translate-x-1/2 border-[5px] border-transparent border-b-white mb-[-1px]"></span>
+                      </span>
+                    </span>
+                  )}
+                  {hasMeet && (
+                    <span className="absolute -top-1.5 -right-3.5 group/tooltip z-50">
+                      <div className="bg-white border border-[#E5E1DA] hover:bg-gray-50 text-gray-500 rounded-full p-0.5 shadow-sm cursor-pointer transition">
+                        <Info size={10} className="text-[#486081]" />
+                      </div>
+                      <span className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-64 p-3 bg-white text-[#1A1A1A] text-[11px] font-medium leading-relaxed rounded-xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.15)] opacity-0 invisible group-hover/tooltip:opacity-100 group-hover/tooltip:visible transition-all text-left pointer-events-none z-[100] border border-[#E5E1DA]">
+                        <ul className="space-y-1.5 text-[#4A4A4A]">
+                          <li>• Join 5 minutes before scheduled time</li>
+                          <li>• Attend using a laptop or PC</li>
+                          <li>• Join from a quiet, private environment</li>
+                          <li>• Keep your camera/webcam always on</li>
+                          <li>• Ensure a stable internet connection</li>
+                        </ul>
                         <span className="absolute bottom-full left-1/2 -translate-x-1/2 border-[6px] border-transparent border-b-[#E5E1DA]"></span>
                         <span className="absolute bottom-full left-1/2 -translate-x-1/2 border-[5px] border-transparent border-b-white mb-[-1px]"></span>
                       </span>
@@ -116,7 +161,7 @@ function ApplicationStepper({ status, history = [], appliedAt }) {
                     {stage.label}
                   </span>
                   {stage.date && (
-                    <span className={`text-[10px] mt-1 ${isCurrent ? 'text-[#6B7280]' : 'text-[#9CA3AF]'}`}>
+                    <span className={`text-[10px] mt-1 whitespace-nowrap ${isCurrent ? 'text-[#6B7280]' : 'text-[#9CA3AF]'}`}>
                       {stage.date}
                     </span>
                   )}
@@ -174,14 +219,14 @@ export default function Applications() {
 
   if (loading) {
     return (
-      <div className="max-w-4xl mx-auto px-4 py-12 flex justify-center">
+      <div className="max-w-6xl mx-auto px-4 py-12 flex justify-center">
         <AppSpinner />
       </div>
     );
   }
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8">
+    <div className="max-w-6xl mx-auto px-4 py-8">
 
       {applications.length === 0 ? (
         <div className="text-center py-20 bg-white border border-[#E5E1DA] rounded-2xl">
@@ -206,46 +251,15 @@ export default function Applications() {
                     )}
                   </div>
                 </div>
-                
-                <div className="flex flex-col items-end gap-2 shrink-0">
-                  {app.applicantStatus === 'contacted' && app.googleMeetLink && (
-                    <div className="relative mt-2.5">
-                      {/* Info Icon absolute positioned at top right with hover group wrapper */}
-                      <div className="absolute -top-3 -right-3 z-20 group/info pointer-events-none">
-                        <div className="bg-white border border-[#E5E1DA] hover:bg-gray-50 text-gray-500 rounded-full p-0.5 shadow-sm cursor-pointer transition pointer-events-auto">
-                          <Info size={10} className="text-[#486081]" />
-                        </div>
-
-                        {/* Tooltip dropdown on hover */}
-                        <div className="absolute right-0 top-full mt-2 w-[270px] bg-white border border-[#E5E1DA] text-[#1A1A1A] text-[11px] rounded-xl p-3 shadow-xl opacity-0 invisible group-hover/info:opacity-100 group-hover/info:visible transition-all duration-200 pointer-events-none z-30">
-                          <ul className="space-y-1.5 text-[#4A4A4A]">
-                            <li>• Join 5 minutes before scheduled time</li>
-                            <li>• Attend using a laptop or PC</li>
-                            <li>• Join from a quiet, private environment</li>
-                            <li>• Keep your camera/webcam always on</li>
-                            <li>• Ensure a stable internet connection</li>
-                          </ul>
-                          {/* Tooltip arrow pointing up */}
-                          <div className="absolute bottom-full right-1 border-4 border-transparent border-b-white z-40"></div>
-                          <div className="absolute bottom-full right-1 border-4 border-transparent border-b-[#E5E1DA] -z-10 -mb-[1px]"></div>
-                        </div>
-                      </div>
-
-                      <a
-                        href={app.googleMeetLink}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center justify-center gap-1.5 px-4 py-2 bg-[#00A693] text-white rounded-xl text-xs font-semibold hover:bg-[#008f7e] transition shadow-sm w-full sm:w-auto min-w-[250px]"
-                      >
-                        <Video size={13} className="shrink-0" />
-                        <span>Join interview @ {formatInterviewTime(app.interviewedAt)}</span>
-                      </a>
-                    </div>
-                  )}
-                </div>
               </div>
               
-              <ApplicationStepper status={app.applicantStatus} history={app.statusHistory} appliedAt={app.appliedAt} />
+              <ApplicationStepper 
+                status={app.applicantStatus} 
+                history={app.statusHistory} 
+                appliedAt={app.appliedAt} 
+                googleMeetLink={app.googleMeetLink} 
+                interviewedAt={app.interviewedAt} 
+              />
             </div>
           ))}
         </div>
