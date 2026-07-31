@@ -1,7 +1,6 @@
 const multer = require('multer');
 const cloudinary = require('cloudinary').v2;
 const { uploadToFirebase, deleteFromFirebase } = require('../utils/firebase');
-const crypto = require('crypto');
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -9,46 +8,53 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-// Custom multer storage engine for Firebase Storage
-class FirebaseStorage {
+// Custom multer storage engine for Cloudinary
+class CloudinaryStorage {
   _handleFile(_req, file, cb) {
-    const chunks = [];
-    file.stream.on('data', chunk => chunks.push(chunk));
-    file.stream.on('end', async () => {
-      try {
-        const buffer = Buffer.concat(chunks);
-        const uniqueSuffix = crypto.randomBytes(16).toString('hex');
-        const parts = file.originalname.split('.');
-        const extension = parts.length > 1 ? parts.pop() : 'png';
-        const filename = `uploads/${uniqueSuffix}.${extension}`;
-
-        const publicUrl = await uploadToFirebase(buffer, file.mimetype, filename);
-        cb(null, { path: publicUrl, filename: filename, size: buffer.length });
-      } catch (err) {
-        cb(err);
+    const stream = cloudinary.uploader.upload_stream(
+      {
+        folder: 'sharemyapp',
+        resource_type: 'auto',
+      },
+      (error, result) => {
+        if (error) return cb(error);
+        cb(null, {
+          path: result.secure_url,
+          filename: result.public_id, // e.g. "sharemyapp/abcdef12345"
+          size: result.bytes,
+        });
       }
-    });
-    file.stream.on('error', err => cb(err));
+    );
+    file.stream.pipe(stream);
   }
 
   _removeFile(_req, file, cb) {
-    deleteFromFirebase(`https://storage.googleapis.com/${process.env.FIREBASE_STORAGE_BUCKET}/${file.filename}`)
+    cloudinary.uploader.destroy(file.filename)
       .then(() => cb(null))
       .catch(err => cb(err));
   }
 }
 
 const upload = multer({
-  storage: new FirebaseStorage(),
+  storage: new CloudinaryStorage(),
   limits: { fileSize: 5 * 1024 * 1024 },
 });
+
+const getPublicIdFromUrl = (url) => {
+  const parts = url.split('/image/upload/');
+  if (parts.length < 2) return null;
+  const remaining = parts[1].replace(/^v\d+\//, '');
+  return remaining.substring(0, remaining.lastIndexOf('.')) || remaining;
+};
 
 const deleteImage = async (url) => {
   if (!url) return;
   try {
     if (url.includes('cloudinary')) {
-      const pid = url.split('/').pop().split('.')[0];
-      await cloudinary.uploader.destroy(`sharemyapp/${pid}`).catch(() => {});
+      const publicId = getPublicIdFromUrl(url);
+      if (publicId) {
+        await cloudinary.uploader.destroy(publicId).catch(() => {});
+      }
     } else if (url.includes('storage.googleapis.com')) {
       await deleteFromFirebase(url);
     }
