@@ -221,8 +221,8 @@ const AdminVacanciesSection = forwardRef(function AdminVacanciesSection({ hideTi
       setVacancies(prev => prev.map(v => {
         if (v._id !== vacancyId) return v;
         
-        const applicantStatus = { ...v.applicantStatus } || {};
-        const applicantStatusHistory = { ...v.applicantStatusHistory } || {};
+        const applicantStatus = { ...(v.applicantStatus || {}) };
+        const applicantStatusHistory = { ...(v.applicantStatusHistory || {}) };
         
         targetUserIds.forEach(uId => {
           applicantStatus[uId] = status;
