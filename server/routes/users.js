@@ -54,6 +54,100 @@ router.get('/applications', protect, async (req, res) => {
   }
 });
 
+// GET /api/users/overview-stats — protected, returns stats overview for the user
+router.get('/overview-stats', protect, async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const [applicationsCount, jobPostLinksCount, progressDoc, projectsCount, modules] = await Promise.all([
+      Vacancy.countDocuments({ everApplied: userId }),
+      require('../models/JobLink').countDocuments({ clicks: userId }),
+      require('../models/LearningProgress').findOne({ userId }),
+      require('../models/Project').countDocuments({ user: userId, isDeleted: { $ne: true } }),
+      require('../models/LearningModule').find({ isActive: true }).select('category title topics').lean()
+    ]);
+
+    const coins = req.user.points || 0;
+    const modulesCount = progressDoc?.completedModules?.length || 0;
+
+    // Map each module to one of the 9 requested UI categories
+    const categoriesMap = {
+      system_design: ['system design', 'architecture', 'software engineering', 'microservices', 'micro services'],
+      frontend: ['frontend framework', 'frontend', 'ui/ux', 'design', 'html', 'css', 'react'],
+      backend: ['backend language', 'backend', 'api', 'node', 'express'],
+      database: ['database', 'data and analytics', 'sql', 'nosql', 'mongodb'],
+      ai: ['artificial intelligence', 'ai', 'machine learning', 'nlp'],
+      programming_languages: ['programming language', 'programming languages', 'javascript', 'typescript', 'python', 'java', 'c++', 'c#', 'rust', 'go', 'php'],
+      dsa: ['dsa', 'data structures', 'algorithms', 'algorithm'],
+      mobile_development: ['mobile development', 'mobile', 'android', 'ios', 'flutter', 'react native'],
+      others: ['security', 'cyber security', 'data science']
+    };
+
+    // Initialize stats for each category
+    const catStats = {
+      frontend: { name: 'Frontend', totalTopics: 0, completedTopics: 0 },
+      backend: { name: 'Backend', totalTopics: 0, completedTopics: 0 },
+      database: { name: 'Database', totalTopics: 0, completedTopics: 0 },
+      ai: { name: 'AI', totalTopics: 0, completedTopics: 0 },
+      programming_languages: { name: 'Programming languages', totalTopics: 0, completedTopics: 0 },
+      dsa: { name: 'DSA', totalTopics: 0, completedTopics: 0 },
+      mobile_development: { name: 'Mobile development', totalTopics: 0, completedTopics: 0 },
+      system_design: { name: 'System design', totalTopics: 0, completedTopics: 0 },
+      others: { name: 'data science, cyber security', totalTopics: 0, completedTopics: 0 }
+    };
+
+    const getModuleUiCategory = (mod) => {
+      const cat = (mod.category || '').toLowerCase();
+      const title = (mod.title || '').toLowerCase();
+      for (const [uiCat, keywords] of Object.entries(categoriesMap)) {
+        if (keywords.some(kw => cat.includes(kw) || title.includes(kw))) {
+          return uiCat;
+        }
+      }
+      return 'others';
+    };
+
+    const completedTopicKeys = new Set(
+      (progressDoc?.completedTopics || []).map(t => `${t.moduleId.toString()}_${t.topicId}`)
+    );
+
+    for (const mod of modules) {
+      const uiCat = getModuleUiCategory(mod);
+      const topicsCount = mod.topics?.length || 0;
+      catStats[uiCat].totalTopics += topicsCount;
+
+      for (const topic of mod.topics || []) {
+        const key = `${mod._id.toString()}_${topic._id.toString()}`;
+        if (completedTopicKeys.has(key)) {
+          catStats[uiCat].completedTopics += 1;
+        }
+      }
+    }
+
+    const skillPathStats = Object.values(catStats).map(c => {
+      const progress = c.totalTopics > 0 
+        ? Math.round((c.completedTopics / c.totalTopics) * 100)
+        : 0;
+      return {
+        name: c.name,
+        progress,
+        completedTopics: c.completedTopics,
+        totalTopics: c.totalTopics
+      };
+    });
+
+    res.json({
+      applicationsCount,
+      jobPostLinksCount,
+      modulesCount,
+      coins,
+      projectsCount,
+      skillPathStats
+    });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
 // GET /api/users/stats — public, returns counts by userType for hero section
 router.get('/stats', async (req, res) => {
   try {

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { useNavigate, useOutlet, useLocation } from 'react-router-dom';
+import { useNavigate, useOutlet, useLocation, useOutletContext } from 'react-router-dom';
 import {
   LayoutDashboard, FolderOpen,
   Crown, UserCircle, LogOut, Menu, X, Plus,
@@ -16,6 +16,7 @@ import { useConfirm } from '../context/ConfirmContext';
 import { optimizeImage } from '../utils/image';
 
 const NAV = [
+  { key: 'overview',           label: 'Overview',              icon: LayoutDashboard },
   { key: 'profile',            label: 'Profile',               icon: UserCircle },
   { key: 'projects',           label: 'My Projects',           icon: FolderOpen },
   { key: 'inbox',              label: 'Inbox',                 icon: Inbox },
@@ -80,7 +81,8 @@ function ShareModal({ userId, onClose }) {
 
 
 
-function ProjectsSection({ confirm, queryClient }) {
+export function ProjectsSection() {
+  const { confirm, queryClient } = useOutletContext();
 
   const { data: projects = [], isLoading: loading } = useQuery({
     queryKey: ['myProjects'],
@@ -276,7 +278,7 @@ export default function Dashboard() {
   const nav = useNavigate();
   const outlet = useOutlet();
   const location = useLocation();
-  const activeSection = location.pathname.split('/').filter(Boolean)[1] || 'projects';
+  const activeSection = location.pathname.split('/').filter(Boolean)[1] || 'overview';
   const [mobileOpen, setMobileOpen] = useState(false);
   const [offerApproved, setOfferApproved] = useState(false);
   const [jobAlertsEligible, setJobAlertsEligible] = useState(false);
@@ -300,7 +302,7 @@ export default function Dashboard() {
   };
 
   const handleNav = (key) => {
-    nav(key === 'projects' ? '/dashboard' : `/dashboard/${key}`);
+    nav(key === 'overview' ? '/dashboard/overview' : `/dashboard/${key}`);
     setMobileOpen(false);
   };
 
@@ -373,7 +375,7 @@ export default function Dashboard() {
         </div>
 
         <div className="flex-1 overflow-y-auto">
-          {outlet || <ProjectsSection user={user} confirm={confirm} queryClient={queryClient} setShowShare={setShowShare} />}
+          {outlet}
         </div>
       </div>
     </div>

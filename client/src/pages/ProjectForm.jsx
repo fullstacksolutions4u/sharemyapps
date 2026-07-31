@@ -144,7 +144,7 @@ export default function ProjectForm() {
         await api.post('/projects', data);
         toast.success('Project submitted for approval!');
       }
-      navigate('/dashboard');
+      navigate('/dashboard/projects');
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to save project');
     } finally {
@@ -161,8 +161,8 @@ export default function ProjectForm() {
   return (
     <>
     <div className="px-4 sm:px-6 pt-3">
-      <Link to="/dashboard" className="inline-flex items-center gap-1.5 text-sm text-[#6B7280] hover:text-text transition-colors">
-        <ArrowLeft size={14} /> Back to Dashboard
+      <Link to="/dashboard/projects" className="inline-flex items-center gap-1.5 text-sm text-[#6B7280] hover:text-text transition-colors">
+        <ArrowLeft size={14} /> Back to Projects
       </Link>
     </div>
 
@@ -295,7 +295,7 @@ export default function ProjectForm() {
                 Next: Details & Links <ChevronRight size={15} />
               </button>
               <Link
-                to="/dashboard"
+                to="/dashboard/projects"
                 className="px-5 py-3 border border-[#E5E1DA] hover:border-[#1A1A1A] text-[#6B7280] hover:text-text rounded-xl text-sm font-medium transition-colors text-center"
               >
                 Cancel
@@ -486,7 +486,7 @@ export default function ProjectForm() {
                 }
               </button>
               <Link
-                to="/dashboard"
+                to="/dashboard/projects"
                 className="px-5 py-3 border border-[#E5E1DA] hover:border-[#1A1A1A] text-[#6B7280] hover:text-text rounded-xl text-sm font-medium transition-colors text-center"
               >
                 Cancel

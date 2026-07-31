@@ -40,6 +40,8 @@ const Profile            = lazy(() => import('./pages/Profile'));
 const Services           = lazy(() => import('./pages/Services'));
 const CurationShowcase   = lazy(() => import('./pages/CurationShowcase'));
 const DeveloperInterviewFeedback = lazy(() => import('./pages/DeveloperInterviewFeedback'));
+const Overview           = lazy(() => import('./pages/Overview'));
+const ProjectsSection    = lazy(() => import('./pages/Dashboard').then(m => ({ default: m.ProjectsSection })));
 
 class ErrorBoundary extends Component {
   state = { error: null };
@@ -122,6 +124,9 @@ function AppRoutes() {
             <Route path="/register" element={<GuestRoute><Register /></GuestRoute>} />
             <Route path="/forgot-password" element={<GuestRoute><ForgotPassword /></GuestRoute>} />
             <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>}>
+              <Route index element={<Navigate to="overview" replace />} />
+              <Route path="overview" element={<Overview />} />
+              <Route path="projects" element={<ProjectsSection />} />
               <Route path="add" element={<ProjectForm />} />
               <Route path="edit/:id" element={<ProjectForm />} />
               <Route path="job-alerts" element={<JobAlerts />} />
