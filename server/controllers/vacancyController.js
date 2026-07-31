@@ -170,9 +170,9 @@ exports.deleteVacancy = async (req, res) => {
 };
 exports.updateApplicantStatus = async (req, res) => {
   try {
-    const { userId, status, note } = req.body;
-    if (!userId || !status) {
-      return res.status(400).json({ message: 'userId and status are required' });
+    const { userId, userIds, status, note } = req.body;
+    if ((!userId && (!userIds || !userIds.length)) || !status) {
+      return res.status(400).json({ message: 'userId or userIds and status are required' });
     }
     const vacancy = await Vacancy.findById(req.params.id);
     if (!vacancy) return res.status(404).json({ message: 'Vacancy not found' });
@@ -181,42 +181,49 @@ exports.updateApplicantStatus = async (req, res) => {
     if (!vacancy.applicantStatus) {
       vacancy.applicantStatus = new Map();
     }
+    if (!vacancy.applicantStatusHistory) {
+      vacancy.applicantStatusHistory = new Map();
+    }
     
-    const previousStatus = vacancy.applicantStatus.get(userId);
-    if (previousStatus !== status) {
-      vacancy.applicantStatus.set(userId, status);
-      
-      if (!vacancy.applicantStatusHistory) vacancy.applicantStatusHistory = new Map();
-      const history = vacancy.applicantStatusHistory.get(userId) || [];
-      history.push({ status: status, date: new Date(), note: note || '' });
-      vacancy.applicantStatusHistory.set(userId, history);
-      
-      await vacancy.save();
+    const targetUserIds = userIds || [userId];
+    let changed = false;
 
-      const user = await User.findById(userId).select('name email');
-      if (user) {
-        if (status === 'reviewing') {
-          sendApplicationReviewingEmail({
-            to: user.email,
-            name: user.name,
-            vacancyTitle: vacancy.title
-          }).catch(console.error);
-        }
+    for (const uId of targetUserIds) {
+      const previousStatus = vacancy.applicantStatus.get(uId);
+      if (previousStatus !== status) {
+        vacancy.applicantStatus.set(uId, status);
+        
+        const history = vacancy.applicantStatusHistory.get(uId) || [];
+        history.push({ status: status, date: new Date(), note: note || '' });
+        vacancy.applicantStatusHistory.set(uId, history);
+        changed = true;
 
-        // Ensure notification type is valid or skip it if it fails
-        try {
-          await Notification.create({
-            user: userId,
-            fromUser: req.user._id,
-            type: 'vacancy_reply', // using a valid enum type instead of vacancy_status_update
-            title: 'Application Status Updated',
-            message: `Your application status for "${vacancy.title}" has been updated to: ${status}`,
-            vacancy: vacancy._id,
-          });
-        } catch (notifErr) {
-          console.error('Notification error:', notifErr);
-        }
+        // Async sending email / creating notifications
+        User.findById(uId).select('name email').then(user => {
+          if (user) {
+            if (status === 'reviewing') {
+              sendApplicationReviewingEmail({
+                to: user.email,
+                name: user.name,
+                vacancyTitle: vacancy.title
+              }).catch(console.error);
+            }
+
+            Notification.create({
+              user: uId,
+              fromUser: req.user._id,
+              type: 'vacancy_reply',
+              title: 'Application Status Updated',
+              message: `Your application status for "${vacancy.title}" has been updated to: ${status}`,
+              vacancy: vacancy._id,
+            }).catch(console.error);
+          }
+        }).catch(console.error);
       }
+    }
+    
+    if (changed) {
+      await vacancy.save();
     }
     
     res.json({ success: true, applicantStatus: vacancy.applicantStatus });

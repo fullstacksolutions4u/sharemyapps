@@ -109,7 +109,8 @@ const AdminVacanciesSection = forwardRef(function AdminVacanciesSection({ hideTi
   const [replyOpen, setReplyOpen] = useState(null);
   const [replyText, setReplyText] = useState('');
   const [replySending, setReplySending] = useState(false);
-  const [statusModal, setStatusModal] = useState({ isOpen: false, vacancyId: null, userId: null, status: null, note: '' });
+  const [statusModal, setStatusModal] = useState({ isOpen: false, vacancyId: null, userId: null, userIds: null, status: null, note: '' });
+  const [selectedUsers, setSelectedUsers] = useState({}); // { [vacancyId]: { [userId]: boolean } }
   const [viewModal, setViewModal] = useState({ isOpen: false, vacancy: null });
   const { user } = useAuth();
 
@@ -214,19 +215,32 @@ const AdminVacanciesSection = forwardRef(function AdminVacanciesSection({ hideTi
   const submitStatusChange = async () => {
     setSaving(true);
     try {
-      const { vacancyId, userId, status, note } = statusModal;
-      await api.patch(`/admin/vacancies/${vacancyId}/applicant-status`, { userId, status, note });
+      const { vacancyId, userId, userIds, status, note } = statusModal;
+      const targetUserIds = userIds || [userId];
+      await api.patch(`/admin/vacancies/${vacancyId}/applicant-status`, { userIds: targetUserIds, status, note });
       setVacancies(prev => prev.map(v => {
         if (v._id !== vacancyId) return v;
-        const history = v.applicantStatusHistory?.[userId] || [];
+        
+        const applicantStatus = { ...v.applicantStatus } || {};
+        const applicantStatusHistory = { ...v.applicantStatusHistory } || {};
+        
+        targetUserIds.forEach(uId => {
+          applicantStatus[uId] = status;
+          const history = applicantStatusHistory[uId] || [];
+          applicantStatusHistory[uId] = [...history, { status, date: new Date().toISOString(), note: note || '' }];
+        });
+
         return {
           ...v,
-          applicantStatus: { ...v.applicantStatus, [userId]: status },
-          applicantStatusHistory: { ...v.applicantStatusHistory, [userId]: [...history, { status, date: new Date().toISOString() }] }
+          applicantStatus,
+          applicantStatusHistory
         };
       }));
       toast.success('Applicant status updated');
-      setStatusModal({ isOpen: false, vacancyId: null, userId: null, status: null, note: '' });
+      setStatusModal({ isOpen: false, vacancyId: null, userId: null, userIds: null, status: null, note: '' });
+      if (userIds) {
+        setSelectedUsers(prev => ({ ...prev, [vacancyId]: {} }));
+      }
     } catch (err) { toast.error(err.response?.data?.message || 'Failed to update status'); }
     finally { setSaving(false); }
   };
@@ -364,12 +378,91 @@ const AdminVacanciesSection = forwardRef(function AdminVacanciesSection({ hideTi
                         <p className="text-xs text-[#9CA3AF] py-2">No one has shown interest yet.</p>
                       ) : (
                         <div className="space-y-3">
-                          <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wider">
-                            {v.interests.length} Interested Developer{v.interests.length !== 1 ? 's' : ''}
-                          </p>
+                          <div className="flex items-center gap-3 border-b border-[#F3F0EB] pb-2">
+                            <label className="flex items-center gap-2 text-xs font-semibold text-[#6B7280] uppercase tracking-wider cursor-pointer">
+                              <input
+                                type="checkbox"
+                                checked={v.interests.length > 0 && v.interests.every(u => selectedUsers[v._id]?.[u._id])}
+                                ref={el => {
+                                  if (el) {
+                                    const some = v.interests.some(u => selectedUsers[v._id]?.[u._id]);
+                                    const all = v.interests.every(u => selectedUsers[v._id]?.[u._id]);
+                                    el.indeterminate = some && !all;
+                                  }
+                                }}
+                                onChange={() => {
+                                  const allChecked = v.interests.every(u => selectedUsers[v._id]?.[u._id]);
+                                  setSelectedUsers(prev => {
+                                    const nextSel = {};
+                                    if (!allChecked) {
+                                      v.interests.forEach(u => {
+                                        nextSel[u._id] = true;
+                                      });
+                                    }
+                                    return {
+                                      ...prev,
+                                      [v._id]: nextSel
+                                    };
+                                  });
+                                }}
+                                className="rounded border-gray-300 text-[#00A693] focus:ring-[#00A693] w-4 h-4 cursor-pointer"
+                              />
+                              Select All ({v.interests.length})
+                            </label>
+                            
+                            {v.interests.some(u => selectedUsers[v._id]?.[u._id]) && (
+                              <div className="flex items-center gap-2 bg-[#F8FAFF] border border-blue-100 rounded-xl px-3 py-1 ml-auto animate-in fade-in slide-in-from-top-1 duration-200">
+                                <span className="text-xs font-semibold text-blue-700">
+                                  {Object.values(selectedUsers[v._id] || {}).filter(Boolean).length} selected
+                                </span>
+                                <select
+                                  onChange={(e) => {
+                                    const val = e.target.value;
+                                    if (!val) return;
+                                    const targetUserIds = Object.keys(selectedUsers[v._id] || {}).filter(uid => selectedUsers[v._id][uid]);
+                                    if (val === 'rejected') {
+                                      const defaultNote = "Thank you for your application. Unfortunately, we have decided to move forward with other candidates whose profiles more closely match our current requirements.\n\nWe encourage you to keep applying for our future vacancies, as we would be happy to consider your profile for other suitable opportunities.\n\nWe wish you all the best in your job search.";
+                                      setStatusModal({ isOpen: true, vacancyId: v._id, userIds: targetUserIds, status: val, note: defaultNote });
+                                    } else {
+                                      setStatusModal({ isOpen: true, vacancyId: v._id, userIds: targetUserIds, status: val, note: '' });
+                                    }
+                                    e.target.value = '';
+                                  }}
+                                  className="px-2 py-1 text-xs border rounded-lg bg-white font-semibold text-[#1A1A1A] focus:outline-none cursor-pointer"
+                                >
+                                  <option value="">Bulk Change Status...</option>
+                                  <option value="applied">Applied</option>
+                                  <option value="reviewing">Reviewing</option>
+                                  <option value="contacted">Contacted</option>
+                                  <option value="1 round interview">1st Round Interview</option>
+                                  <option value="2nd round interview">2nd Round Interview</option>
+                                  <option value="3rd round interview">3rd Round Interview</option>
+                                  <option value="selected">Selected</option>
+                                  <option value="rejected">Not Selected This Time</option>
+                                </select>
+                              </div>
+                            )}
+                          </div>
                           {v.interests.map(u => (
                             <div key={u._id} className="space-y-2">
                               <div className="flex items-center gap-3">
+                                <input
+                                  type="checkbox"
+                                  checked={!!selectedUsers[v._id]?.[u._id]}
+                                  onChange={() => {
+                                    setSelectedUsers(prev => {
+                                      const vacancySel = prev[v._id] || {};
+                                      return {
+                                        ...prev,
+                                        [v._id]: {
+                                          ...vacancySel,
+                                          [u._id]: !vacancySel[u._id]
+                                        }
+                                      };
+                                    });
+                                  }}
+                                  className="rounded border-gray-300 text-[#00A693] focus:ring-[#00A693] w-4 h-4 cursor-pointer shrink-0"
+                                />
                                 {u.avatar
                                   ? <img src={optimizeImage(u.avatar, 150)} alt={u.name} className="w-7 h-7 rounded-full object-cover shrink-0" />
                                   : <span className="w-7 h-7 rounded-full bg-[#00A693] text-white text-xs flex items-center justify-center font-medium shrink-0">{u.name?.[0]?.toUpperCase()}</span>
