@@ -178,16 +178,17 @@ export default function FeedProjectCard({ activity, index = 0 }) {
               </div>
             </div>
             
-            {/* Activity Text */}
             <div className="flex items-start gap-2 mb-2 text-sm text-black font-medium">
               <Briefcase size={16} className="text-blue-500 shrink-0 mt-0.5" />
               <div className="flex-1">
-                <span className="text-gray-700 leading-relaxed">
-                  Published {/^[aeiou]/i.test(project.category || 'General') ? 'an' : 'a'} <span className="font-semibold text-black capitalize">{project.category || 'General'}</span> application:{' '}
+                <div className="text-gray-700 leading-relaxed">
+                  Published {/^[aeiou]/i.test(project.category || 'General') ? 'an' : 'a'} <span className="font-semibold text-black capitalize">{project.category || 'General'}</span> application
+                </div>
+                <div className="mt-0.5">
                   <Link to={`/project/${project._id}`} className="text-blue-600 hover:underline transition font-bold text-[15px]">
                     {project.title}
                   </Link>
-                </span>
+                </div>
               </div>
             </div>
             {project.techTags && project.techTags.length > 0 && (

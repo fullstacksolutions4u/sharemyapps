@@ -57,17 +57,20 @@ export default function AdminJobLinksSection() {
   const [rejectComment, setRejectComment] = useState('');
   const [rejecting, setRejecting] = useState(false);
   
-  const [showAddForm, setShowAddForm] = useState(false);
-  const [newLinkForm, setNewLinkForm] = useState({
+  const createBlankDraft = () => ({
+    id: Date.now() + Math.random(),
     url: '',
     title: '',
     company: '',
     postedDate: '',
     workMode: '',
     location: '',
-    experience: ''
+    experience: '',
+    submitting: false
   });
-  const [submittingAdd, setSubmittingAdd] = useState(false);
+
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [drafts, setDrafts] = useState([]);
   const [companySearch, setCompanySearch] = useState('');
   
   const [feedbackData, setFeedbackData] = useState([]);
@@ -89,27 +92,49 @@ export default function AdminJobLinksSection() {
     try {
       const res = await api.post('/job-links/extract-job-details', { text: aiText });
       if (res.data.success) {
-        const d = res.data.data;
-        const title = d.title || '';
-        if (title && !DESIGNATION_OPTIONS.includes(title) && !customDesignations.includes(title)) {
-          const updated = [...customDesignations, title];
-          setCustomDesignations(updated);
-          localStorage.setItem('customDesignations', JSON.stringify(updated));
+        const currentUrl = drafts[0]?.url || '';
+        const extractedJobs = res.data.data;
+        if (!extractedJobs || extractedJobs.length === 0) {
+          toast.error('AI could not extract any job positions.');
+          return;
         }
-        setNewLinkForm(prev => ({
-          ...prev,
-          title: title || prev.title,
-          company: d.company || prev.company,
-          postedDate: d.postedDate || prev.postedDate,
-          workMode: d.workMode || prev.workMode,
-          location: d.location || prev.location,
-          experience: d.experience || prev.experience,
-        }));
+
+        let updatedCustom = [...customDesignations];
+        let hasCustomChange = false;
+
+        const newDrafts = extractedJobs.map((job, idx) => {
+          const title = job.title || '';
+          if (title && !DESIGNATION_OPTIONS.includes(title) && !updatedCustom.includes(title)) {
+            updatedCustom.push(title);
+            hasCustomChange = true;
+          }
+          return {
+            id: `extracted-${idx}-${Date.now()}`,
+            url: currentUrl,
+            title: title,
+            company: job.company || '',
+            postedDate: job.postedDate || '',
+            workMode: job.workMode || '',
+            location: job.location || '',
+            experience: job.experience || '',
+            isDuplicate: job.isDuplicate || false,
+            submitting: false
+          };
+        });
+
+        if (hasCustomChange) {
+          setCustomDesignations(updatedCustom);
+          localStorage.setItem('customDesignations', JSON.stringify(updatedCustom));
+        }
+
+        setDrafts(newDrafts);
         setAiSuccess(true);
-        if (d.isDuplicate) {
-          toast.error(`Warning: A job link for ${d.title} at ${d.company} might already exist!`, { duration: 5000 });
+
+        const duplicateCount = newDrafts.filter(d => d.isDuplicate).length;
+        if (duplicateCount > 0) {
+          toast.error(`Warning: ${duplicateCount} of the extracted jobs might already exist!`, { duration: 5000 });
         } else {
-          toast.success('Fields auto-filled by AI!');
+          toast.success(`Successfully extracted ${newDrafts.length} position(s)!`);
         }
         setTimeout(() => setAiSuccess(false), 3000);
         fetchCompanies();
@@ -128,7 +153,7 @@ export default function AdminJobLinksSection() {
     try {
       const res = await api.post('/job-links/extract-job-details', { text });
       if (res.data.success) {
-        const d = res.data.data;
+        const d = (res.data.data && res.data.data[0]) || {};
         const title = d.title || '';
         if (title && !DESIGNATION_OPTIONS.includes(title) && !customDesignations.includes(title)) {
           const updated = [...customDesignations, title];
@@ -324,27 +349,71 @@ export default function AdminJobLinksSection() {
     setEditingLinkId(null);
   };
 
-  const handleAddNew = async (e) => {
-    e.preventDefault();
-    if (!newLinkForm.url || !newLinkForm.title || !newLinkForm.workMode) {
+  const handleDraftChange = (id, field, value) => {
+    setDrafts(prev => prev.map(d => d.id === id ? { ...d, [field]: value } : d));
+  };
+
+  const handleAddDraft = () => {
+    const currentUrl = drafts[0]?.url || '';
+    const currentCompany = drafts[0]?.company || '';
+    const currentPostedDate = drafts[0]?.postedDate || '';
+    const currentWorkMode = drafts[0]?.workMode || '';
+    const currentLocation = drafts[0]?.location || '';
+    const currentExperience = drafts[0]?.experience || '';
+    setDrafts(prev => [
+      ...prev,
+      {
+        id: Date.now() + Math.random(),
+        url: currentUrl,
+        title: '',
+        company: currentCompany,
+        postedDate: currentPostedDate,
+        workMode: currentWorkMode,
+        location: currentLocation,
+        experience: currentExperience,
+        submitting: false
+      }
+    ]);
+  };
+
+  const handleRemoveDraft = (id) => {
+    setDrafts(prev => {
+      const remaining = prev.filter(d => d.id !== id);
+      if (remaining.length === 0) {
+        setShowAddForm(false);
+        return [];
+      }
+      return remaining;
+    });
+  };
+
+  const handleSubmitDraft = async (id) => {
+    const draft = drafts.find(d => d.id === id);
+    if (!draft) return;
+    if (!draft.url || !draft.title || !draft.workMode) {
       toast.error('URL, Designation, and Work Mode are required');
       return;
     }
-    
-    setSubmittingAdd(true);
+
+    setDrafts(prev => prev.map(d => d.id === id ? { ...d, submitting: true } : d));
     try {
-      const res = await api.post('/job-links/admin', newLinkForm);
+      const res = await api.post('/job-links/admin', draft);
       if (res.data.success) {
-        toast.success('Job link added successfully!');
-        setNewLinkForm({ url: '', title: '', company: '', postedDate: '', workMode: '', location: '', experience: '' });
-        setShowAddForm(false);
+        toast.success(`Job link "${draft.title}" added successfully!`);
+        setDrafts(prev => {
+          const remaining = prev.filter(d => d.id !== id);
+          if (remaining.length === 0) {
+            setShowAddForm(false);
+            return [];
+          }
+          return remaining;
+        });
         fetchJobLinks();
       }
     } catch (error) {
       console.error(error);
       toast.error(error.response?.data?.message || 'Failed to add job link');
-    } finally {
-      setSubmittingAdd(false);
+      setDrafts(prev => prev.map(d => d.id === id ? { ...d, submitting: false } : d));
     }
   };
 
@@ -400,7 +469,9 @@ export default function AdminJobLinksSection() {
               if (!showAddForm) {
                 setAiText('');
                 setAiSuccess(false);
-                setNewLinkForm({ url: '', title: '', company: '', postedDate: '', workMode: '', location: '', experience: '' });
+                setDrafts([createBlankDraft()]);
+              } else {
+                setDrafts([]);
               }
               setShowAddForm(!showAddForm);
             }}
@@ -484,117 +555,159 @@ export default function AdminJobLinksSection() {
             </div>
           </div>
 
-          <form onSubmit={handleAddNew} className="space-y-4">
-            <div className="relative">
-              <LinkIcon size={16} className="absolute left-3 top-3 text-gray-400" />
-              <input
-                type="url"
-                required
-                placeholder="Job URL (e.g. https://linkedin.com/jobs/...)"
-                value={newLinkForm.url}
-                onChange={e => setNewLinkForm(prev => ({...prev, url: e.target.value}))}
-                className="w-full pl-9 p-2.5 text-sm border border-border rounded-lg focus:outline-none focus:border-accent"
-              />
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="flex gap-2">
-                <div className="relative flex-1 min-w-0">
-                  <Briefcase size={16} className="absolute left-3 top-3 text-gray-400" />
-                  <select
-                    required
-                    value={newLinkForm.title}
-                    onChange={e => setNewLinkForm(prev => ({...prev, title: e.target.value}))}
-                    className="w-full pl-9 p-2.5 text-sm border border-border rounded-lg focus:outline-none focus:border-accent text-gray-700 bg-white"
-                  >
-                    <option value="" disabled>Select Designation</option>
-                    {[...DESIGNATION_OPTIONS, ...customDesignations].map(opt => (
-                      <option key={opt} value={opt}>{opt}</option>
-                    ))}
-                  </select>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => {
-                    const added = handleAddDesignation();
-                    if (added) setNewLinkForm(prev => ({...prev, title: added}));
-                  }}
-                  className="bg-gray-100 hover:bg-gray-200 text-gray-600 px-3 rounded-lg transition shrink-0 flex items-center justify-center border border-border"
-                  title="Add Custom Designation"
-                >
-                  <Plus size={16} />
-                </button>
-              </div>
-              <div className="relative">
-                <Laptop size={16} className="absolute left-3 top-3 text-gray-400" />
-                <select
-                  required
-                  value={newLinkForm.workMode}
-                  onChange={e => setNewLinkForm(prev => ({...prev, workMode: e.target.value}))}
-                  className="w-full pl-9 p-2.5 text-sm border border-border rounded-lg focus:outline-none focus:border-accent text-gray-700 bg-white"
-                >
-                  <option value="" disabled>Select Work Mode</option>
-                  <option value="Remote">Remote</option>
-                  <option value="Onsite">Onsite</option>
-                  <option value="Hybrid">Hybrid</option>
-                </select>
-              </div>
-              <div className="relative">
-                <MapPin size={16} className="absolute left-3 top-3 text-gray-400" />
-                <input
-                  type="text"
-                  placeholder="Location (e.g. Bangalore, India) - Optional"
-                  value={newLinkForm.location}
-                  onChange={e => setNewLinkForm(prev => ({...prev, location: e.target.value}))}
-                  className="w-full pl-9 p-2.5 text-sm border border-border rounded-lg focus:outline-none focus:border-accent"
-                />
-              </div>
-              <div className="relative">
-                <Building size={16} className="absolute left-3 top-3 text-gray-400" />
-                <input
-                  type="text"
-                  placeholder="Company Name - Optional"
-                  value={newLinkForm.company}
-                  onChange={e => setNewLinkForm(prev => ({...prev, company: e.target.value}))}
-                  className="w-full pl-9 p-2.5 text-sm border border-border rounded-lg focus:outline-none focus:border-accent"
-                />
-              </div>
-              <div className="relative">
-                <Calendar size={16} className="absolute left-3 top-3 text-gray-400" />
-                <input
-                  type="text"
-                  placeholder="Posted Date (e.g. 2 days ago) - Optional"
-                  value={newLinkForm.postedDate}
-                  onChange={e => setNewLinkForm(prev => ({...prev, postedDate: e.target.value}))}
-                  className="w-full pl-9 p-2.5 text-sm border border-border rounded-lg focus:outline-none focus:border-accent"
-                />
-              </div>
-              <div className="relative">
-                <Clock size={16} className="absolute left-3 top-3 text-gray-400" />
-                <input
-                  type="text"
-                  placeholder="Experience (e.g. 2-5 Yrs) - Optional"
-                  value={newLinkForm.experience}
-                  onChange={e => setNewLinkForm(prev => ({...prev, experience: e.target.value}))}
-                  className="w-full pl-9 p-2.5 text-sm border border-border rounded-lg focus:outline-none focus:border-accent"
-                />
-              </div>
-            </div>
-            
-            <div className="flex justify-end pt-2">
-              <button
-                type="submit"
-                disabled={submittingAdd}
-                className="bg-accent hover:bg-accent-hover text-white px-5 py-2 rounded-lg font-medium text-sm transition disabled:opacity-50 flex items-center gap-2"
+          <div className="space-y-6 mt-4">
+            {drafts.map((draft, idx) => (
+              <form 
+                key={draft.id} 
+                onSubmit={(e) => { e.preventDefault(); handleSubmitDraft(draft.id); }} 
+                className="p-5 rounded-xl border border-gray-100 bg-gray-50/30 relative space-y-4 shadow-sm"
               >
-                {submittingAdd ? 'Adding...' : (
-                  <>
-                    <Check size={16} /> Add to Timeline
-                  </>
-                )}
+                {/* Draft header / Indicator */}
+                <div className="flex justify-between items-center border-b border-gray-100 pb-2">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-semibold px-2 py-0.5 bg-gray-100 text-gray-600 rounded">
+                      Position #{idx + 1}
+                    </span>
+                    {draft.isDuplicate && (
+                      <span className="text-[11px] font-bold px-2 py-0.5 bg-red-50 text-red-600 border border-red-100 rounded flex items-center gap-1 animate-pulse">
+                        ⚠️ Might Exist
+                      </span>
+                    )}
+                  </div>
+                  {drafts.length > 1 && (
+                    <button 
+                      type="button" 
+                      onClick={() => handleRemoveDraft(draft.id)}
+                      className="text-gray-400 hover:text-red-500 transition-colors p-1"
+                      title="Remove position"
+                    >
+                      <X size={15} />
+                    </button>
+                  )}
+                </div>
+
+                <div className="relative">
+                  <LinkIcon size={16} className="absolute left-3 top-3 text-gray-400" />
+                  <input
+                    type="url"
+                    required
+                    placeholder="Job URL (e.g. https://linkedin.com/jobs/...)"
+                    value={draft.url}
+                    onChange={e => handleDraftChange(draft.id, 'url', e.target.value)}
+                    className="w-full pl-9 p-2.5 text-sm border border-border rounded-lg focus:outline-none focus:border-accent bg-white"
+                  />
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="flex gap-2">
+                    <div className="relative flex-1 min-w-0">
+                      <Briefcase size={16} className="absolute left-3 top-3 text-gray-400" />
+                      <select
+                        required
+                        value={draft.title}
+                        onChange={e => handleDraftChange(draft.id, 'title', e.target.value)}
+                        className="w-full pl-9 p-2.5 text-sm border border-border rounded-lg focus:outline-none focus:border-accent text-gray-700 bg-white"
+                      >
+                        <option value="" disabled>Select Designation</option>
+                        {[...DESIGNATION_OPTIONS, ...customDesignations].map(opt => (
+                          <option key={opt} value={opt}>{opt}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const added = handleAddDesignation();
+                        if (added) handleDraftChange(draft.id, 'title', added);
+                      }}
+                      className="bg-gray-100 hover:bg-gray-200 text-gray-600 px-3 rounded-lg transition shrink-0 flex items-center justify-center border border-border"
+                      title="Add Custom Designation"
+                    >
+                      <Plus size={16} />
+                    </button>
+                  </div>
+                  <div className="relative">
+                    <Laptop size={16} className="absolute left-3 top-3 text-gray-400" />
+                    <select
+                      required
+                      value={draft.workMode}
+                      onChange={e => handleDraftChange(draft.id, 'workMode', e.target.value)}
+                      className="w-full pl-9 p-2.5 text-sm border border-border rounded-lg focus:outline-none focus:border-accent text-gray-700 bg-white"
+                    >
+                      <option value="" disabled>Select Work Mode</option>
+                      <option value="Remote">Remote</option>
+                      <option value="Onsite">Onsite</option>
+                      <option value="Hybrid">Hybrid</option>
+                    </select>
+                  </div>
+                  <div className="relative">
+                    <MapPin size={16} className="absolute left-3 top-3 text-gray-400" />
+                    <input
+                      type="text"
+                      placeholder="Location (e.g. Noida, Uttar Pradesh) - Optional"
+                      value={draft.location}
+                      onChange={e => handleDraftChange(draft.id, 'location', e.target.value)}
+                      className="w-full pl-9 p-2.5 text-sm border border-border rounded-lg focus:outline-none focus:border-accent bg-white"
+                    />
+                  </div>
+                  <div className="relative">
+                    <Building size={16} className="absolute left-3 top-3 text-gray-400" />
+                    <input
+                      type="text"
+                      placeholder="Company Name - Optional"
+                      value={draft.company}
+                      onChange={e => handleDraftChange(draft.id, 'company', e.target.value)}
+                      className="w-full pl-9 p-2.5 text-sm border border-border rounded-lg focus:outline-none focus:border-accent bg-white"
+                    />
+                  </div>
+                  <div className="relative">
+                    <Calendar size={16} className="absolute left-3 top-3 text-gray-400" />
+                    <input
+                      type="text"
+                      placeholder="Posted Date (e.g. 2 days ago) - Optional"
+                      value={draft.postedDate}
+                      onChange={e => handleDraftChange(draft.id, 'postedDate', e.target.value)}
+                      className="w-full pl-9 p-2.5 text-sm border border-border rounded-lg focus:outline-none focus:border-accent bg-white"
+                    />
+                  </div>
+                  <div className="relative">
+                    <Clock size={16} className="absolute left-3 top-3 text-gray-400" />
+                    <input
+                      type="text"
+                      placeholder="Experience (e.g. 2-5 Yrs) - Optional"
+                      value={draft.experience}
+                      onChange={e => handleDraftChange(draft.id, 'experience', e.target.value)}
+                      className="w-full pl-9 p-2.5 text-sm border border-border rounded-lg focus:outline-none focus:border-accent bg-white"
+                    />
+                  </div>
+                </div>
+                
+                <div className="flex justify-end pt-2">
+                  <button
+                    type="submit"
+                    disabled={draft.submitting}
+                    className="bg-accent hover:bg-accent-hover text-white px-5 py-2 rounded-lg font-medium text-sm transition disabled:opacity-50 flex items-center gap-2 shadow-sm"
+                  >
+                    {draft.submitting ? 'Adding...' : (
+                      <>
+                        <Check size={16} /> Add to Timeline
+                      </>
+                    )}
+                  </button>
+                </div>
+              </form>
+            ))}
+
+            <div className="flex justify-start">
+              <button
+                type="button"
+                onClick={handleAddDraft}
+                className="flex items-center gap-1.5 px-3 py-1.5 border border-dashed border-gray-300 hover:border-gray-400 text-gray-600 hover:text-gray-800 text-xs font-semibold rounded-lg transition-colors bg-white shadow-sm"
+              >
+                <Plus size={14} /> Add Another Position Form
               </button>
             </div>
-          </form>
+          </div>
         </div>
       )}
 

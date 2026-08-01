@@ -185,19 +185,23 @@ exports.extractJobDetails = async (req, res) => {
     const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
     const currentDate = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
-    const prompt = `You are a job description parser. Extract structured information from the following job posting content.
+    const prompt = `You are a job description parser. Extract structured information for all the job positions/openings mentioned in the following job posting content. If there are multiple positions mentioned, extract each of them as a separate item in the "jobs" array.
 CURRENT DATE: ${currentDate}
 
-Return ONLY a valid JSON object with these exact keys (no markdown, no explanation, just raw JSON):
+Return ONLY a valid JSON object with a single "jobs" key containing an array of objects (no markdown, no explanation, just raw JSON):
 {
-  "title": "most relevant job designation/role (e.g. Full Stack Developer, React Developer, Backend Engineer)",
-  "company": "company name if mentioned, if an email ID is present extract the company name from the domain name (e.g., from name@example.com extract 'Example', remove common extensions like .com, .in, .net), else empty string",
-  "postedDate": "job posting date if mentioned. If relative (e.g. '1w', '2d'), calculate the exact date based on CURRENT DATE and output in 'Month DD' format (e.g. 'July 21'). Else empty string",
-  "workMode": "one of: Remote, Onsite, Hybrid — infer from context if not explicitly stated",
-  "location": "city and state/country if mentioned. For Indian cities, use the state name instead of 'India' (e.g. 'Jaipur, Rajasthan', 'Bengaluru, Karnataka', 'Mumbai, Maharashtra', 'Hyderabad, Telangana'). For non-Indian locations use city and country. Else empty string.",
-  "state": "the Indian state name — ONLY fill if there is exactly ONE clear Indian city or area mentioned (e.g. 'Bengaluru' → 'Karnataka', 'Hyderabad' → 'Telangana'). If a non-Indian country/city is mentioned (e.g. 'USA', 'London'), return 'Out of India'. If multiple locations are mentioned, or if the location is Remote, return empty string.",
-  "experience": "experience requirement as a short string (e.g. 2-4 years, 3+ years), else empty string",
-  "email": "any email address found in the job posting (e.g. hr@company.com), else empty string"
+  "jobs": [
+    {
+      "title": "most relevant job designation/role (e.g. Full Stack Developer, React Developer, Backend Engineer, AWS DevOps Engineer, Project Manager, Node.js Developer)",
+      "company": "company name if mentioned, if an email ID is present extract the company name from the domain name (e.g., from name@example.com extract 'Example', remove common extensions like .com, .in, .net), else empty string",
+      "postedDate": "job posting date if mentioned. If relative (e.g. '1w', '2d'), calculate the exact date based on CURRENT DATE and output in 'Month DD' format (e.g. 'July 21'). Else empty string",
+      "workMode": "one of: Remote, Onsite, Hybrid — infer from context if not explicitly stated",
+      "location": "city and state/country if mentioned. For Indian cities, use the state name instead of 'India' (e.g. 'Jaipur, Rajasthan', 'Bengaluru, Karnataka', 'Mumbai, Maharashtra', 'Hyderabad, Telangana'). For non-Indian locations use city and country. Else empty string.",
+      "state": "the Indian state name — ONLY fill if there is exactly ONE clear Indian city or area mentioned (e.g. 'Bengaluru' → 'Karnataka', 'Hyderabad' → 'Telangana'). If a non-Indian country/city is mentioned (e.g. 'USA', 'London'), return 'Out of India'. If multiple locations are mentioned, or if the location is Remote, return empty string.",
+      "experience": "experience requirement as a short string (e.g. 2-4 years, 3+ years), else empty string",
+      "email": "any email address found in the job posting (e.g. hr@company.com), else empty string"
+    }
+  ]
 }
 
 Job posting content:
@@ -207,7 +211,7 @@ ${text.slice(0, 4000)}`;
       model: 'gpt-4o-mini',
       messages: [{ role: 'user', content: prompt }],
       temperature: 0.1,
-      max_tokens: 300,
+      max_tokens: 1000,
     });
 
     const responseText = completion.choices[0]?.message?.content?.trim() || '';
@@ -222,60 +226,78 @@ ${text.slice(0, 4000)}`;
       return res.status(500).json({ success: false, message: 'AI returned unexpected format. Please try again.' });
     }
 
-    let isDuplicate = false;
-    if (extracted.company && extracted.title) {
-      // Escape regex chars to be safe
-      const escapeRegExp = (string) => string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-      const companyRegex = new RegExp(escapeRegExp(extracted.company.trim()), 'i');
-      const titleRegex = new RegExp(escapeRegExp(extracted.title.trim()), 'i');
-
-      const existingLink = await JobLink.findOne({
-        company: companyRegex,
-        title: titleRegex
-      });
-      
-      const Vacancy = require('../models/Vacancy');
-      const existingVacancy = await Vacancy.findOne({
-        company: companyRegex,
-        title: titleRegex
-      });
-
-      if (existingLink || existingVacancy) isDuplicate = true;
+    let jobList = [];
+    if (extracted.jobs && Array.isArray(extracted.jobs)) {
+      jobList = extracted.jobs;
+    } else if (Array.isArray(extracted)) {
+      jobList = extracted;
+    } else {
+      jobList = [extracted];
     }
 
-    if (extracted.company) {
-      const companyName = extracted.company.trim();
-      try {
-        const updateDoc = {};
-        if (extracted.email) {
-          updateDoc.$addToSet = { emails: extracted.email.trim().toLowerCase() };
-        }
-        await CompanyContact.findOneAndUpdate(
-          { name: { $regex: new RegExp(`^${companyName}$`, 'i') } },
-          { 
-            $setOnInsert: { name: companyName },
-            ...updateDoc
-          },
-          { upsert: true, new: true }
-        );
-      } catch (err) {
-        console.error('Error saving company contact:', err);
+    const processedJobs = [];
+    for (const job of jobList) {
+      let isDuplicate = false;
+      const jobCompany = job.company || '';
+      const jobTitle = job.title || '';
+      const jobEmail = job.email || '';
+
+      if (jobCompany && jobTitle) {
+        // Escape regex chars to be safe
+        const escapeRegExp = (string) => string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const companyRegex = new RegExp(escapeRegExp(jobCompany.trim()), 'i');
+        const titleRegex = new RegExp(escapeRegExp(jobTitle.trim()), 'i');
+
+        const existingLink = await JobLink.findOne({
+          company: companyRegex,
+          title: titleRegex
+        });
+
+        const Vacancy = require('../models/Vacancy');
+        const existingVacancy = await Vacancy.findOne({
+          company: companyRegex,
+          title: titleRegex
+        });
+
+        if (existingLink || existingVacancy) isDuplicate = true;
       }
+
+      if (jobCompany) {
+        const companyName = jobCompany.trim();
+        try {
+          const updateDoc = {};
+          if (jobEmail) {
+            updateDoc.$addToSet = { emails: jobEmail.trim().toLowerCase() };
+          }
+          await CompanyContact.findOneAndUpdate(
+            { name: { $regex: new RegExp(`^${companyName}$`, 'i') } },
+            { 
+              $setOnInsert: { name: companyName },
+              ...updateDoc
+            },
+            { upsert: true, new: true }
+          );
+        } catch (err) {
+          console.error('Error saving company contact:', err);
+        }
+      }
+
+      processedJobs.push({
+        title: jobTitle,
+        company: jobCompany,
+        postedDate: job.postedDate || '',
+        workMode: ['Remote', 'Onsite', 'Hybrid'].includes(job.workMode) ? job.workMode : '',
+        location: job.location || '',
+        state: job.state || '',
+        experience: job.experience || '',
+        email: jobEmail,
+        isDuplicate
+      });
     }
 
     return res.json({
       success: true,
-      data: {
-        title: extracted.title || '',
-        company: extracted.company || '',
-        postedDate: extracted.postedDate || '',
-        workMode: ['Remote', 'Onsite', 'Hybrid'].includes(extracted.workMode) ? extracted.workMode : '',
-        location: extracted.location || '',
-        state: extracted.state || '',
-        experience: extracted.experience || '',
-        email: extracted.email || '',
-        isDuplicate
-      }
+      data: processedJobs
     });
   } catch (error) {
     console.error('Error extracting job details:', error);
