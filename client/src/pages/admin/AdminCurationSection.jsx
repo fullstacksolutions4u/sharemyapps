@@ -1126,7 +1126,7 @@ export default function AdminCurationSection() {
 
   useEffect(() => {
     let ignore = false;
-    fetchUsers(ignore);
+    fetchUsers(ignore); // eslint-disable-line react-hooks/set-state-in-effect
     return () => { ignore = true; };
   }, []);
 

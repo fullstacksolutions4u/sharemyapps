@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import {
-  LayoutDashboard, FolderOpen, ShieldCheck, Menu, LogOut,
+  LayoutDashboard, FolderOpen, Menu, LogOut,
   Users, Briefcase, MessageSquare, Camera, IndianRupee, Crown, BookOpen, Unlock, Building2, Link as LinkIcon
 } from 'lucide-react';
 import api from '../api/axios';
