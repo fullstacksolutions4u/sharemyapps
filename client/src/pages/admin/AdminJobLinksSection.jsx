@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import api from '../../api/axios';
 import { toast } from 'react-hot-toast';
-import { Briefcase, Check, X, ExternalLink, Link as LinkIcon, MapPin, Laptop, Edit2, Plus, Save, Clock, Sparkles, Building, Calendar, Share2, ChevronDown, Copy, Download } from 'lucide-react';
+import { Briefcase, Check, X, ExternalLink, Link as LinkIcon, MapPin, Laptop, Edit2, Plus, Save, Clock, Sparkles, Building, Calendar, Share2, ChevronDown, Copy, Download, MousePointerClick } from 'lucide-react';
 
 const DESIGNATION_OPTIONS = [
   "Frontend Developer",
@@ -368,6 +368,7 @@ export default function AdminJobLinksSection() {
   const totalItems = activeList.length;
   const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
   const paginatedList = activeList.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
+  const totalClicks = jobLinks.reduce((sum, link) => sum + (link.clicks?.length || 0), 0);
 
   return (
     <div className="space-y-6 max-w-5xl">
@@ -420,21 +421,28 @@ export default function AdminJobLinksSection() {
         )}
       </div>
 
-      {/* Company Search */}
-      <div className="relative mb-6">
-        <svg className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
-        <input
-          type="text"
-          value={companySearch}
-          onChange={e => { setCompanySearch(e.target.value); setCurrentPage(1); }}
-          placeholder="Search by company name..."
-          className="w-full pl-10 pr-4 py-3 text-[13px] text-gray-700 border border-gray-100 rounded-xl focus:outline-none focus:border-violet-400 focus:ring-1 focus:ring-violet-400 bg-white shadow-sm transition-all"
-        />
-        {companySearch && (
-          <button onClick={() => { setCompanySearch(''); setCurrentPage(1); }} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
-            <X size={14} />
-          </button>
-        )}
+      {/* Search Bar & Total Clicks Stats */}
+      <div className="flex gap-4 items-center mb-6">
+        <div className="relative flex-1 max-w-md">
+          <svg className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+          <input
+            type="text"
+            value={companySearch}
+            onChange={e => { setCompanySearch(e.target.value); setCurrentPage(1); }}
+            placeholder="Search by company name..."
+            className="w-full pl-10 pr-10 py-3 text-[13px] text-gray-700 border border-gray-100 rounded-xl focus:outline-none focus:border-violet-400 focus:ring-1 focus:ring-violet-400 bg-white shadow-sm transition-all"
+          />
+          {companySearch && (
+            <button onClick={() => { setCompanySearch(''); setCurrentPage(1); }} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+              <X size={14} />
+            </button>
+          )}
+        </div>
+        
+        <div className="bg-violet-50 border border-violet-100 rounded-xl px-4 py-2.5 flex items-center gap-2 shrink-0 shadow-sm text-[13px] font-bold text-violet-700">
+          <MousePointerClick size={16} className="text-violet-600" />
+          <span>Total Click {totalClicks}</span>
+        </div>
       </div>
 
       {showAddForm && activeTab === 'approved' && (
