@@ -220,6 +220,7 @@ function EvaluationDrawer({ user, onClose, onSaved }) {
       await api.delete(`/admin/interviews/${id}`);
       setSessions(prev => prev.filter(s => s._id !== id));
       toast.success('Deleted');
+      onSaved?.();
     } catch { toast.error('Failed to delete'); }
   };
 
@@ -249,67 +250,6 @@ function EvaluationDrawer({ user, onClose, onSaved }) {
             <X size={18} />
           </button>
         </div>
-
-        {/* Past Sessions */}
-        {sessions.length > 0 && (
-          <div className="px-6 pt-4 space-y-3">
-            <h3 className="text-sm font-semibold text-[#374151] flex items-center gap-2">
-              <ClipboardList size={15} /> Past Sessions ({sessions.length})
-            </h3>
-            {sessions.map(s => (
-              <div key={s._id} className={`rounded-xl border p-4 ${s.sharedWithCandidate ? 'bg-emerald-50 border-emerald-200' : 'bg-[#FAF7F2] border-[#E5E1DA]'}`}>
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs font-bold text-[#00A693]">Session #{s.sessionNumber}</span>
-                    <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold uppercase border ${
-                      s.status === 'scheduled' ? 'bg-blue-50 text-blue-700 border-blue-200' :
-                      s.status === 'postponed' ? 'bg-amber-50 text-amber-700 border-amber-200' :
-                      s.status === 'cancelled' ? 'bg-red-50 text-red-700 border-red-200' :
-                      'bg-emerald-50 text-emerald-700 border-emerald-200'
-                    }`}>
-                      {s.status || 'completed'}
-                    </span>
-                    {s.googleMeetLink && (
-                      <a
-                        href={s.googleMeetLink.startsWith('http') ? s.googleMeetLink : `https://${s.googleMeetLink}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1.5 px-2 py-0.5 bg-red-50 hover:bg-red-100 border border-red-200 text-red-600 rounded-lg text-[10px] font-bold uppercase transition"
-                        title="Join Meet"
-                      >
-                        <Video size={10} className="shrink-0" />
-                        Join Meet
-                      </a>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className={`text-lg font-bold ${ratingColor(s.overallRating)}`}>{s.overallRating}/10</span>
-                    {s.sharedWithCandidate
-                      ? <span className="text-xs bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full font-medium">✓ Shared</span>
-                      : (
-                        <button
-                          onClick={() => handleShare(s._id)}
-                          disabled={sharing}
-                          className="text-xs bg-[#00A693] text-white px-2.5 py-1 rounded-full hover:bg-[#008f7e] transition flex items-center gap-1"
-                        >
-                          <Send size={10} /> Share
-                        </button>
-                      )
-                    }
-                    <button onClick={() => handleEdit(s)} className="p-1.5 hover:bg-white rounded-lg transition"><Edit3 size={13} /></button>
-                    <button onClick={() => handleDelete(s._id)} className="p-1.5 hover:bg-red-50 text-red-400 rounded-lg transition"><Trash2 size={13} /></button>
-                  </div>
-                </div>
-                {s.headline && <p className="text-xs italic text-[#6B7280] mb-1">"{s.headline}"</p>}
-                <div className="flex flex-wrap gap-1">
-                  {(s.pros || []).map((p, i) => <span key={i} className="text-[10px] bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full">{p}</span>)}
-                  {(s.cons || []).map((c, i) => <span key={i} className="text-[10px] bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full">{c}</span>)}
-                </div>
-                <p className="text-[10px] text-[#9CA3AF] mt-1.5">{new Date(s.interviewedAt).toLocaleDateString()}</p>
-              </div>
-            ))}
-          </div>
-        )}
 
         {/* New / Edit Form */}
         <div className="px-6 py-4 flex-1">
@@ -485,6 +425,67 @@ function EvaluationDrawer({ user, onClose, onSaved }) {
             </button>
           </div>
         </div>
+
+        {/* Past Sessions */}
+        {sessions.length > 0 && (
+          <div className="px-6 pb-6 space-y-3 border-t border-[#E5E1DA] pt-4">
+            <h3 className="text-sm font-semibold text-[#374151] flex items-center gap-2">
+              <ClipboardList size={15} /> Past Sessions ({sessions.length})
+            </h3>
+            {sessions.map(s => (
+              <div key={s._id} className={`rounded-xl border p-4 ${s.sharedWithCandidate ? 'bg-emerald-50 border-emerald-200' : 'bg-[#FAF7F2] border-[#E5E1DA]'}`}>
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-bold text-[#00A693]">Session #{s.sessionNumber}</span>
+                    <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold uppercase border ${
+                      s.status === 'scheduled' ? 'bg-blue-50 text-blue-700 border-blue-200' :
+                      s.status === 'postponed' ? 'bg-amber-50 text-amber-700 border-amber-200' :
+                      s.status === 'cancelled' ? 'bg-red-50 text-red-700 border-red-200' :
+                      'bg-emerald-50 text-emerald-700 border-emerald-200'
+                    }`}>
+                      {s.status || 'completed'}
+                    </span>
+                    {s.googleMeetLink && (
+                      <a
+                        href={s.googleMeetLink.startsWith('http') ? s.googleMeetLink : `https://${s.googleMeetLink}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1.5 px-2 py-0.5 bg-red-50 hover:bg-red-100 border border-red-200 text-red-600 rounded-lg text-[10px] font-bold uppercase transition"
+                        title="Join Meet"
+                      >
+                        <Video size={10} className="shrink-0" />
+                        Join Meet
+                      </a>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className={`text-lg font-bold ${ratingColor(s.overallRating)}`}>{s.overallRating}/10</span>
+                    {s.sharedWithCandidate
+                      ? <span className="text-xs bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full font-medium">✓ Shared</span>
+                      : (
+                        <button
+                          onClick={() => handleShare(s._id)}
+                          disabled={sharing}
+                          className="text-xs bg-[#00A693] text-white px-2.5 py-1 rounded-full hover:bg-[#008f7e] transition flex items-center gap-1"
+                        >
+                          <Send size={10} /> Share
+                        </button>
+                      )
+                    }
+                    <button onClick={() => handleEdit(s)} className="p-1.5 hover:bg-white rounded-lg transition"><Edit3 size={13} /></button>
+                    <button onClick={() => handleDelete(s._id)} className="p-1.5 hover:bg-red-50 text-red-400 rounded-lg transition"><Trash2 size={13} /></button>
+                  </div>
+                </div>
+                {s.headline && <p className="text-xs italic text-[#6B7280] mb-1">"{s.headline}"</p>}
+                <div className="flex flex-wrap gap-1">
+                  {(s.pros || []).map((p, i) => <span key={i} className="text-[10px] bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full">{p}</span>)}
+                  {(s.cons || []).map((c, i) => <span key={i} className="text-[10px] bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full">{c}</span>)}
+                </div>
+                <p className="text-[10px] text-[#9CA3AF] mt-1.5">{new Date(s.interviewedAt).toLocaleDateString()}</p>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
@@ -1073,46 +1074,59 @@ export default function AdminCurationSection() {
   const [drawerUser, setDrawerUser] = useState(null);
   const [sessionCounts, setSessionCounts] = useState({}); // userId → count
   const [meetLinks, setMeetLinks] = useState({}); // userId → googleMeetLink
+  const [latestScheduledSessions, setLatestScheduledSessions] = useState({}); // userId → date string
+
+  const fetchUsers = async (ignore = false) => {
+    try {
+      const res = await api.get('/admin/users?limit=200&userType=developer&onlyContacted=true');
+      const u = (res.data.users || res.data || []).filter(uObj => !uObj.isDeleted);
+      u.sort((a, b) => (a.regNumber || 99999) - (b.regNumber || 99999));
+      if (ignore) return;
+
+      // Fetch sessions to get counts and meet links
+      const sessionRes = await api.get('/admin/interviews?limit=500');
+      const counts = {};
+      const links = {};
+      const latestTimes = {};
+      const latestScheduled = {};
+      
+      (sessionRes.data.sessions || []).forEach(s => {
+        const uid = s.user?._id?.toString();
+        if (uid) {
+          counts[uid] = (counts[uid] || 0) + 1;
+          const sessionTime = new Date(s.interviewedAt).getTime();
+          
+          const currentLatestTime = latestTimes[uid];
+          if (!currentLatestTime || sessionTime > currentLatestTime) {
+            latestTimes[uid] = sessionTime;
+            if (s.googleMeetLink) {
+              links[uid] = s.googleMeetLink;
+            } else {
+              delete links[uid];
+            }
+          }
+
+          if (s.status === 'scheduled') {
+            const currentLatestScheduled = latestScheduled[uid];
+            if (!currentLatestScheduled || sessionTime > new Date(currentLatestScheduled).getTime()) {
+              latestScheduled[uid] = s.interviewedAt;
+            }
+          }
+        }
+      });
+      
+      if (ignore) return;
+      setUsers(u);
+      setSessionCounts(counts);
+      setMeetLinks(links);
+      setLatestScheduledSessions(latestScheduled);
+    } catch { toast.error('Failed to load users'); }
+    finally { if (!ignore) setLoading(false); }
+  };
 
   useEffect(() => {
     let ignore = false;
-    const fetchUsers = async () => {
-      try {
-        const res = await api.get('/admin/users?limit=200&userType=developer&onlyContacted=true');
-        const u = (res.data.users || res.data || []).filter(uObj => !uObj.isDeleted);
-        u.sort((a, b) => (a.regNumber || 99999) - (b.regNumber || 99999));
-        if (ignore) return;
-
-        // Fetch sessions to get counts and meet links
-        const sessionRes = await api.get('/admin/interviews?limit=500');
-        const counts = {};
-        const links = {};
-        const latestTimes = {};
-        
-        (sessionRes.data.sessions || []).forEach(s => {
-          const uid = s.user?._id?.toString();
-          if (uid) {
-            counts[uid] = (counts[uid] || 0) + 1;
-            const currentLatestTime = latestTimes[uid];
-            const sessionTime = new Date(s.interviewedAt).getTime();
-            if (!currentLatestTime || sessionTime > currentLatestTime) {
-              latestTimes[uid] = sessionTime;
-              if (s.googleMeetLink) {
-                links[uid] = s.googleMeetLink;
-              } else {
-                delete links[uid];
-              }
-            }
-          }
-        });
-        
-        setUsers(u);
-        setSessionCounts(counts);
-        setMeetLinks(links);
-      } catch { toast.error('Failed to load users'); }
-      finally { if (!ignore) setLoading(false); }
-    };
-    fetchUsers();
+    fetchUsers(ignore);
     return () => { ignore = true; };
   }, []);
 
@@ -1126,6 +1140,18 @@ export default function AdminCurationSection() {
     const matchesFilter = filter === 'all' || (filter === 'evaluated' && count > 0) || (filter === 'pending' && count === 0);
     return matchesSearch && matchesFilter;
   });
+
+  const formatScheduledDate = (dateStr) => {
+    if (!dateStr) return '';
+    return new Date(dateStr).toLocaleString('en-IN', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true
+    });
+  };
 
   return (
     <div className="max-w-5xl mx-auto">
@@ -1173,6 +1199,7 @@ export default function AdminCurationSection() {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
               {filteredUsers.map(user => {
                 const count = sessionCounts[user._id] || 0;
+                const scheduledTime = latestScheduledSessions[user._id];
                 return (
                   <button
                     key={user._id}
@@ -1186,11 +1213,6 @@ export default function AdminCurationSection() {
                           alt={user.name}
                           className="w-12 h-12 rounded-full object-cover border-2 border-[#E5E1DA] group-hover:border-[#00A693] transition"
                         />
-                        {count > 0 && (
-                          <span className="absolute -top-1 -right-1 w-5 h-5 bg-[#00A693] text-white text-[9px] font-bold rounded-full flex items-center justify-center">
-                            {count}
-                          </span>
-                        )}
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="font-semibold text-[#1A1A1A] text-sm truncate">{user.name}</p>
@@ -1205,8 +1227,12 @@ export default function AdminCurationSection() {
                     </div>
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <span className={`text-xs font-medium ${count > 0 ? 'text-emerald-600' : 'text-[#9CA3AF]'}`}>
-                          {count > 0 ? `${count} session${count > 1 ? 's' : ''}` : 'Not yet interviewed'}
+                        <span className={`text-xs font-medium ${scheduledTime ? 'text-emerald-600' : 'text-[#9CA3AF]'}`}>
+                          {scheduledTime 
+                            ? formatScheduledDate(scheduledTime) 
+                            : count > 0 
+                              ? 'No scheduled session' 
+                              : 'Not yet interviewed'}
                         </span>
                         {meetLinks[user._id] && (
                           <a
@@ -1237,11 +1263,8 @@ export default function AdminCurationSection() {
         <EvaluationDrawer
           user={drawerUser}
           onClose={() => setDrawerUser(null)}
-          onSaved={(newSession) => {
-            setSessionCounts(prev => ({ ...prev, [drawerUser._id]: (prev[drawerUser._id] || 0) + 1 }));
-            if (newSession && newSession.googleMeetLink) {
-              setMeetLinks(prev => ({ ...prev, [drawerUser._id]: newSession.googleMeetLink }));
-            }
+          onSaved={() => {
+            fetchUsers();
           }}
         />
       )}

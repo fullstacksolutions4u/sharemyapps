@@ -29,11 +29,11 @@ const NAV = [
   { key: 'companies',      label: 'Companies',        icon: Building2 },
   { key: 'job_links',      label: 'Job Links',        icon: LinkIcon },
   { key: 'opportunities',  label: 'Opportunities',    icon: Briefcase },
-  { key: 'curation',       label: 'Candidate Curation', icon: Briefcase },
-  { key: 'communications', label: 'Communications',   icon: MessageSquare },
+  { key: 'curation',       label: 'Interview Screening', icon: Briefcase },
   { key: 'applicants',      label: 'Applicants',        icon: Crown },
   { key: 'service_access', label: 'Services',           icon: Unlock },
   { key: 'plans_payments',  label: 'Plans & Payments',  icon: IndianRupee },
+  { key: 'communications', label: 'Communications',   icon: MessageSquare },
   { key: 'learning',       label: 'Quiz Zone',        icon: BookOpen },
 ];
 
@@ -89,13 +89,6 @@ const { user, setUser, logout } = useAuth();
         lg:static lg:translate-x-0
         ${mobileOpen ? 'translate-x-0' : '-translate-x-full'}
       `}>
-        <div className="h-14 flex items-center gap-2.5 px-4 border-b border-border shrink-0">
-          <div className="w-7 h-7 bg-accent-light rounded-lg flex items-center justify-center">
-            <ShieldCheck size={14} className="text-accent" />
-          </div>
-          <span className="font-semibold text-sm text-text">Admin Panel</span>
-        </div>
-
         <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
           {NAV.map(({ key, label, icon: Icon }) => (
             <button
