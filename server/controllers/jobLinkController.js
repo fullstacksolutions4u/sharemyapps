@@ -85,15 +85,22 @@ exports.getAdminJobLinks = async (req, res) => {
 
 exports.createAdminJobLink = async (req, res) => {
   try {
-    const { url, title, company, postedDate, workMode, location, platform, experience, state } = req.body;
+    const { url, title, company, postedDate, workMode, location, platform, experience, state, allowDuplicateUrl } = req.body;
 
     if (!url || !title || !workMode) {
       return res.status(400).json({ success: false, message: 'URL, Designation, and Work Mode are required' });
     }
 
-    const existingLink = await JobLink.findOne({ url });
-    if (existingLink) {
-      return res.status(400).json({ success: false, message: 'Link already shared' });
+    if (allowDuplicateUrl) {
+      const existingLink = await JobLink.findOne({ url, title });
+      if (existingLink) {
+        return res.status(400).json({ success: false, message: 'Link with this designation already shared' });
+      }
+    } else {
+      const existingLink = await JobLink.findOne({ url });
+      if (existingLink) {
+        return res.status(400).json({ success: false, message: 'Link already shared' });
+      }
     }
 
     const jobLink = await JobLink.create({

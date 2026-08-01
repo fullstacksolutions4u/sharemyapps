@@ -71,6 +71,7 @@ export default function AdminJobLinksSection() {
 
   const [showAddForm, setShowAddForm] = useState(false);
   const [drafts, setDrafts] = useState([]);
+  const [submittingAll, setSubmittingAll] = useState(false);
   const [companySearch, setCompanySearch] = useState('');
   
   const [feedbackData, setFeedbackData] = useState([]);
@@ -417,6 +418,45 @@ export default function AdminJobLinksSection() {
     }
   };
 
+  const handleSubmitAllDrafts = async () => {
+    const invalidDraft = drafts.find(d => !d.url || !d.title || !d.workMode);
+    if (invalidDraft) {
+      toast.error('All positions must have a URL, Designation, and Work Mode.');
+      return;
+    }
+
+    setSubmittingAll(true);
+    const draftsToSubmit = [...drafts];
+    let successCount = 0;
+
+    for (const draft of draftsToSubmit) {
+      setDrafts(prev => prev.map(d => d.id === draft.id ? { ...d, submitting: true } : d));
+      try {
+        const res = await api.post('/job-links/admin', {
+          ...draft,
+          allowDuplicateUrl: true
+        });
+        if (res.data.success) {
+          successCount++;
+          setDrafts(prev => prev.filter(d => d.id !== draft.id));
+        }
+      } catch (err) {
+        console.error(err);
+        toast.error(`Failed to add "${draft.title}": ${err.response?.data?.message || 'Error'}`);
+        setDrafts(prev => prev.map(d => d.id === draft.id ? { ...d, submitting: false } : d));
+      }
+    }
+
+    setSubmittingAll(false);
+    if (successCount > 0) {
+      toast.success(`Successfully added ${successCount} job link(s) to timeline!`);
+      fetchJobLinks();
+    }
+    if (successCount === draftsToSubmit.length) {
+      setShowAddForm(false);
+    }
+  };
+
   if (loading) return <div className="p-8 text-center text-muted">Loading...</div>;
 
   const pendingLinks = jobLinks
@@ -559,7 +599,12 @@ export default function AdminJobLinksSection() {
             {drafts.map((draft, idx) => (
               <form 
                 key={draft.id} 
-                onSubmit={(e) => { e.preventDefault(); handleSubmitDraft(draft.id); }} 
+                onSubmit={(e) => { 
+                  e.preventDefault(); 
+                  if (drafts.length === 1) {
+                    handleSubmitDraft(draft.id); 
+                  }
+                }} 
                 className="p-5 rounded-xl border border-gray-100 bg-gray-50/30 relative space-y-4 shadow-sm"
               >
                 {/* Draft header / Indicator */}
@@ -682,23 +727,25 @@ export default function AdminJobLinksSection() {
                   </div>
                 </div>
                 
-                <div className="flex justify-end pt-2">
-                  <button
-                    type="submit"
-                    disabled={draft.submitting}
-                    className="bg-accent hover:bg-accent-hover text-white px-5 py-2 rounded-lg font-medium text-sm transition disabled:opacity-50 flex items-center gap-2 shadow-sm"
-                  >
-                    {draft.submitting ? 'Adding...' : (
-                      <>
-                        <Check size={16} /> Add to Timeline
-                      </>
-                    )}
-                  </button>
-                </div>
+                {drafts.length === 1 && (
+                  <div className="flex justify-end pt-2">
+                    <button
+                      type="submit"
+                      disabled={draft.submitting}
+                      className="bg-accent hover:bg-accent-hover text-white px-5 py-2 rounded-lg font-medium text-sm transition disabled:opacity-50 flex items-center gap-2 shadow-sm"
+                    >
+                      {draft.submitting ? 'Adding...' : (
+                        <>
+                          <Check size={16} /> Add to Timeline
+                        </>
+                      )}
+                    </button>
+                  </div>
+                )}
               </form>
             ))}
 
-            <div className="flex justify-start">
+            <div className="flex justify-between items-center pt-2">
               <button
                 type="button"
                 onClick={handleAddDraft}
@@ -706,6 +753,21 @@ export default function AdminJobLinksSection() {
               >
                 <Plus size={14} /> Add Another Position Form
               </button>
+
+              {drafts.length > 1 && (
+                <button
+                  type="button"
+                  onClick={handleSubmitAllDrafts}
+                  disabled={submittingAll}
+                  className="bg-accent hover:bg-accent-hover text-white px-6 py-2 rounded-lg font-semibold text-sm transition disabled:opacity-50 flex items-center gap-2 shadow-sm"
+                >
+                  {submittingAll ? 'Adding All Positions...' : (
+                    <>
+                      <Check size={16} /> Add All Positions to Timeline
+                    </>
+                  )}
+                </button>
+              )}
             </div>
           </div>
         </div>
