@@ -1,6 +1,6 @@
 import { useEffect, useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, LayoutGrid, Users, MessageCircle, Brain, ShoppingBag, Hammer, Share2, CircleDollarSign } from 'lucide-react';
+import { ArrowRight, LayoutGrid, Users, MessageCircle, Brain, ShoppingBag, Hammer, Share2, CircleDollarSign, Briefcase } from 'lucide-react';
 import _Lottie from 'lottie-react';
 const Lottie = _Lottie.default ?? _Lottie;
 import spinnerData from '../assets/spinner.json';
@@ -262,11 +262,11 @@ export default function Home() {
       .then(res => setNetworkUsers(res.data))
       .catch(() => {})
       .finally(() => setNetworkLoading(false));
-    api.get('/projects/showcase?skip=99&limit=3')
-      .then(res => setShowcaseProjects(res.data.slice(0, 3)))
+    api.get('/projects/showcase?skip=99&limit=4')
+      .then(res => setShowcaseProjects(res.data.slice(0, 4)))
       .catch(() => {});
-    api.get('/users/showcase-devs?skip=0&limit=3')
-      .then(res => setShowcaseDevs(res.data.slice(0, 3)))
+    api.get('/users/showcase-devs?skip=0&limit=4')
+      .then(res => setShowcaseDevs(res.data.slice(0, 4)))
       .catch(() => {});
   }, []);
 
@@ -338,15 +338,16 @@ export default function Home() {
 
       {/* How it works */}
       <section className="border-y border-border bg-white">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-14">
+        <div className="max-w-[1500px] mx-auto px-3 sm:px-4 py-14">
           <p className="text-xs font-semibold uppercase tracking-widest text-accent text-center mb-8">How it works</p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
             {[
               { step: '01', icon: LayoutGrid,     title: 'List your projects',      desc: 'Complete your profile & Showcase live projects.' },
-              { step: '02', icon: Users,           title: 'Get discovered',          desc: 'Recruiters, clients, and mentors browse your projects and portfolio and reach out directly.' },
-              { step: '03', icon: ShoppingBag,     title: 'Sell your apps',          desc: 'Monetize your side projects by listing them for sale directly on the platform.' },
-              { step: '04', icon: MessageCircle,   title: 'Connect with devs',       desc: 'Meet fellow developers, share ideas, and grow your network.' },
-              { step: '05', icon: Brain,           title: 'Quiz Zone',               desc: 'Test your skills with topic-based quizzes, climb the leaderboard, and prove your expertise to recruiters.' },
+              { step: '02', icon: Briefcase,       title: 'Job Applications',        desc: 'There are 2 ways to apply for jobs - direct jobs listed, and applying through job posts shared by our community members.' },
+              { step: '03', icon: Users,           title: 'Get discovered',          desc: 'Recruiters, clients, and mentors browse your projects and portfolio and reach out directly.' },
+              { step: '04', icon: ShoppingBag,     title: 'Sell your apps',          desc: 'Monetize your side projects by listing them for sale directly on the platform.' },
+              { step: '05', icon: MessageCircle,   title: 'Connect with devs',       desc: 'Meet fellow developers, share ideas, and grow your network.' },
+              { step: '06', icon: Brain,           title: 'Quiz Zone',               desc: 'Test your skills with topic-based quizzes, climb the leaderboard, and prove your expertise to recruiters.' },
             ].map(({ step, icon: Icon, title, desc }) => (
               <div key={step} className="relative flex flex-col items-center text-center gap-4 p-5 rounded-2xl border border-border hover:border-accent/40 hover:shadow-sm transition-all bg-[#FAFAF8]">
                 <div className="w-10 h-10 bg-accent-light rounded-xl flex items-center justify-center">
@@ -364,14 +365,14 @@ export default function Home() {
 
       {/* Showcase: projects #100–103 */}
       {showcaseProjects.length > 0 && (
-        <section className="max-w-6xl mx-auto px-4 sm:px-6 pb-16">
+        <section className="max-w-[1500px] mx-auto px-3 sm:px-4 pb-16">
           <div className="flex items-center justify-between mb-8">
             <h2 className="text-2xl font-bold text-text tracking-tight">Projects</h2>
             <Link to="/explore" className="text-sm text-accent hover:text-accent-hover flex items-center gap-1 font-medium">
               View all <ArrowRight size={14} />
             </Link>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
             {showcaseProjects.map(p => <ProjectCard key={p._id} project={p} />)}
           </div>
         </section>
@@ -379,14 +380,14 @@ export default function Home() {
 
       {/* Showcase: developers #100–103 */}
       {showcaseDevs.length > 0 && (
-        <section className="max-w-6xl mx-auto px-4 sm:px-6 pb-16">
+        <section className="max-w-[1500px] mx-auto px-3 sm:px-4 pb-16">
           <div className="flex items-center justify-between mb-8">
             <h2 className="text-2xl font-bold text-text tracking-tight">Registered Developers</h2>
             <Link to="/portfolios" className="text-sm text-accent hover:text-accent-hover flex items-center gap-1 font-medium">
               View all <ArrowRight size={14} />
             </Link>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
             {showcaseDevs.map((dev, idx) => (
               <DeveloperCard key={dev._id} dev={dev} stagger={{ ready: true, delay: idx * 70 }} hideContact />
             ))}

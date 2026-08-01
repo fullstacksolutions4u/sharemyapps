@@ -288,7 +288,15 @@ export default function Feed() {
       
       {/* LEFT: Shared Job Links */}
       <div className="w-full lg:max-w-[25%] flex flex-col sticky top-20 max-h-[calc(100vh-100px)]">
-        <div className="bg-linear-to-br from-violet-50/80 to-purple-50/50 rounded-xl shadow-sm border border-[#5a788b] flex flex-col h-full relative">
+        <div className="bg-white rounded-xl shadow-sm border border-[#5a788b] flex flex-col h-full relative overflow-hidden">
+          {/* Abstract wavy background at the bottom */}
+          <div className="absolute bottom-0 left-0 right-0 h-32 pointer-events-none opacity-50 flex items-end">
+            <svg viewBox="0 0 1440 320" className="absolute bottom-0 w-full h-full object-cover" preserveAspectRatio="none">
+              <path fill="#008b74" fillOpacity="0.08" d="M0,192L48,181.3C96,171,192,149,288,144C384,139,480,149,576,165.3C672,181,768,203,864,197.3C960,192,1056,160,1152,149.3C1248,139,1344,149,1392,154.7L1440,160L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path>
+              <path fill="#008b74" fillOpacity="0.12" d="M0,256L48,250.7C96,245,192,235,288,213.3C384,192,480,160,576,149.3C672,139,768,149,864,170.7C960,192,1056,224,1152,234.7C1248,245,1344,235,1392,229.3L1440,224L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path>
+            </svg>
+          </div>
+          <div className="relative z-10 flex flex-col h-full overflow-hidden">
           <div className="p-4 border-b border-black/5 bg-transparent flex flex-col gap-3 shrink-0">
             {uniqueJobLinkDesignations.length > 0 && (
               <select 
@@ -305,10 +313,10 @@ export default function Feed() {
           </div>
 
           {user && (
-            <div className="p-3 border-b border-black/5 bg-white/40 shrink-0 flex items-center gap-2">
+            <div className="p-3 border-b border-black/5 bg-white/40 shrink-0 relative">
               <form
                 onSubmit={handleInlineJobLinkSubmit}
-                className="flex-1 flex items-center gap-1 bg-white rounded-xl border border-black/20 animate-border-gemini-shine focus-within:!border-accent/50 focus-within:!shadow-[0_0_0_2px_rgba(0,166,147,0.1)] transition-all p-1 pl-1.5 overflow-hidden relative"
+                className="w-full flex items-center gap-1 bg-white rounded-xl border border-black/20 animate-border-gemini-shine focus-within:!border-accent/50 focus-within:!shadow-[0_0_0_2px_rgba(0,166,147,0.1)] transition-all p-1 pl-1.5 overflow-hidden relative"
               >
                 <ScrollingPlaceholderInput
                   value={inlineUrl}
@@ -324,13 +332,12 @@ export default function Feed() {
                 </button>
               </form>
 
-              <div className="relative group flex items-center justify-center cursor-help shrink-0">
-                <div className="text-gray-400 hover:text-accent transition-colors p-1">
-                  <Info size={18} />
+              <div className="absolute right-[5px] top-[2px] group flex items-center justify-center cursor-help shrink-0 z-20">
+                <div className="text-gray-400 hover:text-accent transition-colors">
+                  <Info size={13} />
                 </div>
                 
                 <div className="absolute right-0 top-full mt-2 w-[270px] bg-white border border-gray-200 text-gray-700 text-[12px] p-3.5 rounded-xl shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 text-left">
-                  <div className="font-semibold text-[13px] mb-2 text-accent">Guidelines for sharing:</div>
                   <ul className="list-disc pl-4 space-y-1.5 text-gray-600">
                     <li>Share software job post links only.</li>
                     <li>Must be posted within the last 72 hours.</li>
@@ -451,6 +458,7 @@ export default function Feed() {
           </div>
         </div>
       </div>
+    </div>
 
       {/* MIDDLE: Activity Stream */}
       <div className="w-full lg:max-w-[50%] flex-1">
@@ -490,7 +498,15 @@ export default function Feed() {
       <div className="w-full lg:max-w-[25%] flex-1 flex flex-col gap-6 sticky top-20 max-h-[calc(100vh-100px)] overflow-y-auto custom-scrollbar pb-4 pr-1">
         
         {/* LEADERBOARD (Top 5) */}
-        <div className="bg-linear-to-br from-violet-50/80 to-purple-50/50 rounded-xl shadow-sm border border-[#5a788b] overflow-hidden shrink-0 flex flex-col h-[360px]">
+        <div className="bg-white rounded-xl shadow-sm border border-[#5a788b] overflow-hidden shrink-0 flex flex-col h-[360px] relative">
+          {/* Abstract wavy background at the bottom */}
+          <div className="absolute bottom-0 left-0 right-0 h-32 pointer-events-none opacity-50 flex items-end">
+            <svg viewBox="0 0 1440 320" className="absolute bottom-0 w-full h-full object-cover" preserveAspectRatio="none">
+              <path fill="#008b74" fillOpacity="0.08" d="M0,192L48,181.3C96,171,192,149,288,144C384,139,480,149,576,165.3C672,181,768,203,864,197.3C960,192,1056,160,1152,149.3C1248,139,1344,149,1392,154.7L1440,160L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path>
+              <path fill="#008b74" fillOpacity="0.12" d="M0,256L48,250.7C96,245,192,235,288,213.3C384,192,480,160,576,149.3C672,139,768,149,864,170.7C960,192,1056,224,1152,234.7C1248,245,1344,235,1392,229.3L1440,224L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path>
+            </svg>
+          </div>
+          <div className="relative z-10 flex flex-col h-full overflow-hidden">
           <div className="p-4 border-b border-black/5 bg-transparent flex items-center justify-between">
             <div className="flex items-center gap-2 font-bold text-lg text-text">
               <Trophy size={20} className="text-violet-600" />
@@ -544,6 +560,7 @@ export default function Feed() {
             )}
           </div>
         </div>
+      </div>
 
         {/* REPORT VACANCY BUTTON */}
         {user && (
