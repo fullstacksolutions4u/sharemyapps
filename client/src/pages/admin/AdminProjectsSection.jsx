@@ -48,10 +48,8 @@ function ProjectReviewPage({ project: initial, onBack, onSave, onApprove, onReje
     contactPhone: initial.contactPhone || initial.owner?.phone || '',
     linkedinUrl: initial.linkedinUrl || initial.owner?.linkedinUrl || '',
   });
-  const [githubUrls, setGithubUrls] = useState(
-    initial.githubUrls?.length ? initial.githubUrls : (initial.githubUrl ? [initial.githubUrl] : (initial.owner?.githubUrl ? [initial.owner.githubUrl] : ['']))
-  );
-  const [githubVisible, setGithubVisible] = useState(initial.githubVisible !== false);
+  const githubUrls = initial.githubUrls?.length ? initial.githubUrls : (initial.githubUrl ? [initial.githubUrl] : (initial.owner?.githubUrl ? [initial.owner.githubUrl] : ['']));
+  const githubVisible = initial.githubVisible !== false;
   const [saving, setSaving] = useState(false);
   const [rejectOpen, setRejectOpen] = useState(false);
   const [rejectTitle, setRejectTitle] = useState('');
