@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import {
-  ExternalLink, Check, X, Plus, Save, ArrowLeft, Tag, Link as LinkIcon,
-  Mail, Phone, ChevronRight, Search, EyeOff, Eye, Trash2,
+  ExternalLink, Check, X, Save, ArrowLeft, Tag,
+  ChevronRight, Search, EyeOff, Eye, Trash2,
 } from 'lucide-react';
 import api from '../../api/axios';
 import toast from 'react-hot-toast';
@@ -147,53 +147,6 @@ function ProjectReviewPage({ project: initial, onBack, onSave, onApprove, onReje
             <div>
               <label className="block text-xs font-medium text-[#6B7280] mb-1.5">Tech stack <span className="font-normal text-[#9CA3AF]">(comma-separated)</span></label>
               <input type="text" value={form.techTags} onChange={e => setForm(f => ({ ...f, techTags: e.target.value }))} className={input} placeholder="React, Node.js, MongoDB" />
-            </div>
-          </div>
-
-          <div className="bg-white border border-[#E5E1DA] rounded-2xl p-5 space-y-4">
-            <h3 className="text-sm font-semibold text-[#1A1A1A]">Contact information</h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs font-medium text-[#6B7280] mb-1.5"><Mail size={11} className="inline mr-1" />Email</label>
-                <input type="email" value={form.contactEmail} onChange={e => setForm(f => ({ ...f, contactEmail: e.target.value }))} className={input} />
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-[#6B7280] mb-1.5"><Phone size={11} className="inline mr-1" />Phone</label>
-                <input type="tel" value={form.contactPhone} onChange={e => setForm(f => ({ ...f, contactPhone: e.target.value }))} className={input} />
-              </div>
-            </div>
-            <div>
-              <label className="block text-xs font-medium text-[#6B7280] mb-1.5"><LinkIcon size={11} className="inline mr-1" />LinkedIn URL</label>
-              <input type="text" value={form.linkedinUrl} onChange={e => setForm(f => ({ ...f, linkedinUrl: e.target.value }))} className={input} />
-            </div>
-            <div>
-              <label className="block text-xs font-medium text-[#6B7280] mb-1.5"><LinkIcon size={11} className="inline mr-1" />GitHub URLs</label>
-              <div className="space-y-2">
-                {githubUrls.map((url, i) => (
-                  <div key={i} className="flex gap-2 items-center">
-                    <input type="text" value={url}
-                      onChange={e => setGithubUrls(urls => urls.map((u, j) => j === i ? e.target.value : u))}
-                      className={`flex-1 ${input}`} placeholder="github.com/username/repo" />
-                    {githubUrls.length > 1 && (
-                      <button type="button" onClick={() => setGithubUrls(urls => urls.filter((_, j) => j !== i))}
-                        className="w-8 h-8 flex items-center justify-center text-[#9CA3AF] hover:text-red-400 hover:bg-red-50 rounded-lg transition-colors">
-                        <X size={13} />
-                      </button>
-                    )}
-                  </div>
-                ))}
-                <button type="button" onClick={() => setGithubUrls(u => [...u, ''])}
-                  className="inline-flex items-center gap-1 text-xs text-[#00A693] hover:text-[#007D6F] font-medium transition-colors">
-                  <Plus size={12} /> Add another
-                </button>
-              </div>
-              <label className="flex items-center gap-2.5 mt-3 cursor-pointer select-none w-fit">
-                <div onClick={() => setGithubVisible(v => !v)}
-                  className={`w-9 h-5 rounded-full transition-colors relative ${githubVisible ? 'bg-[#00A693]' : 'bg-[#D1D5DB]'}`}>
-                  <span className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${githubVisible ? 'translate-x-4' : 'translate-x-0.5'}`} />
-                </div>
-                <span className="text-xs text-[#6B7280]">{githubVisible ? 'Visible to everyone' : 'Hidden from public'}</span>
-              </label>
             </div>
           </div>
 
