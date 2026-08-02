@@ -14,36 +14,36 @@ const LinkedInIcon = ({ size = 14 }) => (
 );
 
 const getDesignationStyle = (title) => {
-  if (!title) return 'text-gray-600 bg-gray-50 border-gray-200';
+  if (!title) return 'text-gray-500';
   const t = title.toLowerCase();
   if (t.includes('mern') || t.includes('mongo') || t.includes('express')) {
-    return 'text-emerald-700 bg-emerald-50 border-emerald-200/60';
+    return 'text-emerald-600';
   }
   if (t.includes('react') || t.includes('next') || t.includes('frontend') || t.includes('front-end') || t.includes('web')) {
-    return 'text-cyan-700 bg-cyan-50 border-cyan-200/60';
+    return 'text-cyan-600';
   }
   if (t.includes('full stack') || t.includes('fullstack')) {
-    return 'text-blue-700 bg-blue-50 border-blue-200/60';
+    return 'text-blue-600';
   }
   if (t.includes('python') || t.includes('django') || t.includes('ml') || t.includes('ai')) {
-    return 'text-indigo-700 bg-indigo-50 border-indigo-200/60';
+    return 'text-indigo-600';
   }
   if (t.includes('java') || t.includes('spring')) {
-    return 'text-rose-700 bg-rose-50 border-rose-200/60';
+    return 'text-rose-600';
   }
   if (t.includes('node') || t.includes('backend') || t.includes('back-end')) {
-    return 'text-violet-700 bg-violet-50 border-violet-200/60';
+    return 'text-violet-600';
   }
   if (t.includes('ui') || t.includes('ux') || t.includes('design')) {
-    return 'text-pink-700 bg-pink-50 border-pink-200/60';
+    return 'text-pink-600';
   }
   const colors = [
-    'text-blue-700 bg-blue-50 border-blue-200/60',
-    'text-purple-700 bg-purple-50 border-purple-200/60',
-    'text-emerald-700 bg-emerald-50 border-emerald-200/60',
-    'text-amber-700 bg-amber-50 border-amber-200/60',
-    'text-rose-700 bg-rose-50 border-rose-200/60',
-    'text-cyan-700 bg-cyan-50 border-cyan-200/60'
+    'text-blue-600',
+    'text-purple-600',
+    'text-emerald-600',
+    'text-amber-600',
+    'text-rose-600',
+    'text-cyan-600'
   ];
   let hash = 0;
   for (let i = 0; i < title.length; i++) {
@@ -212,7 +212,7 @@ export default function FeedProjectCard({ activity, index = 0 }) {
                   )}
                 </div>
                 <div className="flex flex-wrap items-center gap-1.5 text-xs mt-1.5">
-                  <span className={`px-2 py-0.5 rounded-md text-[9px] font-bold border uppercase tracking-wider ${getDesignationStyle(designation)}`}>
+                  <span className={`text-[9px] font-bold uppercase tracking-wider ${getDesignationStyle(designation)}`}>
                     {designation}
                   </span>
                   <span className="text-gray-400">•</span>
