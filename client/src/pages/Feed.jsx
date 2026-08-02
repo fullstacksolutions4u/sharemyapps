@@ -384,7 +384,7 @@ export default function Feed() {
                       <div className="flex items-start justify-between gap-3">
                         <div className="flex flex-col gap-0.5 flex-1 min-w-0">
                           <div className="flex mt-0.5 max-w-full overflow-hidden">
-                            <span className={`px-2 py-0.5 rounded-md text-[11px] font-bold border uppercase tracking-wider truncate ${getDesignationStyle(link.title)}`}>
+                            <span className={`px-2 py-0.5 rounded-md text-[9px] font-bold border uppercase tracking-wider truncate ${getDesignationStyle(link.title)}`}>
                               {link.title || 'Job Opportunity'}
                             </span>
                           </div>
@@ -850,7 +850,7 @@ function ActivityCard({ activity, index = 0 }) {
             )}
           </div>
           <div className="flex flex-wrap items-center gap-1.5 text-xs mt-1.5">
-            <span className={`px-2 py-0.5 rounded-md text-[10.5px] font-bold border uppercase tracking-wider ${getDesignationStyle(designation)}`}>
+            <span className={`px-2 py-0.5 rounded-md text-[9px] font-bold border uppercase tracking-wider ${getDesignationStyle(designation)}`}>
               {designation}
             </span>
             <span className="text-gray-400">•</span>

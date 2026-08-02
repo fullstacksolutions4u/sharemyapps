@@ -212,7 +212,7 @@ export default function FeedProjectCard({ activity, index = 0 }) {
                   )}
                 </div>
                 <div className="flex flex-wrap items-center gap-1.5 text-xs mt-1.5">
-                  <span className={`px-2 py-0.5 rounded-md text-[10.5px] font-bold border uppercase tracking-wider ${getDesignationStyle(designation)}`}>
+                  <span className={`px-2 py-0.5 rounded-md text-[9px] font-bold border uppercase tracking-wider ${getDesignationStyle(designation)}`}>
                     {designation}
                   </span>
                   <span className="text-gray-400">•</span>
