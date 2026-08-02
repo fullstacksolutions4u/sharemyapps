@@ -50,7 +50,7 @@ function CoinsRankBadge() {
   if (!user || !data || !data.userRank) return null;
 
   return (
-    <Link to="/quiz-zone" className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold" style={{ backgroundColor: '#FFF8E8', border: '1px solid rgba(201,169,110,0.4)' }}>
+    <Link to="/quiz-zone" className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold" style={{ backgroundColor: '#FFF8E8', border: '1px solid #D4AF37' }}>
       <Trophy size={11} className="text-amber-500" />
       <span className="text-amber-600">#{data.userRank}</span>
     </Link>

@@ -528,7 +528,7 @@ export default function Feed() {
             </div>
             <Link 
               to="/quiz-zone" 
-              className="bg-[#fbfcfa] border border-gray-100/60 px-3 py-1.5 rounded-[12px] shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all flex items-center justify-center group"
+              className="bg-[#fbfcfa] border border-[#D4AF37] px-3 py-1.5 rounded-[12px] shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all flex items-center justify-center group"
             >
               <span className="text-xs font-bold text-transparent bg-clip-text bg-gradient-to-r from-slate-900 to-slate-600 tracking-wide drop-shadow-sm">Quiz Zone</span>
             </Link>
