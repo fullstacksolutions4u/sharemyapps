@@ -854,7 +854,7 @@ function ActivityCard({ activity, index = 0 }) {
               {designation}
             </span>
             <span className="text-gray-400">•</span>
-            <span className="text-gray-500 font-medium">{timeAgo}</span>
+            <span className="text-[#648c98] font-medium">{timeAgo}</span>
           </div>
         </div>
       </div>
