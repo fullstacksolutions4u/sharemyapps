@@ -274,7 +274,7 @@ export default function Overview() {
 
           <Link
             to="/quiz-zone"
-            className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-[#FDFBF7] via-[#FAF6F0] to-[#EAE3D2] border border-white text-[#4A2E1B] py-3 rounded-full font-bold text-sm transition-all duration-300 mt-6 shadow-[0_10px_25px_rgba(139,115,85,0.22),_0_3px_5px_rgba(139,115,85,0.12),_inset_0_4px_8px_rgba(255,255,255,0.85),_inset_0_-4px_8px_rgba(139,115,85,0.08)] hover:shadow-[0_14px_30px_rgba(139,115,85,0.32),_0_4px_8px_rgba(139,115,85,0.15),_inset_0_4px_10px_rgba(255,255,255,0.95)] hover:scale-[1.01] active:scale-[0.98]"
+            className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-[#FDFBF7] via-[#FAF6F0] to-[#EAE3D2] border border-white text-[#4A2E1B] py-3 rounded-full font-bold text-sm transition-all duration-300 mt-6 shadow-[0_14px_30px_rgba(139,115,85,0.32),_0_4px_8px_rgba(139,115,85,0.15),_inset_0_4px_10px_rgba(255,255,255,0.95)] active:scale-[0.98]"
           >
             Continue Learning
           </Link>
