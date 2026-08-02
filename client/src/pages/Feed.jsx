@@ -147,7 +147,6 @@ export default function Feed() {
   const [jobLinks, setJobLinks] = useState([]);
   const [inlineUrl, setInlineUrl] = useState('');
   const [submittingLink, setSubmittingLink] = useState(false);
-  const [jobLinksFilter, setJobLinksFilter] = useState('');
 
   const [clickedLinks, setClickedLinks] = useState(() => {
     try {
@@ -302,23 +301,9 @@ export default function Feed() {
     </div>
   );
 
-  const normalizeTitle = (title) => {
-    if (!title) return '';
-    const t = title.trim().toLowerCase();
-    if (t.includes('fullstack') || t.includes('full stack') || t.includes('full-stack')) return 'Full Stack Developer';
-    if (t === 'software engineer' || t === 'software developer') return 'Software Developer';
-    if (t.includes('java full stack') || t.includes('java fullstack')) return 'Full Stack Developer';
-    return title.trim();
-  };
 
-  const uniqueJobLinkDesignations = Array.from(
-    new Set(jobLinks.map(link => normalizeTitle(link.title)).filter(title => title !== ''))
-  ).sort((a, b) => a.localeCompare(b));
 
-  const filteredJobLinks = (jobLinksFilter 
-    ? jobLinks.filter(link => normalizeTitle(link.title) === jobLinksFilter) 
-    : [...jobLinks]
-  ).sort((a, b) => parsePostedDate(b.postedDate, b.createdAt) - parsePostedDate(a.postedDate, a.createdAt));
+  const filteredJobLinks = [...jobLinks].sort((a, b) => parsePostedDate(b.postedDate, b.createdAt) - parsePostedDate(a.postedDate, a.createdAt));
 
   return (
     <div className="min-h-screen bg-white relative">

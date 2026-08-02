@@ -6,15 +6,7 @@ import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
 
-const STICKY_COLORS = [
-  { bg: '#fdf7df', fold: '#e8dfb8' }, // Yellow
-  { bg: '#dffdf0', fold: '#b8e8d5' }, // Emerald
-  { bg: '#dfeafd', fold: '#b8cde8' }, // Blue
-  { bg: '#fddfef', fold: '#e8b8d4' }, // Pink
-  { bg: '#eedffd', fold: '#cdb8e8' }, // Purple
-  { bg: '#fdf0df', fold: '#e8d2b8' }, // Orange
-];
-const ROTATIONS = ['-rotate-1', 'rotate-1', 'rotate-0', '-rotate-1', 'rotate-1', 'rotate-0'];
+
 
 
 
@@ -649,7 +641,7 @@ export default function Vacancies() {
           <div className="space-y-8">
             {activeTab === 'job-links' ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 max-w-[1550px] mx-auto">
-                {paginatedData.map((link, idx) => {
+                {paginatedData.map(link => {
                   const isApplied = clickedLinks.includes(link._id);
                   const colorObj = { bg: '#dfeafd', fold: '#b8cde8' };
                   const rotClass = 'rotate-0';
@@ -757,7 +749,7 @@ export default function Vacancies() {
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 max-w-[1550px] mx-auto">
-                {paginatedData.map((v, idx) => {
+                {paginatedData.map(v => {
                   const subLabel = activeTab === 'freelance' ? null : (v.industry || v.company);
                   const colorObj = { bg: '#dfeafd', fold: '#b8cde8' };
                   const rotClass = 'rotate-0';
