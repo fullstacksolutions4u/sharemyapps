@@ -6,6 +6,16 @@ import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
 
+const STICKY_COLORS = [
+  { bg: '#fdf7df', fold: '#e8dfb8' }, // Yellow
+  { bg: '#dffdf0', fold: '#b8e8d5' }, // Emerald
+  { bg: '#dfeafd', fold: '#b8cde8' }, // Blue
+  { bg: '#fddfef', fold: '#e8b8d4' }, // Pink
+  { bg: '#eedffd', fold: '#cdb8e8' }, // Purple
+  { bg: '#fdf0df', fold: '#e8d2b8' }, // Orange
+];
+const ROTATIONS = ['-rotate-1', 'rotate-1', 'rotate-0', '-rotate-1', 'rotate-1', 'rotate-0'];
+
 
 
 
@@ -459,27 +469,42 @@ export default function Vacancies() {
       <div className="relative border-b border-border overflow-hidden">
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between">
           <div className="flex gap-1 flex-1 justify-center">
-            {TABS.map(({ key, label, icon: Icon }) => (
-              <button
-                key={key}
-                onClick={() => {
-                  setActiveTab(key);
-                  setFilterDesignation('');
-                  setFilterLocation('');
-                  setFilterExperience('');
-                  setCurrentPage(1);
-                  navigate(`?tab=${key}`, { replace: true });
-                }}
-                className={`flex items-center gap-1.5 px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
-                  activeTab === key
-                    ? 'border-[#486081] text-[#486081] bg-[#486081]/5'
-                    : 'border-transparent text-muted hover:text-text hover:bg-gray-50'
-                }`}
-              >
-                <Icon size={14} />
-                {label}
-              </button>
-            ))}
+            {TABS.map(({ key, label, icon: Icon }) => {
+              const tabColors = {
+                'job-links': {
+                  active: 'border-blue-600 text-blue-600 bg-blue-50/70 shadow-xs',
+                  inactive: 'border-transparent text-blue-500/80 bg-blue-50/5 hover:text-blue-600 hover:bg-blue-50/20'
+                },
+                'vacancies': {
+                  active: 'border-emerald-600 text-emerald-600 bg-emerald-50/70 shadow-xs',
+                  inactive: 'border-transparent text-emerald-600/80 bg-emerald-50/5 hover:text-emerald-600 hover:bg-emerald-50/20'
+                },
+                'freelance': {
+                  active: 'border-violet-600 text-violet-600 bg-violet-50/70 shadow-xs',
+                  inactive: 'border-transparent text-violet-600/80 bg-violet-50/5 hover:text-violet-600 hover:bg-violet-50/20'
+                }
+              };
+              const colors = tabColors[key] || { active: '', inactive: '' };
+              return (
+                <button
+                  key={key}
+                  onClick={() => {
+                    setActiveTab(key);
+                    setFilterDesignation('');
+                    setFilterLocation('');
+                    setFilterExperience('');
+                    setCurrentPage(1);
+                    navigate(`?tab=${key}`, { replace: true });
+                  }}
+                  className={`flex items-center gap-1.5 px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
+                    activeTab === key ? colors.active : colors.inactive
+                  }`}
+                >
+                  <Icon size={14} />
+                  {label}
+                </button>
+              );
+            })}
           </div>
           <a href="/career-services" className="flex items-center gap-1.5 bg-amber-50 border border-amber-200 hover:bg-amber-100 text-amber-600 text-xs font-semibold px-3 py-1.5 rounded-full transition-colors shrink-0 mb-1">
             <Crown size={12} /> Job Assistance Services
@@ -624,14 +649,15 @@ export default function Vacancies() {
           <div className="space-y-8">
             {activeTab === 'job-links' ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 max-w-[1550px] mx-auto">
-                {paginatedData.map(link => {
+                {paginatedData.map((link, idx) => {
                   const isApplied = clickedLinks.includes(link._id);
+                  const colorObj = { bg: '#dfeafd', fold: '#b8cde8' };
+                  const rotClass = 'rotate-0';
                   return (
                     <div
                       key={link._id}
-                      className={`bg-white rounded-2xl shadow-sm border p-5 flex flex-col justify-between gap-4 transition-all duration-200 hover:shadow-md ${
-                        isApplied ? 'border-[#006994]/30 bg-[#006994]/5' : 'border-border hover:border-accent/30'
-                      }`}
+                      className={`sticky-curly ${rotClass} p-5 flex flex-col justify-between gap-4`}
+                      style={{ '--sticky-bg': colorObj.bg, '--sticky-fold': colorObj.fold }}
                     >
                       <div className="flex flex-col gap-2">
                         <div className="flex justify-between items-start">
@@ -703,7 +729,7 @@ export default function Vacancies() {
                         {!user ? (
                           <Link
                             to="/login"
-                            className="py-1.5 px-3 rounded-lg text-[12px] font-semibold flex items-center justify-center gap-1.5 bg-[#006994] hover:bg-[#005578] text-white transition-all duration-200"
+                            className="py-1.5 px-3 rounded-lg text-[12px] font-semibold flex items-center justify-center gap-1.5 bg-[#006994] hover:bg-[#005578] text-white border-b-[3px] border-[#004f70] active:border-b-0 active:translate-y-[3px] transition-all"
                           >
                             <span>Sign in to apply</span>
                             <ArrowRight size={12} />
@@ -714,10 +740,10 @@ export default function Vacancies() {
                             target="_blank"
                             rel="noopener noreferrer"
                             onClick={() => handleLinkClick(link._id)}
-                            className={`py-1.5 px-3 rounded-lg text-[12px] font-semibold flex items-center justify-center gap-1.5 transition-all duration-200 ${
+                            className={`py-1.5 px-3 rounded-lg text-[12px] font-semibold flex items-center justify-center gap-1.5 transition-all ${
                               isApplied
-                                ? 'bg-white text-[#006994] border border-[#006994]'
-                                : 'bg-[#006994] hover:bg-[#005578] text-white'
+                                ? 'bg-white text-[#006994] border border-[#006994] border-b-[3px] border-b-[#005578] active:border-b-0 active:translate-y-[3px]'
+                                : 'bg-[#006994] hover:bg-[#005578] text-white border-b-[3px] border-[#004f70] active:border-b-0 active:translate-y-[3px]'
                             }`}
                           >
                             <span>{isApplied ? 'Visited' : 'Apply Now'}</span>
@@ -730,11 +756,17 @@ export default function Vacancies() {
                 })}
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-5 max-w-5xl mx-auto">
-                {paginatedData.map(v => {
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 max-w-[1550px] mx-auto">
+                {paginatedData.map((v, idx) => {
                   const subLabel = activeTab === 'freelance' ? null : (v.industry || v.company);
+                  const colorObj = { bg: '#dfeafd', fold: '#b8cde8' };
+                  const rotClass = 'rotate-0';
                   return (
-                    <div key={v._id} className={`bg-white rounded-2xl shadow-sm border border-border p-6 flex flex-col gap-4 transition-all duration-200 hover:shadow-md ${v.status === 'closed' ? 'opacity-70' : ''}`}>
+                    <div
+                      key={v._id}
+                      className={`sticky-curly ${rotClass} p-6 flex flex-col gap-4 ${v.status === 'closed' ? 'opacity-70' : ''}`}
+                      style={{ '--sticky-bg': colorObj.bg, '--sticky-fold': colorObj.fold }}
+                    >
                       {/* Header: Title, Company */}
                       <div className="flex justify-between items-start">
                         <div>
@@ -795,7 +827,7 @@ export default function Vacancies() {
                         ) : !user ? (
                           <Link
                             to="/login"
-                            className="flex items-center gap-2 text-[13.5px] font-semibold bg-accent hover:bg-accent-hover text-white px-5 py-2.5 rounded-xl transition-colors"
+                            className="flex items-center gap-2 text-[13.5px] font-semibold bg-accent hover:bg-accent-hover text-white px-5 py-2.5 rounded-xl border-b-[3px] border-[#008273] active:border-b-0 active:translate-y-[3px] transition-all"
                           >
                             Sign in to apply <ArrowRight size={15} />
                           </Link>
@@ -805,12 +837,12 @@ export default function Vacancies() {
                             <button
                               onClick={() => handleInterest(v)}
                               disabled={busy === v._id || !config.canWithdraw}
-                              className={`group flex items-center gap-2 text-[13.5px] font-semibold px-5 py-2.5 rounded-xl transition-colors ${
+                              className={`group flex items-center gap-2 text-[13.5px] font-semibold px-5 py-2.5 rounded-xl transition-all ${
                                 !config.canWithdraw ? 'disabled:opacity-100 disabled:cursor-default cursor-default' : 'disabled:opacity-60 disabled:cursor-not-allowed'
                               } ${
                                 v.interested
                                   ? config.classes
-                                  : 'bg-white text-accent border border-accent hover:bg-accent hover:text-white'
+                                  : 'bg-accent hover:bg-accent-hover text-white border-b-[3px] border-[#008273] active:border-b-0 active:translate-y-[3px]'
                               }`}
                             >
                               {busy === v._id ? (
@@ -841,7 +873,7 @@ export default function Vacancies() {
                 <button
                   onClick={() => { setCurrentPage(p => Math.max(1, p - 1)); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
                   disabled={currentPage === 1}
-                  className="px-3.5 py-2 rounded-xl border border-border bg-white text-gray-500 hover:border-gray-300 hover:text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all text-sm font-medium"
+                  className="px-3.5 py-2 rounded-xl border border-border bg-white text-gray-500 hover:border-gray-300 hover:text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all text-sm font-medium border-b-[3px] border-b-gray-300 active:border-b-0 active:translate-y-[3px] disabled:border-b disabled:translate-y-0"
                 >
                   Previous
                 </button>
@@ -851,10 +883,10 @@ export default function Vacancies() {
                     <button
                       key={p}
                       onClick={() => { setCurrentPage(p); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
-                      className={`w-10 h-10 rounded-xl border text-sm font-semibold transition-all ${
+                      className={`w-10 h-10 rounded-xl text-sm font-semibold transition-all ${
                         currentPage === p
-                          ? 'bg-accent border-accent text-white shadow-sm'
-                          : 'border-border bg-white text-gray-700 hover:border-gray-300'
+                          ? 'bg-accent text-white border-b-[3px] border-b-[#008273] active:border-b-0 active:translate-y-[3px]'
+                          : 'border border-border bg-white text-gray-700 hover:border-gray-300 border-b-[3px] border-b-gray-300 active:border-b-0 active:translate-y-[3px]'
                       }`}
                     >
                       {p}
@@ -864,7 +896,7 @@ export default function Vacancies() {
                 <button
                   onClick={() => { setCurrentPage(p => Math.min(totalPages, p + 1)); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
                   disabled={currentPage === totalPages}
-                  className="px-3.5 py-2 rounded-xl border border-border bg-white text-gray-500 hover:border-gray-300 hover:text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all text-sm font-medium"
+                  className="px-3.5 py-2 rounded-xl border border-border bg-white text-gray-500 hover:border-gray-300 hover:text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all text-sm font-medium border-b-[3px] border-b-gray-300 active:border-b-0 active:translate-y-[3px] disabled:border-b disabled:translate-y-0"
                 >
                   Next
                 </button>

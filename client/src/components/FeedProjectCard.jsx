@@ -13,6 +13,45 @@ const LinkedInIcon = ({ size = 14 }) => (
   </svg>
 );
 
+const getDesignationStyle = (title) => {
+  if (!title) return 'text-gray-600 bg-gray-50 border-gray-200';
+  const t = title.toLowerCase();
+  if (t.includes('mern') || t.includes('mongo') || t.includes('express')) {
+    return 'text-emerald-700 bg-emerald-50 border-emerald-200/60';
+  }
+  if (t.includes('react') || t.includes('next') || t.includes('frontend') || t.includes('front-end') || t.includes('web')) {
+    return 'text-cyan-700 bg-cyan-50 border-cyan-200/60';
+  }
+  if (t.includes('full stack') || t.includes('fullstack')) {
+    return 'text-blue-700 bg-blue-50 border-blue-200/60';
+  }
+  if (t.includes('python') || t.includes('django') || t.includes('ml') || t.includes('ai')) {
+    return 'text-indigo-700 bg-indigo-50 border-indigo-200/60';
+  }
+  if (t.includes('java') || t.includes('spring')) {
+    return 'text-rose-700 bg-rose-50 border-rose-200/60';
+  }
+  if (t.includes('node') || t.includes('backend') || t.includes('back-end')) {
+    return 'text-violet-700 bg-violet-50 border-violet-200/60';
+  }
+  if (t.includes('ui') || t.includes('ux') || t.includes('design')) {
+    return 'text-pink-700 bg-pink-50 border-pink-200/60';
+  }
+  const colors = [
+    'text-blue-700 bg-blue-50 border-blue-200/60',
+    'text-purple-700 bg-purple-50 border-purple-200/60',
+    'text-emerald-700 bg-emerald-50 border-emerald-200/60',
+    'text-amber-700 bg-amber-50 border-amber-200/60',
+    'text-rose-700 bg-rose-50 border-rose-200/60',
+    'text-cyan-700 bg-cyan-50 border-cyan-200/60'
+  ];
+  let hash = 0;
+  for (let i = 0; i < title.length; i++) {
+    hash += title.charCodeAt(i);
+  }
+  return colors[hash % colors.length];
+};
+
 const TAG_COLORS = [
   'bg-blue-50 text-blue-700 border-blue-200',
   'bg-purple-50 text-purple-700 border-purple-200',
@@ -143,7 +182,7 @@ export default function FeedProjectCard({ activity, index = 0 }) {
 
   return (
     <div 
-      className={`sticky-curly ${rotClass} p-5 mb-8 transition-transform hover:scale-[1.01] hover:z-10`}
+      className={`sticky-curly ${rotClass} p-5 mb-8`}
       style={{ '--sticky-bg': colorObj.bg, '--sticky-fold': colorObj.fold }}
     >
       {/* 2-Column Layout */}
@@ -172,9 +211,13 @@ export default function FeedProjectCard({ activity, index = 0 }) {
                     </a>
                   )}
                 </div>
-                <span className="text-xs font-medium text-gray-900">
-                  {designation} • {timeAgo}
-                </span>
+                <div className="flex flex-wrap items-center gap-1.5 text-xs mt-1.5">
+                  <span className={`px-2 py-0.5 rounded-md text-[10.5px] font-bold border uppercase tracking-wider ${getDesignationStyle(designation)}`}>
+                    {designation}
+                  </span>
+                  <span className="text-gray-400">•</span>
+                  <span className="text-gray-500 font-medium">{timeAgo}</span>
+                </div>
               </div>
             </div>
             

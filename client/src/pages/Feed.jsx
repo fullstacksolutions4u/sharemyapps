@@ -50,6 +50,45 @@ const TwinklingStars = () => (
   </div>
 );
 
+const getDesignationStyle = (title) => {
+  if (!title) return 'text-gray-600 bg-gray-50 border-gray-200';
+  const t = title.toLowerCase();
+  if (t.includes('mern') || t.includes('mongo') || t.includes('express')) {
+    return 'text-emerald-700 bg-emerald-50 border-emerald-200/60';
+  }
+  if (t.includes('react') || t.includes('next') || t.includes('frontend') || t.includes('front-end') || t.includes('web')) {
+    return 'text-cyan-700 bg-cyan-50 border-cyan-200/60';
+  }
+  if (t.includes('full stack') || t.includes('fullstack')) {
+    return 'text-blue-700 bg-blue-50 border-blue-200/60';
+  }
+  if (t.includes('python') || t.includes('django') || t.includes('ml') || t.includes('ai')) {
+    return 'text-indigo-700 bg-indigo-50 border-indigo-200/60';
+  }
+  if (t.includes('java') || t.includes('spring')) {
+    return 'text-rose-700 bg-rose-50 border-rose-200/60';
+  }
+  if (t.includes('node') || t.includes('backend') || t.includes('back-end')) {
+    return 'text-violet-700 bg-violet-50 border-violet-200/60';
+  }
+  if (t.includes('ui') || t.includes('ux') || t.includes('design')) {
+    return 'text-pink-700 bg-pink-50 border-pink-200/60';
+  }
+  const colors = [
+    'text-blue-700 bg-blue-50 border-blue-200/60',
+    'text-purple-700 bg-purple-50 border-purple-200/60',
+    'text-emerald-700 bg-emerald-50 border-emerald-200/60',
+    'text-amber-700 bg-amber-50 border-amber-200/60',
+    'text-rose-700 bg-rose-50 border-rose-200/60',
+    'text-cyan-700 bg-cyan-50 border-cyan-200/60'
+  ];
+  let hash = 0;
+  for (let i = 0; i < title.length; i++) {
+    hash += title.charCodeAt(i);
+  }
+  return colors[hash % colors.length];
+};
+
 
 
 const ScrollingPlaceholderInput = ({ value, onChange, className }) => {
@@ -282,8 +321,7 @@ export default function Feed() {
   ).sort((a, b) => parsePostedDate(b.postedDate, b.createdAt) - parsePostedDate(a.postedDate, a.createdAt));
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-accent/10 via-white to-violet-50 relative">
-      <div className="absolute inset-0 opacity-20 pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle, #00A693 1px, transparent 1px)', backgroundSize: '28px 28px' }} />
+    <div className="min-h-screen bg-white relative">
       <div className="relative max-w-[1600px] mx-auto px-2 lg:px-4 py-4 w-full flex flex-col lg:flex-row gap-4">
       
       {/* LEFT: Shared Job Links */}
@@ -297,19 +335,10 @@ export default function Feed() {
             </svg>
           </div>
           <div className="relative z-10 flex flex-col h-full overflow-hidden">
-          <div className="p-4 border-b border-black/5 bg-transparent flex flex-col gap-3 shrink-0">
-            {uniqueJobLinkDesignations.length > 0 && (
-              <select 
-                value={jobLinksFilter}
-                onChange={(e) => setJobLinksFilter(e.target.value)}
-                className="w-full bg-white border border-black/10 rounded-lg px-2.5 py-1.5 text-[13px] outline-none focus:border-blue-300 text-gray-700 transition-colors"
-              >
-                <option value="">All External Job Postings</option>
-                {uniqueJobLinkDesignations.map(d => (
-                  <option key={d} value={d}>{d}</option>
-                ))}
-              </select>
-            )}
+          <div className="p-4 border-b border-black/5 bg-transparent shrink-0 flex items-center justify-center">
+            <h3 className="text-[13px] font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-[#008b74] to-[#5a788b] tracking-wide drop-shadow-sm text-center uppercase whitespace-nowrap">
+              Jobs Post Shared by community members
+            </h3>
           </div>
 
           {user && (
@@ -354,7 +383,7 @@ export default function Feed() {
               <p className="text-sm text-gray-500 text-center py-6">No job links match this filter.</p>
             ) : (
               <div className="space-y-1">
-                {filteredJobLinks.slice(0, 10).map(link => {
+                {filteredJobLinks.slice(0, 5).map(link => {
                   const isApplied = clickedLinks.includes(link._id);
                   return (
                     <a 
@@ -369,10 +398,10 @@ export default function Feed() {
                     >
                       <div className="flex items-start justify-between gap-3">
                         <div className="flex flex-col gap-0.5 flex-1 min-w-0">
-                          <div className={`font-semibold text-[13px] transition-colors truncate ${
-                            isApplied ? 'text-[#006994] font-semibold' : 'text-gray-800 group-hover:text-blue-600'
-                          }`}>
-                            {link.title || 'Job Opportunity'}
+                          <div className="flex mt-0.5 max-w-full overflow-hidden">
+                            <span className={`px-2 py-0.5 rounded-md text-[11px] font-bold border uppercase tracking-wider truncate ${getDesignationStyle(link.title)}`}>
+                              {link.title || 'Job Opportunity'}
+                            </span>
                           </div>
                           {link.company && (
                             <div className="text-[11.5px] text-gray-600 font-medium truncate flex items-center gap-1 mt-0.5">
@@ -689,7 +718,7 @@ function ActivityCard({ activity, index = 0 }) {
   const colorObj = STICKY_COLORS[index % STICKY_COLORS.length];
   const rotClass = ROTATIONS[index % ROTATIONS.length];
   
-  let wrapperClass = `sticky-curly ${rotClass} p-4 transition-transform hover:scale-[1.01] hover:z-10 mb-8`;
+  let wrapperClass = `sticky-curly ${rotClass} p-4 mb-8`;
   
   if (type === 'PROJECT_APPROVED' && project) {
     return <FeedProjectCard activity={activity} index={index} />;
@@ -835,10 +864,12 @@ function ActivityCard({ activity, index = 0 }) {
               </a>
             )}
           </div>
-          <div className="flex items-center gap-1.5 text-xs text-gray-900 mt-0.5">
-            <span className="font-medium text-gray-900">{designation}</span>
-            <span>•</span>
-            <span>{timeAgo}</span>
+          <div className="flex flex-wrap items-center gap-1.5 text-xs mt-1.5">
+            <span className={`px-2 py-0.5 rounded-md text-[10.5px] font-bold border uppercase tracking-wider ${getDesignationStyle(designation)}`}>
+              {designation}
+            </span>
+            <span className="text-gray-400">•</span>
+            <span className="text-gray-500 font-medium">{timeAgo}</span>
           </div>
         </div>
       </div>
