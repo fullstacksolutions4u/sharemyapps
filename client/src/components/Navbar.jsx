@@ -180,7 +180,7 @@ function UserDropdown({ user, onLogout }) {
           ? <img src={optimizeImage(user.avatar, 150)} alt={user.name} className="w-7 h-7 rounded-full object-cover" />
           : <span className="w-7 h-7 rounded-full bg-accent text-white text-xs flex items-center justify-center font-medium">{user.name[0].toUpperCase()}</span>
         }
-        <span>{user.name.split(' ')[0]}</span>
+        <span className="font-bold">{user.name.split(' ')[0]}</span>
         <ChevronDown size={14} className={`transition-transform ${open ? 'rotate-180' : ''}`} />
 
         {/* combined unread badge on username */}
@@ -201,13 +201,13 @@ function UserDropdown({ user, onLogout }) {
                 <Link
                   to="/dashboard"
                   onClick={close}
-                  className="flex items-center gap-2 px-4 py-2.5 text-sm text-text hover:bg-bg transition-colors"
+                  className="flex items-center gap-2 px-4 py-2.5 text-sm font-bold text-text hover:bg-bg transition-colors"
                 >
                   <LayoutDashboard size={14} /> Dashboard
                 </Link>
               )}
               {user.role === 'admin' && (
-                <Link to="/admin" onClick={close} className="flex items-center gap-2 px-4 py-2.5 text-sm text-accent hover:bg-bg transition-colors">
+                <Link to="/admin" onClick={close} className="flex items-center gap-2 px-4 py-2.5 text-sm font-bold text-accent hover:bg-bg transition-colors">
                   <ShieldCheck size={14} /> Admin Panel
                 </Link>
               )}
@@ -217,7 +217,7 @@ function UserDropdown({ user, onLogout }) {
               {/* Notifications row */}
               <button
                 onClick={() => setSection('notifications')}
-                className="w-full flex items-center justify-between px-4 py-2.5 text-sm text-text hover:bg-bg transition-colors"
+                className="w-full flex items-center justify-between px-4 py-2.5 text-sm font-bold text-text hover:bg-bg transition-colors"
               >
                 <span className="flex items-center gap-2">
                   <Bell size={14} className="text-muted" />
@@ -234,7 +234,7 @@ function UserDropdown({ user, onLogout }) {
               {/* Messages row */}
               <button
                 onClick={() => setSection('messages')}
-                className="w-full flex items-center justify-between px-4 py-2.5 text-sm text-text hover:bg-bg transition-colors"
+                className="w-full flex items-center justify-between px-4 py-2.5 text-sm font-bold text-text hover:bg-bg transition-colors"
               >
                 <span className="flex items-center gap-2">
                   <MessageSquare size={14} className="text-muted" />
@@ -249,7 +249,7 @@ function UserDropdown({ user, onLogout }) {
               </button>
 
               <div className="border-t border-[#F3F0EB]" />
-              <button onClick={onLogout} className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-red-500 hover:bg-bg transition-colors">
+              <button onClick={onLogout} className="w-full flex items-center gap-2 px-4 py-2.5 text-sm font-bold text-red-500 hover:bg-bg transition-colors">
                 <LogOut size={14} /> Logout
               </button>
             </>
