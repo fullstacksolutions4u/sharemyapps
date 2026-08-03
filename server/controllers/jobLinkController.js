@@ -95,7 +95,7 @@ function findDuplicateAgainstList({ url, title, company, excludeId, approvedLink
 }
 
 const APPLY_INSTRUCTION =
-  '2 free Apply per week. Contribute at least 1 job post link to community per week to unlock unlimited job post applies.';
+  'Get 2 free job applies each week. Share at least 1 job post with the community to unlock unlimited applies.';
 
 /**
  * Apply Now rules for Job Post Links:

@@ -161,7 +161,7 @@ Pending rows with a URL that already has an `approved` listing show a **Duplicat
 
 **Weekly contribution** = count of `JobLink` where `createdBy = user`, `status ∈ { approved, access_granted }`, and `approvedAt` (fallback `updatedAt` if missing) is within the last **7 days**.
 
-**UI** (`Vacancies.jsx` → Job Post Links tab): always-visible yellow banner below filters — “2 free Apply per week. Contribute at least 1 job post link to community per week to unlock unlimited job post applies.” Locked cards show “Contribute to unlock”. On contribute submit: toast “Job link submitted! It will appear after admin approval.” (5s).
+**UI** (`Vacancies.jsx` → Job Post Links tab): always-visible yellow banner below filters — “Get 2 free job applies each week. Share at least 1 job post with the community to unlock unlimited applies.” Locked cards show “Contribute to unlock”. On contribute submit: toast “Job link submitted! It will appear after admin approval.” (5s).
 
 Weekly free applies are tracked via `JobLink.clickEvents[{ user, at }]`.
 
