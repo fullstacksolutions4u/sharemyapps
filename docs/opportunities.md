@@ -135,12 +135,13 @@ Indexes: `{ createdBy, status, approvedAt }`, `{ clicks }`.
 
 **Product rules**
 
-1. Each user may click **Apply Now** on **2** distinct job links **per rolling 7-day week** for free (no contribution required).
+1. Each user may click **Apply Now** on **2** distinct job links **per week** for free (no contribution required). Week runs **Monday 06:00 → next Monday 06:00 Asia/Kolkata (IST)**.
 2. To apply to **additional** links the same week, they must **contribute ≥1 job post URL** that week (to the community).
 3. Contribution unlock requires admin **Approve** (`approved` — listed publicly) **or** **Allow Access** (`access_granted` — unlock only, not listed). Pending does not unlock.
 4. Once unlocked for the week, they may Apply Now on **multiple** job posts.
 5. Re-opening a link they already visited (**Visited**) is always allowed and does not consume a new apply.
 6. **Our Client Vacancies** and **Freelance** are unaffected — no contribution gate on interest/apply.
+7. Unlock email (`sendJobLinkUnlockedEmail`) is sent **at most once per week** (first Approve / Allow Access after Monday 06:00 IST). Further approvals that week do not re-email.
 
 **Admin actions (pending)**
 
@@ -159,7 +160,9 @@ Pending rows with a URL that already has an `approved` listing show a **Duplicat
 | `GET` | `/api/job-links/apply-eligibility` | protect | Returns `canApplyMore`, `hasWeeklyContribution`, `pendingContribution`, `applyCount`, `clickedIds`, `message` |
 | `POST` | `/api/job-links/:id/click` | protect | Records Apply Now; **403** `APPLY_LIMIT` if gated |
 
-**Weekly contribution** = count of `JobLink` where `createdBy = user`, `status ∈ { approved, access_granted }`, and `approvedAt` (fallback `updatedAt` if missing) is within the last **7 days**.
+**Weekly contribution** = count of `JobLink` where `createdBy = user`, `status ∈ { approved, access_granted }`, and `approvedAt` (fallback `updatedAt` if missing) is **≥ current week start** (Monday 06:00 IST). Free applies use the same week window via `clickEvents.at`.
+
+Unlock email: `User.jobLinkUnlockEmailSentAt` — send only if unset or `< week start`.
 
 **UI** (`Vacancies.jsx` → Job Post Links tab): always-visible yellow banner below filters — “Get 2 free job applies each week. Share at least 1 job post per week with the community to unlock unlimited applies.” Locked cards show “Contribute to unlock”. On contribute submit: toast “Job link submitted! It will appear after admin approval.” (5s).
 
@@ -264,7 +267,7 @@ Applications stepper stages (simplified): Applied → Reviewing → Contacted �
 | Admin reply | `Notification` type `vacancy_reply` |
 | Report vacancy | Creates `pending` vacancy |
 | Job link → `rejected` | `sendJobLinkRejectedEmail` |
-| Job link → `approved` or `access_granted` | `sendJobLinkUnlockedEmail` (unlimited applies this week) |
+| Job link → `approved` or `access_granted` | `sendJobLinkUnlockedEmail` once per Mon 06:00 IST week (`jobLinkUnlockEmailSentAt`) |
 
 Email helpers: `server/utils/email.js`.
 
@@ -292,7 +295,7 @@ See also: `docs/interview_modules.md`.
 - Toggle status only flips between `active` and `closed` (not pending).
 - Applicant status changes are no-ops if status unchanged (no duplicate history).
 - Hard delete removes vacancy permanently.
-- **Job Post Links:** 2 free Apply per week; further applies require ≥1 `approved` or `access_granted` contribution in the last 7 days. Duplicate URLs allowed; use **Allow Access** so duplicates are not listed. Server enforces on `POST /job-links/:id/click`. Does **not** apply to Our Client Vacancies / Freelance. On **Approve** or **Allow Access**, contributor gets `sendJobLinkUnlockedEmail` (unlimited applies); on **Reject**, `sendJobLinkRejectedEmail`.
+- **Job Post Links:** 2 free Apply per week (Mon 06:00 IST week); further applies require ≥1 `approved` or `access_granted` contribution in the current week. Duplicate URLs allowed; use **Allow Access** so duplicates are not listed. Server enforces on `POST /job-links/:id/click`. Does **not** apply to Our Client Vacancies / Freelance. On **Approve** or **Allow Access**, contributor gets unlock email **once per week**; on **Reject**, `sendJobLinkRejectedEmail`.
 
 ---
 

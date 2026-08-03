@@ -3,8 +3,8 @@ const JobLinkFeedback = require('../models/JobLinkFeedback');
 const CompanyContact = require('../models/CompanyContact');
 const OpenAI = require('openai');
 const { sendJobLinkRejectedEmail, sendJobLinkUnlockedEmail } = require('../utils/email');
+const { getCurrentWeekStartMonday6AM } = require('../utils/weekBoundary');
 
-const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
 const FREE_APPLY_LIMIT = 2;
 
 function calculateExpirationDate(postedDate) {
@@ -17,8 +17,8 @@ function calculateExpirationDate(postedDate) {
   return new Date(parsed.getTime() + 5 * 24 * 60 * 60 * 1000);
 }
 
-function weekAgo() {
-  return new Date(Date.now() - WEEK_MS);
+function weekStart() {
+  return getCurrentWeekStartMonday6AM();
 }
 
 function escapeRegExp(string) {
@@ -105,7 +105,7 @@ const APPLY_INSTRUCTION =
  * - Does NOT apply to Our Client Vacancies or Freelance
  */
 async function getJobLinkApplyEligibility(userId) {
-  const since = weekAgo();
+  const since = weekStart();
 
   const [clickedDocs, weeklyApplyDocs, weeklyApprovedCount, pendingContributionCount] = await Promise.all([
     JobLink.find({ clicks: userId }).select('_id').lean(),
@@ -297,14 +297,27 @@ exports.updateJobLink = async (req, res) => {
       const User = require('../models/User');
       const user = await User.findById(link.createdBy);
       if (user && user.email) {
-        await sendJobLinkUnlockedEmail({
-          to: user.email,
-          name: user.name,
-          linkUrl: link.url,
-          title: link.title,
-          company: link.company,
-          unlockType: status,
-        }).catch(err => console.error('Error sending job link unlock email:', err));
+        const weekStartAt = weekStart();
+        const alreadySentThisWeek =
+          user.jobLinkUnlockEmailSentAt &&
+          user.jobLinkUnlockEmailSentAt >= weekStartAt;
+
+        if (!alreadySentThisWeek) {
+          try {
+            await sendJobLinkUnlockedEmail({
+              to: user.email,
+              name: user.name,
+              linkUrl: link.url,
+              title: link.title,
+              company: link.company,
+              unlockType: status,
+            });
+            user.jobLinkUnlockEmailSentAt = new Date();
+            await user.save();
+          } catch (err) {
+            console.error('Error sending job link unlock email:', err);
+          }
+        }
       }
     }
 

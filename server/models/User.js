@@ -73,6 +73,8 @@ const userSchema = new mongoose.Schema({
   coinDiscountEmailSent: { type: Boolean, default: false },
   hasCoinDiscount: { type: Boolean, default: false },
   badges: [{ type: String }],
+  // Job Post Links: unlock email sent at most once per Mon 6 AM IST week
+  jobLinkUnlockEmailSentAt: { type: Date, default: null },
   // Admin invitation to premium services for free — user still applies, then gets
   // activated from Placement Applicants
   freePremiumGrant: {
