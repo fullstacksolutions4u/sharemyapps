@@ -7,7 +7,7 @@ import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
 
 const JOB_LINK_APPLY_INSTRUCTION =
-  'Get 2 free job applies each week. Share at least 1 job post with the community to unlock unlimited applies.';
+  'Get 2 free job applies each week. Share at least 1 job post per week with the community to unlock unlimited applies.';
 
 const getStatusConfig = (status) => {
   const s = (status || '').toLowerCase();
