@@ -263,6 +263,8 @@ Applications stepper stages (simplified): Applied → Reviewing → Contacted �
 | Any status change | `Notification` type `vacancy_reply` |
 | Admin reply | `Notification` type `vacancy_reply` |
 | Report vacancy | Creates `pending` vacancy |
+| Job link → `rejected` | `sendJobLinkRejectedEmail` |
+| Job link → `approved` or `access_granted` | `sendJobLinkUnlockedEmail` (unlimited applies this week) |
 
 Email helpers: `server/utils/email.js`.
 
@@ -290,7 +292,7 @@ See also: `docs/interview_modules.md`.
 - Toggle status only flips between `active` and `closed` (not pending).
 - Applicant status changes are no-ops if status unchanged (no duplicate history).
 - Hard delete removes vacancy permanently.
-- **Job Post Links:** 2 free Apply per week; further applies require ≥1 `approved` or `access_granted` contribution in the last 7 days. Duplicate URLs allowed; use **Allow Access** so duplicates are not listed. Server enforces on `POST /job-links/:id/click`. Does **not** apply to Our Client Vacancies / Freelance.
+- **Job Post Links:** 2 free Apply per week; further applies require ≥1 `approved` or `access_granted` contribution in the last 7 days. Duplicate URLs allowed; use **Allow Access** so duplicates are not listed. Server enforces on `POST /job-links/:id/click`. Does **not** apply to Our Client Vacancies / Freelance. On **Approve** or **Allow Access**, contributor gets `sendJobLinkUnlockedEmail` (unlimited applies); on **Reject**, `sendJobLinkRejectedEmail`.
 
 ---
 
@@ -326,7 +328,7 @@ See also: `docs/interview_modules.md`.
 3. Expand applicants → set status (`reviewing` → `contacted` → interview rounds).
 4. When `contacted` / interview round: use **Interview Screening** to run modules evaluation for that job.
 5. Close vacancy when hiring done; optionally mark Selected / Rejected on applicants.
-6. **Job Post Links:** review pending community links → **Approve** (list + unlock), **Allow Access** (unlock only, for duplicates), or **Reject** (email).
+6. **Job Post Links:** review pending community links → **Approve** (list + unlock + email), **Allow Access** (unlock only + email, for duplicates), or **Reject** (email).
 
 ---
 

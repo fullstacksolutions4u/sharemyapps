@@ -2,7 +2,7 @@ const JobLink = require('../models/JobLink');
 const JobLinkFeedback = require('../models/JobLinkFeedback');
 const CompanyContact = require('../models/CompanyContact');
 const OpenAI = require('openai');
-const { sendJobLinkRejectedEmail } = require('../utils/email');
+const { sendJobLinkRejectedEmail, sendJobLinkUnlockedEmail } = require('../utils/email');
 
 const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
 const FREE_APPLY_LIMIT = 2;
@@ -288,7 +288,27 @@ exports.updateJobLink = async (req, res) => {
 
     await link.save();
 
-    if (status === 'rejected' && link.createdBy) {
+    const unlockedNow =
+      (status === 'approved' || status === 'access_granted') &&
+      prevStatus !== status &&
+      link.createdBy;
+
+    if (unlockedNow) {
+      const User = require('../models/User');
+      const user = await User.findById(link.createdBy);
+      if (user && user.email) {
+        await sendJobLinkUnlockedEmail({
+          to: user.email,
+          name: user.name,
+          linkUrl: link.url,
+          title: link.title,
+          company: link.company,
+          unlockType: status,
+        }).catch(err => console.error('Error sending job link unlock email:', err));
+      }
+    }
+
+    if (status === 'rejected' && prevStatus !== 'rejected' && link.createdBy) {
       const User = require('../models/User');
       const user = await User.findById(link.createdBy);
       if (user && user.email) {

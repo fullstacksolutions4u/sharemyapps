@@ -784,6 +784,43 @@ export default function Vacancies() {
                             <span>Sign in to apply</span>
                             <ArrowRight size={12} />
                           </Link>
+                        ) : !isApplied && !canApplyMore ? (
+                          <div className="relative group/unlock z-10">
+                            <button
+                              type="button"
+                              onClick={(e) => handleLinkClick(e, link._id, link.url)}
+                              className="py-1.5 px-3 rounded-lg text-[12px] font-semibold flex items-center justify-center gap-1.5 bg-gray-200 text-gray-500 border-b-[3px] border-gray-300 transition-all"
+                              aria-describedby={`unlock-tip-${link._id}`}
+                            >
+                              <span>Contribute to unlock</span>
+                              <ExternalLink size={12} />
+                            </button>
+                            <div
+                              id={`unlock-tip-${link._id}`}
+                              role="tooltip"
+                              className="absolute bottom-full right-0 mb-2 w-[260px] p-3.5 bg-white text-left rounded-xl shadow-[0_8px_28px_-6px_rgba(0,0,0,0.18)] border border-[#E5E1DA] opacity-0 invisible translate-y-1 group-hover/unlock:opacity-100 group-hover/unlock:visible group-hover/unlock:translate-y-0 group-focus-within/unlock:opacity-100 group-focus-within/unlock:visible group-focus-within/unlock:translate-y-0 transition-all duration-200 pointer-events-none z-[100]"
+                            >
+                              <p className="text-[11px] font-semibold text-[#1A1A1A] mb-2">
+                                How to unlock Apply Now
+                              </p>
+                              <ul className="space-y-1.5 text-[11px] text-[#4A4A4A] leading-relaxed">
+                                <li className="flex gap-1.5">
+                                  <span className="text-amber-600 shrink-0">•</span>
+                                  <span>You get <strong className="font-semibold text-[#1A1A1A]">2 free</strong> job applies each week.</span>
+                                </li>
+                                <li className="flex gap-1.5">
+                                  <span className="text-amber-600 shrink-0">•</span>
+                                  <span>Share at least <strong className="font-semibold text-[#1A1A1A]">1 job post</strong> with the community this week.</span>
+                                </li>
+                                <li className="flex gap-1.5">
+                                  <span className="text-amber-600 shrink-0">•</span>
+                                  <span>Then unlock <strong className="font-semibold text-[#1A1A1A]">unlimited</strong> applies.</span>
+                                </li>
+                              </ul>
+                              <span className="absolute top-full right-5 border-[6px] border-transparent border-t-[#E5E1DA]" />
+                              <span className="absolute top-full right-5 mt-[-1px] border-[5px] border-transparent border-t-white" />
+                            </div>
+                          </div>
                         ) : (
                           <a
                             href={link.url}
@@ -793,13 +830,10 @@ export default function Vacancies() {
                             className={`py-1.5 px-3 rounded-lg text-[12px] font-semibold flex items-center justify-center gap-1.5 transition-all ${
                               isApplied
                                 ? 'bg-white text-[#006994] border border-[#006994] border-b-[3px] border-b-[#005578] active:border-b-0 active:translate-y-[3px]'
-                                : !canApplyMore
-                                  ? 'bg-gray-200 text-gray-500 border-b-[3px] border-gray-300 cursor-not-allowed'
-                                  : 'bg-[#006994] hover:bg-[#005578] text-white border-b-[3px] border-[#004f70] active:border-b-0 active:translate-y-[3px]'
+                                : 'bg-[#006994] hover:bg-[#005578] text-white border-b-[3px] border-[#004f70] active:border-b-0 active:translate-y-[3px]'
                             }`}
-                            title={!isApplied && !canApplyMore ? (applyEligibility?.message || JOB_LINK_APPLY_INSTRUCTION) : undefined}
                           >
-                            <span>{isApplied ? 'Visited' : !canApplyMore ? 'Contribute to unlock' : 'Apply Now'}</span>
+                            <span>{isApplied ? 'Visited' : 'Apply Now'}</span>
                             <ExternalLink size={12} />
                           </a>
                         )}

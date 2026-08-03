@@ -630,6 +630,48 @@ exports.sendJobLinkRejectedEmail = async ({ to, name, linkUrl, adminNote }) => {
   });
 };
 
+exports.sendJobLinkUnlockedEmail = async ({ to, name, linkUrl, title, company, unlockType }) => {
+  const vacanciesUrl = `${BASE_URL}/vacancies`;
+  const roleLabel = title || 'Job opportunity';
+  const companyLabel = company ? ` at ${company}` : '';
+  const listedNote = unlockType === 'approved'
+    ? 'Your shared job post is now listed for the community.'
+    : 'Your contribution was credited (duplicate posts are not listed publicly).';
+
+  await sendEmailWithFallback({
+    sender: FROM,
+    to: [{ email: to, name }],
+    subject: `Unlimited job applies unlocked — thank you for sharing`,
+    htmlContent: `
+      <div style="font-family:Inter,Arial,sans-serif;max-width:560px;margin:0 auto;background:#fff;border-radius:12px;overflow:hidden;border:1px solid #E5E1DA;">
+        <div style="background:#00A693;padding:12px 32px;text-align:center;">
+          <img src="${LOGO_URL}" alt="ShareMyApps" style="height:40px;object-fit:contain;" />
+        </div>
+        <div style="padding:32px;">
+          <h2 style="margin:0 0 8px;font-size:18px;color:#1A1A1A;">Unlimited applies unlocked</h2>
+          <p style="color:#374151;margin:0 0 16px;">Hi ${name},</p>
+          <p style="color:#374151;margin:0 0 16px;">
+            Thanks for sharing a job post with the community. We've reviewed your submission
+            (<strong>${roleLabel}${companyLabel}</strong>) and credited it.
+          </p>
+          <div style="background:#ECFDF5;border:1px solid #A7F3D0;border-radius:8px;padding:14px 16px;margin-bottom:16px;">
+            <p style="margin:0 0 6px;font-size:14px;color:#065F46;font-weight:600;">You now have unlimited Apply Now for this week.</p>
+            <p style="margin:0;font-size:13px;color:#047857;">${listedNote}</p>
+          </div>
+          <p style="color:#374151;margin:0 0 20px;font-size:14px;">
+            Head to Job Post Links and apply to as many openings as you like until your weekly contribution window renews.
+          </p>
+          <a href="${vacanciesUrl}" style="display:inline-block;background:#00A693;color:#fff;text-decoration:none;padding:12px 24px;border-radius:8px;font-weight:600;font-size:14px;margin-bottom:24px;">
+            Browse job posts →
+          </a>
+          <p style="color:#9CA3AF;font-size:12px;margin:0;word-break:break-all;">Shared link: ${linkUrl || '—'}</p>
+        </div>
+        ${FOOTER('You received this email because you shared a job link on ShareMyApps.')}
+      </div>
+    `,
+  });
+};
+
 exports.sendResumeReadyEmail = async ({ to, name, serviceLabel, completionLink, coverLetterLink }) => {
   const buttons = coverLetterLink
     ? `
