@@ -11,10 +11,11 @@ const DEFAULT_SECTIONS = [
 // GET /admin/interviews — list sessions with filters
 exports.listSessions = async (req, res) => {
   try {
-    const { userId, date, minRating, maxRating, shared, page = 1, limit = 30 } = req.query;
+    const { userId, vacancyId, date, minRating, maxRating, shared, page = 1, limit = 30 } = req.query;
     const filter = {};
 
     if (userId)    filter.user = userId;
+    if (vacancyId) filter.vacancy = vacancyId;
     if (shared !== undefined) filter.sharedWithCandidate = shared === 'true';
     if (date) {
       const d = new Date(date);
@@ -32,6 +33,7 @@ exports.listSessions = async (req, res) => {
     const sessions = await InterviewSession.find(filter)
       .populate('user', 'name email avatar regNumber designations familiarTech yearsOfExperience place state')
       .populate('evaluatedBy', 'name avatar')
+      .populate('vacancy', 'title company status')
       .sort({ interviewedAt: -1 })
       .skip((Number(page) - 1) * Number(limit))
       .limit(Number(limit))
@@ -73,12 +75,13 @@ exports.createSession = async (req, res) => {
 
     const {
       overallRating, headline, summary, googleMeetLink, status,
-      sections, pros, cons, improvementTips, interviewedAt,
+      sections, pros, cons, improvementTips, interviewedAt, mcqAssessments, vacancy
     } = req.body;
 
     const session = await InterviewSession.create({
       user:          userId,
       evaluatedBy:   req.user._id,
+      vacancy:       vacancy || null,
       sessionNumber,
       overallRating: overallRating ?? 5,
       headline:      headline ?? '',
@@ -90,10 +93,12 @@ exports.createSession = async (req, res) => {
       cons:          cons    ?? [],
       improvementTips: improvementTips ?? [],
       interviewedAt: interviewedAt ? new Date(interviewedAt) : new Date(),
+      mcqAssessments: mcqAssessments ?? [],
     });
 
     await session.populate('user', 'name email avatar regNumber designations');
     await session.populate('evaluatedBy', 'name avatar');
+    await session.populate('vacancy', 'title company status');
 
     res.status(201).json({ session });
   } catch (err) {
@@ -104,15 +109,16 @@ exports.createSession = async (req, res) => {
 // PUT /admin/interviews/:sessionId — update session
 exports.updateSession = async (req, res) => {
   try {
-    const { overallRating, headline, summary, googleMeetLink, status, sections, pros, cons, improvementTips, interviewedAt } = req.body;
+    const { overallRating, headline, summary, googleMeetLink, status, sections, pros, cons, improvementTips, interviewedAt, mcqAssessments, vacancy } = req.body;
 
     const session = await InterviewSession.findByIdAndUpdate(
       req.params.sessionId,
-      { overallRating, headline, summary, googleMeetLink, status, sections, pros, cons, improvementTips, interviewedAt },
+      { overallRating, headline, summary, googleMeetLink, status, sections, pros, cons, improvementTips, interviewedAt, mcqAssessments, ...(vacancy !== undefined ? { vacancy: vacancy || null } : {}) },
       { new: true }
     )
       .populate('user', 'name email avatar regNumber designations')
-      .populate('evaluatedBy', 'name avatar');
+      .populate('evaluatedBy', 'name avatar')
+      .populate('vacancy', 'title company status');
 
     if (!session) return res.status(404).json({ message: 'Session not found' });
     res.json({ session });
@@ -188,5 +194,79 @@ exports.getMyFeedback = async (req, res) => {
     res.json({ sessions });
   } catch (err) {
     res.status(500).json({ message: err.message });
+  }
+};
+
+// POST /admin/interviews/summarize
+exports.summarizeMcqs = async (req, res) => {
+  try {
+    const { mcqAssessments, candidateName, interviewerComments } = req.body;
+    if (!Array.isArray(mcqAssessments) || mcqAssessments.length === 0) {
+      return res.status(400).json({ message: 'No MCQ assessments provided.' });
+    }
+    if (!process.env.OPENAI_API_KEY) {
+      return res.status(500).json({ message: 'OpenAI API key is not configured on the server.' });
+    }
+
+    const OpenAI = require('openai');
+    const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+
+    const correctCount = mcqAssessments.filter(a => a.isCorrect).length;
+    const incorrectCount = mcqAssessments.length - correctCount;
+
+    const details = mcqAssessments.map((a, idx) => {
+      return `Question ${idx + 1}: "${a.question}"
+Category: ${a.moduleTitle || 'N/A'} -> ${a.topicName || 'N/A'}
+Candidate Answer Status: ${a.isCorrect ? 'Correct / Right Answer' : 'Incorrect / Wrong Answer'}
+Interviewer Comment: ${a.comment || 'None'}`;
+    }).join('\n\n');
+
+    const prompt = `You are an expert technical interviewer assessing a developer candidate.
+We conducted a live interview assessment. Here are the results:
+Candidate name: ${candidateName || 'The candidate'}
+Score: ${correctCount} correct, ${incorrectCount} incorrect, ${mcqAssessments.length} total evaluated
+${interviewerComments ? `Interviewer overall comments: ${interviewerComments}` : ''}
+
+Assessment details:
+${details}
+
+Based on correct answers, wrong answers, per-question interviewer comments, and any overall comments, generate a structured interview evaluation in JSON format.
+Ensure overallRating is between 1 and 10 (can be decimal, e.g. 7.5).
+improvementTips should contain constructive suggestions.
+
+JSON Output Schema:
+{
+  "headline": "A short sentence summing up the performance, e.g. 'Strong JavaScript core, but struggled with DOM manipulation.'",
+  "summary": "A detailed paragraph evaluating the candidate's interview performance: strengths, weaknesses, and overall impression.",
+  "overallRating": 8,
+  "pros": ["HTML semantic markup knowledge", "Excellent recursion understanding"],
+  "cons": ["Struggled with absolute positioning in CSS", "Confused about JavaScript Promises"],
+  "improvementTips": [
+    {
+      "area": "JavaScript Promises",
+      "tip": "Review Async/Await syntax and resolve/reject handling with hands-on practice.",
+      "resourceUrl": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise"
+    }
+  ]
+}
+
+Return ONLY valid JSON. Do not write any explanations before or after.`;
+
+    const response = await openai.chat.completions.create({
+      model: 'gpt-4o-mini',
+      messages: [
+        { role: 'system', content: 'You are a professional technical interviewer helper. Always respond in JSON.' },
+        { role: 'user', content: prompt }
+      ],
+      response_format: { type: 'json_object' }
+    });
+
+    const jsonText = response.choices[0].message.content.trim();
+    const result = JSON.parse(jsonText);
+
+    res.json(result);
+  } catch (err) {
+    console.error('[summarizeMcqs Error]:', err);
+    res.status(500).json({ message: 'Failed to generate AI summary: ' + err.message });
   }
 };

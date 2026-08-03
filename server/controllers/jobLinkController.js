@@ -4,6 +4,9 @@ const CompanyContact = require('../models/CompanyContact');
 const OpenAI = require('openai');
 const { sendJobLinkRejectedEmail } = require('../utils/email');
 
+const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
+const FREE_APPLY_LIMIT = 1;
+
 function calculateExpirationDate(postedDate) {
   const defaultExp = Date.now() + 5 * 24 * 60 * 60 * 1000;
   if (!postedDate || typeof postedDate !== 'string') return new Date(defaultExp);
@@ -13,6 +16,138 @@ function calculateExpirationDate(postedDate) {
   
   return new Date(parsed.getTime() + 5 * 24 * 60 * 60 * 1000);
 }
+
+function weekAgo() {
+  return new Date(Date.now() - WEEK_MS);
+}
+
+function escapeRegExp(string) {
+  return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+function normalizeJobUrl(raw) {
+  if (!raw || typeof raw !== 'string') return '';
+  const trimmed = raw.trim();
+  try {
+    const parsed = new URL(trimmed);
+    parsed.hash = '';
+    const host = parsed.hostname.replace(/^www\./i, '').toLowerCase();
+    const path = parsed.pathname.replace(/\/+$/, '') || '';
+    return `${host}${path}${parsed.search}`.toLowerCase();
+  } catch {
+    return trimmed.replace(/^https?:\/\//i, '').replace(/^www\./i, '').replace(/\/+$/, '').toLowerCase();
+  }
+}
+
+function titlesMatch(a, b) {
+  const na = (a || '').trim().toLowerCase().replace(/\s+/g, ' ');
+  const nb = (b || '').trim().toLowerCase().replace(/\s+/g, ' ');
+  if (!na || !nb) return false;
+  return na === nb || na.includes(nb) || nb.includes(na);
+}
+
+function companiesMatch(a, b) {
+  const na = (a || '').trim().toLowerCase().replace(/\s+/g, ' ');
+  const nb = (b || '').trim().toLowerCase().replace(/\s+/g, ' ');
+  if (!na || !nb) return false;
+  return na === nb || na.includes(nb) || nb.includes(na);
+}
+
+function findDuplicateAgainstList({ url, title, company, excludeId, approvedLinks, vacancyMatch }) {
+  const normUrl = normalizeJobUrl(url);
+  let urlMatch = null;
+  let companyTitleMatch = null;
+
+  for (const existing of approvedLinks) {
+    if (excludeId && existing._id.toString() === excludeId.toString()) continue;
+
+    if (normUrl && normalizeJobUrl(existing.url) === normUrl) {
+      urlMatch = existing;
+    }
+    if (titlesMatch(title, existing.title) && companiesMatch(company, existing.company)) {
+      companyTitleMatch = existing;
+    }
+    if (urlMatch && companyTitleMatch) break;
+  }
+
+  const matched = urlMatch || companyTitleMatch || vacancyMatch || null;
+  if (!matched) {
+    return { isDuplicate: false, duplicateReason: null, matchedJob: null };
+  }
+
+  const reasons = [];
+  if (urlMatch) reasons.push('url');
+  if (companyTitleMatch) reasons.push('company_title');
+  if (vacancyMatch && matched === vacancyMatch) reasons.push('vacancy');
+
+  return {
+    isDuplicate: true,
+    duplicateReason: reasons.join('+') || 'match',
+    matchedJob: {
+      _id: matched._id,
+      title: matched.title || '',
+      company: matched.company || '',
+      url: matched.url || '',
+      status: matched.status || 'approved',
+      source: vacancyMatch && matched === vacancyMatch ? 'vacancy' : 'job_link',
+    },
+  };
+}
+
+/**
+ * Apply Now rules for Job Post Links:
+ * - 1 free Apply Now without contributing
+ * - To apply to more, user needs ≥1 approved or access_granted contribution in the last 7 days
+ * - Re-opening an already-clicked link is always allowed
+ */
+async function getJobLinkApplyEligibility(userId) {
+  const since = weekAgo();
+
+  const [clickedDocs, weeklyApprovedCount, pendingContributionCount] = await Promise.all([
+    JobLink.find({ clicks: userId }).select('_id').lean(),
+    JobLink.countDocuments({
+      createdBy: userId,
+      status: { $in: ['approved', 'access_granted'] },
+      $or: [
+        { approvedAt: { $gte: since } },
+        { $and: [{ approvedAt: { $exists: false } }, { updatedAt: { $gte: since } }] },
+      ],
+    }),
+    JobLink.countDocuments({ createdBy: userId, status: 'pending' }),
+  ]);
+
+  const clickedIds = clickedDocs.map((d) => d._id.toString());
+  const applyCount = clickedIds.length;
+  const hasWeeklyContribution = weeklyApprovedCount > 0;
+  const pendingContribution = pendingContributionCount > 0;
+  const canApplyMore = hasWeeklyContribution || applyCount < FREE_APPLY_LIMIT;
+
+  let message = null;
+  if (!canApplyMore) {
+    message = 'Contribute at least 1 job post link per week to unlock more applies';
+  }
+
+  return {
+    canApplyMore,
+    hasWeeklyContribution,
+    pendingContribution,
+    freeApplyUsed: applyCount >= FREE_APPLY_LIMIT,
+    applyCount,
+    freeApplyLimit: FREE_APPLY_LIMIT,
+    clickedIds,
+    message,
+  };
+}
+
+exports.getJobLinkApplyEligibility = async (req, res) => {
+  try {
+    const eligibility = await getJobLinkApplyEligibility(req.user._id);
+    res.json({ success: true, data: eligibility });
+  } catch (error) {
+    console.error('Error fetching job link apply eligibility:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+};
 
 exports.getJobLinks = async (req, res) => {
   try {
@@ -44,11 +179,6 @@ exports.createJobLink = async (req, res) => {
 
     if (!url) {
       return res.status(400).json({ success: false, message: 'URL is required.' });
-    }
-
-    const existingLink = await JobLink.findOne({ url });
-    if (existingLink) {
-      return res.status(400).json({ success: false, message: 'Link already shared' });
     }
 
     const jobLink = await JobLink.create({
@@ -85,22 +215,10 @@ exports.getAdminJobLinks = async (req, res) => {
 
 exports.createAdminJobLink = async (req, res) => {
   try {
-    const { url, title, company, postedDate, workMode, location, platform, experience, state, allowDuplicateUrl } = req.body;
+    const { url, title, company, postedDate, workMode, location, platform, experience, state } = req.body;
 
     if (!url || !title || !workMode) {
       return res.status(400).json({ success: false, message: 'URL, Designation, and Work Mode are required' });
-    }
-
-    if (allowDuplicateUrl) {
-      const existingLink = await JobLink.findOne({ url, title });
-      if (existingLink) {
-        return res.status(400).json({ success: false, message: 'Link with this designation already shared' });
-      }
-    } else {
-      const existingLink = await JobLink.findOne({ url });
-      if (existingLink) {
-        return res.status(400).json({ success: false, message: 'Link already shared' });
-      }
     }
 
     const jobLink = await JobLink.create({
@@ -113,6 +231,7 @@ exports.createAdminJobLink = async (req, res) => {
       experience: experience || '',
       state: state || '',
       expiresAt: calculateExpirationDate(postedDate),
+      approvedAt: new Date(),
       platform: platform || 'other',
       createdBy: req.user._id,
       status: 'approved'
@@ -139,10 +258,19 @@ exports.updateJobLink = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Job link not found' });
     }
 
+    const prevStatus = link.status;
     if (status) {
       link.status = status;
       if (status === 'approved') {
         link.expiresAt = calculateExpirationDate(postedDate !== undefined ? postedDate : link.postedDate);
+        if (prevStatus !== 'approved' || !link.approvedAt) {
+          link.approvedAt = new Date();
+        }
+      } else if (status === 'access_granted') {
+        // Credit contributor for Apply Now unlock; do not list publicly
+        if (prevStatus !== 'access_granted' || !link.approvedAt) {
+          link.approvedAt = new Date();
+        }
       }
     }
     if (title !== undefined) link.title = title;
@@ -179,7 +307,7 @@ exports.updateJobLink = async (req, res) => {
 
 exports.extractJobDetails = async (req, res) => {
   try {
-    const { text } = req.body;
+    const { text, url, excludeId } = req.body;
 
     if (!text || text.trim().length < 30) {
       return res.status(400).json({ success: false, message: 'Please paste more job description content.' });
@@ -191,9 +319,24 @@ exports.extractJobDetails = async (req, res) => {
 
     const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
+    const existingApproved = await JobLink.find({ status: 'approved' })
+      .select('title company url status createdAt')
+      .sort({ createdAt: -1 })
+      .limit(300)
+      .lean();
+
+    const existingCatalog = existingApproved
+      .slice(0, 80)
+      .map((j, i) => `${i + 1}. ${j.title || 'Untitled'} @ ${j.company || 'Unknown'} | ${j.url || ''}`)
+      .join('\n');
+
     const currentDate = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
-    const prompt = `You are a job description parser. Extract structured information for all the job positions/openings mentioned in the following job posting content. If there are multiple positions mentioned, extract each of them as a separate item in the "jobs" array.
+    const prompt = `You are a job description parser and duplicate detector for an admin job-links tool.
+Extract structured information for all job positions/openings in the content. If multiple positions are mentioned, extract each as a separate item in "jobs".
 CURRENT DATE: ${currentDate}
+
+ALREADY APPROVED / LISTED JOB POSTS (use these to flag duplicates — same company+role or same opening even if wording differs):
+${existingCatalog || '(none yet)'}
 
 Return ONLY a valid JSON object with a single "jobs" key containing an array of objects (no markdown, no explanation, just raw JSON):
 {
@@ -206,7 +349,9 @@ Return ONLY a valid JSON object with a single "jobs" key containing an array of 
       "location": "city and state/country if mentioned. For Indian cities, use the state name instead of 'India' (e.g. 'Jaipur, Rajasthan', 'Bengaluru, Karnataka', 'Mumbai, Maharashtra', 'Hyderabad, Telangana'). For non-Indian locations use city and country. Else empty string.",
       "state": "the Indian state name — ONLY fill if there is exactly ONE clear Indian city or area mentioned (e.g. 'Bengaluru' → 'Karnataka', 'Hyderabad' → 'Telangana'). If a non-Indian country/city is mentioned (e.g. 'USA', 'London'), return 'Out of India'. If multiple locations are mentioned, or if the location is Remote, return empty string.",
       "experience": "experience requirement as a short string (e.g. 2-4 years, 3+ years), else empty string",
-      "email": "any email address found in the job posting (e.g. hr@company.com), else empty string"
+      "email": "any email address found in the job posting (e.g. hr@company.com), else empty string",
+      "aiLikelyDuplicate": true or false — true if this opening clearly matches an ALREADY APPROVED listing above (same company + same/similar role, or same job post),
+      "aiDuplicateNote": "short reason if aiLikelyDuplicate is true (e.g. 'Same as listed: React Developer @ Matrix Marketers'), else empty string"
     }
   ]
 }
@@ -218,7 +363,7 @@ ${text.slice(0, 4000)}`;
       model: 'gpt-4o-mini',
       messages: [{ role: 'user', content: prompt }],
       temperature: 0.1,
-      max_tokens: 1000,
+      max_tokens: 1600,
     });
 
     const responseText = completion.choices[0]?.message?.content?.trim() || '';
@@ -242,32 +387,37 @@ ${text.slice(0, 4000)}`;
       jobList = [extracted];
     }
 
+    const Vacancy = require('../models/Vacancy');
     const processedJobs = [];
     for (const job of jobList) {
-      let isDuplicate = false;
       const jobCompany = job.company || '';
       const jobTitle = job.title || '';
       const jobEmail = job.email || '';
+      const aiLikelyDuplicate = Boolean(job.aiLikelyDuplicate);
+      const aiDuplicateNote = (job.aiDuplicateNote || '').trim();
 
+      let vacancyMatch = null;
       if (jobCompany && jobTitle) {
-        // Escape regex chars to be safe
-        const escapeRegExp = (string) => string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-        const companyRegex = new RegExp(escapeRegExp(jobCompany.trim()), 'i');
-        const titleRegex = new RegExp(escapeRegExp(jobTitle.trim()), 'i');
-
-        const existingLink = await JobLink.findOne({
-          company: companyRegex,
-          title: titleRegex
-        });
-
-        const Vacancy = require('../models/Vacancy');
-        const existingVacancy = await Vacancy.findOne({
-          company: companyRegex,
-          title: titleRegex
-        });
-
-        if (existingLink || existingVacancy) isDuplicate = true;
+        vacancyMatch = await Vacancy.findOne({
+          company: new RegExp(escapeRegExp(jobCompany.trim()), 'i'),
+          title: new RegExp(escapeRegExp(jobTitle.trim()), 'i'),
+          status: { $in: ['active', 'pending'] },
+        }).select('title company status').lean();
       }
+
+      const dbMatch = findDuplicateAgainstList({
+        url,
+        title: jobTitle,
+        company: jobCompany,
+        excludeId,
+        approvedLinks: existingApproved,
+        vacancyMatch,
+      });
+
+      const isDuplicate = dbMatch.isDuplicate || aiLikelyDuplicate;
+      let duplicateReason = dbMatch.duplicateReason;
+      if (aiLikelyDuplicate && !duplicateReason) duplicateReason = 'ai';
+      else if (aiLikelyDuplicate && duplicateReason) duplicateReason = `${duplicateReason}+ai`;
 
       if (jobCompany) {
         const companyName = jobCompany.trim();
@@ -277,7 +427,7 @@ ${text.slice(0, 4000)}`;
             updateDoc.$addToSet = { emails: jobEmail.trim().toLowerCase() };
           }
           await CompanyContact.findOneAndUpdate(
-            { name: { $regex: new RegExp(`^${companyName}$`, 'i') } },
+            { name: { $regex: new RegExp(`^${escapeRegExp(companyName)}$`, 'i') } },
             { 
               $setOnInsert: { name: companyName },
               ...updateDoc
@@ -298,7 +448,11 @@ ${text.slice(0, 4000)}`;
         state: job.state || '',
         experience: job.experience || '',
         email: jobEmail,
-        isDuplicate
+        isDuplicate,
+        duplicateReason: duplicateReason || null,
+        matchedJob: dbMatch.matchedJob,
+        aiLikelyDuplicate,
+        aiDuplicateNote,
       });
     }
 
@@ -368,11 +522,27 @@ exports.recordClick = async (req, res) => {
     if (!jobLink.clicks) {
       jobLink.clicks = [];
     }
-    if (!jobLink.clicks.includes(req.user._id)) {
-      jobLink.clicks.push(req.user._id);
-      await jobLink.save();
+
+    const alreadyClicked = jobLink.clicks.some((id) => id.toString() === req.user._id.toString());
+    if (alreadyClicked) {
+      return res.json({ success: true, message: 'Click already recorded', alreadyClicked: true });
     }
-    res.json({ success: true, message: 'Click recorded successfully' });
+
+    const eligibility = await getJobLinkApplyEligibility(req.user._id);
+    if (!eligibility.canApplyMore) {
+      return res.status(403).json({
+        success: false,
+        code: 'APPLY_LIMIT',
+        message: eligibility.message,
+        data: eligibility,
+      });
+    }
+
+    jobLink.clicks.push(req.user._id);
+    await jobLink.save();
+
+    const updated = await getJobLinkApplyEligibility(req.user._id);
+    res.json({ success: true, message: 'Click recorded successfully', data: updated });
   } catch (error) {
     console.error('Error recording job link click:', error);
     res.status(500).json({ success: false, message: 'Server error' });

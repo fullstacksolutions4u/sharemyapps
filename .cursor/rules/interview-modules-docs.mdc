@@ -1,0 +1,34 @@
+---
+description: Keep docs/interview_modules.md in sync and use it as context for Interview Modules work
+globs: "{**/InterviewModule*,**/interviewModule*,**/interviewModules*,**/AdminInterviewModulesSection*,**/AdminCurationSection*,**/interviewController*,**/InterviewSession*,docs/interview_modules.md}"
+alwaysApply: false
+---
+
+# Interview Modules documentation
+
+## Context source
+
+Before changing Interview Modules behavior, read `docs/interview_modules.md` for current models, APIs, UI tabs, and business rules.
+
+Interview Modules lives under **Admin → Interview Screening → Interview Modules** tab (`AdminCurationSection` embeds `AdminInterviewModulesSection`). There is no separate sidebar item.
+
+## Keep the doc updated
+
+After any implementation that touches this feature, update `docs/interview_modules.md` in the same change set:
+
+- New/changed API routes or request/response shapes
+- Schema field additions/removals on `InterviewModule` or `InterviewSession`
+- Admin UI flow changes (Screening tabs, Modules inner tabs, applicant selector, save session, history)
+- Relationship changes with Interview Screening, Quiz Zone copy, or developer feedback
+- New business rules or file paths
+
+Keep the doc accurate and concise; prefer editing existing sections over appending duplicate notes.
+
+## Related paths (typical)
+
+- `server/models/InterviewModule.js`, `server/models/InterviewSession.js`
+- `server/controllers/interviewModuleController.js`, `server/controllers/interviewController.js`
+- `server/routes/interviewModules.js`, admin interview routes
+- `client/src/pages/admin/AdminInterviewModulesSection.jsx`
+- `client/src/pages/admin/AdminCurationSection.jsx` (hosts Modules tab + Session/Sessions)
+- `client/src/pages/DeveloperInterviewFeedback.jsx`

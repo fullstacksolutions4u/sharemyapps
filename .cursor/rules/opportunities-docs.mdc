@@ -1,0 +1,38 @@
+---
+description: Keep docs/opportunities.md in sync and use it as context for Opportunities / Vacancies / Freelance / Job Links work
+globs: "{**/Vacancy*,**/vacancy*,**/vacancies*,**/Freelance*,**/freelance*,**/JobLink*,**/jobLink*,**/jobLinks*,**/AdminOpportunitiesSection*,**/AdminVacanciesSection*,**/AdminFreelanceSection*,**/AdminJobLinksSection*,**/Vacancies.jsx,**/Applications.jsx,**/AddVacancy.jsx,**/ReportVacancyModal*,docs/opportunities.md}"
+alwaysApply: false
+---
+
+# Opportunities documentation
+
+## Context source
+
+Before changing Opportunities, Vacancies, Freelance, or Job Post Links behavior, read `docs/opportunities.md` for current models, APIs, admin tabs, applicant pipeline, Apply Now gating, and business rules.
+
+Admin entry: **Admin → Opportunities** (`AdminOpportunitiesSection` with Vacancies / Reported / Freelance tabs). Job Post Links: `AdminJobLinksSection` + public tab on `Vacancies.jsx`.
+
+## Keep the doc updated
+
+After any implementation that touches this feature, update `docs/opportunities.md` in the same change set:
+
+- New/changed API routes or request/response shapes
+- Schema field additions/removals on `Vacancy`, `FreelanceOpportunity`, or `JobLink`
+- Admin UI flow changes (tabs, applicants panel, status pipeline, job link approve)
+- Public browse / apply / Applications stepper / Apply Now gating changes
+- Relationship changes with Interview Screening applicant statuses
+- New business rules or file paths
+- Planned modifications checklist when scoping work
+
+Keep the doc accurate and concise; prefer editing existing sections over appending duplicate notes.
+
+## Related paths (typical)
+
+- `server/models/Vacancy.js`, `server/models/FreelanceOpportunity.js`, `server/models/JobLink.js`
+- `server/controllers/vacancyController.js`, `server/controllers/freelanceOpportunityController.js`, `server/controllers/jobLinkController.js`
+- `server/routes/vacancies.js`, `server/routes/freelance.js`, `server/routes/jobLinks.js`, admin vacancy/freelance routes
+- `client/src/pages/admin/AdminOpportunitiesSection.jsx`
+- `client/src/pages/admin/AdminVacanciesSection.jsx`
+- `client/src/pages/admin/AdminFreelanceSection.jsx`
+- `client/src/pages/admin/AdminJobLinksSection.jsx`
+- `client/src/pages/Vacancies.jsx`, `Applications.jsx`, `AddVacancy.jsx`

@@ -1,14 +1,15 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   Search, Plus, Trash2, Send, Check,
   Copy, ExternalLink, ClipboardList, ToggleLeft, ToggleRight,
   X, Link as LinkIcon, Edit3, RefreshCw,
-  Calendar, Video, ChevronLeft, ChevronRight
+  Calendar, Video, ChevronLeft, ChevronRight, BookMarked, Users, ChevronDown, Layers
 } from 'lucide-react';
 import api from '../../api/axios';
 import toast from 'react-hot-toast';
 import { optimizeImage } from '../../utils/image';
 import { formatDistanceToNow } from 'date-fns';
+import AdminInterviewModulesSection from './AdminInterviewModulesSection';
 
 const CLIENT_URL = window.location.origin;
 const inp = 'w-full px-3.5 py-2.5 border border-[#E5E1DA] rounded-xl text-sm text-[#1A1A1A] bg-white placeholder-[#9CA3AF] focus:outline-none focus:border-[#00A693] focus:ring-2 focus:ring-[#00A693]/10 transition';
@@ -102,11 +103,116 @@ function EvaluationDrawer({ user, onClose, onSaved }) {
     cons: [],
     improvementTips: [],
     interviewedAt: getLocalDatetimeString(),
+    headline: '',
+    summary: '',
+    mcqAssessments: [],
   });
 
   const [form, setForm] = useState(emptyForm());
   const [activeTabIdx, setActiveTabIdx] = useState(0);
   const [newTabName, setNewTabName] = useState('');
+
+  const [interviewModules, setInterviewModules] = useState([]);
+  const [selectedModId, setSelectedModId] = useState('');
+  const [selectedTopicId, setSelectedTopicId] = useState('');
+  const [loadingModules, setLoadingModules] = useState(false);
+  const [loadingAiSummary, setLoadingAiSummary] = useState(false);
+  const [currentQuizzes, setCurrentQuizzes] = useState([]);
+  const [loadingQuizzes, setLoadingQuizzes] = useState(false);
+
+  useEffect(() => {
+    const fetchInterviewModules = async () => {
+      setLoadingModules(true);
+      try {
+        const res = await api.get('/interview-modules');
+        setInterviewModules(res.data.data || []);
+      } catch {
+        toast.error('Failed to load interview modules');
+      } finally {
+        setLoadingModules(false);
+      }
+    };
+    fetchInterviewModules();
+  }, []);
+
+  useEffect(() => {
+    if (!selectedModId || !selectedTopicId) {
+      setCurrentQuizzes([]);
+      return;
+    }
+    const fetchQuizzes = async () => {
+      setLoadingQuizzes(true);
+      try {
+        const res = await api.get(`/interview-modules/${selectedModId}/topics/${selectedTopicId}/quizzes`);
+        setCurrentQuizzes(res.data.data || []);
+      } catch {
+        toast.error('Failed to load quizzes');
+      } finally {
+        setLoadingQuizzes(false);
+      }
+    };
+    fetchQuizzes();
+  }, [selectedModId, selectedTopicId]);
+
+  const handleMcqChange = (quiz, field, value) => {
+    setForm(f => {
+      const assessments = [...(f.mcqAssessments || [])];
+      const idx = assessments.findIndex(a => a.question === quiz.question);
+      
+      const mod = interviewModules.find(m => m._id === selectedModId);
+      const top = mod?.topics?.find(t => t._id === selectedTopicId);
+
+      if (idx > -1) {
+        assessments[idx] = {
+          ...assessments[idx],
+          [field]: value
+        };
+      } else {
+        assessments.push({
+          question: quiz.question,
+          options: quiz.options,
+          correctAnswerIndex: quiz.correctAnswer,
+          isCorrect: field === 'isCorrect' ? value : false,
+          comment: field === 'comment' ? value : '',
+          moduleTitle: mod?.title || '',
+          topicName: top?.name || ''
+        });
+      }
+      return { ...f, mcqAssessments: assessments };
+    });
+  };
+
+  const generateAiSummary = async () => {
+    if (!form.mcqAssessments || form.mcqAssessments.length === 0) {
+      toast.error('Add at least one evaluated MCQ question.');
+      return;
+    }
+    setLoadingAiSummary(true);
+    try {
+      const res = await api.post('/admin/interviews/summarize', {
+        mcqAssessments: form.mcqAssessments,
+        candidateName: user.name
+      });
+      
+      const { headline, summary, overallRating, pros, cons, improvementTips } = res.data;
+      
+      setForm(f => ({
+        ...f,
+        headline: headline || f.headline,
+        overallRating: overallRating !== undefined ? overallRating : f.overallRating,
+        pros: pros && pros.length ? pros : f.pros,
+        cons: cons && cons.length ? cons : f.cons,
+        improvementTips: improvementTips && improvementTips.length ? improvementTips : f.improvementTips,
+        summary: summary || f.summary
+      }));
+
+      toast.success('AI evaluation summary generated!');
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to generate AI summary.');
+    } finally {
+      setLoadingAiSummary(false);
+    }
+  };
 
   const addTab = () => {
     const name = newTabName.trim();
@@ -211,6 +317,9 @@ function EvaluationDrawer({ user, onClose, onSaved }) {
       cons: session.cons || [],
       improvementTips: session.improvementTips || [],
       interviewedAt: session.interviewedAt ? getLocalDatetimeString(new Date(session.interviewedAt)) : getLocalDatetimeString(),
+      headline: session.headline || '',
+      summary: session.summary || '',
+      mcqAssessments: session.mcqAssessments || [],
     });
   };
 
@@ -290,6 +399,155 @@ function EvaluationDrawer({ user, onClose, onSaved }) {
                 <option value="cancelled">Cancelled</option>
                 <option value="completed">Completed</option>
               </select>
+            </div>
+          </div>
+
+          {/* MCQ Assessment Section */}
+          <div className="mb-4 bg-[#FAF7F2] border border-[#E5E1DA] rounded-xl p-4">
+            <div className="flex items-center gap-2 mb-3">
+              <ClipboardList size={15} className="text-[#00A693]" />
+              <h4 className="text-xs font-bold text-[#1A1A1A]">Question Assessment Tool</h4>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3 mb-3">
+              <div>
+                <label className="block text-[10px] font-semibold text-[#6B7280] mb-1">Module</label>
+                <select 
+                  value={selectedModId} 
+                  onChange={e => { setSelectedModId(e.target.value); setSelectedTopicId(''); }}
+                  className="w-full text-xs px-2.5 py-1.5 border border-[#E5E1DA] rounded-lg bg-white outline-none"
+                >
+                  <option value="">-- Choose Module --</option>
+                  {interviewModules.map(m => (
+                    <option key={m._id} value={m._id}>{m.title}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-[10px] font-semibold text-[#6B7280] mb-1">Topic</label>
+                <select 
+                  value={selectedTopicId} 
+                  onChange={e => setSelectedTopicId(e.target.value)}
+                  disabled={!selectedModId}
+                  className="w-full text-xs px-2.5 py-1.5 border border-[#E5E1DA] rounded-lg bg-white outline-none disabled:bg-gray-50"
+                >
+                  <option value="">-- Choose Topic --</option>
+                  {(interviewModules.find(m => m._id === selectedModId)?.topics || []).map(t => (
+                    <option key={t._id} value={t._id}>{t.name}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            {loadingQuizzes && (
+              <div className="text-center py-2 text-xs text-[#6B7280]">Loading topic questions...</div>
+            )}
+
+            {currentQuizzes.length > 0 && (
+              <div className="space-y-3 max-h-[220px] overflow-y-auto pr-1 border border-[#E5E1DA] rounded-lg p-2.5 bg-white mb-3">
+                {currentQuizzes.map((quiz, qIdx) => {
+                  const assessment = (form.mcqAssessments || []).find(a => a.question === quiz.question);
+                  const isTicked = assessment?.isCorrect || false;
+                  const currentComment = assessment?.comment || '';
+
+                  return (
+                    <div key={qIdx} className="p-2.5 bg-[#FAF7F2] border border-[#E5E1DA] rounded-lg text-xs space-y-2">
+                      <p className="font-semibold text-[#1A1A1A]">{qIdx + 1}. {quiz.question}</p>
+                      {quiz.questionCode && (
+                        <pre className="bg-gray-900 text-white p-2 rounded text-[10px] overflow-x-auto font-mono">{quiz.questionCode}</pre>
+                      )}
+                      
+                      {(quiz.answer || quiz.explanation) && (
+                        <div className="bg-white p-2.5 border border-[#E5E1DA] rounded text-[11px] text-[#4B5563] whitespace-pre-line leading-relaxed">
+                          <strong className="text-[#00A693]">Expected Answer:</strong>
+                          <div className="mt-1">{quiz.answer || quiz.explanation}</div>
+                        </div>
+                      )}
+                      
+                      <div className="flex items-center gap-3 pt-1.5 border-t border-[#E5E1DA]/60">
+                        <label className="flex items-center gap-1.5 cursor-pointer font-bold text-[#00A693]">
+                          <input 
+                            type="checkbox" 
+                            checked={isTicked} 
+                            onChange={e => handleMcqChange(quiz, 'isCorrect', e.target.checked)}
+                            className="rounded border-[#E5E1DA] text-[#00A693] focus:ring-0 cursor-pointer"
+                          />
+                          Right Answer
+                        </label>
+                        <input 
+                          type="text" 
+                          value={currentComment}
+                          onChange={e => handleMcqChange(quiz, 'comment', e.target.value)}
+                          placeholder="Add evaluation comments..."
+                          className="flex-1 text-[11px] px-2 py-1 border border-[#E5E1DA] rounded bg-white outline-none"
+                        />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            {form.mcqAssessments?.length > 0 && (
+              <div className="space-y-2 bg-emerald-50 border border-emerald-100 rounded-lg p-2.5">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-bold text-emerald-800">Evaluated Questions in this Session ({form.mcqAssessments.length}):</span>
+                  <button 
+                    onClick={generateAiSummary} 
+                    disabled={loadingAiSummary}
+                    className="flex items-center gap-1 px-2.5 py-1 bg-emerald-600 text-white rounded-lg text-[10px] font-bold hover:bg-emerald-700 transition disabled:opacity-60"
+                  >
+                    {loadingAiSummary ? <RefreshCw size={10} className="animate-spin" /> : '✨'}
+                    {loadingAiSummary ? 'Generating...' : 'Generate AI Summary'}
+                  </button>
+                </div>
+
+                <div className="max-h-[120px] overflow-y-auto space-y-1 text-[10px]">
+                  {form.mcqAssessments.map((a, i) => (
+                    <div key={i} className="flex items-start gap-2 bg-white p-2 border border-emerald-200/60 rounded">
+                      <span className={`shrink-0 font-bold ${a.isCorrect ? 'text-emerald-600' : 'text-red-500'}`}>
+                        {a.isCorrect ? '✓' : '✗'}
+                      </span>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-[#1A1A1A] truncate">{a.question}</p>
+                        <p className="text-[#6B7280] text-[9px] truncate">
+                          {a.moduleTitle} &middot; {a.topicName} 
+                          {a.comment && <span className="text-emerald-700 italic ml-1">({a.comment})</span>}
+                        </p>
+                      </div>
+                      <button 
+                        onClick={() => setForm(f => ({ ...f, mcqAssessments: f.mcqAssessments.filter((_, j) => j !== i) }))}
+                        className="text-red-400 hover:text-red-600 font-medium px-1"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Headline & Overall Summary Section */}
+          <div className="grid grid-cols-1 gap-3 mb-4">
+            <div>
+              <label className="block text-xs font-semibold text-[#6B7280] mb-1.5">Session Headline</label>
+              <input 
+                value={form.headline || ''} 
+                onChange={e => setForm(f => ({ ...f, headline: e.target.value }))}
+                placeholder="e.g. Strong core JS knowledge, but needs focus on CSS/Flexbox" 
+                className={inp} 
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-[#6B7280] mb-1.5">Overall Summary Notes</label>
+              <textarea 
+                value={form.summary || ''} 
+                onChange={e => setForm(f => ({ ...f, summary: e.target.value }))}
+                placeholder="Provide a comprehensive summary of the candidate's performance, strengths, weaknesses, and interview discussion details..." 
+                rows={3} 
+                className={`${inp} resize-none`} 
+              />
             </div>
           </div>
 
@@ -476,7 +734,13 @@ function EvaluationDrawer({ user, onClose, onSaved }) {
                     <button onClick={() => handleDelete(s._id)} className="p-1.5 hover:bg-red-50 text-red-400 rounded-lg transition"><Trash2 size={13} /></button>
                   </div>
                 </div>
-                {s.headline && <p className="text-xs italic text-[#6B7280] mb-1">"{s.headline}"</p>}
+                {s.headline && <p className="text-xs font-bold text-[#1A1A1A] mb-1">"{s.headline}"</p>}
+                {s.summary && <p className="text-xs text-muted mb-2 whitespace-pre-line leading-relaxed bg-[#FAF7F2] border border-[#E5E1DA] p-2 rounded-lg">{s.summary}</p>}
+                {s.mcqAssessments?.length > 0 && (
+                  <div className="text-[10px] text-[#00A693] font-bold mb-2">
+                    🎯 MCQ Score: {s.mcqAssessments.filter(a => a.isCorrect).length}/{s.mcqAssessments.length} Right Answers
+                  </div>
+                )}
                 <div className="flex flex-wrap gap-1">
                   {(s.pros || []).map((p, i) => <span key={i} className="text-[10px] bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full">{p}</span>)}
                   {(s.cons || []).map((c, i) => <span key={i} className="text-[10px] bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full">{c}</span>)}
@@ -1064,208 +1328,378 @@ function ShowcasePagesTab() {
   );
 }
 
-// ─── Main Component ───────────────────────────────────────────────────────────
-export default function AdminCurationSection() {
-  const [tab, setTab] = useState('interviews');
-  const [users, setUsers] = useState([]);
+// ─── All Sessions Tab ─────────────────────────────────────────────────────────
+function AllSessionsTab({ onEditSession }) {
+  const [sessions, setSessions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
-  const [filter, setFilter] = useState('all'); // all | evaluated | pending
-  const [drawerUser, setDrawerUser] = useState(null);
-  const [sessionCounts, setSessionCounts] = useState({}); // userId → count
-  const [meetLinks, setMeetLinks] = useState({}); // userId → googleMeetLink
-  const [latestScheduledSessions, setLatestScheduledSessions] = useState({}); // userId → date string
 
-  const fetchUsers = async (ignore = false) => {
+  const fetchSessions = async () => {
+    setLoading(true);
     try {
-      const res = await api.get('/admin/users?limit=200&userType=developer&onlyContacted=true');
-      const u = (res.data.users || res.data || []).filter(uObj => !uObj.isDeleted);
-      u.sort((a, b) => (a.regNumber || 99999) - (b.regNumber || 99999));
-      if (ignore) return;
+      const res = await api.get('/admin/interviews', { params: { limit: 500 } });
+      setSessions(res.data.sessions || []);
+    } catch {
+      toast.error('Failed to load interview sessions');
+    } finally {
+      setLoading(false);
+    }
+  };
 
-      // Fetch sessions to get counts and meet links
-      const sessionRes = await api.get('/admin/interviews?limit=500');
-      const counts = {};
-      const links = {};
-      const latestTimes = {};
-      const latestScheduled = {};
-      
-      (sessionRes.data.sessions || []).forEach(s => {
-        const uid = s.user?._id?.toString();
-        if (uid) {
-          counts[uid] = (counts[uid] || 0) + 1;
-          const sessionTime = new Date(s.interviewedAt).getTime();
-          
-          const currentLatestTime = latestTimes[uid];
-          if (!currentLatestTime || sessionTime > currentLatestTime) {
-            latestTimes[uid] = sessionTime;
-            if (s.googleMeetLink) {
-              links[uid] = s.googleMeetLink;
-            } else {
-              delete links[uid];
-            }
-          }
+  useEffect(() => { fetchSessions(); }, []);
 
-          if (s.status === 'scheduled') {
-            const currentLatestScheduled = latestScheduled[uid];
-            if (!currentLatestScheduled || sessionTime > new Date(currentLatestScheduled).getTime()) {
-              latestScheduled[uid] = s.interviewedAt;
-            }
-          }
-        }
-      });
-      
+  const filtered = sessions.filter(s => {
+    const q = search.toLowerCase();
+    if (!q) return true;
+    const u = s.user;
+    const job = s.vacancy;
+    return u?.name?.toLowerCase().includes(q) ||
+      String(u?.regNumber || '').includes(q) ||
+      u?.email?.toLowerCase().includes(q) ||
+      job?.title?.toLowerCase().includes(q) ||
+      job?.company?.toLowerCase().includes(q);
+  });
+
+  return (
+    <div>
+      <div className="flex flex-col sm:flex-row gap-3 mb-4">
+        <div className="relative flex-1">
+          <Search size={15} className="absolute left-3 top-3 text-[#9CA3AF]" />
+          <input
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            placeholder="Search by applicant, job, or email..."
+            className={`${inp} pl-9`}
+          />
+        </div>
+        <button
+          onClick={fetchSessions}
+          className="flex items-center gap-2 px-4 py-2.5 border border-[#E5E1DA] rounded-xl text-sm text-[#6B7280] hover:text-[#1A1A1A] hover:bg-[#F3F0EB] transition shrink-0"
+        >
+          <RefreshCw size={14} /> Refresh
+        </button>
+      </div>
+
+      <p className="text-xs text-[#9CA3AF] mb-3">{filtered.length} session{filtered.length !== 1 ? 's' : ''}</p>
+
+      {loading ? (
+        <div className="text-center py-16 text-[#9CA3AF]">Loading sessions...</div>
+      ) : filtered.length === 0 ? (
+        <div className="text-center py-16 text-[#9CA3AF] bg-white border border-[#E5E1DA] rounded-2xl">
+          <BookMarked size={36} className="mx-auto mb-3 opacity-30" />
+          <p className="font-medium text-[#6B7280]">No interview sessions yet</p>
+          <p className="text-sm mt-1">Select a job and applicant in the Interview Session tab, then save a session.</p>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {filtered.map(s => {
+            const u = s.user;
+            const correct = (s.mcqAssessments || []).filter(a => a.isCorrect).length;
+            const total = (s.mcqAssessments || []).length;
+            return (
+              <div key={s._id} className="bg-white border border-[#E5E1DA] rounded-2xl p-4 hover:border-[#00A693]/40 transition">
+                <div className="flex items-start gap-4">
+                  <img
+                    src={optimizeImage(u?.avatar, 48) || `https://ui-avatars.com/api/?name=${encodeURIComponent(u?.name || '?')}&background=00A693&color=fff`}
+                    alt={u?.name}
+                    className="w-10 h-10 rounded-full object-cover border border-[#E5E1DA] shrink-0"
+                  />
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap mb-1">
+                      <span className="text-sm font-bold text-[#1A1A1A]">{u?.name ?? 'Unknown'}</span>
+                      {u?.regNumber && <span className="text-[10px] text-[#9CA3AF]">#{u.regNumber}</span>}
+                      <span className="text-[10px] font-bold text-[#00A693]">Session #{s.sessionNumber}</span>
+                      {s.vacancy && (
+                        <span className="text-[10px] px-2 py-0.5 rounded-full font-semibold bg-[#F3F0EB] text-[#6B7280]">
+                          {s.vacancy.title}{s.vacancy.company ? ` · ${s.vacancy.company}` : ''}
+                        </span>
+                      )}
+                      <span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold uppercase ${
+                        s.status === 'scheduled' ? 'bg-blue-50 text-blue-700' :
+                        s.status === 'postponed' ? 'bg-amber-50 text-amber-700' :
+                        s.status === 'cancelled' ? 'bg-red-50 text-red-700' :
+                        'bg-emerald-50 text-emerald-700'
+                      }`}>{s.status || 'completed'}</span>
+                      {s.sharedWithCandidate && (
+                        <span className="text-[10px] bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full">Shared</span>
+                      )}
+                    </div>
+                    <p className="text-xs text-[#6B7280] mb-2">{u?.email}</p>
+                    <div className="flex items-center gap-4 flex-wrap text-[11px] text-[#6B7280]">
+                      <span>{new Date(s.interviewedAt).toLocaleString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
+                      <span className={`font-bold ${ratingColor(s.overallRating)}`}>{s.overallRating}/10</span>
+                      {total > 0 && <span>{correct}/{total} MCQ correct</span>}
+                      {s.evaluatedBy && <span>by {s.evaluatedBy.name}</span>}
+                    </div>
+                    {s.headline && <p className="text-xs font-semibold text-[#1A1A1A] mt-2">"{s.headline}"</p>}
+                    {s.mcqAssessments?.length > 0 && (
+                      <div className="mt-2 space-y-1 max-h-32 overflow-y-auto">
+                        {s.mcqAssessments.slice(0, 3).map((a, i) => (
+                          <div key={i} className="flex items-start gap-2 text-[10px] bg-[#FAF7F2] rounded-lg px-2 py-1">
+                            <span className={`shrink-0 font-bold ${a.isCorrect ? 'text-emerald-600' : 'text-red-400'}`}>{a.isCorrect ? '✓' : '✗'}</span>
+                            <span className="truncate text-[#4B5563]">{a.question}</span>
+                          </div>
+                        ))}
+                        {s.mcqAssessments.length > 3 && (
+                          <p className="text-[10px] text-[#9CA3AF]">+{s.mcqAssessments.length - 3} more questions</p>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-1 shrink-0">
+                    {u && (
+                      <button
+                        onClick={() => onEditSession(u, s.vacancy)}
+                        className="p-2 hover:bg-[#F3F0EB] rounded-xl transition text-[#00A693]"
+                        title="Open session"
+                      >
+                        <Edit3 size={14} />
+                      </button>
+                    )}
+                    {s.googleMeetLink && (
+                      <a
+                        href={s.googleMeetLink.startsWith('http') ? s.googleMeetLink : `https://${s.googleMeetLink}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="p-2 hover:bg-red-50 rounded-xl transition text-red-500"
+                        title="Join Meet"
+                      >
+                        <Video size={14} />
+                      </a>
+                    )}
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Main Component ───────────────────────────────────────────────────────────
+export default function AdminCurationSection() {
+  const [tab, setTab] = useState('session');
+  const [vacancies, setVacancies] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedJobId, setSelectedJobId] = useState('');
+  const [selectedApplicantId, setSelectedApplicantId] = useState('');
+  const [modulesApplicant, setModulesApplicant] = useState(null);
+  const [modulesVacancy, setModulesVacancy] = useState(null);
+  const [drawerUser, setDrawerUser] = useState(null);
+  const [allSessionsCount, setAllSessionsCount] = useState(0);
+
+  const SCREENING_STATUSES = useMemo(
+    () => new Set(['contacted', '1 round interview', '2nd round interview', '3rd round interview']),
+    []
+  );
+
+  const fetchData = async (ignore = false) => {
+    try {
+      const [vacRes, sessionRes] = await Promise.all([
+        api.get('/admin/vacancies'),
+        api.get('/admin/interviews?limit=500'),
+      ]);
       if (ignore) return;
-      setUsers(u);
-      setSessionCounts(counts);
-      setMeetLinks(links);
-      setLatestScheduledSessions(latestScheduled);
-    } catch { toast.error('Failed to load users'); }
+      const list = Array.isArray(vacRes.data) ? vacRes.data : [];
+      // Active + non-active (closed); skip pending reports
+      setVacancies(list.filter(v => v.status === 'active' || v.status === 'closed'));
+      setAllSessionsCount((sessionRes.data.sessions || []).length);
+    } catch { toast.error('Failed to load jobs'); }
     finally { if (!ignore) setLoading(false); }
   };
 
   useEffect(() => {
     let ignore = false;
-    fetchUsers(ignore); // eslint-disable-line react-hooks/set-state-in-effect
+    fetchData(ignore); // eslint-disable-line react-hooks/set-state-in-effect
     return () => { ignore = true; };
   }, []);
 
-  const filteredUsers = users.filter(u => {
-    const q = search.toLowerCase();
-    const matchesSearch = !q ||
-      u.name?.toLowerCase().includes(q) ||
-      String(u.regNumber).includes(q) ||
-      (u.familiarTech || []).some(t => t.toLowerCase().includes(q));
-    const count = sessionCounts[u._id] || 0;
-    const matchesFilter = filter === 'all' || (filter === 'evaluated' && count > 0) || (filter === 'pending' && count === 0);
-    return matchesSearch && matchesFilter;
-  });
+  const jobs = useMemo(
+    () => [...vacancies].sort((a, b) => {
+      if (a.status !== b.status) return a.status === 'active' ? -1 : 1;
+      return (a.title || '').localeCompare(b.title || '');
+    }),
+    [vacancies]
+  );
 
-  const formatScheduledDate = (dateStr) => {
-    if (!dateStr) return '';
-    return new Date(dateStr).toLocaleString('en-IN', {
-      day: '2-digit',
-      month: 'short',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: true
-    });
+  const selectedJob = jobs.find(j => j._id === selectedJobId) || null;
+
+  const jobApplicants = useMemo(() => {
+    if (!selectedJob) return [];
+    const statusMap = selectedJob.applicantStatus || {};
+    return (selectedJob.interests || [])
+      .filter(u => {
+        if (!u || u.isDeleted) return false;
+        const st = statusMap[u._id] || statusMap[u._id?.toString()] || 'applied';
+        return SCREENING_STATUSES.has(st);
+      })
+      .sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+  }, [selectedJob, SCREENING_STATUSES]);
+
+  const handleJobSelect = (jobId) => {
+    setSelectedJobId(jobId);
+    setSelectedApplicantId('');
+    setModulesApplicant(null);
+    setModulesVacancy(jobId ? (jobs.find(j => j._id === jobId) || null) : null);
   };
 
+  const handleApplicantSelect = (userId) => {
+    setSelectedApplicantId(userId);
+    if (!userId || !selectedJob) {
+      setModulesApplicant(null);
+      return;
+    }
+    const user = jobApplicants.find(u => u._id === userId);
+    if (user) {
+      setModulesApplicant(user);
+      setModulesVacancy(selectedJob);
+      setTab('modules');
+    }
+  };
+
+  const canOpenModules = Boolean(modulesApplicant);
+
+  const handleTabChange = (key) => {
+    if (key === 'modules' && !canOpenModules) {
+      toast.error('Select a job and applicant from Interview Session first');
+      return;
+    }
+    setTab(key);
+  };
+
+  // Leave Modules if applicant context was cleared
+  useEffect(() => {
+    if (tab === 'modules' && !modulesApplicant) setTab('session');
+  }, [tab, modulesApplicant]);
+
   return (
-    <div className="max-w-5xl mx-auto">
+    <div className={tab === 'modules' ? 'max-w-6xl mx-auto' : 'max-w-5xl mx-auto'}>
       {/* Tabs */}
-      <div className="flex gap-1 bg-[#F3F0EB] rounded-2xl p-1 mb-6 w-fit">
+      <div className="flex flex-wrap gap-1 bg-[#F3F0EB] rounded-2xl p-1 mb-6 w-fit">
         {[
-          { key: 'interviews', label: 'Interview Evaluations', icon: ClipboardList },
-          { key: 'showcases', label: 'Showcase Pages', icon: LinkIcon },
-          { key: 'calendar', label: 'Calendar', icon: Calendar },
+          { key: 'session', label: 'Interview Session', icon: ClipboardList },
+          { key: 'modules', label: 'Interview Modules', icon: Layers, locked: !canOpenModules },
+          { key: 'sessions', label: 'Interview Sessions', icon: BookMarked, count: allSessionsCount },
         ].map(t => (
           <button
             key={t.key}
-            onClick={() => setTab(t.key)}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition ${tab === t.key ? 'bg-white shadow text-[#1A1A1A]' : 'text-[#6B7280] hover:text-[#1A1A1A]'}`}
+            type="button"
+            onClick={() => handleTabChange(t.key)}
+            disabled={!!t.locked}
+            title={t.locked ? 'Select a job and applicant from Interview Session first' : undefined}
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition ${
+              tab === t.key
+                ? 'bg-white shadow text-[#1A1A1A]'
+                : t.locked
+                  ? 'text-[#9CA3AF] opacity-60 cursor-not-allowed'
+                  : 'text-[#6B7280] hover:text-[#1A1A1A]'
+            }`}
           >
             <t.icon size={14} /> {t.label}
+            {t.count > 0 && (
+              <span className="bg-[#00A693]/10 text-[#00A693] text-[10px] font-bold px-1.5 py-0.5 rounded-full">{t.count}</span>
+            )}
           </button>
         ))}
       </div>
 
-      {tab === 'showcases' ? <ShowcasePagesTab /> : tab === 'calendar' ? <CalendarTab /> : (
+      {tab === 'modules' && canOpenModules ? (
+        <AdminInterviewModulesSection
+          initialApplicant={modulesApplicant}
+          initialVacancy={modulesVacancy}
+        />
+      ) : tab === 'sessions' ? (
+        <AllSessionsTab
+          onEditSession={(user, vacancy) => {
+            setModulesApplicant(user);
+            setModulesVacancy(vacancy || null);
+            setSelectedApplicantId(user._id);
+            if (vacancy?._id) setSelectedJobId(vacancy._id);
+            setTab('modules');
+          }}
+        />
+      ) : (
         <>
-          {/* Filters */}
-          <div className="flex flex-col sm:flex-row gap-3 mb-4">
-            <div className="relative flex-1">
-              <Search size={15} className="absolute left-3 top-3 text-[#9CA3AF]" />
-              <input value={search} onChange={e => setSearch(e.target.value)}
-                placeholder="Search by name, reg number, or skill..." className={`${inp} pl-9`} />
+          <div className="bg-white border border-[#E5E1DA] rounded-2xl p-4 mb-6 space-y-4">
+            <div className="flex items-center gap-2">
+              <Users size={15} className="text-[#00A693]" />
+              <h3 className="text-sm font-bold text-[#1A1A1A]">Start interview by job</h3>
             </div>
-            <div className="flex gap-1 bg-[#F3F0EB] rounded-xl p-1">
-              {[['all', 'All'], ['pending', 'Not Interviewed'], ['evaluated', 'Interviewed']].map(([k, l]) => (
-                <button key={k} onClick={() => setFilter(k)}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition ${filter === k ? 'bg-white shadow text-[#1A1A1A]' : 'text-[#6B7280] hover:text-[#1A1A1A]'}`}>
-                  {l}
-                </button>
-              ))}
+
+            {/* Job dropdown */}
+            <div>
+              <label className="block text-xs font-semibold text-[#6B7280] mb-1.5">Job / Vacancy</label>
+              <div className="relative">
+                <select
+                  value={selectedJobId}
+                  onChange={e => handleJobSelect(e.target.value)}
+                  disabled={loading}
+                  className={`${inp} appearance-none pr-10 cursor-pointer disabled:opacity-60`}
+                >
+                  <option value="">— Choose a job —</option>
+                  {jobs.map(j => (
+                    <option key={j._id} value={j._id}>
+                      {j.title}{j.company ? ` — ${j.company}` : ''} ({j.status})
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#9CA3AF] pointer-events-none" />
+              </div>
             </div>
+
+            {/* Applicants for selected job */}
+            <div>
+              <label className="block text-xs font-semibold text-[#6B7280] mb-1.5">Interview Screening Applicant</label>
+              <div className="relative">
+                <select
+                  value={selectedApplicantId}
+                  onChange={e => handleApplicantSelect(e.target.value)}
+                  disabled={loading || !selectedJobId}
+                  className={`${inp} appearance-none pr-10 cursor-pointer disabled:opacity-60`}
+                >
+                  <option value="">
+                    {!selectedJobId
+                      ? '— Select a job first —'
+                      : jobApplicants.length === 0
+                        ? '— No screening applicants for this job —'
+                        : '— Choose an applicant —'}
+                  </option>
+                  {jobApplicants.map(u => (
+                    <option key={u._id} value={u._id}>{u.name}</option>
+                  ))}
+                </select>
+                <ChevronDown size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#9CA3AF] pointer-events-none" />
+              </div>
+              {selectedJobId && !loading && (
+                <p className="text-[11px] text-[#9CA3AF] mt-1.5">
+                  Showing contacted / interview-round applicants for this job ({jobApplicants.length}).
+                </p>
+              )}
+            </div>
+
+            {loading && <p className="text-xs text-[#9CA3AF]">Loading jobs...</p>}
+            {!loading && jobs.length === 0 && (
+              <p className="text-xs text-[#9CA3AF]">No jobs found. Add vacancies under Opportunities first.</p>
+            )}
           </div>
 
-          <p className="text-xs text-[#9CA3AF] mb-3">{filteredUsers.length} developers</p>
-
-          {loading ? (
-            <div className="text-center py-16 text-[#9CA3AF]">Loading developers...</div>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-              {filteredUsers.map(user => {
-                const count = sessionCounts[user._id] || 0;
-                const scheduledTime = latestScheduledSessions[user._id];
-                return (
-                  <button
-                    key={user._id}
-                    onClick={() => setDrawerUser(user)}
-                    className="bg-white border border-[#E5E1DA] rounded-2xl p-4 text-left hover:border-[#00A693] hover:shadow-md transition-all group"
-                  >
-                    <div className="flex items-center gap-3 mb-3">
-                      <div className="relative">
-                        <img
-                          src={optimizeImage(user.avatar, 48) || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=00A693&color=fff`}
-                          alt={user.name}
-                          className="w-12 h-12 rounded-full object-cover border-2 border-[#E5E1DA] group-hover:border-[#00A693] transition"
-                        />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="font-semibold text-[#1A1A1A] text-sm truncate">{user.name}</p>
-                        <p className="text-xs text-[#9CA3AF]">#{user.regNumber}</p>
-                      </div>
-                    </div>
-                    <p className="text-xs text-[#6B7280] truncate mb-2">{(user.designations || []).join(', ') || 'Developer'}</p>
-                    <div className="flex flex-wrap gap-1 mb-2">
-                      {(user.familiarTech || []).slice(0, 3).map((t, i) => (
-                        <span key={i} className="text-[10px] bg-[#F3F0EB] text-[#6B7280] px-2 py-0.5 rounded-full">{t}</span>
-                      ))}
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <span className={`text-xs font-medium ${scheduledTime ? 'text-emerald-600' : 'text-[#9CA3AF]'}`}>
-                          {scheduledTime 
-                            ? formatScheduledDate(scheduledTime) 
-                            : count > 0 
-                              ? 'No scheduled session' 
-                              : 'Not yet interviewed'}
-                        </span>
-                        {meetLinks[user._id] && (
-                          <a
-                            href={meetLinks[user._id].startsWith('http') ? meetLinks[user._id] : `https://${meetLinks[user._id]}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            onClick={(e) => e.stopPropagation()}
-                            className="inline-flex items-center gap-1 px-2.5 py-1 bg-red-50 hover:bg-red-100 border border-red-200 text-red-600 rounded-lg text-[10px] font-bold uppercase transition"
-                            title="Join Meet Session"
-                          >
-                            <Video size={10} className="shrink-0" />
-                            Join
-                          </a>
-                        )}
-                      </div>
-                      <span className="text-xs text-[#00A693] font-medium opacity-0 group-hover:opacity-100 transition">Open →</span>
-                    </div>
-                  </button>
-                );
-              })}
+          {!loading && jobs.length > 0 && (
+            <div className="text-center py-16 text-[#9CA3AF] bg-white border border-[#E5E1DA] border-dashed rounded-2xl">
+              <Users size={36} className="mx-auto mb-3 opacity-30" />
+              <p className="font-medium text-[#6B7280]">Select a job, then an applicant</p>
+              <p className="text-sm mt-1">Choosing an applicant opens Interview Modules for that job application.</p>
             </div>
           )}
         </>
       )}
 
-      {/* Evaluation Drawer */}
       {drawerUser && (
         <EvaluationDrawer
           user={drawerUser}
           onClose={() => setDrawerUser(null)}
-          onSaved={() => {
-            fetchUsers();
-          }}
+          onSaved={() => { fetchData(); }}
         />
       )}
     </div>

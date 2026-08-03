@@ -280,7 +280,7 @@ export default function Feed() {
     try {
       const res = await axios.post('/job-links', { url: inlineUrl, platform: 'other' });
       if (res.data.success) {
-        toast.success('Job link submitted for review!');
+        toast.success('Job link submitted! It will appear after admin approval.', { duration: 5000 });
         setInlineUrl('');
       }
     } catch (error) {

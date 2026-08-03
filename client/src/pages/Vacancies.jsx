@@ -304,17 +304,79 @@ export default function Vacancies() {
     }
   });
 
-  const handleLinkClick = (id) => {
-    if (user) {
-      api.post(`/job-links/${id}/click`).catch(console.error);
-    }
-    if (!clickedLinks.includes(id)) {
-      const updated = [...clickedLinks, id];
-      setClickedLinks(updated);
+  const { data: applyEligibility, refetch: refetchEligibility } = useQuery({
+    queryKey: ['job-link-apply-eligibility', user?._id],
+    queryFn: () => api.get('/job-links/apply-eligibility').then(r => r.data?.data),
+    enabled: !!user,
+    staleTime: 30000,
+  });
+
+  useEffect(() => {
+    if (!applyEligibility?.clickedIds?.length) return;
+    setClickedLinks(prev => {
+      const merged = Array.from(new Set([...prev, ...applyEligibility.clickedIds]));
       try {
-        localStorage.setItem('clicked_job_links', JSON.stringify(updated));
+        localStorage.setItem('clicked_job_links', JSON.stringify(merged));
       } catch (e) {
         console.error(e);
+      }
+      return merged;
+    });
+  }, [applyEligibility?.clickedIds]);
+
+  const canApplyMore = !user || applyEligibility?.canApplyMore !== false;
+
+  const persistClicked = (id) => {
+    if (clickedLinks.includes(id)) return;
+    const updated = [...clickedLinks, id];
+    setClickedLinks(updated);
+    try {
+      localStorage.setItem('clicked_job_links', JSON.stringify(updated));
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const handleLinkClick = async (e, id, url) => {
+    const alreadyVisited = clickedLinks.includes(id);
+
+    if (alreadyVisited) {
+      if (user) api.post(`/job-links/${id}/click`).catch(console.error);
+      return;
+    }
+
+    if (!user) return;
+
+    e.preventDefault();
+
+    if (!canApplyMore) {
+      toast.error(
+        applyEligibility?.message
+          || 'Contribute at least 1 job post link per week to unlock more applies',
+        { duration: 6000 }
+      );
+      return;
+    }
+
+    const tab = window.open('about:blank', '_blank');
+    try {
+      const res = await api.post(`/job-links/${id}/click`);
+      persistClicked(id);
+      if (res.data?.data) {
+        queryClient.setQueryData(['job-link-apply-eligibility', user._id], res.data.data);
+      } else {
+        refetchEligibility();
+      }
+      if (tab) tab.location.href = url;
+      else window.open(url, '_blank', 'noopener,noreferrer');
+    } catch (err) {
+      if (tab) tab.close();
+      const msg = err.response?.data?.message || 'Unable to apply to this job post right now.';
+      toast.error(msg, { duration: 6000 });
+      if (err.response?.data?.data) {
+        queryClient.setQueryData(['job-link-apply-eligibility', user._id], err.response.data.data);
+      } else {
+        refetchEligibility();
       }
     }
   };
@@ -439,8 +501,9 @@ export default function Vacancies() {
     try {
       const res = await api.post('/job-links', { url: inlineUrl, platform: 'other' });
       if (res.data.success) {
-        toast.success('Job link submitted for review!');
+        toast.success('Job link submitted! It will appear after admin approval.', { duration: 5000 });
         setInlineUrl('');
+        refetchEligibility();
       }
     } catch (error) {
       console.error(error);
@@ -569,18 +632,25 @@ export default function Vacancies() {
                       <Info size={18} />
                     </div>
                     
-                    <div className="absolute right-0 top-full mt-2 w-[280px] bg-white border border-gray-200 text-gray-700 text-[12px] p-3.5 rounded-xl shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 text-left">
+                    <div className="absolute right-0 top-full mt-2 w-[300px] bg-white border border-gray-200 text-gray-700 text-[12px] p-3.5 rounded-xl shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 text-left">
                       <div className="font-semibold text-[13px] mb-2 text-accent">Guidelines for sharing:</div>
                       <ul className="list-disc pl-4 space-y-1.5 text-gray-600">
                         <li>Share software job post links only.</li>
                         <li>Must be posted within the last 72 hours.</li>
                         <li>Genuine posts only (no "comment if interested" engagement traps).</li>
                         <li>Direct job post links only (no generic job portal links).</li>
+                        <li>1 free Apply Now. Contribute at least 1 job post link per week to unlock more applies.</li>
                       </ul>
                       <div className="absolute -top-1.5 right-2 w-3 h-3 bg-white border-t border-l border-gray-200 transform rotate-45"></div>
                     </div>
                   </div>
                 </div>
+              )}
+
+              {activeTab === 'job-links' && user && applyEligibility && !applyEligibility.canApplyMore && (
+                <p className="w-full text-center text-[12px] text-amber-700 bg-amber-50 border border-amber-100 rounded-lg px-3 py-2">
+                  {applyEligibility.message}
+                </p>
               )}
               
             </div>
@@ -731,14 +801,17 @@ export default function Vacancies() {
                             href={link.url}
                             target="_blank"
                             rel="noopener noreferrer"
-                            onClick={() => handleLinkClick(link._id)}
+                            onClick={(e) => handleLinkClick(e, link._id, link.url)}
                             className={`py-1.5 px-3 rounded-lg text-[12px] font-semibold flex items-center justify-center gap-1.5 transition-all ${
                               isApplied
                                 ? 'bg-white text-[#006994] border border-[#006994] border-b-[3px] border-b-[#005578] active:border-b-0 active:translate-y-[3px]'
-                                : 'bg-[#006994] hover:bg-[#005578] text-white border-b-[3px] border-[#004f70] active:border-b-0 active:translate-y-[3px]'
+                                : !canApplyMore
+                                  ? 'bg-gray-200 text-gray-500 border-b-[3px] border-gray-300 cursor-not-allowed'
+                                  : 'bg-[#006994] hover:bg-[#005578] text-white border-b-[3px] border-[#004f70] active:border-b-0 active:translate-y-[3px]'
                             }`}
+                            title={!isApplied && !canApplyMore ? (applyEligibility?.message || 'Contribute at least 1 job post link per week to unlock more applies') : undefined}
                           >
-                            <span>{isApplied ? 'Visited' : 'Apply Now'}</span>
+                            <span>{isApplied ? 'Visited' : !canApplyMore ? 'Contribute to unlock' : 'Apply Now'}</span>
                             <ExternalLink size={12} />
                           </a>
                         )}

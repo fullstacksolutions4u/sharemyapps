@@ -1,10 +1,13 @@
 const express = require('express');
 const router = express.Router();
-const { getJobLinks, createJobLink, getAdminJobLinks, updateJobLink, createAdminJobLink, extractJobDetails, submitFeedback, getAdminFeedback, getAdminCompanies, recordClick } = require('../controllers/jobLinkController');
+const { getJobLinks, createJobLink, getAdminJobLinks, updateJobLink, createAdminJobLink, extractJobDetails, submitFeedback, getAdminFeedback, getAdminCompanies, recordClick, getJobLinkApplyEligibility } = require('../controllers/jobLinkController');
 const { protect, requireAdmin } = require('../middleware/auth');
 
 router.get('/', getJobLinks);
 router.post('/', protect, createJobLink);
+
+// Apply Now eligibility (1 free + weekly approved contribution unlock)
+router.get('/apply-eligibility', protect, getJobLinkApplyEligibility);
 
 // User Click / Apply Route
 router.post('/:id/click', protect, recordClick);

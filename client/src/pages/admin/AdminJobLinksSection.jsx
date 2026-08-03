@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import api from '../../api/axios';
 import { toast } from 'react-hot-toast';
-import { Briefcase, Check, X, ExternalLink, Link as LinkIcon, MapPin, Laptop, Edit2, Plus, Save, Clock, Sparkles, Building, Calendar, Share2, ChevronDown, Copy, Download, MousePointerClick } from 'lucide-react';
+import { Briefcase, Check, X, ExternalLink, Link as LinkIcon, MapPin, Laptop, Edit2, Plus, Save, Clock, Sparkles, Building, Calendar, Share2, ChevronDown, Copy, Download, MousePointerClick, Unlock } from 'lucide-react';
 
 const DESIGNATION_OPTIONS = [
   "Frontend Developer",
@@ -91,9 +91,9 @@ export default function AdminJobLinksSection() {
     setAiLoading(true);
     setAiSuccess(false);
     try {
-      const res = await api.post('/job-links/extract-job-details', { text: aiText });
+      const currentUrl = drafts[0]?.url || '';
+      const res = await api.post('/job-links/extract-job-details', { text: aiText, url: currentUrl });
       if (res.data.success) {
-        const currentUrl = drafts[0]?.url || '';
         const extractedJobs = res.data.data;
         if (!extractedJobs || extractedJobs.length === 0) {
           toast.error('AI could not extract any job positions.');
@@ -119,6 +119,9 @@ export default function AdminJobLinksSection() {
             location: job.location || '',
             experience: job.experience || '',
             isDuplicate: job.isDuplicate || false,
+            duplicateReason: job.duplicateReason || null,
+            matchedJob: job.matchedJob || null,
+            aiDuplicateNote: job.aiDuplicateNote || '',
             submitting: false
           };
         });
@@ -133,7 +136,7 @@ export default function AdminJobLinksSection() {
 
         const duplicateCount = newDrafts.filter(d => d.isDuplicate).length;
         if (duplicateCount > 0) {
-          toast.error(`Warning: ${duplicateCount} of the extracted jobs might already exist!`, { duration: 5000 });
+          toast.error(`AI found ${duplicateCount} duplicate(s) of already listed job posts. Prefer Allow Access for user submissions.`, { duration: 5000 });
         } else {
           toast.success(`Successfully extracted ${newDrafts.length} position(s)!`);
         }
@@ -152,7 +155,12 @@ export default function AdminJobLinksSection() {
     if (!text.trim()) { toast.error('Paste the job description first.'); return; }
     setAiLoadingMap(prev => ({ ...prev, [linkId]: true }));
     try {
-      const res = await api.post('/job-links/extract-job-details', { text });
+      const link = jobLinks.find(l => l._id === linkId);
+      const res = await api.post('/job-links/extract-job-details', {
+        text,
+        url: editForms[linkId]?.url || link?.url || '',
+        excludeId: linkId,
+      });
       if (res.data.success) {
         const d = (res.data.data && res.data.data[0]) || {};
         const title = d.title || '';
@@ -171,10 +179,17 @@ export default function AdminJobLinksSection() {
             workMode: d.workMode || prev[linkId]?.workMode || '',
             location: d.location || prev[linkId]?.location || '',
             experience: d.experience || prev[linkId]?.experience || '',
+            isDuplicate: d.isDuplicate || false,
+            duplicateReason: d.duplicateReason || null,
+            matchedJob: d.matchedJob || null,
+            aiDuplicateNote: d.aiDuplicateNote || '',
           }
         }));
         if (d.isDuplicate) {
-          toast.error(`Warning: A job link for ${d.title} at ${d.company} might already exist!`, { duration: 5000 });
+          const matchLabel = d.matchedJob
+            ? `${d.matchedJob.title || 'Job'} @ ${d.matchedJob.company || 'company'}`
+            : (d.aiDuplicateNote || 'an already listed post');
+          toast.error(`Duplicate detected: matches ${matchLabel}. Use Allow Access instead of Approve.`, { duration: 5000 });
         } else {
           toast.success('Fields auto-filled by AI!');
         }
@@ -288,7 +303,10 @@ export default function AdminJobLinksSection() {
 
       const res = await api.put(`/job-links/${id}`, updates);
       if (res.data.success) {
-        toast.success(`Job link updated!`);
+        const msg = status === 'access_granted'
+          ? 'Access granted — user unlocked for more applies (not listed publicly)'
+          : 'Job link updated!';
+        toast.success(msg);
         setEditingLinkId(null);
         fetchJobLinks();
       }
@@ -434,7 +452,6 @@ export default function AdminJobLinksSection() {
       try {
         const res = await api.post('/job-links/admin', {
           ...draft,
-          allowDuplicateUrl: true
         });
         if (res.data.success) {
           successCount++;
@@ -614,8 +631,9 @@ export default function AdminJobLinksSection() {
                       Position #{idx + 1}
                     </span>
                     {draft.isDuplicate && (
-                      <span className="text-[11px] font-bold px-2 py-0.5 bg-red-50 text-red-600 border border-red-100 rounded flex items-center gap-1 animate-pulse">
-                        ⚠️ Might Exist
+                      <span className="text-[11px] font-bold px-2 py-0.5 bg-red-50 text-red-600 border border-red-100 rounded flex items-center gap-1 animate-pulse" title={draft.aiDuplicateNote || draft.duplicateReason || ''}>
+                        Already listed
+                        {draft.matchedJob?.title ? ` — ${draft.matchedJob.title}${draft.matchedJob.company ? ` @ ${draft.matchedJob.company}` : ''}` : ''}
                       </span>
                     )}
                   </div>
@@ -844,9 +862,17 @@ export default function AdminJobLinksSection() {
 
         {activeTab !== 'companies' && paginatedList.map(link => {
           const isEditing = editingLinkId === link._id || activeTab === 'pending';
+          const isUrlDuplicate = activeTab === 'pending' && jobLinks.some(
+            (other) =>
+              other._id !== link._id &&
+              other.status === 'approved' &&
+              (other.url || '').trim() === (link.url || '').trim()
+          );
+          const aiDuplicate = activeTab === 'pending' && editForms[link._id]?.isDuplicate;
+          const duplicateInfo = editForms[link._id];
           
           return (
-            <div key={link._id} className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 sm:p-5 flex flex-col gap-4 transition hover:shadow-md mb-2">
+            <div key={link._id} className={`bg-white rounded-xl shadow-sm border p-4 sm:p-5 flex flex-col gap-4 transition hover:shadow-md mb-2 ${aiDuplicate || isUrlDuplicate ? 'border-amber-300' : 'border-gray-100'}`}>
               
               {/* Header Row: Single Line Row */}
               <div className="flex flex-row items-center gap-3 sm:gap-4 w-full overflow-hidden">
@@ -862,20 +888,26 @@ export default function AdminJobLinksSection() {
                 </div>
                 
                 {/* 3. Link */}
-                <div className="flex items-center min-w-0 flex-1">
+                <div className="flex items-center gap-2 min-w-0 flex-1">
                   <a href={editForms[link._id]?.url !== undefined ? editForms[link._id].url : link.url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 rounded-lg text-[12px] font-semibold transition shadow-sm w-fit" title="Open Job Link">
                     <ExternalLink size={14} className="text-gray-400" /> Open Link
                   </a>
+                  {(isUrlDuplicate || aiDuplicate) && (
+                    <span className="text-[10px] font-bold px-2 py-1 rounded-full bg-amber-50 text-amber-700 border border-amber-200 uppercase tracking-wide shrink-0" title="Same URL or AI match — prefer Allow Access">
+                      {aiDuplicate ? 'AI: Duplicate' : 'Duplicate URL'}
+                    </span>
+                  )}
                 </div>
 
                 {/* 4. Status and Actions */}
                 <div className="flex flex-row items-center gap-3 shrink-0 ml-auto">
                   <span className={`text-[10px] font-bold px-3 py-1.5 rounded-full uppercase tracking-wide shrink-0
                     ${link.status === 'approved' ? 'bg-[#dcfce7] text-[#166534]' : 
+                      link.status === 'access_granted' ? 'bg-blue-100 text-blue-700' :
                       link.status === 'rejected' ? 'bg-red-100 text-red-700' : 
                       'bg-[#fff7d1] text-[#b4710a]'}`}
                   >
-                    {link.status}
+                    {link.status === 'access_granted' ? 'access granted' : link.status}
                   </span>
 
                   <div className="flex flex-row items-center gap-2 shrink-0">
@@ -886,6 +918,13 @@ export default function AdminJobLinksSection() {
                           className="flex items-center justify-center gap-1.5 px-3.5 py-1.5 bg-white border border-[#10b981] text-[#10b981] hover:bg-[#10b981] hover:text-white rounded-lg text-[12px] font-bold transition shadow-sm"
                         >
                           <Check size={14} /> Approve
+                        </button>
+                        <button
+                          onClick={() => handleUpdate(link._id, 'access_granted')}
+                          title="Unlock applies for this user without listing the link publicly (use for duplicates)"
+                          className="flex items-center justify-center gap-1.5 px-3.5 py-1.5 bg-white border border-blue-500 text-blue-600 hover:bg-blue-500 hover:text-white rounded-lg text-[12px] font-bold transition shadow-sm"
+                        >
+                          <Unlock size={14} /> Allow Access
                         </button>
                         <button
                           onClick={() => { setLinkToReject(link); setRejectModalOpen(true); }}
@@ -963,6 +1002,20 @@ export default function AdminJobLinksSection() {
                             {aiLoadingMap[link._id] ? 'Extracting…' : 'Auto-fill'}
                           </button>
                         </div>
+
+                        {(aiDuplicate || isUrlDuplicate) && (
+                          <div className="flex flex-col gap-1 rounded-xl border border-amber-200 bg-amber-50 px-3.5 py-2.5 text-[12px] text-amber-900">
+                            <div className="font-semibold">
+                              {aiDuplicate ? 'AI flagged this as an already listed job post' : 'Duplicate URL — already listed'}
+                            </div>
+                            <div className="text-amber-800/90">
+                              {duplicateInfo?.matchedJob
+                                ? `Matches: ${duplicateInfo.matchedJob.title || 'Job'}${duplicateInfo.matchedJob.company ? ` @ ${duplicateInfo.matchedJob.company}` : ''}. Use Allow Access to unlock the user without listing again.`
+                                : duplicateInfo?.aiDuplicateNote
+                                  || 'Use Allow Access to unlock the contributor without listing this link again.'}
+                            </div>
+                          </div>
+                        )}
 
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                           {/* Designation */}

@@ -1244,6 +1244,7 @@ router.post('/interviews/user/:userId',            interview.createSession);
 router.put('/interviews/:sessionId',               interview.updateSession);
 router.delete('/interviews/:sessionId',            interview.deleteSession);
 router.patch('/interviews/:sessionId/share',       interview.shareWithCandidate);
+router.post('/interviews/summarize',               interview.summarizeMcqs);
 
 // ── Candidate Curation — Showcase Pages ──────────────────────────────────────
 router.get('/showcases',           showcase.listShowcases);

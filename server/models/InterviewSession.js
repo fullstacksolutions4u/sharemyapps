@@ -15,6 +15,7 @@ const sectionSchema = new mongoose.Schema({
 const interviewSessionSchema = new mongoose.Schema({
   user:          { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   evaluatedBy:   { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  vacancy:       { type: mongoose.Schema.Types.ObjectId, ref: 'Vacancy', default: null },
   sessionNumber: { type: Number, default: 1 },  // auto-incremented per user
 
   overallRating: { type: Number, min: 1, max: 10, default: 5 },
@@ -43,6 +44,16 @@ const interviewSessionSchema = new mongoose.Schema({
 
   improvementTips: [improvementTipSchema],
 
+  mcqAssessments: [{
+    question: { type: String },
+    options: [{ type: String }],
+    correctAnswerIndex: { type: Number },
+    isCorrect: { type: Boolean, default: false },
+    comment: { type: String, default: '' },
+    moduleTitle: { type: String },
+    topicName: { type: String }
+  }],
+
   // Controls visibility of tips to the developer
   sharedWithCandidate:   { type: Boolean, default: false },
   sharedWithCandidateAt: { type: Date,    default: null },
@@ -53,5 +64,6 @@ const interviewSessionSchema = new mongoose.Schema({
 interviewSessionSchema.index({ user: 1, createdAt: -1 });
 interviewSessionSchema.index({ evaluatedBy: 1, createdAt: -1 });
 interviewSessionSchema.index({ interviewedAt: -1 });
+interviewSessionSchema.index({ vacancy: 1, interviewedAt: -1 });
 
 module.exports = mongoose.model('InterviewSession', interviewSessionSchema);

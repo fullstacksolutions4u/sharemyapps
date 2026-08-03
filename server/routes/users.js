@@ -78,7 +78,7 @@ router.get('/overview-stats', protect, async (req, res) => {
       ai: ['artificial intelligence', 'ai', 'machine learning', 'nlp'],
       programming_languages: ['programming language', 'programming languages', 'javascript', 'typescript', 'python', 'java', 'c++', 'c#', 'rust', 'go', 'php'],
       dsa: ['dsa', 'data structures', 'algorithms', 'algorithm'],
-      mobile_development: ['mobile development', 'mobile', 'android', 'ios', 'flutter', 'react native'],
+      mobile_development: ['react native', 'react-native', 'mobile development', 'mobile', 'android', 'ios', 'flutter'],
       others: ['security', 'cyber security', 'data science']
     };
 
@@ -98,12 +98,19 @@ router.get('/overview-stats', protect, async (req, res) => {
     const getModuleUiCategory = (mod) => {
       const cat = (mod.category || '').toLowerCase();
       const title = (mod.title || '').toLowerCase();
+      const haystack = `${cat} ${title}`;
+      // Longest keyword wins so "react native" beats frontend's "react"
+      let bestKey = 'others';
+      let bestLen = -1;
       for (const [uiCat, keywords] of Object.entries(categoriesMap)) {
-        if (keywords.some(kw => cat.includes(kw) || title.includes(kw))) {
-          return uiCat;
+        for (const kw of keywords) {
+          if ((cat.includes(kw) || title.includes(kw) || haystack.includes(kw)) && kw.length > bestLen) {
+            bestKey = uiCat;
+            bestLen = kw.length;
+          }
         }
       }
-      return 'others';
+      return bestKey;
     };
 
     const completedTopicKeys = new Set(

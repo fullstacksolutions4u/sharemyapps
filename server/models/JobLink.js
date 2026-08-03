@@ -12,7 +12,7 @@ const jobLinkSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ['pending', 'approved', 'rejected'],
+    enum: ['pending', 'approved', 'rejected', 'access_granted'],
     default: 'pending'
   },
   workMode: { type: String, trim: true, default: '' },
@@ -21,8 +21,12 @@ const jobLinkSchema = new mongoose.Schema({
   state: { type: String, trim: true, default: '' },
   adminNote: { type: String, trim: true, default: '' },
   expiresAt: { type: Date, expires: 0 },
+  approvedAt: { type: Date },
   clicks: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
   createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }
 }, { timestamps: true });
+
+jobLinkSchema.index({ createdBy: 1, status: 1, approvedAt: -1 });
+jobLinkSchema.index({ clicks: 1 });
 
 module.exports = mongoose.model('JobLink', jobLinkSchema);

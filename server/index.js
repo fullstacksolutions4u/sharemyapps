@@ -31,6 +31,7 @@ const premiumServicesRoutes = require('./routes/premiumServices');
 const feedRoutes = require('./routes/feed');
 const jobLinkRoutes = require('./routes/jobLinks');
 const showcaseRoutes = require('./routes/showcase');
+const interviewModuleRoutes = require('./routes/interviewModules');
 const { startJobAlertScheduler } = require('./jobs/jobAlertScheduler');
 const { task: thumbnailTask } = require('./cron/thumbnails');
 const { task: hourlyMetricsTask } = require('./cron/hourlyMetrics');
@@ -101,6 +102,7 @@ app.use('/api/premium-services', generalLimiter, premiumServicesRoutes);
 app.use('/api/feed', generalLimiter, feedRoutes);
 app.use('/api/job-links', generalLimiter, jobLinkRoutes);
 app.use('/api/showcase', generalLimiter, showcaseRoutes);
+app.use('/api/interview-modules', generalLimiter, interviewModuleRoutes);
 
 // Developer: view own interview feedback (auth required)
 app.use('/api/interview-feedback', generalLimiter, require('./middleware/auth').protect, (req, res, next) => {
