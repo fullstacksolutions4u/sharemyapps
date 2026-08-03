@@ -10,7 +10,7 @@ Admin + developer surfaces for job vacancies, reported openings, freelance proje
 2. **Developers discover & apply** — browse opportunities, show interest (apply), track application progress.
 3. **Users can report openings** — community-submitted vacancies land in `pending` until admin reviews.
 4. **Freelance projects** — separate opportunity type under the same admin Opportunities section.
-5. **Job Post Links** — community-shared external job URLs; gated Apply Now (1 free + weekly approved contribution unlock).
+5. **Job Post Links** — community-shared external job URLs; gated Apply Now (2 free per week + weekly contribution unlock).
 6. **Feeds Interview Screening** — applicants marked `contacted` (or interview rounds) on a vacancy appear in Screening’s job → applicant dropdowns.
 
 Admin entry: **Admin Panel → Opportunities** (`opportunities` in `client/src/pages/AdminPanel.jsx`). Job Post Links admin UI: `AdminJobLinksSection` (Job Links / related admin nav).
@@ -121,7 +121,8 @@ Interview Screening Session tab treats as screening applicants: `contacted`, `1 
 | `adminNote` | String | Shown on rejection email |
 | `expiresAt` | Date | TTL index; set on **approve** (listed links) |
 | `approvedAt` | Date | Set on `approved` or `access_granted` (weekly unlock window) |
-| `clicks` | [ObjectId → User] | Users who used Apply Now |
+| `clicks` | [ObjectId → User] | Users who used Apply Now (admin list) |
+| `clickEvents` | `[{ user, at }]` | Timestamped applies for weekly free-apply gating |
 | `createdBy` | ObjectId → User | Contributor (or admin poster) |
 
 Indexes: `{ createdBy, status, approvedAt }`, `{ clicks }`.
@@ -134,11 +135,12 @@ Indexes: `{ createdBy, status, approvedAt }`, `{ clicks }`.
 
 **Product rules**
 
-1. Each user may click **Apply Now** on **1** distinct job link for free (no contribution required).
-2. To apply to **additional** links, they must **contribute ≥1 job post URL per rolling 7-day week**.
+1. Each user may click **Apply Now** on **2** distinct job links **per rolling 7-day week** for free (no contribution required).
+2. To apply to **additional** links the same week, they must **contribute ≥1 job post URL** that week (to the community).
 3. Contribution unlock requires admin **Approve** (`approved` — listed publicly) **or** **Allow Access** (`access_granted` — unlock only, not listed). Pending does not unlock.
 4. Once unlocked for the week, they may Apply Now on **multiple** job posts.
 5. Re-opening a link they already visited (**Visited**) is always allowed and does not consume a new apply.
+6. **Our Client Vacancies** and **Freelance** are unaffected — no contribution gate on interest/apply.
 
 **Admin actions (pending)**
 
@@ -159,7 +161,9 @@ Pending rows with a URL that already has an `approved` listing show a **Duplicat
 
 **Weekly contribution** = count of `JobLink` where `createdBy = user`, `status ∈ { approved, access_granted }`, and `approvedAt` (fallback `updatedAt` if missing) is within the last **7 days**.
 
-**UI** (`Vacancies.jsx` → Job Post Links tab): locked cards show “Contribute to unlock”; amber banner / toast: “Contribute at least 1 job post link per week to unlock more applies”. On contribute submit: toast “Job link submitted! It will appear after admin approval.” (5s).
+**UI** (`Vacancies.jsx` → Job Post Links tab): always-visible yellow banner below filters — “2 free Apply per week. Contribute at least 1 job post link to community per week to unlock unlimited job post applies.” Locked cards show “Contribute to unlock”. On contribute submit: toast “Job link submitted! It will appear after admin approval.” (5s).
+
+Weekly free applies are tracked via `JobLink.clickEvents[{ user, at }]`.
 
 ---
 
@@ -286,7 +290,7 @@ See also: `docs/interview_modules.md`.
 - Toggle status only flips between `active` and `closed` (not pending).
 - Applicant status changes are no-ops if status unchanged (no duplicate history).
 - Hard delete removes vacancy permanently.
-- **Job Post Links:** 1 free Apply Now; further applies require ≥1 `approved` or `access_granted` contribution in the last 7 days. Duplicate URLs allowed; use **Allow Access** so duplicates are not listed. Server enforces on `POST /job-links/:id/click`.
+- **Job Post Links:** 2 free Apply per week; further applies require ≥1 `approved` or `access_granted` contribution in the last 7 days. Duplicate URLs allowed; use **Allow Access** so duplicates are not listed. Server enforces on `POST /job-links/:id/click`. Does **not** apply to Our Client Vacancies / Freelance.
 
 ---
 

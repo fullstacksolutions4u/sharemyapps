@@ -6,12 +6,8 @@ import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
 
-
-
-
-
-
-
+const JOB_LINK_APPLY_INSTRUCTION =
+  '2 free Apply per week. Contribute at least 1 job post link to community per week to unlock unlimited job post applies.';
 
 const getStatusConfig = (status) => {
   const s = (status || '').toLowerCase();
@@ -352,7 +348,7 @@ export default function Vacancies() {
     if (!canApplyMore) {
       toast.error(
         applyEligibility?.message
-          || 'Contribute at least 1 job post link per week to unlock more applies',
+          || JOB_LINK_APPLY_INSTRUCTION,
         { duration: 6000 }
       );
       return;
@@ -569,7 +565,7 @@ export default function Vacancies() {
       
       {/* Advanced Filters */}
       {!TAB_CONFIG[activeTab].loading && TAB_CONFIG[activeTab].data.length > 0 && (
-        <div className="bg-white border-b border-border">
+        <div className="border-b border-border/40">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3">
             <div className="flex flex-wrap gap-3 items-center justify-center">
               
@@ -639,7 +635,7 @@ export default function Vacancies() {
                         <li>Must be posted within the last 72 hours.</li>
                         <li>Genuine posts only (no "comment if interested" engagement traps).</li>
                         <li>Direct job post links only (no generic job portal links).</li>
-                        <li>1 free Apply Now. Contribute at least 1 job post link per week to unlock more applies.</li>
+                        <li>{JOB_LINK_APPLY_INSTRUCTION}</li>
                       </ul>
                       <div className="absolute -top-1.5 right-2 w-3 h-3 bg-white border-t border-l border-gray-200 transform rotate-45"></div>
                     </div>
@@ -647,9 +643,9 @@ export default function Vacancies() {
                 </div>
               )}
 
-              {activeTab === 'job-links' && user && applyEligibility && !applyEligibility.canApplyMore && (
+              {activeTab === 'job-links' && (
                 <p className="w-full text-center text-[12px] text-amber-700 bg-amber-50 border border-amber-100 rounded-lg px-3 py-2">
-                  {applyEligibility.message}
+                  {JOB_LINK_APPLY_INSTRUCTION}
                 </p>
               )}
               
@@ -809,7 +805,7 @@ export default function Vacancies() {
                                   ? 'bg-gray-200 text-gray-500 border-b-[3px] border-gray-300 cursor-not-allowed'
                                   : 'bg-[#006994] hover:bg-[#005578] text-white border-b-[3px] border-[#004f70] active:border-b-0 active:translate-y-[3px]'
                             }`}
-                            title={!isApplied && !canApplyMore ? (applyEligibility?.message || 'Contribute at least 1 job post link per week to unlock more applies') : undefined}
+                            title={!isApplied && !canApplyMore ? (applyEligibility?.message || JOB_LINK_APPLY_INSTRUCTION) : undefined}
                           >
                             <span>{isApplied ? 'Visited' : !canApplyMore ? 'Contribute to unlock' : 'Apply Now'}</span>
                             <ExternalLink size={12} />

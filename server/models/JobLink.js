@@ -23,10 +23,16 @@ const jobLinkSchema = new mongoose.Schema({
   expiresAt: { type: Date, expires: 0 },
   approvedAt: { type: Date },
   clicks: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+  // Timestamped applies for weekly free-apply gating (clicks[] remains for admin “who applied”)
+  clickEvents: [{
+    user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+    at: { type: Date, default: Date.now },
+  }],
   createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }
 }, { timestamps: true });
 
 jobLinkSchema.index({ createdBy: 1, status: 1, approvedAt: -1 });
 jobLinkSchema.index({ clicks: 1 });
+jobLinkSchema.index({ 'clickEvents.user': 1, 'clickEvents.at': -1 });
 
 module.exports = mongoose.model('JobLink', jobLinkSchema);

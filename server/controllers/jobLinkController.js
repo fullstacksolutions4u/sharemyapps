@@ -5,7 +5,7 @@ const OpenAI = require('openai');
 const { sendJobLinkRejectedEmail } = require('../utils/email');
 
 const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
-const FREE_APPLY_LIMIT = 1;
+const FREE_APPLY_LIMIT = 2;
 
 function calculateExpirationDate(postedDate) {
   const defaultExp = Date.now() + 5 * 24 * 60 * 60 * 1000;
@@ -94,17 +94,24 @@ function findDuplicateAgainstList({ url, title, company, excludeId, approvedLink
   };
 }
 
+const APPLY_INSTRUCTION =
+  '2 free Apply per week. Contribute at least 1 job post link to community per week to unlock unlimited job post applies.';
+
 /**
  * Apply Now rules for Job Post Links:
- * - 1 free Apply Now without contributing
+ * - 2 free Apply Now clicks per rolling 7-day week without contributing
  * - To apply to more, user needs ≥1 approved or access_granted contribution in the last 7 days
  * - Re-opening an already-clicked link is always allowed
+ * - Does NOT apply to Our Client Vacancies or Freelance
  */
 async function getJobLinkApplyEligibility(userId) {
   const since = weekAgo();
 
-  const [clickedDocs, weeklyApprovedCount, pendingContributionCount] = await Promise.all([
+  const [clickedDocs, weeklyApplyDocs, weeklyApprovedCount, pendingContributionCount] = await Promise.all([
     JobLink.find({ clicks: userId }).select('_id').lean(),
+    JobLink.find({
+      clickEvents: { $elemMatch: { user: userId, at: { $gte: since } } },
+    }).select('_id').lean(),
     JobLink.countDocuments({
       createdBy: userId,
       status: { $in: ['approved', 'access_granted'] },
@@ -117,25 +124,21 @@ async function getJobLinkApplyEligibility(userId) {
   ]);
 
   const clickedIds = clickedDocs.map((d) => d._id.toString());
-  const applyCount = clickedIds.length;
+  const weeklyApplyCount = weeklyApplyDocs.length;
   const hasWeeklyContribution = weeklyApprovedCount > 0;
   const pendingContribution = pendingContributionCount > 0;
-  const canApplyMore = hasWeeklyContribution || applyCount < FREE_APPLY_LIMIT;
-
-  let message = null;
-  if (!canApplyMore) {
-    message = 'Contribute at least 1 job post link per week to unlock more applies';
-  }
+  const canApplyMore = hasWeeklyContribution || weeklyApplyCount < FREE_APPLY_LIMIT;
 
   return {
     canApplyMore,
     hasWeeklyContribution,
     pendingContribution,
-    freeApplyUsed: applyCount >= FREE_APPLY_LIMIT,
-    applyCount,
+    freeApplyUsed: weeklyApplyCount >= FREE_APPLY_LIMIT,
+    applyCount: weeklyApplyCount,
     freeApplyLimit: FREE_APPLY_LIMIT,
     clickedIds,
-    message,
+    message: canApplyMore ? null : APPLY_INSTRUCTION,
+    instruction: APPLY_INSTRUCTION,
   };
 }
 
@@ -539,6 +542,8 @@ exports.recordClick = async (req, res) => {
     }
 
     jobLink.clicks.push(req.user._id);
+    if (!jobLink.clickEvents) jobLink.clickEvents = [];
+    jobLink.clickEvents.push({ user: req.user._id, at: new Date() });
     await jobLink.save();
 
     const updated = await getJobLinkApplyEligibility(req.user._id);
