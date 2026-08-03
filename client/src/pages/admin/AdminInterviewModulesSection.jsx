@@ -183,18 +183,11 @@ export default function AdminInterviewModulesSection({ initialApplicant = null, 
     setEvaluations(prev => ({ ...prev, [key]: { ...(prev[key] || { result: null, comment: '' }), [field]: value } }));
   };
 
-  const [selectedApplicant, setSelectedApplicant] = useState(initialApplicant || null);
+  const selectedApplicant = initialApplicant || null;
   const [savingSession, setSavingSession] = useState(false);
   const [loadingAi, setLoadingAi] = useState(false);
   const [evalForm, setEvalForm] = useState(emptyEvalForm());
   const [evalModuleOpen, setEvalModuleOpen] = useState(true);
-
-  // Applicant comes from Interview Session tab (no re-select here)
-  useEffect(() => {
-    setSelectedApplicant(initialApplicant || null);
-    setEvalForm(emptyEvalForm());
-    setEvaluations({});
-  }, [initialApplicant]);
 
   const buildMcqAssessments = () => {
     const mcqAssessments = [];
@@ -298,7 +291,7 @@ export default function AdminInterviewModulesSection({ initialApplicant = null, 
     finally { setLoading(false); }
   };
 
-  useEffect(() => { fetchModules(); }, []);
+  useEffect(() => { fetchModules(); }, []); // eslint-disable-line react-hooks/set-state-in-effect
 
   const grouped = useMemo(() => {
     const map = {};

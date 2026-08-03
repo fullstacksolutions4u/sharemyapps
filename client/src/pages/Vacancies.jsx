@@ -282,7 +282,7 @@ export default function Vacancies() {
   const [submittingLink, setSubmittingLink] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
 
-  const [clickedLinks, setClickedLinks] = useState(() => {
+  const [localClickedLinks, setLocalClickedLinks] = useState(() => {
     try {
       const saved = localStorage.getItem('clicked_job_links');
       return saved ? JSON.parse(saved) : [];
@@ -307,30 +307,22 @@ export default function Vacancies() {
     staleTime: 30000,
   });
 
+  const serverClickedIds = applyEligibility?.clickedIds || [];
+  const clickedLinks = Array.from(new Set([...localClickedLinks, ...serverClickedIds]));
+
   useEffect(() => {
-    if (!applyEligibility?.clickedIds?.length) return;
-    setClickedLinks(prev => {
-      const merged = Array.from(new Set([...prev, ...applyEligibility.clickedIds]));
-      try {
-        localStorage.setItem('clicked_job_links', JSON.stringify(merged));
-      } catch (e) {
-        console.error(e);
-      }
-      return merged;
-    });
-  }, [applyEligibility?.clickedIds]);
+    try {
+      localStorage.setItem('clicked_job_links', JSON.stringify(clickedLinks));
+    } catch (e) {
+      console.error(e);
+    }
+  }, [clickedLinks]);
 
   const canApplyMore = !user || applyEligibility?.canApplyMore !== false;
 
   const persistClicked = (id) => {
-    if (clickedLinks.includes(id)) return;
-    const updated = [...clickedLinks, id];
-    setClickedLinks(updated);
-    try {
-      localStorage.setItem('clicked_job_links', JSON.stringify(updated));
-    } catch (e) {
-      console.error(e);
-    }
+    if (localClickedLinks.includes(id) || serverClickedIds.includes(id)) return;
+    setLocalClickedLinks(prev => [...prev, id]);
   };
 
   const handleLinkClick = async (e, id, url) => {
