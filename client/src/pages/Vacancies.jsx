@@ -5,9 +5,10 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
+import { normalizeJobDesignation } from '../utils/jobDesignation';
 
 const JOB_LINK_APPLY_INSTRUCTION =
-  'Get 2 free job applies each week. Share at least 1 job post per week with the community to unlock unlimited applies.';
+  'Get 2 free applies weekly — share 1 job post to unlock unlimited applies.';
 
 const getStatusConfig = (status) => {
   const s = (status || '').toLowerCase();
@@ -510,7 +511,7 @@ export default function Vacancies() {
       <div className="absolute inset-0 opacity-20 pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle, #00A693 1px, transparent 1px)', backgroundSize: '28px 28px' }} />
       {/* Tabs header */}
       <div className="relative border-b border-border overflow-hidden">
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between">
+        <div className="relative max-w-[1550px] mx-auto px-2 sm:px-3 flex items-center justify-between">
           <div className="flex gap-1 flex-1 justify-center">
             {TABS.map(({ key, label, icon: Icon }) => {
               const tabColors = {
@@ -558,15 +559,17 @@ export default function Vacancies() {
       {/* Advanced Filters */}
       {!TAB_CONFIG[activeTab].loading && TAB_CONFIG[activeTab].data.length > 0 && (
         <div className="border-b border-border/40">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3">
-            <div className="flex flex-wrap gap-3 items-center justify-center">
+          <div className="max-w-[1550px] mx-auto px-2 sm:px-3 py-3">
+            <div className="flex flex-wrap gap-3 items-center justify-start">
               
               <FilterDropdown
                 icon={Briefcase}
                 placeholder="Designation"
                 value={filterDesignation}
                 onChange={(val) => { setFilterDesignation(val); setCurrentPage(1); }}
-                options={Array.from(new Set(TAB_CONFIG[activeTab].data.map(d => d.title).filter(Boolean))).sort()}
+                options={Array.from(new Set(
+                  TAB_CONFIG[activeTab].data.map(d => normalizeJobDesignation(d.title)).filter(Boolean)
+                )).sort()}
               />
 
               <FilterDropdown
@@ -595,50 +598,51 @@ export default function Vacancies() {
                 </button>
               )}
 
+              {activeTab === 'job-links' && (
+                <p className="text-[11px] sm:text-[12px] text-amber-700 bg-amber-50 border border-amber-100 rounded-lg px-2.5 py-1.5 leading-snug shrink-0 whitespace-nowrap">
+                  {JOB_LINK_APPLY_INSTRUCTION}
+                </p>
+              )}
+
               {activeTab === 'job-links' && user && (
-                <div className="w-full sm:w-auto min-w-[320px] sm:w-[580px] md:w-[610px] ml-0 sm:ml-2 flex items-center gap-2">
-                  <form
-                    onSubmit={handleInlineJobLinkSubmit}
-                    className="flex-1 flex items-center gap-1 bg-white rounded-xl border border-black/20 animate-border-gemini-shine focus-within:!border-accent/50 focus-within:!shadow-[0_0_0_2px_rgba(0,166,147,0.1)] transition-all p-1 pl-1.5 overflow-hidden relative"
-                  >
-                    <ScrollingPlaceholderInput
-                      value={inlineUrl}
-                      onChange={e => setInlineUrl(e.target.value)}
-                      className="flex-1 bg-transparent text-[12px] outline-none px-1 text-gray-700 min-w-0 placeholder:text-gray-400"
-                    />
-                    <button
-                      type="submit"
-                      disabled={submittingLink}
-                      className="bg-accent hover:bg-accent-hover text-white p-1.5 rounded-md transition-colors disabled:opacity-50 shrink-0 flex items-center justify-center"
+                <div className="w-full sm:w-auto min-w-[200px] sm:min-w-[280px] sm:flex-1 sm:max-w-[520px] shrink-0">
+                  <div className="relative min-w-0">
+                    <form
+                      onSubmit={handleInlineJobLinkSubmit}
+                      className="flex items-center gap-1 bg-white rounded-xl border border-black/20 animate-border-gemini-shine focus-within:!border-accent/50 focus-within:!shadow-[0_0_0_2px_rgba(0,166,147,0.1)] transition-all p-1 pl-1.5 overflow-hidden"
                     >
-                      <Plus size={14} />
-                    </button>
-                  </form>
-                  
-                  <div className="relative group flex items-center justify-center cursor-help shrink-0">
-                    <div className="text-gray-400 hover:text-accent transition-colors p-1">
-                      <Info size={18} />
-                    </div>
-                    
-                    <div className="absolute right-0 top-full mt-2 w-[300px] bg-white border border-gray-200 text-gray-700 text-[12px] p-3.5 rounded-xl shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 text-left">
-                      <div className="font-semibold text-[13px] mb-2 text-accent">Guidelines for sharing:</div>
-                      <ul className="list-disc pl-4 space-y-1.5 text-gray-600">
-                        <li>Share software job post links only.</li>
-                        <li>Must be posted within the last 72 hours.</li>
-                        <li>Genuine posts only (no "comment if interested" engagement traps).</li>
-                        <li>Direct job post links only (no generic job portal links).</li>
-                        <li>{JOB_LINK_APPLY_INSTRUCTION}</li>
-                      </ul>
-                      <div className="absolute -top-1.5 right-2 w-3 h-3 bg-white border-t border-l border-gray-200 transform rotate-45"></div>
+                      <ScrollingPlaceholderInput
+                        value={inlineUrl}
+                        onChange={e => setInlineUrl(e.target.value)}
+                        className="flex-1 bg-transparent text-[12px] outline-none px-1 text-gray-700 min-w-0 placeholder:text-gray-400"
+                      />
+                      <button
+                        type="submit"
+                        disabled={submittingLink}
+                        className="bg-accent hover:bg-accent-hover text-white p-1.5 rounded-md transition-colors disabled:opacity-50 shrink-0 flex items-center justify-center"
+                      >
+                        <Plus size={14} />
+                      </button>
+                    </form>
+
+                    <div className="absolute -top-2.5 -right-5 group z-10">
+                      <div className="text-gray-400 hover:text-accent transition-colors p-0.5 bg-white rounded-full border border-gray-200 shadow-sm">
+                        <Info size={14} />
+                      </div>
+
+                      <div className="absolute right-0 top-full mt-2 w-[300px] bg-white border border-gray-200 text-gray-700 text-[12px] p-3.5 rounded-xl shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 text-left pointer-events-none">
+                        <div className="font-semibold text-[13px] mb-2 text-accent">Guidelines for sharing:</div>
+                        <ul className="list-disc pl-4 space-y-1.5 text-gray-600">
+                          <li>Share software job post links only.</li>
+                          <li>Must be posted within the last 5 days.</li>
+                          <li>Don&apos;t share &quot;comment here if interested&quot; kind of engagement posts.</li>
+                          <li>Don&apos;t share job portals direct links.</li>
+                        </ul>
+                        <div className="absolute -top-1.5 right-2 w-3 h-3 bg-white border-t border-l border-gray-200 transform rotate-45"></div>
+                      </div>
                     </div>
                   </div>
                 </div>
-              )}
-
-              {activeTab === 'job-links' && (
-                <p className="w-full text-center text-[12px] text-amber-700 bg-amber-50 border border-amber-100 rounded-lg px-3 py-2">
-                  {JOB_LINK_APPLY_INSTRUCTION}
-                </p>
               )}
               
             </div>
@@ -646,7 +650,7 @@ export default function Vacancies() {
         </div>
       )}
 
-      <div className="max-w-[1550px] mx-auto px-4 sm:px-6 py-8 pb-16">
+      <div className="max-w-[1550px] mx-auto px-2 sm:px-3 pt-4 pb-16">
       {(() => {
         const currentData = TAB_CONFIG[activeTab].data;
         const filteredData = currentData.filter(d => {
@@ -655,7 +659,7 @@ export default function Vacancies() {
             const fiveDaysAgoTime = new Date().getTime() - 5 * 24 * 60 * 60 * 1000;
             if (postedTime < fiveDaysAgoTime) return false;
           }
-          if (filterDesignation && d.title !== filterDesignation) return false;
+          if (filterDesignation && normalizeJobDesignation(d.title) !== filterDesignation) return false;
           
           if (filterLocation) {
             const loc = (d.location || '').toLowerCase();
@@ -698,7 +702,7 @@ export default function Vacancies() {
         return (
           <div className="space-y-8">
             {activeTab === 'job-links' ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 max-w-[1550px] mx-auto">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
                 {paginatedData.map(link => {
                   const isApplied = clickedLinks.includes(link._id);
                   const colorObj = { bg: '#dfeafd', fold: '#b8cde8' };
@@ -712,7 +716,7 @@ export default function Vacancies() {
                       <div className="flex flex-col gap-2">
                         <div className="flex justify-between items-start">
                           <h2 className="text-[16px] font-semibold text-gray-900 line-clamp-2">
-                            {link.title || 'Job Opportunity'}
+                            {normalizeJobDesignation(link.title) || 'Job Opportunity'}
                           </h2>
                         </div>
 
@@ -843,7 +847,7 @@ export default function Vacancies() {
                 })}
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 max-w-[1550px] mx-auto">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
                 {paginatedData.map(v => {
                   const subLabel = activeTab === 'freelance' ? null : (v.industry || v.company);
                   const colorObj = { bg: '#dfeafd', fold: '#b8cde8' };

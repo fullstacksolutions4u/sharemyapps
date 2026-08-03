@@ -10,6 +10,7 @@ const DESIGNATION_OPTIONS = [
   "MERN Stack Developer",
   "MEAN Stack Developer",
   "React Developer",
+  "React Native Developer",
   "Node.js Developer",
   "Python Developer",
   "Java Developer",

@@ -354,7 +354,7 @@ export default function Feed() {
                 <div className="absolute right-0 top-full mt-2 w-[270px] bg-white border border-gray-200 text-gray-700 text-[12px] p-3.5 rounded-xl shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 text-left">
                   <ul className="list-disc pl-4 space-y-1.5 text-gray-600">
                     <li>Share software job post links only.</li>
-                    <li>Must be posted within the last 72 hours.</li>
+                    <li>Must be posted within the last 5 days.</li>
                     <li>Genuine posts only (no "comment if interested" engagement traps).</li>
                     <li>Direct job post links only (no generic job portal links).</li>
                   </ul>

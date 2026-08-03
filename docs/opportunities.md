@@ -151,7 +151,7 @@ Indexes: `{ createdBy, status, approvedAt }`, `{ clicks }`.
 | Allow Access | `access_granted` | No | Yes |
 | Reject | `rejected` | No | No |
 
-Pending rows with a URL that already has an `approved` listing show a **Duplicate URL** badge. AI Auto-fill also validates against approved listings (URL + company/title DB match + AI semantic check against the approved catalog) and surfaces **AI: Duplicate** with match details — prefer **Allow Access**.
+Pending rows with a URL that already has an `approved` listing show a **Duplicate URL** badge. AI Auto-fill normalizes titles to canonical designations (e.g. ReactJS Developer → React Developer) and validates duplicates against approved listings.
 
 **Eligibility API**
 
@@ -164,7 +164,7 @@ Pending rows with a URL that already has an `approved` listing show a **Duplicat
 
 Unlock email: `User.jobLinkUnlockEmailSentAt` — send only if unset or `< week start`.
 
-**UI** (`Vacancies.jsx` → Job Post Links tab): always-visible yellow banner below filters — “Get 2 free job applies each week. Share at least 1 job post per week with the community to unlock unlimited applies.” Locked cards show “Contribute to unlock”. On contribute submit: toast “Job link submitted! It will appear after admin approval.” (5s).
+**UI** (`Vacancies.jsx` → Job Post Links tab): inline warning in filter row — “Get 2 free applies weekly — share 1 job post to unlock unlimited applies.” Locked cards show “Contribute to unlock”. On contribute submit: toast “Job link submitted! It will appear after admin approval.” (5s).
 
 Weekly free applies are tracked via `JobLink.clickEvents[{ user, at }]`.
 

@@ -4,6 +4,11 @@ const CompanyContact = require('../models/CompanyContact');
 const OpenAI = require('openai');
 const { sendJobLinkRejectedEmail, sendJobLinkUnlockedEmail } = require('../utils/email');
 const { getCurrentWeekStartMonday6AM } = require('../utils/weekBoundary');
+const {
+  normalizeJobDesignation,
+  titlesEquivalent,
+  getDesignationPromptBlock,
+} = require('../utils/jobDesignation');
 
 const FREE_APPLY_LIMIT = 2;
 
@@ -40,10 +45,7 @@ function normalizeJobUrl(raw) {
 }
 
 function titlesMatch(a, b) {
-  const na = (a || '').trim().toLowerCase().replace(/\s+/g, ' ');
-  const nb = (b || '').trim().toLowerCase().replace(/\s+/g, ' ');
-  if (!na || !nb) return false;
-  return na === nb || na.includes(nb) || nb.includes(na);
+  return titlesEquivalent(a, b);
 }
 
 function companiesMatch(a, b) {
@@ -95,7 +97,7 @@ function findDuplicateAgainstList({ url, title, company, excludeId, approvedLink
 }
 
 const APPLY_INSTRUCTION =
-  'Get 2 free job applies each week. Share at least 1 job post per week with the community to unlock unlimited applies.';
+  'Get 2 free applies weekly — share 1 job post to unlock unlimited applies.';
 
 /**
  * Apply Now rules for Job Post Links:
@@ -226,7 +228,7 @@ exports.createAdminJobLink = async (req, res) => {
 
     const jobLink = await JobLink.create({
       url,
-      title,
+      title: normalizeJobDesignation(title),
       company: company || '',
       postedDate: postedDate || '',
       workMode,
@@ -276,7 +278,7 @@ exports.updateJobLink = async (req, res) => {
         }
       }
     }
-    if (title !== undefined) link.title = title;
+    if (title !== undefined) link.title = normalizeJobDesignation(title);
     if (company !== undefined) link.company = company;
     if (postedDate !== undefined) link.postedDate = postedDate;
     if (workMode !== undefined) link.workMode = workMode;
@@ -363,13 +365,17 @@ exports.extractJobDetails = async (req, res) => {
 
     const existingCatalog = existingApproved
       .slice(0, 80)
-      .map((j, i) => `${i + 1}. ${j.title || 'Untitled'} @ ${j.company || 'Unknown'} | ${j.url || ''}`)
+      .map((j, i) => `${i + 1}. ${normalizeJobDesignation(j.title) || 'Untitled'} @ ${j.company || 'Unknown'} | ${j.url || ''}`)
       .join('\n');
+
+    const designationBlock = getDesignationPromptBlock(existingApproved.map((j) => j.title));
 
     const currentDate = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
     const prompt = `You are a job description parser and duplicate detector for an admin job-links tool.
 Extract structured information for all job positions/openings in the content. If multiple positions are mentioned, extract each as a separate item in "jobs".
 CURRENT DATE: ${currentDate}
+
+${designationBlock}
 
 ALREADY APPROVED / LISTED JOB POSTS (use these to flag duplicates — same company+role or same opening even if wording differs):
 ${existingCatalog || '(none yet)'}
@@ -378,7 +384,7 @@ Return ONLY a valid JSON object with a single "jobs" key containing an array of 
 {
   "jobs": [
     {
-      "title": "most relevant job designation/role (e.g. Full Stack Developer, React Developer, Backend Engineer, AWS DevOps Engineer, Project Manager, Node.js Developer)",
+      "title": "ONE canonical designation from the list above (normalized — no duplicates like ReactJS vs React.js)",
       "company": "company name if mentioned, if an email ID is present extract the company name from the domain name (e.g., from name@example.com extract 'Example', remove common extensions like .com, .in, .net), else empty string",
       "postedDate": "job posting date if mentioned. If relative (e.g. '1w', '2d'), calculate the exact date based on CURRENT DATE and output in 'Month DD' format (e.g. 'July 21'). Else empty string",
       "workMode": "one of: Remote, Onsite, Hybrid — infer from context if not explicitly stated",
@@ -427,7 +433,7 @@ ${text.slice(0, 4000)}`;
     const processedJobs = [];
     for (const job of jobList) {
       const jobCompany = job.company || '';
-      const jobTitle = job.title || '';
+      const jobTitle = normalizeJobDesignation(job.title || '');
       const jobEmail = job.email || '';
       const aiLikelyDuplicate = Boolean(job.aiLikelyDuplicate);
       const aiDuplicateNote = (job.aiDuplicateNote || '').trim();
