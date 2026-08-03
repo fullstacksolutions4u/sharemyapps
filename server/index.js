@@ -104,10 +104,8 @@ app.use('/api/job-links', generalLimiter, jobLinkRoutes);
 app.use('/api/showcase', generalLimiter, showcaseRoutes);
 app.use('/api/interview-modules', generalLimiter, interviewModuleRoutes);
 
-// Developer: view own interview feedback (auth required)
-app.use('/api/interview-feedback', generalLimiter, require('./middleware/auth').protect, (req, res, next) => {
-  require('./controllers/interviewController').getMyFeedback(req, res, next);
-});
+// Developer: interview feedback (auth required)
+app.use('/api/interview-feedback', generalLimiter, require('./middleware/auth').protect, require('./routes/interviewFeedback'));
 
 app.get('/api/health', (_req, res) => res.json({ status: 'ok' }));
 

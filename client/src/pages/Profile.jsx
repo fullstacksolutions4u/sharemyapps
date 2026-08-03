@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { COUNTRIES, STATES_BY_COUNTRY, DISTRICTS_BY_STATE } from '../data/locationData';
 import { useNavigate } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   ArrowLeft, ArrowRight, User, Mail, Phone, Link2, GitBranch,
   Globe, Save, Trash2, AlertTriangle, Camera, Loader2, FileText, Check, Plus, X as XIcon,
@@ -389,16 +390,15 @@ export default function Profile() {
   const completedCount = COMPLETION_ITEMS.filter(i => i.done).length;
   const completionPct = Math.round((completedCount / COMPLETION_ITEMS.length) * 100);
   const completionColor = completionPct >= 80 ? '#00A693' : '#F59E0B';
+  const resumeEmbedUrl = activeTab === 3 ? getGoogleDriveEmbedUrl(form.cvUrl) : null;
 
   return (
-    <div className="max-w-6xl mx-auto px-2 sm:px-3 pt-2 pb-3">
-<div className="flex flex-col lg:flex-row gap-6 items-stretch">
+    <div className="max-w-6xl mx-auto px-2 sm:px-3 pt-6 sm:pt-8 pb-3">
+      <div className="grid grid-cols-1 lg:grid-cols-[18rem_minmax(0,1fr)] gap-6 lg:gap-x-6 lg:gap-y-4 lg:items-stretch">
 
-        {/* ── Left: sticky profile card ── */}
-        <div className="w-full lg:w-72 shrink-0 space-y-4 flex flex-col">
-
-          {/* Avatar card with full progress border */}
-          <div className="relative group">
+        {/* Left stack: photo + danger/resume — spans progress steps + form height */}
+        <div className="order-1 lg:col-start-1 lg:row-start-1 lg:row-span-2 flex flex-col gap-4 min-h-0 h-full">
+        <div className="relative group shrink-0">
             {/* Missing items tooltip */}
             {COMPLETION_ITEMS.some(i => !i.done) && (
               <div className="absolute top-full inset-x-0 mx-auto mt-3 z-50 w-56 bg-white border border-gray-200 text-text text-xs rounded-xl px-3.5 py-3 shadow-xl opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200">
@@ -488,28 +488,74 @@ export default function Profile() {
                 </div>
               </div>
             </div>
-            </div>
           </div>
-
-          {form.cvUrl && getGoogleDriveEmbedUrl(form.cvUrl) && (
-            <div className="w-full flex-1 mb-14 bg-white border border-border rounded-xl overflow-hidden shadow-sm flex flex-col pointer-events-none">
-              <iframe
-                src={getGoogleDriveEmbedUrl(form.cvUrl)}
-                title="CV Preview"
-                className="w-full h-full"
-                frameBorder="0"
-                allow="autoplay"
-              />
-            </div>
-          )}
-
         </div>
 
-        {/* ── Right: tab wizard ── */}
-        <div className="flex-1 min-w-0 space-y-4">
+        {/* Danger zone by default; Resume/CV tab + valid Drive link → animated preview */}
+        <div className="relative min-h-0 flex-1">
+          <AnimatePresence mode="wait" initial={false}>
+            {resumeEmbedUrl ? (
+              <motion.div
+                key="resume-preview"
+                initial={{ opacity: 0, scale: 0.94, y: 18, filter: 'blur(8px)' }}
+                animate={{ opacity: 1, scale: 1, y: 0, filter: 'blur(0px)' }}
+                exit={{ opacity: 0, scale: 0.97, y: -10, filter: 'blur(6px)' }}
+                transition={{ duration: 1.05, ease: [0.22, 1, 0.36, 1] }}
+                className="absolute inset-0 bg-white border border-border rounded-2xl overflow-hidden shadow-sm flex flex-col"
+              >
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.35, duration: 0.85, ease: 'easeOut' }}
+                  className="flex-1 min-h-0"
+                >
+                  <iframe
+                    src={resumeEmbedUrl}
+                    title="CV Preview"
+                    className="w-full h-full"
+                    frameBorder="0"
+                    allow="autoplay"
+                  />
+                </motion.div>
+              </motion.div>
+            ) : (
+              <motion.div
+                key="danger-zone"
+                initial={{ opacity: 0, scale: 0.97, filter: 'blur(4px)' }}
+                animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }}
+                exit={{ opacity: 0, scale: 0.96, y: 12, filter: 'blur(8px)' }}
+                transition={{ duration: 0.75, ease: [0.22, 1, 0.36, 1] }}
+                className="absolute inset-0 min-h-[140px] rounded-2xl border border-red-100/80 bg-gradient-to-b from-[#F7F5F2] to-[#F3EDEA] px-4 py-4 flex flex-col items-center justify-center text-center shadow-[inset_0_1px_0_rgba(255,255,255,0.6)]"
+              >
+                <div className="flex flex-col items-center gap-3 w-full max-w-[220px]">
+                  <div className="w-9 h-9 rounded-xl bg-red-50 border border-red-100 flex items-center justify-center shrink-0">
+                    <AlertTriangle size={16} className="text-red-400" />
+                  </div>
+                  <div className="min-w-0 w-full">
+                    <p className="text-[12px] font-semibold text-[#6B7280] tracking-wide">
+                      Danger zone
+                    </p>
+                    <p className="text-[11px] text-[#9CA3AF] leading-relaxed mt-1">
+                      Permanently delete your account and all projects. This cannot be undone.
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setShowDelete(true)}
+                    className="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl border border-red-200 bg-white/80 text-red-500 hover:bg-red-50 hover:border-red-300 hover:text-red-600 text-[12px] font-semibold transition-all shadow-sm"
+                  >
+                    <Trash2 size={13} />
+                    Delete account
+                  </button>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+        </div>
 
-          {/* Step indicators */}
-          <div className="flex items-center">
+        {/* Steps — right col, row 1 */}
+        <div className="order-3 lg:col-start-2 lg:row-start-1 flex items-center">
             {TABS.map((tab, i) => {
               const Icon = tab.icon;
               const isActive = i === activeTab;
@@ -544,10 +590,10 @@ export default function Profile() {
                 </div>
               );
             })}
-          </div>
+        </div>
 
-          {/* Tab content */}
-          <div className="bg-white border border-border rounded-2xl p-5 min-h-70">
+        {/* Form card — right col, row 2 */}
+        <div className="order-4 lg:col-start-2 lg:row-start-2 bg-white border border-border rounded-2xl p-5 min-h-70 h-full">
 
             {/* Tab 0 — Basic Info */}
             {activeTab === 0 && (
@@ -1276,8 +1322,8 @@ export default function Profile() {
             )}
           </div>
 
-          {/* Navigation buttons */}
-          <div className="flex items-center justify-between gap-3">
+          {/* Navigation buttons — right col, row 3 (below form, so danger zone aligns with form bottom) */}
+          <div className="order-5 lg:col-start-2 lg:row-start-3 flex items-center justify-between gap-3">
             <button
               type="button"
               onClick={handleBack}
@@ -1305,7 +1351,6 @@ export default function Profile() {
               </button>
             )}
           </div>
-        </div>
       </div>
 
       {showDelete && (

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Target, TrendingUp, HelpCircle } from 'lucide-react';
 import api from '../api/axios';
 
@@ -14,15 +15,29 @@ const SECTION_COLORS = {
 const ratingColor = (r) => r >= 8 ? '#059669' : r >= 6 ? '#D97706' : '#DC2626';
 
 export default function DeveloperInterviewFeedback() {
+  const navigate = useNavigate();
   const [sessions, setSessions] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    api.get('/interview-feedback')
-      .then(res => setSessions(res.data.sessions || []))
-      .catch(() => {})
-      .finally(() => setLoading(false));
-  }, []);
+    let cancelled = false;
+    (async () => {
+      try {
+        const eligibility = await api.get('/interview-feedback/eligibility');
+        if (!eligibility.data?.eligible) {
+          navigate('/dashboard/overview', { replace: true });
+          return;
+        }
+        const res = await api.get('/interview-feedback');
+        if (!cancelled) setSessions(res.data.sessions || []);
+      } catch {
+        if (!cancelled) navigate('/dashboard/overview', { replace: true });
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [navigate]);
 
   if (loading) {
     return (

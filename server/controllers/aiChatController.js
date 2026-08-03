@@ -9,26 +9,26 @@ async function buildContext() {
   const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
 
   const [projects, developers, stats] = await Promise.all([
-    Project.find()
+    Project.find({ hidden: { $ne: true }, status: 'approved' })
       .populate('owner', 'name email')
       .select('title description techTags status category appType likes ratings viewCount featured hidden salePrice createdAt')
       .sort({ createdAt: -1 })
       .limit(200)
       .lean(),
-    User.find({ userType: 'developer', isDeleted: { $ne: true } })
+    User.find({ userType: 'developer', isDeleted: { $ne: true }, hidden: { $ne: true } })
       .select('name email bio designations badge freelanceAvailable mentorshipAvailable place district state country regNumber hidden createdAt resumeData')
       .sort({ createdAt: -1 })
       .limit(200)
       .lean(),
     Promise.all([
-      Project.countDocuments({ status: 'approved' }),
+      Project.countDocuments({ status: 'approved', hidden: { $ne: true } }),
       Project.countDocuments({ status: 'pending' }),
       Project.countDocuments({ status: 'rejected' }),
-      User.countDocuments({ userType: 'developer', isDeleted: { $ne: true } }),
-      User.countDocuments({ userType: 'client', isDeleted: { $ne: true } }),
-      User.countDocuments({ userType: 'developer', isDeleted: { $ne: true }, createdAt: { $gte: startOfMonth } }),
-      Project.countDocuments({ createdAt: { $gte: startOfMonth } }),
-      Project.countDocuments({ salePrice: { $exists: true, $ne: null } }),
+      User.countDocuments({ userType: 'developer', isDeleted: { $ne: true }, hidden: { $ne: true } }),
+      User.countDocuments({ userType: 'client', isDeleted: { $ne: true }, hidden: { $ne: true } }),
+      User.countDocuments({ userType: 'developer', isDeleted: { $ne: true }, hidden: { $ne: true }, createdAt: { $gte: startOfMonth } }),
+      Project.countDocuments({ createdAt: { $gte: startOfMonth }, hidden: { $ne: true } }),
+      Project.countDocuments({ salePrice: { $exists: true, $ne: null }, hidden: { $ne: true } }),
     ]),
   ]);
 

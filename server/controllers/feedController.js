@@ -1,6 +1,7 @@
 const Activity = require('../models/Activity');
 const Project = require('../models/Project');
 const User = require('../models/User');
+const { getExcludedHiddenUserIds } = require('../utils/visibility');
 
 exports.getFeed = async (req, res) => {
   try {
@@ -8,12 +9,12 @@ exports.getFeed = async (req, res) => {
     const limit = parseInt(req.query.limit) || 40;
     const skip = (page - 1) * limit;
 
-    let hiddenUserFilter = { $or: [{ hidden: true }, { isDeleted: true }] };
-    if (req.user && (req.user.role === 'admin' || req.user.hidden)) {
-      hiddenUserFilter = { isDeleted: true };
-    }
-    const hiddenUsers = await User.find(hiddenUserFilter).select('_id').lean();
-    const excludeIds = hiddenUsers.map(u => u._id.toString());
+    const hiddenExclude = await getExcludedHiddenUserIds(req.user, User);
+    const deletedUsers = await User.find({ isDeleted: true }).select('_id').lean();
+    const excludeIds = [
+      ...hiddenExclude.map((id) => id.toString()),
+      ...deletedUsers.map((u) => u._id.toString()),
+    ];
 
     let activities = await Activity.find({ user: { $nin: excludeIds } })
       .sort({ createdAt: -1 })

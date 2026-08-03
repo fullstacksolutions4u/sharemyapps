@@ -17,7 +17,14 @@ const projectUpload = upload.fields([
 router.get('/count', async (req, res) => {
   try {
     const Project = require('../models/Project');
-    const count = await Project.countDocuments({ status: 'approved' });
+    const User = require('../models/User');
+    const hiddenOwners = await User.find({ hidden: true }).select('_id').lean();
+    const hiddenIds = hiddenOwners.map((u) => u._id);
+    const count = await Project.countDocuments({
+      status: 'approved',
+      hidden: { $ne: true },
+      owner: { $nin: hiddenIds },
+    });
     res.json({ count });
   } catch {
     res.status(500).json({ message: 'Server error' });
@@ -30,9 +37,16 @@ router.get('/user/:userId', optionalAuth, getUserProjects);
 router.get('/showcase', async (req, res) => {
   try {
     const Project = require('../models/Project');
+    const User = require('../models/User');
     const skip = Math.max(parseInt(req.query.skip) || 99, 0);
     const limit = Math.min(parseInt(req.query.limit) || 4, 10);
-    const projects = await Project.find({ status: 'approved', hidden: { $ne: true } })
+    const hiddenOwners = await User.find({ hidden: true }).select('_id').lean();
+    const hiddenIds = hiddenOwners.map((u) => u._id);
+    const projects = await Project.find({
+      status: 'approved',
+      hidden: { $ne: true },
+      owner: { $nin: hiddenIds },
+    })
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit)

@@ -2,6 +2,7 @@ const LearningProgress = require('../models/LearningProgress');
 const LearningModule = require('../models/LearningModule');
 const User = require('../models/User');
 const Activity = require('../models/Activity');
+const { getUserVisibilityClause } = require('../utils/visibility');
 
 const getProgress = async (req, res) => {
   try {
@@ -329,22 +330,13 @@ const getProgressStats = async (req, res) => {
 
 const getLeaderboard = async (req, res) => {
   try {
+    const visibility = await getUserVisibilityClause(req.user, User);
     const devFilter = { 
       role: { $ne: 'admin' }, 
       userType: 'developer', 
-      isDeleted: { $ne: true }
+      isDeleted: { $ne: true },
+      ...visibility,
     };
-
-    // Hide Amir Ali from everyone except admins and Amir himself
-    const isAmir = req.user && req.user.name && req.user.name.toLowerCase().includes('amir ali');
-    const isAdmin = req.user && req.user.role === 'admin';
-    
-    if (!isAdmin && !isAmir) {
-      devFilter.name = { $not: /amir ali/i };
-    }
-    if (!req.user || (req.user.role !== 'admin' && !req.user.hidden)) {
-      devFilter.hidden = { $ne: true };
-    }
 
     const topUsers = await User.find(devFilter)
       .select('name avatar points')

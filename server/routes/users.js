@@ -6,11 +6,12 @@ const { protect, optionalAuth } = require('../middleware/auth');
 const { extractJDRequirements } = require('../utils/aiExtract');
 const aiLimit = require('../middleware/aiLimit');
 const { jdQuota } = require('../middleware/jdQuota');
+const { getUserVisibilityClause, canSeeUser } = require('../utils/visibility');
 
 // GET /api/users/count — public, returns total registered user count
 router.get('/count', async (req, res) => {
   try {
-    const count = await User.countDocuments({ isDeleted: { $ne: true }, role: { $ne: 'admin' } });
+    const count = await User.countDocuments({ isDeleted: { $ne: true }, role: { $ne: 'admin' }, hidden: { $ne: true } });
     res.json({ count });
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -281,10 +282,8 @@ router.get('/developers', optionalAuth, async (req, res) => {
     const search = req.query.search?.trim();
 
     const safeSearch = search?.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    const matchStage = { userType: 'developer', role: { $ne: 'admin' }, isDeleted: { $ne: true } };
-    if (!req.user || (req.user.role !== 'admin' && !req.user.hidden)) {
-      matchStage.hidden = { $ne: true };
-    }
+    const visibility = await getUserVisibilityClause(req.user, User);
+    const matchStage = { userType: 'developer', role: { $ne: 'admin' }, isDeleted: { $ne: true }, ...visibility };
     if (safeSearch) matchStage.name = { $regex: safeSearch, $options: 'i' };
     if (req.query.freelance === 'true') matchStage.freelanceAvailable = true;
     if (req.query.designation?.trim()) {
@@ -474,12 +473,13 @@ router.get('/candidates', protect, async (req, res) => {
       return res.status(403).json({ message: 'Recruiter access only' });
     }
 
+    const visibility = await getUserVisibilityClause(req.user, User);
     const candidates = await User.aggregate([
       {
         $match: {
           userType: { $in: ['developer', 'mentee'] },
           role: { $ne: 'admin' },
-          ...((!req.user || (req.user.role !== 'admin' && !req.user.hidden)) ? { hidden: { $ne: true } } : {}),
+          ...visibility,
           isDeleted: { $ne: true },
           $and: [
             { cvUrl: { $exists: true, $nin: ['', null] } },
@@ -776,14 +776,13 @@ router.post('/find-developers', protect, jdQuota, aiLimit, async (req, res) => {
     const isOnsiteJob   = locationType === 'onsite' && (locationCity || locationState);
 
     // 2. Fetch all eligible developers with their approved projects
+    const visibility = await getUserVisibilityClause(req.user, User);
     const filter = {
       userType: { $in: ['developer', 'mentee'] },
       role: { $ne: 'admin' },
       isDeleted: { $ne: true },
+      ...visibility,
     };
-    if (!req.user || (req.user.role !== 'admin' && !req.user.hidden)) {
-      filter.hidden = { $ne: true };
-    }
     const developers = await User.find(filter).select('-password -googleId -adminNote').lean();
 
     const projectsByOwner = await Project.aggregate([
@@ -948,6 +947,11 @@ router.post('/:id/portfolio-visit', protect, async (req, res) => {
     const ownerId = req.params.id;
     if (ownerId === req.user._id.toString()) return res.json({ ok: true });
 
+    const owner = await User.findById(ownerId).select('email hidden role');
+    if (!owner || !canSeeUser(req.user, owner)) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
     const Notification = require('../models/Notification');
     const since = new Date(Date.now() - 24 * 60 * 60 * 1000);
     const existing = await Notification.exists({
@@ -980,7 +984,7 @@ router.post('/:id/follow', protect, async (req, res) => {
     }
 
     const target = await User.findById(targetId);
-    if (!target) return res.status(404).json({ message: 'User not found' });
+    if (!target || !canSeeUser(req.user, target)) return res.status(404).json({ message: 'User not found' });
 
     const alreadyFollowing = target.followers.some(
       f => f.toString() === req.user._id.toString()
