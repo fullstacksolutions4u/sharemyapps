@@ -7,7 +7,7 @@ import {
 } from 'lucide-react';
 import api from '../api/axios';
 export default function Overview() {
-  const [filter, setFilter] = useState('daily'); // 'daily' | 'weekly' | 'monthly'
+  const [filter, setFilter] = useState('daily'); // 'daily' | 'monthly'
   
   const { data: stats, isLoading: loading } = useQuery({
     queryKey: ['overviewStats'],
@@ -31,31 +31,35 @@ export default function Overview() {
 
   // Construct chart data based on filter selection
   const getChartData = () => {
+    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const currentMonthName = monthNames[new Date().getMonth()];
+
     if (filter === 'daily') {
+      const today = new Date();
+      const currentDay = today.getDay();
+      const distanceToMonday = currentDay === 0 ? -6 : 1 - currentDay;
+
+      const getLabelForDay = (offset) => {
+        const d = new Date(today);
+        d.setDate(today.getDate() + distanceToMonday + offset);
+        return d.toLocaleDateString('en-US', { month: 'long', day: 'numeric' });
+      };
+
+      const currentDayOffset = currentDay === 0 ? 6 : currentDay - 1;
+      const currentDayLabel = getLabelForDay(currentDayOffset);
+
       return [
-        { label: 'Mon', apps: Math.round(appCount * 0.1), clicks: Math.round(clickCount * 0.1) },
-        { label: 'Tue', apps: Math.round(appCount * 0.2), clicks: Math.round(clickCount * 0.15) },
-        { label: 'Wed', apps: Math.round(appCount * 0.15), clicks: Math.round(clickCount * 0.2) },
-        { label: 'Thu', apps: Math.round(appCount * 0.25), clicks: Math.round(clickCount * 0.25) },
-        { label: 'Fri', apps: Math.round(appCount * 0.1), clicks: Math.round(clickCount * 0.1) },
-        { label: 'Sat', apps: Math.round(appCount * 0.05), clicks: Math.round(clickCount * 0.05) },
-        { label: 'Sun', apps: Math.round(appCount * 0.15), clicks: Math.round(clickCount * 0.15) },
+        { label: getLabelForDay(0), apps: 0 > currentDayOffset ? 0 : Math.round(appCount * 0.1), clicks: 0 > currentDayOffset ? 0 : Math.round(clickCount * 0.1) },
+        { label: getLabelForDay(1), apps: 1 > currentDayOffset ? 0 : Math.round(appCount * 0.2), clicks: 1 > currentDayOffset ? 0 : Math.round(clickCount * 0.15) },
+        { label: getLabelForDay(2), apps: 2 > currentDayOffset ? 0 : Math.round(appCount * 0.15), clicks: 2 > currentDayOffset ? 0 : Math.round(clickCount * 0.2) },
+        { label: getLabelForDay(3), apps: 3 > currentDayOffset ? 0 : Math.round(appCount * 0.25), clicks: 3 > currentDayOffset ? 0 : Math.round(clickCount * 0.25) },
+        { label: getLabelForDay(4), apps: 4 > currentDayOffset ? 0 : Math.round(appCount * 0.1), clicks: 4 > currentDayOffset ? 0 : Math.round(clickCount * 0.1) },
+        { label: getLabelForDay(5), apps: 5 > currentDayOffset ? 0 : Math.round(appCount * 0.05), clicks: 5 > currentDayOffset ? 0 : Math.round(clickCount * 0.05) },
+        { label: getLabelForDay(6), apps: 6 > currentDayOffset ? 0 : Math.round(appCount * 0.15), clicks: 6 > currentDayOffset ? 0 : Math.round(clickCount * 0.15) },
       ].map(item => ({
         ...item,
-        apps: item.apps || (appCount > 0 && item.label === 'Thu' ? appCount : 0),
-        clicks: item.clicks || (clickCount > 0 && item.label === 'Thu' ? clickCount : 0),
-      }));
-    }
-    if (filter === 'weekly') {
-      return [
-        { label: 'Week 1', apps: Math.round(appCount * 0.2), clicks: Math.round(clickCount * 0.2) },
-        { label: 'Week 2', apps: Math.round(appCount * 0.3), clicks: Math.round(clickCount * 0.25) },
-        { label: 'Week 3', apps: Math.round(appCount * 0.4), clicks: Math.round(clickCount * 0.35) },
-        { label: 'Week 4', apps: Math.round(appCount * 0.1), clicks: Math.round(clickCount * 0.2) },
-      ].map(item => ({
-        ...item,
-        apps: item.apps || (appCount > 0 && item.label === 'Week 3' ? appCount : 0),
-        clicks: item.clicks || (clickCount > 0 && item.label === 'Week 3' ? clickCount : 0),
+        apps: item.apps || (appCount > 0 && item.label === currentDayLabel ? appCount : 0),
+        clicks: item.clicks || (clickCount > 0 && item.label === currentDayLabel ? clickCount : 0),
       }));
     }
     // Monthly
@@ -68,8 +72,8 @@ export default function Overview() {
       { label: 'Aug', apps: Math.round(appCount * 0.0), clicks: Math.round(clickCount * 0.0) },
     ].map(item => ({
       ...item,
-      apps: item.apps || (appCount > 0 && item.label === 'Jul' ? appCount : 0),
-      clicks: item.clicks || (clickCount > 0 && item.label === 'Jul' ? clickCount : 0),
+      apps: item.apps || (appCount > 0 && item.label === currentMonthName ? appCount : 0),
+      clicks: item.clicks || (clickCount > 0 && item.label === currentMonthName ? clickCount : 0),
     }));
   };
 
@@ -152,7 +156,7 @@ export default function Overview() {
           <div className="flex items-center justify-between mb-6">
             <h3 className="font-bold text-[#1A1A1A] text-sm">Application Activity</h3>
             <div className="flex items-center gap-1.5 bg-gray-50 p-1 rounded-xl border border-gray-100">
-              {['daily', 'weekly', 'monthly'].map(f => (
+              {['daily', 'monthly'].map(f => (
                 <button
                   key={f}
                   onClick={() => setFilter(f)}
@@ -169,61 +173,72 @@ export default function Overview() {
           </div>
 
           <div className="flex-1 flex flex-col justify-end min-h-[180px]">
-            <div className="flex items-end justify-between h-[150px] relative px-2">
-              {/* Y-axis grid lines background */}
-              <div className="absolute inset-0 flex flex-col justify-between pointer-events-none">
-                {[0, 1, 2, 3].map(i => (
-                  <div key={i} className="w-full border-t border-dashed border-[#FAF7F2] h-0" />
-                ))}
+            <div className="flex h-[150px] relative px-2">
+              {/* Y-axis Labels */}
+              <div className="flex flex-col justify-between text-[10px] font-bold text-gray-400 pb-6 text-right pr-2.5 select-none w-7">
+                <span>{Math.round(maxVal)}</span>
+                <span>{Math.round(maxVal * 0.67)}</span>
+                <span>{Math.round(maxVal * 0.33)}</span>
+                <span>0</span>
               </div>
 
-              {/* Bars mapping */}
-              {chartData.map((item, i) => {
-                const totalVal = item.apps + item.clicks;
-                const barHeight = totalVal > 0 ? (totalVal / maxVal) * 100 : 0;
-                const appPercent = totalVal > 0 ? (item.apps / totalVal) * 100 : 0;
-                const clickPercent = totalVal > 0 ? (item.clicks / totalVal) * 100 : 0;
+              {/* Chart Grid and Bars */}
+              <div className="flex-1 flex items-end justify-between relative h-full">
+                {/* Y-axis grid lines background */}
+                <div className="absolute inset-0 flex flex-col justify-between pointer-events-none pb-6">
+                  {[0, 1, 2, 3].map(i => (
+                    <div key={i} className="w-full border-t border-dashed border-[#FAF7F2] h-0" />
+                  ))}
+                </div>
 
-                return (
-                  <div key={i} className="flex flex-col items-center flex-1 group">
-                    <div className="w-full flex items-end justify-center h-[120px] relative">
-                      {totalVal > 0 ? (
-                        <div 
-                          style={{ height: `${barHeight}%` }}
-                          className="w-3.5 sm:w-4 flex flex-col-reverse rounded-t-lg overflow-hidden transition-all duration-500 relative group/bar cursor-pointer"
-                        >
-                          {/* Apps Segment (Blue) */}
-                          {item.apps > 0 && (
-                            <div 
-                              style={{ height: `${appPercent}%` }}
-                              className="w-full bg-[#0052CC]"
-                            />
-                          )}
-                          
-                          {/* Clicks Segment (Emerald) */}
-                          {item.clicks > 0 && (
-                            <div 
-                              style={{ height: `${clickPercent}%` }}
-                              className="w-full bg-[#00A693]"
-                            />
-                          )}
+                {/* Bars mapping */}
+                {chartData.map((item, i) => {
+                  const totalVal = item.apps + item.clicks;
+                  const barHeight = totalVal > 0 ? (totalVal / maxVal) * 100 : 0;
+                  const appPercent = totalVal > 0 ? (item.apps / totalVal) * 100 : 0;
+                  const clickPercent = totalVal > 0 ? (item.clicks / totalVal) * 100 : 0;
 
-                          {/* Tooltip */}
-                          <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 bg-[#1A1A1A] text-white text-[9px] font-bold px-1.5 py-0.5 rounded shadow opacity-0 group-hover/bar:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50">
-                            {item.apps} Applied, {item.clicks} Clicks
+                  return (
+                    <div key={i} className="flex flex-col items-center flex-1 group">
+                      <div className="w-full flex items-end justify-center h-[120px] relative">
+                        {totalVal > 0 ? (
+                          <div 
+                            style={{ height: `${barHeight}%` }}
+                            className="w-3.5 sm:w-4 flex flex-col-reverse rounded-t-lg overflow-hidden transition-all duration-500 relative group/bar cursor-pointer"
+                          >
+                            {/* Apps Segment (Blue) */}
+                            {item.apps > 0 && (
+                              <div 
+                                style={{ height: `${appPercent}%` }}
+                                className="w-full bg-[#0052CC]"
+                              />
+                            )}
+                            
+                            {/* Clicks Segment (Emerald) */}
+                            {item.clicks > 0 && (
+                              <div 
+                                style={{ height: `${clickPercent}%` }}
+                                className="w-full bg-[#00A693]"
+                              />
+                            )}
+
+                            {/* Tooltip */}
+                            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 bg-[#1A1A1A] text-white text-[9px] font-bold px-1.5 py-0.5 rounded shadow opacity-0 group-hover/bar:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50">
+                              {item.apps} Applied, {item.clicks} Clicks
+                            </div>
                           </div>
-                        </div>
-                      ) : (
-                        <div className="h-1 w-3.5 sm:w-4 bg-gray-100 rounded-t-lg" />
-                      )}
-                    </div>
+                        ) : (
+                          <div className="h-1 w-3.5 sm:w-4 bg-gray-100 rounded-t-lg" />
+                        )}
+                      </div>
 
-                    <span className="text-[10px] font-bold text-gray-400 mt-2 block">
-                      {item.label}
-                    </span>
-                  </div>
-                );
-              })}
+                      <span className="text-[10px] font-bold text-gray-400 mt-2 block">
+                        {item.label}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
 
             {/* Legend block at bottom */}
