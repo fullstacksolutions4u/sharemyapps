@@ -150,9 +150,18 @@ function inferWorkMode({ workMode, location, title, text }) {
   const loc = String(location || '').trim();
   const haystack = `${text || ''} ${title || ''}`.toLowerCase();
 
+  // If a physical location is given and it's not "Remote", strongly prefer Onsite
   if (loc && !/^remote$/i.test(loc)) {
     if (/infopark|office|onsite|on-site|on site/i.test(haystack) || loc.includes(',')) {
       if (!wm || wm.toLowerCase() === 'remote') return 'Onsite';
+    }
+    // A named city/place with no explicit remote/hybrid keyword → default Onsite
+    if (!wm || !['Remote', 'Onsite', 'Hybrid'].includes(wm)) {
+      if (!/\bhybrid\b/i.test(haystack) && !/\bremote\b/i.test(haystack)) return 'Onsite';
+    }
+    // AI said Remote but a location is specified → override to Onsite
+    if (wm.toLowerCase() === 'remote' && !/\bremote\b.*\b(role|work|position|job)\b/i.test(haystack)) {
+      return 'Onsite';
     }
   }
   if (['Remote', 'Onsite', 'Hybrid'].includes(wm)) return wm;
