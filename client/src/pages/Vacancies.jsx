@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { MapPin, Briefcase, CheckCircle, XCircle, ArrowRight, Laptop, Crown, IndianRupee, ExternalLink, Building, Clock, Calendar, Plus, Info } from 'lucide-react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -231,6 +231,31 @@ const matchExperience = (jobExpStr, filterVal) => {
   }
 };
 
+function filterOpportunityItems(data, activeTab, filterDesignation, filterLocation, filterExperience) {
+  return data.filter((d) => {
+    if (activeTab === 'job-links') {
+      const postedTime = parsePostedDate(d.postedDate, d.createdAt);
+      const fiveDaysAgoTime = new Date().getTime() - 5 * 24 * 60 * 60 * 1000;
+      if (postedTime < fiveDaysAgoTime) return false;
+    }
+    if (filterDesignation && normalizeJobDesignation(d.title) !== filterDesignation) return false;
+
+    if (filterLocation) {
+      const loc = (d.location || '').toLowerCase();
+      if (filterLocation === 'Out of India') {
+        const states = INDIA_STATES.filter((s) => s !== 'Out of India').map((s) => s.toLowerCase());
+        const isInIndia = loc.includes('india') || states.some((state) => loc.includes(state));
+        if (isInIndia) return false;
+      } else if (!d.location || !loc.includes(filterLocation.toLowerCase())) {
+        return false;
+      }
+    }
+
+    if (filterExperience && !matchExperience(d.experience, filterExperience)) return false;
+    return true;
+  });
+}
+
 function SkeletonCard() {
   return (
     <div className="bg-white rounded-2xl p-5 shadow-sm border border-border animate-pulse space-y-4">
@@ -418,6 +443,22 @@ export default function Vacancies() {
     'job-links': { data: jobLinks,       loading: loadingJL, queryKey: 'job-links', route: '/job-links'  },
   };
 
+  const filteredTabData = useMemo(
+    () => filterOpportunityItems(
+      TAB_CONFIG[activeTab].data,
+      activeTab,
+      filterDesignation,
+      filterLocation,
+      filterExperience,
+    ),
+    [activeTab, vacancies, freelanceItems, jobLinks, filterDesignation, filterLocation, filterExperience],
+  );
+
+  const JOB_LINKS_PER_PAGE = 15;
+  const jobLinksTotal = activeTab === 'job-links' ? filteredTabData.length : 0;
+  const jobLinksRangeStart = jobLinksTotal === 0 ? 0 : (currentPage - 1) * JOB_LINKS_PER_PAGE + 1;
+  const jobLinksRangeEnd = Math.min(currentPage * JOB_LINKS_PER_PAGE, jobLinksTotal);
+
   const isPlaceholderCv = (url) => {
     const cleaned = (url || '').trim().replace(/^https?:\/\//, '').replace(/^www\./, '').replace(/\/$/, '');
     return cleaned === 'drive.google.com';
@@ -575,7 +616,7 @@ export default function Vacancies() {
       </div>
       
       {/* Advanced Filters */}
-      {!TAB_CONFIG[activeTab].loading && TAB_CONFIG[activeTab].data.length > 0 && (
+      {!TAB_CONFIG[activeTab].loading && (TAB_CONFIG[activeTab].data.length > 0 || activeTab === 'job-links') && (
         <div className="border-b border-border/40">
           <div className="max-w-[1550px] mx-auto px-2 sm:px-3 py-3">
             <div className="flex flex-wrap gap-3 items-center justify-start">
@@ -669,32 +710,17 @@ export default function Vacancies() {
       )}
 
       <div className="max-w-[1550px] mx-auto px-2 sm:px-3 pt-4 pb-16">
+      {activeTab === 'job-links' && !TAB_CONFIG[activeTab].loading && (
+        <div className="flex justify-end mb-3 pr-6 sm:pr-10">
+          <p className="text-[13px] text-gray-500">
+            <span className="font-semibold text-gray-800">{jobLinksRangeStart}–{jobLinksRangeEnd}</span> of{' '}
+            <span className="font-semibold text-gray-800">{jobLinksTotal}</span> active job posts
+          </p>
+        </div>
+      )}
       {(() => {
-        const currentData = TAB_CONFIG[activeTab].data;
-        const filteredData = currentData.filter(d => {
-          if (activeTab === 'job-links') {
-            const postedTime = parsePostedDate(d.postedDate, d.createdAt);
-            const fiveDaysAgoTime = new Date().getTime() - 5 * 24 * 60 * 60 * 1000;
-            if (postedTime < fiveDaysAgoTime) return false;
-          }
-          if (filterDesignation && normalizeJobDesignation(d.title) !== filterDesignation) return false;
-          
-          if (filterLocation) {
-            const loc = (d.location || '').toLowerCase();
-            if (filterLocation === 'Out of India') {
-              const states = INDIA_STATES.filter(s => s !== 'Out of India').map(s => s.toLowerCase());
-              const isInIndia = loc.includes('india') || states.some(state => loc.includes(state));
-              if (isInIndia) return false;
-            } else {
-              if (!d.location || !loc.includes(filterLocation.toLowerCase())) return false;
-            }
-          }
-          
-          if (filterExperience && !matchExperience(d.experience, filterExperience)) return false;
-          return true;
-        });
-
-        const ITEMS_PER_PAGE = 12;
+        const filteredData = filteredTabData;
+        const ITEMS_PER_PAGE = activeTab === 'job-links' ? JOB_LINKS_PER_PAGE : 12;
         const totalItems = filteredData.length;
         const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
         const paginatedData = filteredData.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);

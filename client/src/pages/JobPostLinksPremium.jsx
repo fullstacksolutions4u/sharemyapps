@@ -1,16 +1,16 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Check, Crown, ExternalLink, IndianRupee, ShieldCheck, Sparkles } from 'lucide-react';
+import { Check, Crown, ExternalLink, IndianRupee } from 'lucide-react';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
 import PlacementPaymentModal from '../components/PlacementPaymentModal';
 
 const FEATURES = [
-  'Unlimited Apply Now on every Job Post Link',
+  'Unlimited Applies on every job post',
   'No weekly 2-apply limit',
-  'Skip contribute-to-unlock — apply without sharing posts',
-  'Instant access after payment',
+  'Apply without sharing posts',
+  'One time payment',
 ];
 
 export default function JobPostLinksPremium() {
@@ -39,7 +39,6 @@ export default function JobPostLinksPremium() {
   }, [user]);
 
   const priceAmount = plan ? Number(plan.price).toLocaleString('en-IN') : '399';
-  const priceLabel = `${priceAmount}/-`;
 
   const handlePay = () => {
     if (!user) {
@@ -67,53 +66,55 @@ export default function JobPostLinksPremium() {
           }}
           description="Job Post Links — Unlimited Applies"
           successToast="Payment successful! Unlimited applies are now unlocked."
-          variant="white"
+          variant="premium-orange"
         />
       )}
 
-      <div className="min-h-[calc(100vh-64px)] bg-bg flex flex-col items-center justify-center px-4 py-12 font-[Manrope,system-ui,sans-serif]">
-        <div className="w-full max-w-lg bg-white rounded-2xl shadow-sm border border-amber-300 overflow-hidden">
-          <div className="px-6 py-8 text-center border-b border-amber-200 bg-white">
-            <div className="inline-flex items-center gap-1.5 bg-white border border-amber-300 rounded-full px-3 py-1 text-[11px] font-semibold text-gray-700 mb-4">
-              <Crown size={12} className="text-amber-500" /> Premium Service
+      <div className="min-h-[calc(100vh-64px)] bg-[#f4f4f5] flex flex-col items-center justify-center px-4 py-8 font-[Manrope,system-ui,sans-serif]">
+        <div className="w-full max-w-[520px] bg-white rounded-[24px] shadow-[0_20px_50px_-12px_rgba(0,0,0,0.12)] overflow-hidden">
+          <div className="px-10 pt-7 pb-4 text-center">
+            <div className="inline-flex items-center gap-1.5 bg-orange-50 rounded-full px-3 py-1 mb-3">
+              <Crown size={12} className="text-orange-500" strokeWidth={2.5} />
+              <span className="text-[10px] font-bold tracking-wide text-orange-500 uppercase">Premium</span>
             </div>
-            <h1 className="text-2xl font-bold tracking-tight text-gray-900">Unlimited Applies with Premium</h1>
-            <p className="text-gray-500 text-sm mt-2 max-w-sm mx-auto">
-              Apply to every job opening shared on Job Post Links — no weekly limits, no sharing required.
-            </p>
-            <div className="mt-6 inline-block rounded-xl border border-amber-300 bg-white px-6 py-3 text-center">
-              <div className="inline-flex items-center justify-center gap-1">
-                <IndianRupee size={28} className="text-gray-900 shrink-0" strokeWidth={2.5} />
-                <p className="text-4xl font-bold text-gray-900">{loading ? '…' : priceLabel}</p>
-              </div>
-              <p className="text-gray-500 text-xs mt-1">one-time payment</p>
+
+            <h1 className="text-[24px] font-bold tracking-tight text-[#1a1a2e] leading-tight">
+              Unlimited Applies
+            </h1>
+            <p className="text-sm text-gray-500 mt-1">For lifetime access</p>
+
+            <div className="mt-4 flex items-center justify-center gap-1">
+              <IndianRupee size={28} className="text-[#1a1a2e] shrink-0" strokeWidth={2.5} />
+              <span className="text-[44px] font-bold text-orange-500 leading-none tracking-tight">
+                {loading ? '…' : priceAmount}
+              </span>
             </div>
           </div>
 
-          <div className="px-6 py-6 space-y-4 bg-white">
-            <ul className="space-y-3">
-              {FEATURES.map((feature) => (
-                <li key={feature} className="flex items-start gap-2.5 text-sm text-gray-700">
-                  <Check size={14} className="text-amber-500 shrink-0 mt-0.5" />
-                  {feature}
-                </li>
-              ))}
-            </ul>
+          <div className="border-t border-gray-100">
+            {FEATURES.map((feature, i) => (
+              <div
+                key={feature}
+                className={`flex items-center gap-3 px-10 py-3 ${i < FEATURES.length - 1 ? 'border-b border-gray-100' : ''}`}
+              >
+                <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-500">
+                  <Check size={12} className="text-white" strokeWidth={3} />
+                </span>
+                <span className="text-[14px] text-[#2d3748] leading-snug">{feature}</span>
+              </div>
+            ))}
+          </div>
 
-            <div className="flex items-center justify-center gap-1.5 text-[11px] text-gray-500">
-              <ShieldCheck size={12} className="text-amber-500 shrink-0" />
-              Secured by Razorpay · UPI, Cards, Net Banking
-            </div>
-
+          <div className="px-10 pt-4 pb-7">
             {hasAccess ? (
-              <div className="rounded-xl bg-white border border-amber-300 px-4 py-4 text-center">
-                <p className="text-sm font-bold text-gray-900">Unlimited applies unlocked 🎉</p>
-                <p className="text-xs text-gray-500 mt-1">Head back to Job Post Links and apply freely.</p>
+              <div className="rounded-2xl bg-emerald-50 border border-emerald-100 px-4 py-4 text-center">
+                <p className="text-sm font-bold text-emerald-800">Premium unlocked 🎉</p>
+                <p className="text-xs text-emerald-700/80 mt-1">You have unlimited applies on Job Post Links.</p>
                 <Link
                   to="/opportunities?tab=job-links"
-                  className="mt-3 inline-flex items-center gap-1.5 text-xs font-semibold text-gray-700 hover:text-gray-900"
+                  className="mt-2 inline-flex items-center gap-1.5 text-sm font-semibold text-orange-500 hover:text-orange-600"
                 >
-                  <ExternalLink size={12} className="text-amber-500" /> Go to Job Post Links
+                  <ExternalLink size={14} /> Go to Job Post Links
                 </Link>
               </div>
             ) : (
@@ -121,31 +122,22 @@ export default function JobPostLinksPremium() {
                 type="button"
                 onClick={handlePay}
                 disabled={loading || !plan}
-                className="w-full flex items-center justify-center gap-2 bg-white border border-amber-400 hover:border-amber-500 hover:bg-amber-50/30 disabled:opacity-60 disabled:cursor-not-allowed text-gray-900 font-semibold py-3 rounded-xl transition-colors text-sm"
+                className="w-full flex items-center justify-center gap-2 bg-orange-500 hover:bg-orange-600 active:bg-orange-600 disabled:opacity-60 disabled:cursor-not-allowed text-white font-bold py-3.5 rounded-2xl transition-colors text-[15px] shadow-[0_8px_20px_-4px_rgba(249,115,22,0.45)]"
               >
                 {loading ? (
-                  <span className="w-4 h-4 border-2 border-amber-300 border-t-amber-500 rounded-full animate-spin" />
+                  <span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
                 ) : (
-                  <Sparkles size={14} className="text-amber-500" />
-                )}
-                {loading ? 'Loading…' : (
                   <>
-                    Get Unlimited Applies with Premium —
+                    Get Premium
+                    <span className="text-white/70">•</span>
                     <span className="inline-flex items-center gap-0.5">
-                      <IndianRupee size={13} className="text-gray-900" />
-                      {priceLabel}
+                      <IndianRupee size={15} strokeWidth={2.5} />
+                      {priceAmount}
                     </span>
                   </>
                 )}
               </button>
             )}
-
-            <p className="text-center text-[11px] text-gray-500">
-              Looking for full job hunting support?{' '}
-              <Link to="/placement-services" className="text-gray-700 font-semibold hover:underline inline-flex items-center gap-1">
-                <Crown size={10} className="text-amber-500" /> Job Assistance Services
-              </Link>
-            </p>
           </div>
         </div>
       </div>

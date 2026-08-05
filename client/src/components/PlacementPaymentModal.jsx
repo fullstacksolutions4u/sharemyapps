@@ -1,11 +1,21 @@
 import { useState } from 'react';
-import { X, ShieldCheck, Check, Sparkles } from 'lucide-react';
+import { X, ShieldCheck, Check, IndianRupee } from 'lucide-react';
 import api from '../api/axios';
 import toast from 'react-hot-toast';
 
-export default function PlacementPaymentModal({ plan, user, onClose, onSuccess, description, successToast, themeColor = '#B45309', variant = 'amber' }) {
-  const isWhite = variant === 'white';
+export default function PlacementPaymentModal({
+  plan,
+  user,
+  onClose,
+  onSuccess,
+  description,
+  successToast,
+  themeColor = '#B45309',
+  variant = 'amber',
+}) {
+  const isPremiumOrange = variant === 'premium-orange' || variant === 'white';
   const [loading, setLoading] = useState(false);
+  const priceStr = Number(plan.price).toLocaleString('en-IN');
 
   const handlePay = async () => {
     setLoading(true);
@@ -39,7 +49,7 @@ export default function PlacementPaymentModal({ plan, user, onClose, onSuccess, 
           email: user?.email || '',
           contact: user?.phone || '',
         },
-        theme: { color: themeColor },
+        theme: { color: isPremiumOrange ? '#f97316' : themeColor },
       };
 
       const rzp = new window.Razorpay(options);
@@ -56,9 +66,8 @@ export default function PlacementPaymentModal({ plan, user, onClose, onSuccess, 
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg overflow-hidden">
+      <div className="bg-white rounded-[24px] shadow-xl w-full max-w-md overflow-hidden">
 
-        {/* Close button */}
         <div className="flex justify-end px-4 pt-4">
           <button
             onClick={onClose}
@@ -68,47 +77,79 @@ export default function PlacementPaymentModal({ plan, user, onClose, onSuccess, 
           </button>
         </div>
 
-        {/* Body */}
-        <div className="px-5 py-5 space-y-4">
-          <div className={`rounded-2xl px-4 py-4 text-center border ${
-            isWhite ? 'bg-white border-amber-300' : 'bg-amber-50 border-amber-200'
-          }`}>
-            <p className={`text-3xl font-bold ${isWhite ? 'text-gray-900' : 'text-amber-700'}`}>
-              ₹{Number(plan.price).toLocaleString('en-IN')}
-            </p>
-            <p className={`text-sm mt-1 ${isWhite ? 'text-gray-500' : 'text-amber-800/60'}`}>one-time payment</p>
-          </div>
+        <div className="px-6 pb-2 space-y-5">
+          {isPremiumOrange ? (
+            <div className="text-center">
+              <div className="flex items-center justify-center gap-1">
+                <IndianRupee size={28} className="text-[#1a1a2e] shrink-0" strokeWidth={2.5} />
+                <span className="text-4xl font-bold text-orange-500">{priceStr}</span>
+              </div>
+              <p className="text-sm text-gray-400 mt-1">One-time payment</p>
+            </div>
+          ) : (
+            <div className="rounded-2xl px-4 py-4 text-center border bg-amber-50 border-amber-200">
+              <p className="text-3xl font-bold text-amber-700">₹{priceStr}</p>
+              <p className="text-sm mt-1 text-amber-800/60">one-time payment</p>
+            </div>
+          )}
 
-          <ul className="space-y-2.5">
+          <ul className={isPremiumOrange ? 'border-t border-gray-100 divide-y divide-gray-100' : 'space-y-2.5'}>
             {plan.features.map((f, i) => (
-              <li key={i} className="flex items-start gap-2.5 text-sm text-text">
-                <Check size={13} className="text-amber-500 shrink-0 mt-0.5" />
+              <li
+                key={i}
+                className={
+                  isPremiumOrange
+                    ? 'flex items-center gap-3 py-3.5 text-[14px] text-[#2d3748]'
+                    : 'flex items-start gap-2.5 text-sm text-text'
+                }
+              >
+                {isPremiumOrange ? (
+                  <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-500">
+                    <Check size={11} className="text-white" strokeWidth={3} />
+                  </span>
+                ) : (
+                  <Check size={13} className="text-amber-500 shrink-0 mt-0.5" />
+                )}
                 {f}
               </li>
             ))}
           </ul>
 
-          <div className="flex items-center justify-center gap-1.5 text-[11px] text-muted">
-            <ShieldCheck size={12} className="text-amber-500 shrink-0" />
-            Secured by Razorpay · UPI, Cards, Net Banking accepted
-          </div>
+          {!isPremiumOrange && (
+            <div className="flex items-center justify-center gap-1.5 text-[11px] text-muted">
+              <ShieldCheck size={12} className="text-amber-500 shrink-0" />
+              Secured by Razorpay · UPI, Cards, Net Banking accepted
+            </div>
+          )}
         </div>
 
-        {/* Footer */}
-        <div className="px-5 pb-5">
+        <div className="px-6 pb-6 pt-2">
           <button
             onClick={handlePay}
             disabled={loading}
-            className={`w-full flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed font-semibold py-3 rounded-xl transition-colors text-sm ${
-              isWhite
-                ? 'bg-white border border-amber-400 hover:border-amber-500 hover:bg-amber-50/30 text-gray-900'
+            className={`w-full flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed font-bold py-3.5 rounded-2xl transition-colors text-sm ${
+              isPremiumOrange
+                ? 'bg-orange-500 hover:bg-orange-600 text-white shadow-[0_8px_20px_-4px_rgba(249,115,22,0.45)]'
                 : 'bg-amber-600 hover:bg-amber-700 text-white'
             }`}
           >
-            {loading
-              ? <span className={`w-4 h-4 border-2 rounded-full animate-spin ${isWhite ? 'border-amber-300 border-t-amber-500' : 'border-white/40 border-t-white'}`} />
-              : <Sparkles size={14} className={isWhite ? 'text-amber-500' : undefined} />}
-            {loading ? 'Opening payment…' : `Pay ₹${Number(plan.price).toLocaleString('en-IN')}`}
+            {loading ? (
+              <>
+                <span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+                Opening payment…
+              </>
+            ) : isPremiumOrange ? (
+              <>
+                Get Premium
+                <span className="text-white/70">•</span>
+                <span className="inline-flex items-center gap-0.5">
+                  <IndianRupee size={14} strokeWidth={2.5} />
+                  {priceStr}
+                </span>
+              </>
+            ) : (
+              `Pay ₹${priceStr}`
+            )}
           </button>
         </div>
       </div>
