@@ -21,13 +21,20 @@ const getLocalDatetimeString = (date = new Date()) => {
 
 const ACTIVE_UPCOMING_STATUSES = new Set(['scheduled', 'postponed']);
 
-function filterUpcomingSessions(sessions) {
+function filterUpcomingSessions(sessions, { applicantId, jobId } = {}) {
   const now = Date.now();
   return (sessions || [])
     .filter(s => {
       if (!ACTIVE_UPCOMING_STATUSES.has(s.status)) return false;
-      if (s.user?._id || s.user) return false;
-      return new Date(s.interviewedAt).getTime() >= now - 60_000;
+      if (new Date(s.interviewedAt).getTime() < now - 60_000) return false;
+
+      const sessionUserId = String(s.user?._id || s.user || '');
+      if (!sessionUserId) return true;
+
+      if (!applicantId || sessionUserId !== String(applicantId)) return false;
+      if (!jobId) return true;
+      const sessionVacancyId = String(s.vacancy?._id || s.vacancy || '');
+      return !sessionVacancyId || sessionVacancyId === String(jobId);
     })
     .sort((a, b) => new Date(a.interviewedAt) - new Date(b.interviewedAt));
 }
@@ -122,11 +129,6 @@ function ScreeningJobApplicantPicker({
           </select>
           <ChevronDown size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#9CA3AF] pointer-events-none" />
         </div>
-        {selectedJobId && !loading && (
-          <p className="text-[11px] text-[#9CA3AF] mt-1.5">
-            Showing contacted / interview-round applicants for this job ({jobApplicants.length}).
-          </p>
-        )}
       </div>
 
       {loading && <p className="text-xs text-[#9CA3AF]">Loading jobs...</p>}
@@ -472,11 +474,24 @@ export default function AdminCurationSection() {
       .sort((a, b) => (a.name || '').localeCompare(b.name || ''));
   }, [selectedJob, SCREENING_STATUSES]);
 
-  const fetchUpcomingPoolSessions = async (ignore = false) => {
+  const fetchUpcomingPoolSessions = async (ignore = false, applicantId = selectedApplicantId, jobId = selectedJobId) => {
+    if (!applicantId || !jobId) return;
     setLoadingSessions(true);
     try {
-      const res = await api.get('/admin/interviews?unassigned=true&limit=200');
-      if (!ignore) setUpcomingSessions(filterUpcomingSessions(res.data.sessions));
+      const [poolRes, userRes] = await Promise.all([
+        api.get('/admin/interviews?unassigned=true&limit=200'),
+        api.get(`/admin/interviews/user/${applicantId}`),
+      ]);
+      if (!ignore) {
+        const merged = [...(poolRes.data.sessions || []), ...(userRes.data.sessions || [])];
+        const seen = new Set();
+        const unique = merged.filter(s => {
+          if (seen.has(s._id)) return false;
+          seen.add(s._id);
+          return true;
+        });
+        setUpcomingSessions(filterUpcomingSessions(unique, { applicantId, jobId }));
+      }
     } catch {
       if (!ignore) toast.error('Failed to load sessions');
     } finally {
@@ -509,15 +524,28 @@ export default function AdminCurationSection() {
     if (user) {
       setModulesApplicant(user);
       setModulesVacancy(selectedJob);
-      fetchUpcomingPoolSessions();
+      fetchUpcomingPoolSessions(false, userId, selectedJob._id);
     }
   };
 
   const handleSessionSelect = async (sessionId) => {
+    if (!sessionId) {
+      setSelectedSessionId('');
+      setSelectedSession(null);
+      return;
+    }
+
     setSelectedSessionId(sessionId);
     const session = upcomingSessions.find(s => s._id === sessionId) || null;
     setSelectedSession(session);
-    if (!sessionId || !selectedApplicantId || !selectedJobId) return;
+    if (!selectedApplicantId || !selectedJobId) return;
+
+    const sessionUserId = String(session?.user?._id || session?.user || '');
+    if (sessionUserId === String(selectedApplicantId)) {
+      setTab('modules');
+      return;
+    }
+
     try {
       const res = await api.put(`/admin/interviews/${sessionId}`, {
         user: selectedApplicantId,
@@ -525,6 +553,7 @@ export default function AdminCurationSection() {
       });
       setSelectedSession(res.data.session);
       setUpcomingSessions(prev => prev.filter(s => s._id !== sessionId));
+      setTab('modules');
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to assign session');
       setSelectedSessionId('');
@@ -638,17 +667,9 @@ export default function AdminCurationSection() {
                 </select>
                 <ChevronDown size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#9CA3AF] pointer-events-none" />
               </div>
-              <p className="text-[11px] text-[#9CA3AF] mt-1.5">
-                All unassigned upcoming sessions (scheduled or postponed, future date).
-              </p>
               {!loadingSessions && upcomingSessions.length === 0 && (
                 <p className="text-xs text-[#6B7280] mt-2">
                   Create a session in the <strong>Create Interview Session</strong> tab first.
-                </p>
-              )}
-              {selectedSessionId && (
-                <p className="text-xs text-[#00A693] font-medium mt-2">
-                  Session selected — open Interview Modules to run the evaluation.
                 </p>
               )}
             </div>

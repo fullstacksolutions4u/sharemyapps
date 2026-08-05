@@ -52,7 +52,9 @@ exports.listSessions = async (req, res) => {
 exports.getUserSessions = async (req, res) => {
   try {
     const sessions = await InterviewSession.find({ user: req.params.userId })
+      .populate('user', 'name email avatar regNumber designations')
       .populate('evaluatedBy', 'name avatar')
+      .populate('vacancy', 'title company status')
       .sort({ sessionNumber: -1 })
       .lean();
     res.json({ sessions });
@@ -203,6 +205,7 @@ exports.shareWithCandidate = async (req, res) => {
       .populate('user', 'name email avatar regNumber designations');
 
     if (!session) return res.status(404).json({ message: 'Session not found' });
+    if (!session.user) return res.status(400).json({ message: 'Session has no applicant assigned' });
 
     session.sharedWithCandidate   = true;
     session.sharedWithCandidateAt = new Date();

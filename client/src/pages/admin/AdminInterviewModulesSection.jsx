@@ -3,7 +3,7 @@ import {
   ClipboardList, Plus, Pencil, Trash2, ChevronDown, ChevronUp,
   ExternalLink, X, Check, Copy, AlertTriangle,
   Code2, Database, Cpu, Globe, Layers, Smartphone, BarChart2, Shield, BookOpen,
-  Users, Save, Sparkles, Star,
+  Users, Save, Send, GitBranch, Link2, FileText, MapPin, Briefcase, DollarSign,
 } from 'lucide-react';
 import api from '../../api/axios';
 import toast from 'react-hot-toast';
@@ -185,9 +185,22 @@ export default function AdminInterviewModulesSection({ initialApplicant = null, 
 
   const selectedApplicant = initialApplicant || null;
   const [savingSession, setSavingSession] = useState(false);
-  const [loadingAi, setLoadingAi] = useState(false);
-  const [evalForm, setEvalForm] = useState(emptyEvalForm());
-  const [evalModuleOpen, setEvalModuleOpen] = useState(true);
+  const [publishing, setPublishing] = useState(false);
+  const [publishedLocally, setPublishedLocally] = useState(false);
+  const isPublished = publishedLocally || initialSession?.sharedWithCandidate;
+
+  const buildSessionPayload = () => ({
+    mcqAssessments: buildMcqAssessments(),
+    status: 'completed',
+    overallRating: 5,
+    headline: '',
+    summary: '',
+    sections: emptyEvalForm().sections,
+    pros: [],
+    cons: [],
+    improvementTips: [],
+    vacancy: initialVacancy?._id || null,
+  });
 
   const buildMcqAssessments = () => {
     const mcqAssessments = [];
@@ -214,78 +227,34 @@ export default function AdminInterviewModulesSection({ initialApplicant = null, 
     return mcqAssessments;
   };
 
-  const runAiEvaluation = async () => {
-    if (!selectedApplicant) return toast.error('Select an applicant first');
-    const mcqAssessments = buildMcqAssessments();
-    if (mcqAssessments.length === 0) {
-      return toast.error('Mark at least one question Correct or Incorrect before AI evaluation');
-    }
-    setLoadingAi(true);
-    try {
-      const res = await api.post('/admin/interviews/summarize', {
-        mcqAssessments,
-        candidateName: selectedApplicant.name,
-        interviewerComments: evalForm.interviewComments || '',
-      });
-      const { headline, summary, overallRating, pros, cons, improvementTips } = res.data;
-      setEvalForm(f => ({
-        ...f,
-        headline: headline || f.headline,
-        summary: summary || f.summary,
-        overallRating: overallRating != null ? Number(overallRating) : f.overallRating,
-        pros: Array.isArray(pros) && pros.length ? pros : f.pros,
-        cons: Array.isArray(cons) && cons.length ? cons : f.cons,
-        improvementTips: Array.isArray(improvementTips) && improvementTips.length ? improvementTips : f.improvementTips,
-      }));
-      setEvalModuleOpen(true);
-      toast.success('AI evaluation summary generated');
-    } catch (err) {
-      toast.error(err.response?.data?.message || 'Failed to generate AI evaluation');
-    } finally {
-      setLoadingAi(false);
-    }
-  };
-
-  const updateSection = (idx, field, value) => {
-    setEvalForm(f => {
-      const sections = [...f.sections];
-      sections[idx] = { ...sections[idx], [field]: value };
-      return { ...f, sections };
-    });
-  };
-
   const handleSaveSession = async () => {
     if (!selectedApplicant) return toast.error('Select an applicant from the Interview Session tab first');
-    const mcqAssessments = buildMcqAssessments();
-    if (mcqAssessments.length === 0) return toast.error('Mark at least one question Correct or Incorrect');
+    if (!initialSession?._id) return toast.error('Select a session from the Interview Session tab first');
     setSavingSession(true);
     try {
-      const payload = {
-        mcqAssessments,
-        status: 'completed',
-        overallRating: evalForm.overallRating,
-        headline: evalForm.headline,
-        summary: evalForm.summary || evalForm.interviewComments || '',
-        sections: evalForm.sections,
-        pros: evalForm.pros,
-        cons: evalForm.cons,
-        improvementTips: evalForm.improvementTips,
-        vacancy: initialVacancy?._id || null,
-      };
-      if (initialSession?._id) {
-        await api.put(`/admin/interviews/${initialSession._id}`, payload);
-      } else {
-        await api.post(`/admin/interviews/user/${selectedApplicant._id}`, payload);
-      }
+      const payload = buildSessionPayload();
+      await api.put(`/admin/interviews/${initialSession._id}`, payload);
       toast.success(
         initialVacancy?.title
           ? `Session saved for ${selectedApplicant.name} · ${initialVacancy.title}`
           : `Session saved for ${selectedApplicant.name}!`
       );
-      setEvaluations({});
-      setEvalForm(emptyEvalForm());
     } catch (err) { toast.error(err.response?.data?.message || 'Failed to save session'); }
     finally { setSavingSession(false); }
+  };
+
+  const handlePublishSession = async () => {
+    if (!selectedApplicant) return toast.error('Select an applicant from the Interview Session tab first');
+    if (!initialSession?._id) return toast.error('Select a session from the Interview Session tab first');
+    setPublishing(true);
+    try {
+      const payload = buildSessionPayload();
+      await api.put(`/admin/interviews/${initialSession._id}`, payload);
+      await api.patch(`/admin/interviews/${initialSession._id}/share`);
+      setPublishedLocally(true);
+      toast.success(`Published to ${selectedApplicant.name}'s dashboard`);
+    } catch (err) { toast.error(err.response?.data?.message || 'Failed to publish session'); }
+    finally { setPublishing(false); }
   };
 
   const fetchModules = async () => {
@@ -414,200 +383,133 @@ export default function AdminInterviewModulesSection({ initialApplicant = null, 
 
   return (
     <div>
-      {/* Context bar — applicant chosen on Interview Session tab */}
-      <div className="bg-white border border-border rounded-2xl p-4 mb-6 flex flex-wrap items-center gap-3 justify-between">
-        {selectedApplicant ? (
-          <div className="flex items-center gap-3 min-w-0">
-            <div className="w-9 h-9 rounded-full bg-accent/10 flex items-center justify-center text-accent text-sm font-bold overflow-hidden shrink-0">
-              {selectedApplicant.avatar
-                ? <img src={selectedApplicant.avatar} alt="" className="w-full h-full object-cover rounded-full" />
-                : selectedApplicant.name?.[0]?.toUpperCase()}
-            </div>
-            <div className="min-w-0">
-              <div className="flex items-center gap-2">
-                <p className="text-sm font-bold text-text truncate">{selectedApplicant.name}</p>
-                <button
-                  type="button"
-                  onClick={runAiEvaluation}
-                  disabled={loadingAi}
-                  title="AI evaluation from correct/incorrect answers & comments"
-                  className="shrink-0 w-7 h-7 rounded-lg bg-violet-50 border border-violet-200 text-violet-600 hover:bg-violet-100 disabled:opacity-50 flex items-center justify-center transition-colors"
-                >
-                  {loadingAi
-                    ? <span className="w-3.5 h-3.5 border-2 border-violet-500 border-t-transparent rounded-full animate-spin" />
-                    : <Sparkles size={14} />}
-                </button>
+      {/* Context bar — applicant + job details + social links */}
+      {selectedApplicant ? (
+        <div className="bg-white border border-border rounded-2xl p-5 mb-6">
+          <div className="flex flex-col sm:flex-row gap-5">
+
+            {/* ── LEFT: Applicant + Job Details ─────────────────────────── */}
+            <div className="flex-1 min-w-0">
+              {/* Applicant row */}
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-11 h-11 rounded-full bg-accent/10 flex items-center justify-center text-accent text-base font-bold overflow-hidden shrink-0">
+                  {selectedApplicant.avatar
+                    ? <img src={selectedApplicant.avatar} alt="" className="w-full h-full object-cover rounded-full" />
+                    : selectedApplicant.name?.[0]?.toUpperCase()}
+                </div>
+                <div className="min-w-0">
+                  <p className="text-sm font-bold text-text truncate">{selectedApplicant.name}</p>
+                  {selectedApplicant.designations?.length > 0 && (
+                    <p className="text-xs text-muted truncate">{selectedApplicant.designations.join(', ')}</p>
+                  )}
+                </div>
               </div>
+
+              {/* Job details */}
               {initialVacancy && (
-                <p className="text-xs text-muted truncate">
-                  {initialVacancy.title}{initialVacancy.company ? ` — ${initialVacancy.company}` : ''}
-                  <span className="ml-1 uppercase text-[10px] font-bold">({initialVacancy.status})</span>
-                </p>
+                <div className="space-y-2">
+                  <div className="flex items-start gap-2">
+                    <Briefcase size={13} className="text-accent mt-0.5 shrink-0" />
+                    <div className="min-w-0">
+                      <p className="text-sm font-bold text-text leading-tight">{initialVacancy.title}</p>
+                      {initialVacancy.company && <p className="text-xs text-muted">{initialVacancy.company}</p>}
+                    </div>
+                    <span className={`ml-auto text-[10px] font-bold uppercase px-2 py-0.5 rounded-full shrink-0 ${
+                      initialVacancy.status === 'active' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                      : initialVacancy.status === 'closed' ? 'bg-red-50 text-red-600 border border-red-200'
+                      : 'bg-amber-50 text-amber-700 border border-amber-200'
+                    }`}>{initialVacancy.status}</span>
+                  </div>
+
+                  <div className="flex flex-wrap gap-x-4 gap-y-1">
+                    {initialVacancy.location && (
+                      <span className="flex items-center gap-1 text-[11px] text-muted">
+                        <MapPin size={11} className="shrink-0" />{initialVacancy.location}
+                      </span>
+                    )}
+                    {initialVacancy.type && (
+                      <span className="flex items-center gap-1 text-[11px] text-muted capitalize">
+                        <Globe size={11} className="shrink-0" />{initialVacancy.type}
+                      </span>
+                    )}
+                    {initialVacancy.jobType && (
+                      <span className="flex items-center gap-1 text-[11px] text-muted">
+                        <Briefcase size={11} className="shrink-0" />{initialVacancy.jobType}
+                      </span>
+                    )}
+                    {initialVacancy.experience && (
+                      <span className="flex items-center gap-1 text-[11px] text-muted">
+                        <Users size={11} className="shrink-0" />{initialVacancy.experience}
+                      </span>
+                    )}
+                    {initialVacancy.salaryRange && (
+                      <span className="flex items-center gap-1 text-[11px] text-muted">
+                        <DollarSign size={11} className="shrink-0" />{initialVacancy.salaryRange}
+                      </span>
+                    )}
+                  </div>
+
+                  {initialVacancy.skills?.length > 0 && (
+                    <div className="flex flex-wrap gap-1 pt-1">
+                      {initialVacancy.skills.map((sk, i) => (
+                        <span key={i} className="text-[10px] font-medium px-2 py-0.5 bg-accent/8 text-accent border border-accent/20 rounded-full">{sk}</span>
+                      ))}
+                    </div>
+                  )}
+                </div>
               )}
             </div>
+
+            {/* Divider */}
+            <div className="hidden sm:block w-px bg-border shrink-0" />
+            <div className="block sm:hidden h-px bg-border" />
+
+            {/* ── RIGHT: Social Links ───────────────────────────────────── */}
+            <div className="sm:w-52 shrink-0">
+              <p className="text-[10px] font-bold text-muted uppercase tracking-wide mb-3">Candidate Links</p>
+              <div className="space-y-2">
+                {[
+                  { label: 'LinkedIn',  url: selectedApplicant.linkedinUrl,  icon: Link2,       color: 'text-blue-600' },
+                  { label: 'GitHub',    url: selectedApplicant.githubUrl,    icon: GitBranch,   color: 'text-gray-700' },
+                  { label: 'LeetCode',  url: selectedApplicant.leetcodeUrl,  icon: Code2,       color: 'text-amber-600' },
+                  { label: 'Portfolio', url: selectedApplicant.portfolioUrl, icon: Globe,       color: 'text-emerald-600' },
+                  { label: 'Resume',    url: selectedApplicant.cvUrl,        icon: FileText,    color: 'text-accent' },
+                ].map(({ label, url, icon: Icon, color }) =>
+                  url ? (
+                    <a key={label} href={url} target="_blank" rel="noopener noreferrer"
+                      className="flex items-center gap-2.5 text-xs font-medium text-text hover:text-accent transition-colors group">
+                      <span className={`w-7 h-7 flex items-center justify-center rounded-lg bg-bg border border-border group-hover:border-accent/30 transition-colors ${color}`}>
+                        <Icon size={13} />
+                      </span>
+                      <span className="truncate">{label}</span>
+                      <ExternalLink size={10} className="text-muted group-hover:text-accent ml-auto shrink-0" />
+                    </a>
+                  ) : (
+                    <div key={label} className="flex items-center gap-2.5 text-xs text-muted opacity-40">
+                      <span className="w-7 h-7 flex items-center justify-center rounded-lg bg-bg border border-border">
+                        <Icon size={13} />
+                      </span>
+                      <span>{label}</span>
+                      <span className="ml-auto text-[10px]">—</span>
+                    </div>
+                  )
+                )}
+              </div>
+            </div>
           </div>
-        ) : (
-          <div className="flex items-center gap-2 text-muted min-w-0">
-            <Users size={15} className="text-accent shrink-0" />
-            <p className="text-sm">Select a job and applicant from the <span className="font-semibold text-text">Interview Session</span> tab first.</p>
-          </div>
-        )}
-        <div className="flex items-center gap-3 shrink-0">
-          {Object.values(evaluations).some(e => e.result) && (
-            <p className="text-[11px] font-medium hidden sm:block">
-              <span className="text-emerald-600">✓ {Object.values(evaluations).filter(e => e.result === 'correct').length} correct</span>
-              <span className="text-muted"> · </span>
-              <span className="text-red-500">{Object.values(evaluations).filter(e => e.result === 'incorrect').length} incorrect</span>
-              <span className="text-muted"> · </span>
-              <span className="text-blue-600">{Object.values(evaluations).filter(e => e.result).length} evaluated</span>
-            </p>
-          )}
-          <button
-            onClick={handleSaveSession}
-            disabled={savingSession || !selectedApplicant}
-            className="flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white text-sm font-semibold rounded-xl transition-colors"
-          >
-            {savingSession ? <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> : <Save size={14} />}
-            Save Session
-          </button>
         </div>
-      </div>
+      ) : (
+        <div className="bg-white border border-border rounded-2xl p-4 mb-6 flex items-center gap-2 text-muted">
+          <Users size={15} className="text-accent shrink-0" />
+          <p className="text-sm">Select a job and applicant from the <span className="font-semibold text-text">Interview Session</span> tab first.</p>
+        </div>
+      )}
 
       {/* ── Module Header ────────────────────────────────────────────────── */}
       <div className="flex items-center justify-between mb-6">
         <div>
           <h2 className="text-lg font-bold text-text flex items-center gap-2"><ClipboardList size={20} className="text-accent" />Interview Modules</h2>
         </div>
-        <div className="flex items-center gap-2">
-          {modules.length === 0 && (
-            <button onClick={() => setShowCopyConfirm(true)} className="flex items-center gap-1.5 text-xs px-3 py-2 bg-amber-50 text-amber-700 border border-amber-200 rounded-xl hover:bg-amber-100 transition-colors font-medium">
-              <Copy size={13} /> Copy from Quiz Zone
-            </button>
-          )}
-          <button onClick={() => { setModuleForm(emptyModule()); setShowCreateModule(true); }} className="flex items-center gap-1.5 text-xs px-3 py-2 bg-accent text-white rounded-xl hover:bg-accent-hover transition-colors font-medium">
-            <Plus size={13} /> New Module
-          </button>
-        </div>
-      </div>
-
-      {/* ── Evaluation Module (ratings & comments) ───────────────────────── */}
-      <div className="rounded-2xl border border-amber-200 overflow-hidden mb-4">
-        <button
-          type="button"
-          onClick={() => setEvalModuleOpen(o => !o)}
-          className="w-full bg-gradient-to-r from-amber-50 to-orange-50 px-5 py-4 flex items-center gap-3 text-left"
-        >
-          <div className="w-9 h-9 rounded-xl bg-amber-100 border border-amber-200 flex items-center justify-center shrink-0">
-            <Star size={16} className="text-amber-600" />
-          </div>
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-sm font-bold text-amber-700">Evaluation Module</span>
-              <span className="text-[10px] text-amber-700/70 font-medium">Ratings & interview comments</span>
-            </div>
-            <p className="text-xs text-muted mt-0.5">Overall {evalForm.overallRating}/10{evalForm.headline ? ` · ${evalForm.headline}` : ''}</p>
-          </div>
-          {evalModuleOpen ? <ChevronUp size={15} className="text-muted" /> : <ChevronDown size={15} className="text-muted" />}
-        </button>
-
-        {evalModuleOpen && (
-          <div className="bg-white border-t border-amber-100 px-5 py-4 space-y-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div>
-                <label className={labelCls}>Overall Rating (1–10)</label>
-                <div className="flex items-center gap-3">
-                  <input
-                    type="range"
-                    min="1"
-                    max="10"
-                    step="0.5"
-                    value={evalForm.overallRating}
-                    onChange={e => setEvalForm(f => ({ ...f, overallRating: Number(e.target.value) }))}
-                    className="flex-1 accent-amber-600"
-                  />
-                  <span className="text-sm font-bold text-amber-700 w-10 text-right">{evalForm.overallRating}</span>
-                </div>
-              </div>
-              <div>
-                <label className={labelCls}>Headline</label>
-                <input
-                  type="text"
-                  value={evalForm.headline}
-                  onChange={e => setEvalForm(f => ({ ...f, headline: e.target.value }))}
-                  className={inputCls}
-                  placeholder="Short summary headline…"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className={labelCls}>Interviewer Comments</label>
-              <textarea
-                value={evalForm.interviewComments}
-                onChange={e => setEvalForm(f => ({ ...f, interviewComments: e.target.value }))}
-                className={`${inputCls} min-h-[72px]`}
-                placeholder="Notes about the interview discussion, soft skills, communication…"
-              />
-            </div>
-
-            <div>
-              <label className={labelCls}>Interview Summary</label>
-              <textarea
-                value={evalForm.summary}
-                onChange={e => setEvalForm(f => ({ ...f, summary: e.target.value }))}
-                className={`${inputCls} min-h-[88px]`}
-                placeholder="Full evaluation summary (can be filled by AI)…"
-              />
-            </div>
-
-            <div>
-              <p className="text-xs font-semibold text-muted mb-2">Section Ratings</p>
-              <div className="space-y-3">
-                {evalForm.sections.map((sec, idx) => (
-                  <div key={sec.title} className="bg-amber-50/40 border border-amber-100 rounded-xl p-3">
-                    <div className="flex items-center justify-between gap-3 mb-2">
-                      <span className="text-xs font-semibold text-text">{sec.title}</span>
-                      <div className="flex items-center gap-0.5">
-                        {[1, 2, 3, 4, 5].map(n => (
-                          <button
-                            key={n}
-                            type="button"
-                            onClick={() => updateSection(idx, 'rating', n)}
-                            className={`p-0.5 ${n <= sec.rating ? 'text-amber-500' : 'text-gray-300'}`}
-                          >
-                            <Star size={14} className={n <= sec.rating ? 'fill-amber-400' : ''} />
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                    <input
-                      type="text"
-                      value={sec.notes}
-                      onChange={e => updateSection(idx, 'notes', e.target.value)}
-                      className="w-full text-xs px-2.5 py-1.5 border border-amber-100 rounded-lg bg-white outline-none focus:border-amber-300"
-                      placeholder={`Notes for ${sec.title}…`}
-                    />
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {(evalForm.pros.length > 0 || evalForm.cons.length > 0) && (
-              <div className="flex flex-wrap gap-1.5">
-                {evalForm.pros.map((p, i) => (
-                  <span key={`p-${i}`} className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-100">{p}</span>
-                ))}
-                {evalForm.cons.map((c, i) => (
-                  <span key={`c-${i}`} className="text-[10px] px-2 py-0.5 rounded-full bg-red-50 text-red-600 border border-red-100">{c}</span>
-                ))}
-              </div>
-            )}
-
-            <p className="text-[11px] text-muted">
-              Tip: Mark questions Correct/Incorrect, add comments, then click the <Sparkles size={10} className="inline text-violet-500" /> icon next to the name to auto-fill summary & rating.
-            </p>
-          </div>
-        )}
       </div>
 
       {modules.length === 0 ? (
@@ -828,7 +730,52 @@ export default function AdminInterviewModulesSection({ initialApplicant = null, 
         </div>
       )}
 
-      {/* Modals */}
+      {/* ── Sticky Bottom Action Bar ─────────────────────────────────────── */}
+      <div className="sticky bottom-0 left-0 right-0 mt-6 bg-white border-t border-border rounded-b-2xl px-5 py-3 flex flex-wrap items-center justify-between gap-3 shadow-[0_-4px_16px_rgba(0,0,0,0.06)] z-20">
+        <div className="flex items-center gap-2">
+          {modules.length === 0 && (
+            <button onClick={() => setShowCopyConfirm(true)} className="flex items-center gap-1.5 text-xs px-3 py-2 bg-amber-50 text-amber-700 border border-amber-200 rounded-xl hover:bg-amber-100 transition-colors font-medium">
+              <Copy size={13} /> Copy from Quiz Zone
+            </button>
+          )}
+          <button
+            onClick={() => { setModuleForm(emptyModule()); setShowCreateModule(true); }}
+            className="flex items-center gap-1.5 text-sm px-4 py-2 bg-accent text-white rounded-xl hover:bg-accent-hover transition-colors font-semibold"
+          >
+            <Plus size={14} /> New Module
+          </button>
+        </div>
+        <div className="flex items-center gap-3 shrink-0">
+          {Object.values(evaluations).some(e => e.result) && (
+            <p className="text-[11px] font-medium hidden sm:block">
+              <span className="text-emerald-600">✓ {Object.values(evaluations).filter(e => e.result === 'correct').length} correct</span>
+              <span className="text-muted"> · </span>
+              <span className="text-red-500">{Object.values(evaluations).filter(e => e.result === 'incorrect').length} incorrect</span>
+              <span className="text-muted"> · </span>
+              <span className="text-blue-600">{Object.values(evaluations).filter(e => e.result).length} evaluated</span>
+            </p>
+          )}
+          <button
+            onClick={handleSaveSession}
+            disabled={savingSession || publishing || !selectedApplicant || !initialSession?._id}
+            className="flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white text-sm font-semibold rounded-xl transition-colors"
+          >
+            {savingSession ? <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> : <Save size={14} />}
+            Save Session
+          </button>
+          <button
+            onClick={handlePublishSession}
+            disabled={publishing || savingSession || !selectedApplicant || !initialSession?._id || isPublished}
+            title={isPublished ? 'Already published to applicant dashboard' : 'Save and publish to applicant dashboard'}
+            className="flex items-center gap-2 px-4 py-2 bg-accent hover:bg-accent-hover disabled:opacity-50 text-white text-sm font-semibold rounded-xl transition-colors"
+          >
+            {publishing
+              ? <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              : <Send size={14} />}
+            {isPublished ? 'Published' : 'Publish'}
+          </button>
+        </div>
+      </div>
 
       {showCopyConfirm && (
         <Modal title="Copy from Quiz Zone" onClose={() => setShowCopyConfirm(false)}>
