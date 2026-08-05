@@ -189,12 +189,131 @@ export default function AdminInterviewModulesSection({ initialApplicant = null, 
   const [publishedLocally, setPublishedLocally] = useState(false);
   const isPublished = publishedLocally || initialSession?.sharedWithCandidate;
 
+  // Editable applicant meta (joining availability + salary)
+  const [applicantMeta, setApplicantMeta] = useState({
+    joiningAvailability: selectedApplicant?.joiningAvailability || '',
+    currentSalary: selectedApplicant?.currentSalary != null ? String(selectedApplicant.currentSalary) : '',
+    expectedSalary: selectedApplicant?.expectedSalary != null ? String(selectedApplicant.expectedSalary) : '',
+  });
+  const [savingMeta, setSavingMeta] = useState(false);
+  const metaDirty =
+    applicantMeta.joiningAvailability !== (selectedApplicant?.joiningAvailability || '') ||
+    applicantMeta.currentSalary !== (selectedApplicant?.currentSalary != null ? String(selectedApplicant.currentSalary) : '') ||
+    applicantMeta.expectedSalary !== (selectedApplicant?.expectedSalary != null ? String(selectedApplicant.expectedSalary) : '');
+
+  // Session TODO list state (stored in summary)
+  const parseTodos = (summaryText) => {
+    if (!summaryText) return [];
+    try {
+      // Check if it's JSON array
+      if (summaryText.trim().startsWith('[') && summaryText.trim().endsWith(']')) {
+        return JSON.parse(summaryText);
+      }
+    } catch (e) {}
+
+    // Fallback to parsing markdown checkboxes
+    const lines = summaryText.split('\n');
+    const list = [];
+    for (const line of lines) {
+      const match = line.match(/^-\s*\[([ xX])\]\s*(.*)$/);
+      if (match) {
+        list.push({ completed: match[1].toLowerCase() === 'x', text: match[2] });
+      } else if (line.trim()) {
+        list.push({ completed: false, text: line.trim() });
+      }
+    }
+    return list;
+  };
+
+  const [todos, setTodos] = useState(() => parseTodos(initialSession?.summary || ''));
+  const [newTodoText, setNewTodoText] = useState('');
+
+  useEffect(() => {
+    setTodos(parseTodos(initialSession?.summary || ''));
+  }, [initialSession]);
+
+  const updateTodos = (newTodos) => {
+    setTodos(newTodos);
+  };
+
+  const toggleTodo = (index) => {
+    const updated = todos.map((t, i) => i === index ? { ...t, completed: !t.completed } : t);
+    updateTodos(updated);
+  };
+
+  const addTodo = () => {
+    if (!newTodoText.trim()) return;
+    const updated = [...todos, { text: newTodoText.trim(), completed: false }];
+    updateTodos(updated);
+    setNewTodoText('');
+  };
+
+  const deleteTodo = (index) => {
+    const updated = todos.filter((_, i) => i !== index);
+    updateTodos(updated);
+  };
+
+
+
+  const saveApplicantMeta = async () => {
+    if (!selectedApplicant?._id) return;
+    setSavingMeta(true);
+    try {
+      await api.put(`/admin/users/${selectedApplicant._id}`, {
+        joiningAvailability: applicantMeta.joiningAvailability,
+        currentSalary: applicantMeta.currentSalary === '' ? null : Number(applicantMeta.currentSalary),
+        expectedSalary: applicantMeta.expectedSalary === '' ? null : Number(applicantMeta.expectedSalary),
+      });
+      toast.success('Candidate info saved');
+    } catch { toast.error('Failed to save'); }
+    finally { setSavingMeta(false); }
+  };
+
+  // If user enters a monthly figure (>1000) auto-convert to LPA on blur
+  const convertSalaryToLpa = (field, rawValue) => {
+    const raw = String(rawValue).trim();
+    if (!raw) return;
+
+    // Detect range: "25000 - 35000", "25000-35000", "25000 to 35000"
+    const rangeMatch = raw.match(/^(\d+(?:[.,]\d+)?)\s*(?:-|–|to)\s*(\d+(?:[.,]\d+)?)$/i);
+    if (rangeMatch) {
+      const lo = parseFloat(rangeMatch[1].replace(',', ''));
+      const hi = parseFloat(rangeMatch[2].replace(',', ''));
+      const bothMonthly = lo > 1000 && hi > 1000;
+      const eitherMonthly = lo > 1000 || hi > 1000;
+      if (eitherMonthly) {
+        const toLpa = n => n > 1000 ? parseFloat((n * 12 / 100000).toFixed(2)) : n;
+        const loLpa = toLpa(lo);
+        const hiLpa = toLpa(hi);
+        const result = `${loLpa} - ${hiLpa}`;
+        setApplicantMeta(p => ({ ...p, [field]: result }));
+        toast(
+          bothMonthly
+            ? `₹${lo.toLocaleString('en-IN')}–₹${hi.toLocaleString('en-IN')}/mo → ${result} LPA`
+            : `Converted range → ${result} LPA`,
+          { icon: '🔄' }
+        );
+      }
+      return;
+    }
+
+    // Single value
+    const n = parseFloat(raw.replace(',', ''));
+    if (!isNaN(n) && n > 1000) {
+      const lpa = parseFloat((n * 12 / 100000).toFixed(2));
+      setApplicantMeta(p => ({ ...p, [field]: String(lpa) }));
+      toast(`₹${n.toLocaleString('en-IN')}/mo → ${lpa} LPA`, { icon: '🔄' });
+    }
+  };
+
+
+
   const buildSessionPayload = () => ({
     mcqAssessments: buildMcqAssessments(),
     status: 'completed',
     overallRating: 5,
-    headline: '',
-    summary: '',
+    headline: initialSession?.headline || '',
+    summary: JSON.stringify(todos),
     sections: emptyEvalForm().sections,
     pros: [],
     cons: [],
@@ -386,9 +505,9 @@ export default function AdminInterviewModulesSection({ initialApplicant = null, 
       {/* Context bar — applicant + job details + social links */}
       {selectedApplicant ? (
         <div className="bg-white border border-border rounded-2xl p-5 mb-6">
-          <div className="flex flex-col sm:flex-row gap-5">
-
-            {/* ── LEFT: Applicant + Job Details ─────────────────────────── */}
+          <div className="flex flex-col lg:flex-row gap-6">
+ 
+            {/* ── COLUMN 1: Applicant & Job Details ────────────────────── */}
             <div className="flex-1 min-w-0">
               {/* Applicant row */}
               <div className="flex items-center gap-3 mb-4">
@@ -404,7 +523,7 @@ export default function AdminInterviewModulesSection({ initialApplicant = null, 
                   )}
                 </div>
               </div>
-
+ 
               {/* Job details */}
               {initialVacancy && (
                 <div className="space-y-2">
@@ -414,13 +533,8 @@ export default function AdminInterviewModulesSection({ initialApplicant = null, 
                       <p className="text-sm font-bold text-text leading-tight">{initialVacancy.title}</p>
                       {initialVacancy.company && <p className="text-xs text-muted">{initialVacancy.company}</p>}
                     </div>
-                    <span className={`ml-auto text-[10px] font-bold uppercase px-2 py-0.5 rounded-full shrink-0 ${
-                      initialVacancy.status === 'active' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                      : initialVacancy.status === 'closed' ? 'bg-red-50 text-red-600 border border-red-200'
-                      : 'bg-amber-50 text-amber-700 border border-amber-200'
-                    }`}>{initialVacancy.status}</span>
                   </div>
-
+ 
                   <div className="flex flex-wrap gap-x-4 gap-y-1">
                     {initialVacancy.location && (
                       <span className="flex items-center gap-1 text-[11px] text-muted">
@@ -448,24 +562,118 @@ export default function AdminInterviewModulesSection({ initialApplicant = null, 
                       </span>
                     )}
                   </div>
-
-                  {initialVacancy.skills?.length > 0 && (
-                    <div className="flex flex-wrap gap-1 pt-1">
-                      {initialVacancy.skills.map((sk, i) => (
-                        <span key={i} className="text-[10px] font-medium px-2 py-0.5 bg-accent/8 text-accent border border-accent/20 rounded-full">{sk}</span>
-                      ))}
-                    </div>
-                  )}
                 </div>
               )}
+ 
+              {/* ── Applicant Meta: Joining / Salary (editable) ───────────── */}
+              <div className="mt-3 pt-3 border-t border-border/50">
+                <div className="grid grid-cols-3 gap-2">
+                  <div>
+                    <label className="block text-[10px] text-muted mb-0.5">Joining Availability</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Immediate"
+                      value={applicantMeta.joiningAvailability}
+                      onChange={e => setApplicantMeta(p => ({ ...p, joiningAvailability: e.target.value }))}
+                      className="w-full text-xs px-2.5 py-1.5 border border-border rounded-lg bg-bg focus:border-accent focus:outline-none text-text placeholder:text-muted/50 transition-colors"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] text-muted mb-0.5">Current Salary (LPA)</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. 4.5 or 25000"
+                      value={applicantMeta.currentSalary}
+                      onChange={e => setApplicantMeta(p => ({ ...p, currentSalary: e.target.value }))}
+                      onBlur={e => convertSalaryToLpa('currentSalary', e.target.value)}
+                      className="w-full text-xs px-2.5 py-1.5 border border-border rounded-lg bg-bg focus:border-accent focus:outline-none text-text placeholder:text-muted/50 transition-colors"
+                    />
+                  </div>
+                  <div className="flex gap-1.5">
+                    <div className="flex-1 min-w-0">
+                      <label className="block text-[10px] text-muted mb-0.5">Expected Salary (LPA)</label>
+                      <input
+                        type="text"
+                        placeholder="e.g. 6 or 30000"
+                        value={applicantMeta.expectedSalary}
+                        onChange={e => setApplicantMeta(p => ({ ...p, expectedSalary: e.target.value }))}
+                        onBlur={e => convertSalaryToLpa('expectedSalary', e.target.value)}
+                        className="w-full text-xs px-2.5 py-1.5 border border-border rounded-lg bg-bg focus:border-accent focus:outline-none text-text placeholder:text-muted/50 transition-colors"
+                      />
+                    </div>
+                    {metaDirty && (
+                      <button
+                        onClick={saveApplicantMeta}
+                        disabled={savingMeta}
+                        className="self-end flex items-center gap-1 text-[10px] font-bold px-2 py-1.5 bg-accent text-white rounded-lg hover:bg-accent/90 transition-colors disabled:opacity-50 shrink-0"
+                      >
+                        <Save size={9} />{savingMeta ? '…' : 'Save'}
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
             </div>
-
-            {/* Divider */}
-            <div className="hidden sm:block w-px bg-border shrink-0" />
-            <div className="block sm:hidden h-px bg-border" />
-
-            {/* ── RIGHT: Social Links ───────────────────────────────────── */}
-            <div className="sm:w-52 shrink-0">
+ 
+            {/* Divider 1 */}
+            <div className="hidden lg:block w-px bg-border shrink-0" />
+            <div className="block lg:hidden h-px bg-border" />
+ 
+            {/* ── COLUMN 2: Comment Section (TODO List) ───────────────── */}
+            <div className="flex-1 min-w-0 flex flex-col gap-3">
+              <p className="text-[10px] font-bold text-muted uppercase tracking-wide">Session Todo List</p>
+              
+              <div className="flex-1 min-h-[140px] max-h-[220px] overflow-y-auto border border-border rounded-lg bg-bg p-2 space-y-1.5">
+                {todos.length === 0 ? (
+                  <p className="text-xs text-muted/60 text-center py-8">No todo items added yet.</p>
+                ) : (
+                  todos.map((todo, idx) => (
+                    <div key={idx} className="flex items-center gap-2 group bg-white border border-border/40 rounded-md p-1.5">
+                      <input
+                        type="checkbox"
+                        checked={todo.completed}
+                        onChange={() => toggleTodo(idx)}
+                        className="rounded border-border text-accent focus:ring-0 cursor-pointer shrink-0"
+                      />
+                      <span className={`text-xs flex-1 truncate ${todo.completed ? 'line-through text-muted/50' : 'text-text'}`}>
+                        {todo.text}
+                      </span>
+                      <button
+                        onClick={() => deleteTodo(idx)}
+                        className="opacity-0 group-hover:opacity-100 p-1 text-muted hover:text-red-500 rounded transition-opacity"
+                        title="Delete item"
+                      >
+                        <Trash2 size={11} />
+                      </button>
+                    </div>
+                  ))
+                )}
+              </div>
+ 
+              <div className="flex gap-1.5">
+                <input
+                  type="text"
+                  placeholder="Add a new task..."
+                  value={newTodoText}
+                  onChange={e => setNewTodoText(e.target.value)}
+                  onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addTodo(); } }}
+                  className="flex-1 text-xs px-2.5 py-1.5 border border-border rounded-lg bg-bg focus:border-accent focus:outline-none text-text placeholder:text-muted/50 transition-colors"
+                />
+                <button
+                  onClick={addTodo}
+                  className="px-3 py-1.5 bg-accent text-white rounded-lg hover:bg-accent/90 transition-colors text-xs font-semibold shrink-0"
+                >
+                  Add
+                </button>
+              </div>
+            </div>
+ 
+            {/* Divider 2 */}
+            <div className="hidden lg:block w-px bg-border shrink-0" />
+            <div className="block lg:hidden h-px bg-border" />
+ 
+            {/* ── COLUMN 3: Social Links ───────────────────────────────────── */}
+            <div className="lg:w-52 shrink-0">
               <p className="text-[10px] font-bold text-muted uppercase tracking-wide mb-3">Candidate Links</p>
               <div className="space-y-2">
                 {[

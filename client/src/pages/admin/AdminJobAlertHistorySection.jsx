@@ -21,7 +21,7 @@ export default function AdminJobAlertHistorySection() {
           if (!grouped[dateStr]) grouped[dateStr] = [];
 
           session.recipients.forEach(user => {
-            if (user.name === 'Amir Ali') return;
+            if (user.name === 'Amir Ali' || user.name === 'Tony Sunny') return;
             grouped[dateStr].push({
               userName: user.name,
               sessionNumber: session.sessionNumber,

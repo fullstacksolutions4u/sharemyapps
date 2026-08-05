@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import {
   Search, Plus,
   ClipboardList,
-  Edit3, RefreshCw,
+  Edit3, RefreshCw, Trash2,
   Video, BookMarked, Users, ChevronDown, Layers
 } from 'lucide-react';
 import api from '../../api/axios';
@@ -53,7 +53,7 @@ function buildScreeningApplicantOptions(jobs, screeningStatuses) {
   for (const job of jobs) {
     const statusMap = job.applicantStatus || {};
     for (const u of job.interests || []) {
-      if (!u || u.isDeleted) continue;
+      if (!u || u.isDeleted || ['Amir Ali', 'Tony Sunny'].includes(u.name)) continue;
       const st = statusMap[u._id] || statusMap[u._id?.toString()] || 'applied';
       if (!screeningStatuses.has(st)) continue;
       options.push({
@@ -271,7 +271,8 @@ function AllSessionsTab({ onEditSession }) {
     setLoading(true);
     try {
       const res = await api.get('/admin/interviews', { params: { limit: 500 } });
-      setSessions(res.data.sessions || []);
+      const testNames = new Set(['Amir Ali', 'Tony Sunny']);
+      setSessions((res.data.sessions || []).filter(s => !s.user || !testNames.has(s.user.name)));
     } catch {
       toast.error('Failed to load interview sessions');
     } finally {
@@ -280,6 +281,17 @@ function AllSessionsTab({ onEditSession }) {
   };
 
   useEffect(() => { fetchSessions(); }, []); // eslint-disable-line react-hooks/set-state-in-effect
+
+  const deleteSession = async (sessionId) => {
+    if (!window.confirm('Delete this interview session? This cannot be undone.')) return;
+    try {
+      await api.delete(`/admin/interviews/${sessionId}`);
+      setSessions(prev => prev.filter(s => s._id !== sessionId));
+      toast.success('Session deleted');
+    } catch {
+      toast.error('Failed to delete session');
+    }
+  };
 
   const filtered = sessions.filter(s => {
     const q = search.toLowerCase();
@@ -400,6 +412,13 @@ function AllSessionsTab({ onEditSession }) {
                         <Video size={14} />
                       </a>
                     )}
+                    <button
+                      onClick={() => deleteSession(s._id)}
+                      className="p-2 hover:bg-red-50 rounded-xl transition text-red-400 hover:text-red-600"
+                      title="Delete session"
+                    >
+                      <Trash2 size={14} />
+                    </button>
                   </div>
                 </div>
               </div>
@@ -441,7 +460,9 @@ export default function AdminCurationSection() {
       const list = Array.isArray(vacRes.data) ? vacRes.data : [];
       // Active + non-active (closed); skip pending reports
       setVacancies(list.filter(v => v.status === 'active' || v.status === 'closed'));
-      setAllSessionsCount((sessionRes.data.sessions || []).length);
+      const testNames = new Set(['Amir Ali', 'Tony Sunny']);
+      const validSessions = (sessionRes.data.sessions || []).filter(s => !s.user || !testNames.has(s.user.name));
+      setAllSessionsCount(validSessions.length);
     } catch { toast.error('Failed to load jobs'); }
     finally { if (!ignore) setLoading(false); }
   };
@@ -467,7 +488,7 @@ export default function AdminCurationSection() {
     const statusMap = selectedJob.applicantStatus || {};
     return (selectedJob.interests || [])
       .filter(u => {
-        if (!u || u.isDeleted) return false;
+        if (!u || u.isDeleted || ['Amir Ali', 'Tony Sunny'].includes(u.name)) return false;
         const st = statusMap[u._id] || statusMap[u._id?.toString()] || 'applied';
         return SCREENING_STATUSES.has(st);
       })
@@ -564,10 +585,6 @@ export default function AdminCurationSection() {
   const canOpenModules = Boolean(modulesApplicant && selectedSessionId);
 
   const handleTabChange = (key) => {
-    if (key === 'modules' && !canOpenModules) {
-      toast.error('Select a job, applicant, and upcoming session from Interview Session first');
-      return;
-    }
     setTab(key);
   };
 
@@ -577,7 +594,7 @@ export default function AdminCurationSection() {
       <div className="flex flex-wrap gap-1 bg-[#F3F0EB] rounded-2xl p-1 mb-6 w-fit">
         {[
           { key: 'session', label: 'Interview Session', icon: ClipboardList },
-          { key: 'modules', label: 'Interview Modules', icon: Layers, locked: !canOpenModules },
+          { key: 'modules', label: 'Interview Modules', icon: Layers },
           { key: 'create', label: 'Create Interview Session', icon: Plus },
           { key: 'sessions', label: 'Interview Sessions', icon: BookMarked, count: allSessionsCount },
         ].map(t => (
@@ -585,14 +602,10 @@ export default function AdminCurationSection() {
             key={t.key}
             type="button"
             onClick={() => handleTabChange(t.key)}
-            disabled={!!t.locked}
-            title={t.locked ? 'Select job, applicant, and upcoming session from Interview Session first' : undefined}
             className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition ${
               tab === t.key
                 ? 'bg-white shadow text-[#1A1A1A]'
-                : t.locked
-                  ? 'text-[#9CA3AF] opacity-60 cursor-not-allowed'
-                  : 'text-[#6B7280] hover:text-[#1A1A1A]'
+                : 'text-[#6B7280] hover:text-[#1A1A1A]'
             }`}
           >
             <t.icon size={14} /> {t.label}
@@ -603,9 +616,9 @@ export default function AdminCurationSection() {
         ))}
       </div>
 
-      {tab === 'modules' && canOpenModules ? (
+      {tab === 'modules' ? (
         <AdminInterviewModulesSection
-          key={`${modulesApplicant?._id}-${selectedSessionId}`}
+          key={`${modulesApplicant?._id || 'none'}-${selectedSessionId || 'none'}`}
           initialApplicant={modulesApplicant}
           initialVacancy={modulesVacancy}
           initialSession={selectedSession}

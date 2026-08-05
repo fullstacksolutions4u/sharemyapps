@@ -32,9 +32,9 @@ exports.listSessions = async (req, res) => {
     }
 
     const sessions = await InterviewSession.find(filter)
-      .populate('user', 'name email avatar regNumber designations familiarTech yearsOfExperience place state')
+      .populate('user', 'name email avatar regNumber designations familiarTech yearsOfExperience place state linkedinUrl githubUrl leetcodeUrl portfolioUrl cvUrl joiningAvailability currentSalary expectedSalary')
       .populate('evaluatedBy', 'name avatar')
-      .populate('vacancy', 'title company status')
+      .populate('vacancy', 'title company description skills location type industry jobType experience salaryRange status')
       .sort({ interviewedAt: -1 })
       .skip((Number(page) - 1) * Number(limit))
       .limit(Number(limit))
@@ -52,9 +52,9 @@ exports.listSessions = async (req, res) => {
 exports.getUserSessions = async (req, res) => {
   try {
     const sessions = await InterviewSession.find({ user: req.params.userId })
-      .populate('user', 'name email avatar regNumber designations')
+      .populate('user', 'name email avatar regNumber designations linkedinUrl githubUrl leetcodeUrl portfolioUrl cvUrl joiningAvailability currentSalary expectedSalary')
       .populate('evaluatedBy', 'name avatar')
-      .populate('vacancy', 'title company status')
+      .populate('vacancy', 'title company description skills location type industry jobType experience salaryRange status')
       .sort({ sessionNumber: -1 })
       .lean();
     res.json({ sessions });
@@ -96,8 +96,8 @@ exports.createGeneralSession = async (req, res) => {
     });
 
     await session.populate('evaluatedBy', 'name avatar');
-    if (session.user) await session.populate('user', 'name email avatar regNumber designations');
-    if (session.vacancy) await session.populate('vacancy', 'title company status');
+    if (session.user) await session.populate('user', 'name email avatar regNumber designations linkedinUrl githubUrl leetcodeUrl portfolioUrl cvUrl joiningAvailability currentSalary expectedSalary');
+    if (session.vacancy) await session.populate('vacancy', 'title company description skills location type industry jobType experience salaryRange status');
 
     res.status(201).json({ session });
   } catch (err) {
@@ -141,9 +141,9 @@ exports.createSession = async (req, res) => {
       mcqAssessments: mcqAssessments ?? [],
     });
 
-    await session.populate('user', 'name email avatar regNumber designations');
+    await session.populate('user', 'name email avatar regNumber designations linkedinUrl githubUrl leetcodeUrl portfolioUrl cvUrl joiningAvailability currentSalary expectedSalary');
     await session.populate('evaluatedBy', 'name avatar');
-    await session.populate('vacancy', 'title company status');
+    await session.populate('vacancy', 'title company description skills location type industry jobType experience salaryRange status');
 
     res.status(201).json({ session });
   } catch (err) {
@@ -176,9 +176,9 @@ exports.updateSession = async (req, res) => {
       updates,
       { new: true }
     )
-      .populate('user', 'name email avatar regNumber designations')
+      .populate('user', 'name email avatar regNumber designations linkedinUrl githubUrl leetcodeUrl portfolioUrl cvUrl joiningAvailability currentSalary expectedSalary')
       .populate('evaluatedBy', 'name avatar')
-      .populate('vacancy', 'title company status');
+      .populate('vacancy', 'title company description skills location type industry jobType experience salaryRange status');
 
     if (!session) return res.status(404).json({ message: 'Session not found' });
     res.json({ session });
@@ -202,7 +202,7 @@ exports.deleteSession = async (req, res) => {
 exports.shareWithCandidate = async (req, res) => {
   try {
     const session = await InterviewSession.findById(req.params.sessionId)
-      .populate('user', 'name email avatar regNumber designations');
+      .populate('user', 'name email avatar regNumber designations linkedinUrl githubUrl leetcodeUrl portfolioUrl cvUrl joiningAvailability currentSalary expectedSalary');
 
     if (!session) return res.status(404).json({ message: 'Session not found' });
     if (!session.user) return res.status(400).json({ message: 'Session has no applicant assigned' });

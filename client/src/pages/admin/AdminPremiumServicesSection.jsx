@@ -220,7 +220,7 @@ export default function AdminPremiumServicesSection() {
   const SERVICE_ORDER = ['placement_session', 'ats_compatible_resume_cover_letter_optimization'];
 
   const userGroups = Object.values(
-    sessions.filter(s => s.user && s.user._id).reduce((acc, s) => {
+    sessions.filter(s => s.user && s.user._id && !['Amir Ali', 'Tony Sunny'].includes(s.user.name)).reduce((acc, s) => {
       const uid = String(s.user._id);
       if (!acc[uid]) acc[uid] = { uid, user: s.user, sessions: [] };
       acc[uid].sessions.push(s);
