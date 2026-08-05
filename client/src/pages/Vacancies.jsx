@@ -320,6 +320,7 @@ export default function Vacancies() {
   }, [clickedLinks]);
 
   const canApplyMore = !user || applyEligibility?.canApplyMore !== false;
+  const isPremium = !!(applyEligibility?.isPremium);
 
   const persistClicked = (id) => {
     if (localClickedLinks.includes(id) || serverClickedIds.includes(id)) return;
@@ -598,7 +599,7 @@ export default function Vacancies() {
                 </button>
               )}
 
-              {activeTab === 'job-links' && (
+              {activeTab === 'job-links' && !isPremium && (
                 <p className="text-[11px] sm:text-[12px] text-amber-700 bg-amber-50 border border-amber-100 rounded-lg px-2.5 py-1.5 leading-snug shrink-0 whitespace-nowrap">
                   {JOB_LINK_APPLY_INSTRUCTION}
                 </p>
@@ -788,7 +789,7 @@ export default function Vacancies() {
                             <span>Sign in to apply</span>
                             <ArrowRight size={12} />
                           </Link>
-                        ) : !isApplied && !canApplyMore ? (
+                        ) : !isApplied && !canApplyMore && !isPremium ? (
                           <div className="relative group/unlock z-10">
                             <button
                               type="button"

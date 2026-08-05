@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { 
-  FileText, ExternalLink, GraduationCap, Coins, 
+  FileText, ExternalLink, GraduationCap, Coins, Bell,
   Loader2 
 } from 'lucide-react';
 import api from '../api/axios';
@@ -15,7 +15,8 @@ export default function Overview() {
       const res = await api.get('/users/overview-stats');
       return res.data;
     },
-    staleTime: 1000 * 60 * 5, // cache for 5 minutes
+    staleTime: 0,
+    gcTime: 0,
   });
 
   if (loading) {
@@ -28,57 +29,13 @@ export default function Overview() {
 
   const appCount = stats?.applicationsCount || 0;
   const clickCount = stats?.jobPostLinksCount || 0;
+  const alertCount = stats?.jobAlertCount || 0;
+  const isJobAlertEligible = !!stats?.isJobAlertEligible;
 
-  // Construct chart data based on filter selection
-  const getChartData = () => {
-    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    const currentMonthName = monthNames[new Date().getMonth()];
-
-    if (filter === 'daily') {
-      const today = new Date();
-      const currentDay = today.getDay();
-      const distanceToMonday = currentDay === 0 ? -6 : 1 - currentDay;
-
-      const getLabelForDay = (offset) => {
-        const d = new Date(today);
-        d.setDate(today.getDate() + distanceToMonday + offset);
-        return d.toLocaleDateString('en-US', { month: 'long', day: 'numeric' });
-      };
-
-      const currentDayOffset = currentDay === 0 ? 6 : currentDay - 1;
-      const currentDayLabel = getLabelForDay(currentDayOffset);
-
-      return [
-        { label: getLabelForDay(0), apps: 0 > currentDayOffset ? 0 : Math.round(appCount * 0.1), clicks: 0 > currentDayOffset ? 0 : Math.round(clickCount * 0.1) },
-        { label: getLabelForDay(1), apps: 1 > currentDayOffset ? 0 : Math.round(appCount * 0.2), clicks: 1 > currentDayOffset ? 0 : Math.round(clickCount * 0.15) },
-        { label: getLabelForDay(2), apps: 2 > currentDayOffset ? 0 : Math.round(appCount * 0.15), clicks: 2 > currentDayOffset ? 0 : Math.round(clickCount * 0.2) },
-        { label: getLabelForDay(3), apps: 3 > currentDayOffset ? 0 : Math.round(appCount * 0.25), clicks: 3 > currentDayOffset ? 0 : Math.round(clickCount * 0.25) },
-        { label: getLabelForDay(4), apps: 4 > currentDayOffset ? 0 : Math.round(appCount * 0.1), clicks: 4 > currentDayOffset ? 0 : Math.round(clickCount * 0.1) },
-        { label: getLabelForDay(5), apps: 5 > currentDayOffset ? 0 : Math.round(appCount * 0.05), clicks: 5 > currentDayOffset ? 0 : Math.round(clickCount * 0.05) },
-        { label: getLabelForDay(6), apps: 6 > currentDayOffset ? 0 : Math.round(appCount * 0.15), clicks: 6 > currentDayOffset ? 0 : Math.round(clickCount * 0.15) },
-      ].map(item => ({
-        ...item,
-        apps: item.apps || (appCount > 0 && item.label === currentDayLabel ? appCount : 0),
-        clicks: item.clicks || (clickCount > 0 && item.label === currentDayLabel ? clickCount : 0),
-      }));
-    }
-    // Monthly
-    return [
-      { label: 'Mar', apps: Math.round(appCount * 0.1), clicks: Math.round(clickCount * 0.1) },
-      { label: 'Apr', apps: Math.round(appCount * 0.15), clicks: Math.round(clickCount * 0.12) },
-      { label: 'May', apps: Math.round(appCount * 0.2), clicks: Math.round(clickCount * 0.18) },
-      { label: 'Jun', apps: Math.round(appCount * 0.25), clicks: Math.round(clickCount * 0.22) },
-      { label: 'Jul', apps: Math.round(appCount * 0.3), clicks: Math.round(clickCount * 0.38) },
-      { label: 'Aug', apps: Math.round(appCount * 0.0), clicks: Math.round(clickCount * 0.0) },
-    ].map(item => ({
-      ...item,
-      apps: item.apps || (appCount > 0 && item.label === currentMonthName ? appCount : 0),
-      clicks: item.clicks || (clickCount > 0 && item.label === currentMonthName ? clickCount : 0),
-    }));
-  };
-
-  const chartData = getChartData();
-  const maxVal = Math.max(...chartData.map(d => d.apps + d.clicks), 4);
+  const chartData = filter === 'daily'
+    ? (stats?.dailyActivity || [])
+    : (stats?.monthlyActivity || []);
+  const maxVal = Math.max(...chartData.map(d => d.apps + d.clicks + (isJobAlertEligible ? d.alerts : 0)), 4);
 
   const statCards = [
     {
@@ -99,6 +56,15 @@ export default function Overview() {
       icon: ExternalLink,
       iconColor: 'bg-cyan-50 text-cyan-600 border border-cyan-100'
     },
+    ...(isJobAlertEligible ? [{
+      title: 'Job Alerts Received',
+      value: alertCount,
+      badge: 'Premium',
+      badgeColor: 'bg-amber-50 text-amber-700 border-amber-200',
+      description: '',
+      icon: Bell,
+      iconColor: 'bg-amber-50 text-amber-600 border border-amber-100'
+    }] : []),
     {
       title: 'MODULES COMPLETED',
       value: stats?.modulesCount || 0,
@@ -124,8 +90,8 @@ export default function Overview() {
   return (
     <div className="w-full px-4 sm:px-6 py-6 space-y-6">
       
-      {/* Top 4 Stats Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* Top Stats Cards */}
+      <div className={`grid grid-cols-1 sm:grid-cols-2 ${isJobAlertEligible ? 'lg:grid-cols-5' : 'lg:grid-cols-4'} gap-4`}>
         {statCards.map((card, i) => {
           const Icon = card.icon;
           return (
@@ -193,42 +159,67 @@ export default function Overview() {
 
                 {/* Bars mapping */}
                 {chartData.map((item, i) => {
-                  const totalVal = item.apps + item.clicks;
+                  const effectiveAlerts = isJobAlertEligible ? item.alerts : 0;
+                  const totalVal = item.apps + item.clicks + effectiveAlerts;
                   const barHeight = totalVal > 0 ? (totalVal / maxVal) * 100 : 0;
                   const appPercent = totalVal > 0 ? (item.apps / totalVal) * 100 : 0;
                   const clickPercent = totalVal > 0 ? (item.clicks / totalVal) * 100 : 0;
+                  const alertPercent = totalVal > 0 ? (effectiveAlerts / totalVal) * 100 : 0;
 
                   return (
                     <div key={i} className="flex flex-col items-center flex-1 group">
                       <div className="w-full flex items-end justify-center h-[120px] relative">
                         {totalVal > 0 ? (
-                          <div 
-                            style={{ height: `${barHeight}%` }}
-                            className="w-3.5 sm:w-4 flex flex-col-reverse rounded-t-lg overflow-hidden transition-all duration-500 relative group/bar cursor-pointer"
-                          >
-                            {/* Apps Segment (Blue) */}
-                            {item.apps > 0 && (
-                              <div 
-                                style={{ height: `${appPercent}%` }}
-                                className="w-full bg-[#0052CC]"
-                              />
-                            )}
-                            
-                            {/* Clicks Segment (Emerald) */}
-                            {item.clicks > 0 && (
-                              <div 
-                                style={{ height: `${clickPercent}%` }}
-                                className="w-full bg-[#00A693]"
-                              />
-                            )}
+                          <>
+                            <div 
+                              style={{ height: `${barHeight}%` }}
+                              className="w-7 sm:w-8 flex flex-col-reverse rounded-t-lg overflow-hidden transition-all duration-500"
+                            >
+                              {/* Apps Segment (Blue) */}
+                              {item.apps > 0 && (
+                                <div
+                                  style={{ height: `${appPercent}%` }}
+                                  className="w-full bg-[#0052CC] flex items-center justify-center overflow-hidden"
+                                >
+                                  {appPercent >= 18 && (
+                                    <span className="text-white font-extrabold select-none" style={{ fontSize: '9px', lineHeight: 1 }}>
+                                      {item.apps}
+                                    </span>
+                                  )}
+                                </div>
+                              )}
+                              
+                              {/* Clicks Segment (Emerald) */}
+                              {item.clicks > 0 && (
+                                <div
+                                  style={{ height: `${clickPercent}%` }}
+                                  className="w-full bg-[#00A693] flex items-center justify-center overflow-hidden"
+                                >
+                                  {clickPercent >= 18 && (
+                                    <span className="text-white font-extrabold select-none" style={{ fontSize: '9px', lineHeight: 1 }}>
+                                      {item.clicks}
+                                    </span>
+                                  )}
+                                </div>
+                              )}
 
-                            {/* Tooltip */}
-                            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 bg-[#1A1A1A] text-white text-[9px] font-bold px-1.5 py-0.5 rounded shadow opacity-0 group-hover/bar:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50">
-                              {item.apps} Applied, {item.clicks} Clicks
+                              {/* Job Alerts Segment (Amber) — only for eligible users */}
+                              {isJobAlertEligible && effectiveAlerts > 0 && (
+                                <div
+                                  style={{ height: `${alertPercent}%` }}
+                                  className="w-full bg-amber-500 flex items-center justify-center overflow-hidden"
+                                >
+                                  {alertPercent >= 18 && (
+                                    <span className="text-white font-extrabold select-none" style={{ fontSize: '9px', lineHeight: 1 }}>
+                                      {effectiveAlerts}
+                                    </span>
+                                  )}
+                                </div>
+                              )}
                             </div>
-                          </div>
+                          </>
                         ) : (
-                          <div className="h-1 w-3.5 sm:w-4 bg-gray-100 rounded-t-lg" />
+                          <div className="h-1 w-7 sm:w-8 bg-gray-100 rounded-t-lg" />
                         )}
                       </div>
 
@@ -251,6 +242,12 @@ export default function Overview() {
                 <span className="w-2 h-2 rounded-full bg-[#00A693]" />
                 <span>Job Post Links</span>
               </div>
+              {isJobAlertEligible && (
+                <div className="flex items-center gap-1.5 text-[11px] font-bold text-gray-500">
+                  <span className="w-2 h-2 rounded-full bg-amber-500" />
+                  <span>Job Alerts</span>
+                </div>
+              )}
             </div>
           </div>
         </div>

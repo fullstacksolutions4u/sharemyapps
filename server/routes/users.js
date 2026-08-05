@@ -59,18 +59,55 @@ router.get('/applications', protect, async (req, res) => {
 router.get('/overview-stats', protect, async (req, res) => {
   try {
     const userId = req.user._id;
-    const [applicationsCount, jobPostLinksCount, progressDoc, projectsCount, modules] = await Promise.all([
+    const SessionRequest = require('../models/SessionRequest');
+    const JobAlertModel = require('../models/JobAlert');
+    const JobLink = require('../models/JobLink');
+    const { buildOverviewActivity } = require('../utils/overviewActivity');
+
+    const delivery = await SessionRequest.findOne({
+      user: userId,
+      serviceKey: 'ats_compatible_resume_cover_letter_optimization',
+      status: 'completed',
+      completionLink: { $ne: '' },
+    }).select('_id').lean();
+    const isJobAlertEligible = !!delivery;
+
+    const mongoose = require('mongoose');
+    const userObjectId = new mongoose.Types.ObjectId(userId);
+
+    const [applicationsCount, jobPostLinksCount, progressDoc, projectsCount, modules, jobAlertAgg, activity] = await Promise.all([
       Vacancy.countDocuments({ everApplied: userId }),
-      require('../models/JobLink').countDocuments({ clicks: userId }),
+      JobLink.aggregate([
+        { $unwind: '$clickEvents' },
+        { $match: { 'clickEvents.user': userObjectId } },
+        { $count: 'total' },
+      ]).then((r) => r[0]?.total || 0),
       require('../models/LearningProgress').findOne({ userId }),
-      require('../models/Project').countDocuments({ user: userId, isDeleted: { $ne: true } }),
-      require('../models/LearningModule').find({ isActive: true }).select('category title topics').lean()
+      Project.countDocuments({ owner: userId }),
+      require('../models/LearningModule').find({ isActive: true }).select('category title topics').lean(),
+      isJobAlertEligible
+        ? JobAlertModel.aggregate([
+            { $match: { notified: true, recipients: userObjectId } },
+            {
+              $project: {
+                count: {
+                  $add: [
+                    { $size: { $ifNull: ['$jobs', []] } },
+                    { $size: { $ifNull: ['$careerLinks', []] } },
+                  ],
+                },
+              },
+            },
+            { $group: { _id: null, total: { $sum: '$count' } } },
+          ])
+        : Promise.resolve([]),
+      buildOverviewActivity(userId, userObjectId, isJobAlertEligible),
     ]);
+    const jobAlertCount = jobAlertAgg[0]?.total || 0;
 
     const coins = req.user.points || 0;
     const modulesCount = progressDoc?.completedModules?.length || 0;
 
-    // Map each module to one of the 9 requested UI categories
     const categoriesMap = {
       system_design: ['system design', 'architecture', 'software engineering', 'microservices', 'micro services'],
       frontend: ['frontend framework', 'frontend', 'ui/ux', 'design', 'html', 'css', 'react'],
@@ -80,10 +117,9 @@ router.get('/overview-stats', protect, async (req, res) => {
       programming_languages: ['programming language', 'programming languages', 'javascript', 'typescript', 'python', 'java', 'c++', 'c#', 'rust', 'go', 'php'],
       dsa: ['dsa', 'data structures', 'algorithms', 'algorithm'],
       mobile_development: ['react native', 'react-native', 'mobile development', 'mobile', 'android', 'ios', 'flutter'],
-      others: ['security', 'cyber security', 'data science']
+      others: ['security', 'cyber security', 'data science'],
     };
 
-    // Initialize stats for each category
     const catStats = {
       frontend: { name: 'Frontend', totalTopics: 0, completedTopics: 0 },
       backend: { name: 'Backend', totalTopics: 0, completedTopics: 0 },
@@ -93,14 +129,13 @@ router.get('/overview-stats', protect, async (req, res) => {
       dsa: { name: 'DSA', totalTopics: 0, completedTopics: 0 },
       mobile_development: { name: 'Mobile development', totalTopics: 0, completedTopics: 0 },
       system_design: { name: 'System design', totalTopics: 0, completedTopics: 0 },
-      others: { name: 'data science, cyber security', totalTopics: 0, completedTopics: 0 }
+      others: { name: 'data science, cyber security', totalTopics: 0, completedTopics: 0 },
     };
 
     const getModuleUiCategory = (mod) => {
       const cat = (mod.category || '').toLowerCase();
       const title = (mod.title || '').toLowerCase();
       const haystack = `${cat} ${title}`;
-      // Longest keyword wins so "react native" beats frontend's "react"
       let bestKey = 'others';
       let bestLen = -1;
       for (const [uiCat, keywords] of Object.entries(categoriesMap)) {
@@ -115,7 +150,7 @@ router.get('/overview-stats', protect, async (req, res) => {
     };
 
     const completedTopicKeys = new Set(
-      (progressDoc?.completedTopics || []).map(t => `${t.moduleId.toString()}_${t.topicId}`)
+      (progressDoc?.completedTopics || []).map((t) => `${t.moduleId.toString()}_${t.topicId}`)
     );
 
     for (const mod of modules) {
@@ -131,15 +166,15 @@ router.get('/overview-stats', protect, async (req, res) => {
       }
     }
 
-    const skillPathStats = Object.values(catStats).map(c => {
-      const progress = c.totalTopics > 0 
+    const skillPathStats = Object.values(catStats).map((c) => {
+      const progress = c.totalTopics > 0
         ? Math.round((c.completedTopics / c.totalTopics) * 100)
         : 0;
       return {
         name: c.name,
         progress,
         completedTopics: c.completedTopics,
-        totalTopics: c.totalTopics
+        totalTopics: c.totalTopics,
       };
     });
 
@@ -149,7 +184,11 @@ router.get('/overview-stats', protect, async (req, res) => {
       modulesCount,
       coins,
       projectsCount,
-      skillPathStats
+      skillPathStats,
+      isJobAlertEligible,
+      jobAlertCount,
+      dailyActivity: activity.dailyActivity,
+      monthlyActivity: activity.monthlyActivity,
     });
   } catch (err) {
     res.status(500).json({ message: err.message });

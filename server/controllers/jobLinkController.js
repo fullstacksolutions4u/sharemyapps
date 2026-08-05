@@ -109,7 +109,8 @@ const APPLY_INSTRUCTION =
 async function getJobLinkApplyEligibility(userId) {
   const since = weekStart();
 
-  const [clickedDocs, weeklyApplyDocs, weeklyApprovedCount, pendingContributionCount] = await Promise.all([
+  const User = require('../models/User');
+  const [clickedDocs, weeklyApplyDocs, weeklyApprovedCount, pendingContributionCount, userDoc] = await Promise.all([
     JobLink.find({ clicks: userId }).select('_id').lean(),
     JobLink.find({
       clickEvents: { $elemMatch: { user: userId, at: { $gte: since } } },
@@ -123,16 +124,20 @@ async function getJobLinkApplyEligibility(userId) {
       ],
     }),
     JobLink.countDocuments({ createdBy: userId, status: 'pending' }),
+    User.findById(userId).select('premiumServices').lean(),
   ]);
+
+  const isPremium = !!(userDoc?.premiumServices?.length > 0);
 
   const clickedIds = clickedDocs.map((d) => d._id.toString());
   const weeklyApplyCount = weeklyApplyDocs.length;
   const hasWeeklyContribution = weeklyApprovedCount > 0;
   const pendingContribution = pendingContributionCount > 0;
-  const canApplyMore = hasWeeklyContribution || weeklyApplyCount < FREE_APPLY_LIMIT;
+  const canApplyMore = isPremium || hasWeeklyContribution || weeklyApplyCount < FREE_APPLY_LIMIT;
 
   return {
     canApplyMore,
+    isPremium,
     hasWeeklyContribution,
     pendingContribution,
     freeApplyUsed: weeklyApplyCount >= FREE_APPLY_LIMIT,
@@ -571,7 +576,8 @@ exports.recordClick = async (req, res) => {
     }
 
     const eligibility = await getJobLinkApplyEligibility(req.user._id);
-    if (!eligibility.canApplyMore) {
+    // Premium members always get unlimited applies — only block non-premium over-limit users
+    if (!eligibility.canApplyMore && !eligibility.isPremium) {
       return res.status(403).json({
         success: false,
         code: 'APPLY_LIMIT',
