@@ -673,6 +673,9 @@ export default function AdminJobLinksSection() {
                         className="w-full pl-9 p-2.5 text-sm border border-border rounded-lg focus:outline-none focus:border-accent text-gray-700 bg-white"
                       >
                         <option value="" disabled>Select Designation</option>
+                        {draft.title && !DESIGNATION_OPTIONS.includes(draft.title) && !customDesignations.includes(draft.title) && (
+                          <option value={draft.title}>{draft.title}</option>
+                        )}
                         {[...DESIGNATION_OPTIONS, ...customDesignations].map(opt => (
                           <option key={opt} value={opt}>{opt}</option>
                         ))}
@@ -1030,6 +1033,13 @@ export default function AdminJobLinksSection() {
                                 className="w-full bg-transparent border-0 p-0 text-[13px] text-gray-600 focus:ring-0 outline-none cursor-pointer placeholder-gray-400 appearance-none"
                               >
                                 <option value="" disabled>Select designation</option>
+                                {(() => {
+                                  const currentTitle = editForms[link._id]?.title !== undefined ? editForms[link._id].title : link.title;
+                                  const allOpts = [...DESIGNATION_OPTIONS, ...customDesignations];
+                                  return currentTitle && !allOpts.includes(currentTitle) ? (
+                                    <option value={currentTitle}>{currentTitle}</option>
+                                  ) : null;
+                                })()}
                                 {[...DESIGNATION_OPTIONS, ...customDesignations].map(opt => (
                                   <option key={opt} value={opt}>{opt}</option>
                                 ))}

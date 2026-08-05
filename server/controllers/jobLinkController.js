@@ -8,6 +8,7 @@ const {
   normalizeJobDesignation,
   titlesEquivalent,
   getDesignationPromptBlock,
+  postProcessExtractedJob,
 } = require('../utils/jobDesignation');
 
 const FREE_APPLY_LIMIT = 2;
@@ -389,13 +390,13 @@ Return ONLY a valid JSON object with a single "jobs" key containing an array of 
 {
   "jobs": [
     {
-      "title": "ONE canonical designation from the list above (normalized — no duplicates like ReactJS vs React.js)",
+      "title": "Exact job title from the post (e.g. IT Remote Support Engineer). Use a canonical label only when the role clearly matches the list above. Never use Other if a specific role is stated.",
       "company": "company name if mentioned, if an email ID is present extract the company name from the domain name (e.g., from name@example.com extract 'Example', remove common extensions like .com, .in, .net), else empty string",
       "postedDate": "job posting date if mentioned. If relative (e.g. '1w', '2d'), calculate the exact date based on CURRENT DATE and output in 'Month DD' format (e.g. 'July 21'). Else empty string",
-      "workMode": "one of: Remote, Onsite, Hybrid — infer from context if not explicitly stated",
+      "workMode": "one of: Remote, Onsite, Hybrid — infer from context. Job title 'Remote Support' does NOT mean Remote work mode if a physical office/location is specified (e.g. Infopark → Onsite)",
       "location": "city and state/country if mentioned. For Indian cities, use the state name instead of 'India' (e.g. 'Jaipur, Rajasthan', 'Bengaluru, Karnataka', 'Mumbai, Maharashtra', 'Hyderabad, Telangana'). For non-Indian locations use city and country. Else empty string.",
       "state": "the Indian state name — ONLY fill if there is exactly ONE clear Indian city or area mentioned (e.g. 'Bengaluru' → 'Karnataka', 'Hyderabad' → 'Telangana'). If a non-Indian country/city is mentioned (e.g. 'USA', 'London'), return 'Out of India'. If multiple locations are mentioned, or if the location is Remote, return empty string.",
-      "experience": "experience requirement as a short string (e.g. 2-4 years, 3+ years), else empty string",
+      "experience": "experience requirement as a short string (e.g. 2-4 years, 3+ years, Fresher). Put Freshers/Fresher/Entry Level here — not in title",
       "email": "any email address found in the job posting (e.g. hr@company.com), else empty string",
       "aiLikelyDuplicate": true or false — true if this opening clearly matches an ALREADY APPROVED listing above (same company + same/similar role, or same job post),
       "aiDuplicateNote": "short reason if aiLikelyDuplicate is true (e.g. 'Same as listed: React Developer @ Matrix Marketers'), else empty string"
@@ -435,11 +436,13 @@ ${text.slice(0, 4000)}`;
     }
 
     const Vacancy = require('../models/Vacancy');
+    const sourceText = text.slice(0, 4000);
     const processedJobs = [];
     for (const job of jobList) {
-      const jobCompany = job.company || '';
-      const jobTitle = normalizeJobDesignation(job.title || '');
-      const jobEmail = job.email || '';
+      const processed = postProcessExtractedJob(job, sourceText);
+      const jobCompany = processed.company || '';
+      const jobTitle = processed.title || '';
+      const jobEmail = processed.email || '';
       const aiLikelyDuplicate = Boolean(job.aiLikelyDuplicate);
       const aiDuplicateNote = (job.aiDuplicateNote || '').trim();
 
@@ -489,11 +492,11 @@ ${text.slice(0, 4000)}`;
       processedJobs.push({
         title: jobTitle,
         company: jobCompany,
-        postedDate: job.postedDate || '',
-        workMode: ['Remote', 'Onsite', 'Hybrid'].includes(job.workMode) ? job.workMode : '',
-        location: job.location || '',
-        state: job.state || '',
-        experience: job.experience || '',
+        postedDate: processed.postedDate || '',
+        workMode: ['Remote', 'Onsite', 'Hybrid'].includes(processed.workMode) ? processed.workMode : '',
+        location: processed.location || '',
+        state: processed.state || job.state || '',
+        experience: processed.experience || '',
         email: jobEmail,
         isDuplicate,
         duplicateReason: duplicateReason || null,

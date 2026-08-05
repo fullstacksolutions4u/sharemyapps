@@ -92,27 +92,124 @@ const ALIAS_TO_CANONICAL = {
   'product manager': 'Product Manager',
 };
 
+function stripFresherFromTitle(str) {
+  return String(str || '')
+    .replace(/\s*[\(\[\-–—]\s*freshers?\s*[\)\]]?\s*$/i, '')
+    .replace(/\s+freshers?\s*$/i, '')
+    .trim();
+}
+
+function cleanExtractedDesignation(raw) {
+  if (!raw || typeof raw !== 'string') return '';
+  let s = stripSeniorityPrefix(raw.trim());
+  s = stripParentheticals(s);
+  s = stripFresherFromTitle(s);
+  return s.trim();
+}
+
+/** Regex fallbacks when AI returns empty / "Other". */
+function inferTitleFromText(text) {
+  if (!text || typeof text !== 'string') return '';
+  const patterns = [
+    /(?:we'?re\s+)?hiring:?\s*[🚀\s]*(.+?)(?:!|\n|$)/i,
+    /(?:open\s+)?(?:position|role|opening)[:\s]+(.+?)(?:!|\n|$)/i,
+    /looking for\s+(?:enthusiastic\s+|talented\s+|skilled\s+)?(.+?)(?:\s+to join|\s+who|\(|!|\n)/i,
+    /join our team as\s+(?:a\s+|an\s+)?(.+?)(?:!|\(|\.|\n)/i,
+  ];
+  for (const pattern of patterns) {
+    const match = text.match(pattern);
+    if (match?.[1]) {
+      const cleaned = cleanExtractedDesignation(match[1]);
+      if (cleaned && cleaned.toLowerCase() !== 'other') return cleaned;
+    }
+  }
+  return '';
+}
+
+function inferCompanyFromEmail(email) {
+  if (!email || typeof email !== 'string') return '';
+  const m = email.match(/@([a-z0-9-]+)\./i);
+  if (!m) return '';
+  const slug = m[1].replace(/[-_]/g, ' ').trim();
+  if (!slug) return '';
+  return slug
+    .split(/\s+/)
+    .map((w) => w.length <= 3 ? w.toUpperCase() : w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+    .join(' ');
+}
+
+function normalizeExperienceLevel(raw, sourceText = '') {
+  let exp = String(raw || '').trim();
+  if (/freshers?/i.test(exp)) return 'Fresher';
+  if (!exp && /freshers?|recent graduate|entry level/i.test(sourceText)) return 'Fresher';
+  return exp;
+}
+
+function inferWorkMode({ workMode, location, title, text }) {
+  const wm = String(workMode || '').trim();
+  const loc = String(location || '').trim();
+  const haystack = `${text || ''} ${title || ''}`.toLowerCase();
+
+  if (loc && !/^remote$/i.test(loc)) {
+    if (/infopark|office|onsite|on-site|on site/i.test(haystack) || loc.includes(',')) {
+      if (!wm || wm.toLowerCase() === 'remote') return 'Onsite';
+    }
+  }
+  if (['Remote', 'Onsite', 'Hybrid'].includes(wm)) return wm;
+  if (/hybrid/i.test(haystack)) return 'Hybrid';
+  if (/\bremote\b/i.test(haystack) && !/remote support|remote engineer/i.test(title || '')) return 'Remote';
+  if (/infopark|onsite|on-site|on site/i.test(haystack)) return 'Onsite';
+  return wm;
+}
+
+function postProcessExtractedJob(job, sourceText) {
+  let title = cleanExtractedDesignation(job.title || '');
+  if (!title || title.toLowerCase() === 'other') {
+    title = inferTitleFromText(sourceText) || title;
+  }
+  title = normalizeJobDesignation(title);
+
+  let company = String(job.company || '').trim();
+  const email = String(job.email || '').trim();
+  if (!company && email) company = inferCompanyFromEmail(email);
+
+  const experience = normalizeExperienceLevel(job.experience, sourceText);
+  const location = String(job.location || '').trim();
+  const workMode = inferWorkMode({
+    workMode: job.workMode,
+    location,
+    title,
+    text: sourceText,
+  });
+
+  return {
+    ...job,
+    title,
+    company,
+    experience,
+    workMode,
+    location,
+  };
+}
 function normalizeJobDesignation(raw) {
   if (!raw || typeof raw !== 'string') return '';
 
-  const trimmed = raw.trim();
-  if (!trimmed) return '';
-
-  const withoutLevel = stripSeniorityPrefix(trimmed);
+  const cleaned = cleanExtractedDesignation(raw);
+  if (!cleaned) return '';
+  if (cleaned.toLowerCase() === 'other') return '';
 
   const direct = CANONICAL_DESIGNATIONS.find(
-    (c) => c.toLowerCase() === withoutLevel.toLowerCase()
+    (c) => c.toLowerCase() === cleaned.toLowerCase()
   );
-  if (direct) return direct;
+  if (direct && direct !== 'Other') return direct;
 
-  const withoutParen = stripParentheticals(withoutLevel);
-  const key = expandStackTokens(normalizeKey(withoutParen));
+  const key = expandStackTokens(normalizeKey(cleaned));
 
   if (ALIAS_TO_CANONICAL[key]) return ALIAS_TO_CANONICAL[key];
 
-  // Fuzzy: canonical match after stripping spaces/punctuation
   const compact = key.replace(/\s/g, '');
   for (const canonical of CANONICAL_DESIGNATIONS) {
+    if (canonical === 'Other') continue;
     const cKey = normalizeKey(canonical);
     if (key === cKey || compact === cKey.replace(/\s/g, '')) return canonical;
   }
@@ -121,7 +218,7 @@ function normalizeJobDesignation(raw) {
     if (compact === alias.replace(/\s/g, '')) return canonical;
   }
 
-  return withoutParen || withoutLevel || trimmed;
+  return cleaned;
 }
 
 function titlesEquivalent(a, b) {
@@ -137,22 +234,24 @@ function getDesignationPromptBlock(existingTitles = []) {
   )].slice(0, 40);
 
   return `
-TITLE / DESIGNATION NORMALIZATION (critical — avoid duplicate filter labels):
-Pick EXACTLY ONE canonical designation string. Use these standard labels when the role matches:
-${CANONICAL_DESIGNATIONS.join(' | ')}
+TITLE / DESIGNATION EXTRACTION (critical):
+1. Extract the EXACT job title from the post heading or opening line (e.g. "We're Hiring: IT Remote Support Engineer (Freshers)" → title "IT Remote Support Engineer").
+2. Put "(Freshers)", "Freshers", "Fresher", "Entry Level" in experience — NOT in title.
+3. Do NOT use "Other" when a specific role is stated. Only use "Other" if no role can be determined.
+4. For developer roles that match a canonical label below, use that exact string.
+5. For non-developer or support roles (IT Support, Remote Support Engineer, HR, etc.), keep the full stated title.
 
-Normalization rules (always apply):
-- "Front End Developer", "Front-End Developer" → Frontend Developer
-- "Full Stack Engineer", "Full-Stack Developer", "Full Stack Developer (React.js)" → Full Stack Developer
-- "React JS Developer", "React.js Developer", "ReactJS Developer" → React Developer (NOT React Native)
-- "MERNStack Developer" → MERN Stack Developer; "MEAN Stack Developer" stays MEAN Stack Developer
-- Do NOT append parenthetical tech (no "(React.js)", "(Node.js)") — use the canonical label only
-- Do NOT include level prefixes: Junior, Senior, Jr, Sr — e.g. "Junior MERN Stack Developer" → MERN Stack Developer
-- Prefer "Developer" over "Engineer" when the role is the same (e.g. Full Stack Engineer → Full Stack Developer)
-- Java Lead is separate from Java Developer — keep "Lead" when it is the role title
-- React Native Developer is separate from React Developer
+Canonical labels when the role matches:
+${CANONICAL_DESIGNATIONS.filter((c) => c !== 'Other').join(' | ')}
 
-EXISTING DESIGNATIONS ALREADY IN USE (reuse these exact strings when the role matches):
+Normalization rules (when canonical applies):
+- "Front End Developer" → Frontend Developer; "ReactJS Developer" → React Developer
+- "MERNStack Developer" → MERN Stack Developer
+- Do NOT include Junior/Senior/Jr/Sr in title
+- Do NOT append parenthetical tech when a canonical label fits
+- Java Lead is separate from Java Developer
+
+EXISTING DESIGNATIONS ALREADY IN USE (reuse exact strings when the role matches):
 ${uniqueExisting.length ? uniqueExisting.join(', ') : '(none yet)'}
 `.trim();
 }
@@ -162,4 +261,7 @@ module.exports = {
   normalizeJobDesignation,
   titlesEquivalent,
   getDesignationPromptBlock,
+  cleanExtractedDesignation,
+  inferTitleFromText,
+  postProcessExtractedJob,
 };
