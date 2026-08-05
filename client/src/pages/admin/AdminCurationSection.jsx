@@ -582,7 +582,7 @@ export default function AdminCurationSection() {
     }
   };
 
-  const canOpenModules = Boolean(modulesApplicant && selectedSessionId);
+
 
   const handleTabChange = (key) => {
     setTab(key);

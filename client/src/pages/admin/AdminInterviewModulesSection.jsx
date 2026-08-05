@@ -209,7 +209,7 @@ export default function AdminInterviewModulesSection({ initialApplicant = null, 
       if (summaryText.trim().startsWith('[') && summaryText.trim().endsWith(']')) {
         return JSON.parse(summaryText);
       }
-    } catch (e) {}
+    } catch { /* ignore parsing errors */ }
 
     // Fallback to parsing markdown checkboxes
     const lines = summaryText.split('\n');
@@ -229,6 +229,7 @@ export default function AdminInterviewModulesSection({ initialApplicant = null, 
   const [newTodoText, setNewTodoText] = useState('');
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setTodos(parseTodos(initialSession?.summary || ''));
   }, [initialSession]);
 
