@@ -437,21 +437,27 @@ export default function Vacancies() {
   useEffect(() => { if (errF) toast.error('Failed to load freelance projects'); }, [errF]);
   useEffect(() => { if (errJL) toast.error('Failed to load job links'); }, [errJL]);
 
-  const TAB_CONFIG = {
+  const TAB_CONFIG = useMemo(() => ({
     vacancies:  { data: vacancies,       loading: loadingV, queryKey: 'vacancies',  route: '/vacancies'  },
     freelance:  { data: freelanceItems,  loading: loadingF, queryKey: 'freelance',  route: '/freelance'  },
     'job-links': { data: jobLinks,       loading: loadingJL, queryKey: 'job-links', route: '/job-links'  },
-  };
+  }), [vacancies, freelanceItems, jobLinks, loadingV, loadingF, loadingJL]);
+
+  const activeTabData = useMemo(() => {
+    if (activeTab === 'vacancies') return vacancies;
+    if (activeTab === 'freelance') return freelanceItems;
+    return jobLinks;
+  }, [activeTab, vacancies, freelanceItems, jobLinks]);
 
   const filteredTabData = useMemo(
     () => filterOpportunityItems(
-      TAB_CONFIG[activeTab].data,
+      activeTabData,
       activeTab,
       filterDesignation,
       filterLocation,
       filterExperience,
     ),
-    [activeTab, vacancies, freelanceItems, jobLinks, filterDesignation, filterLocation, filterExperience],
+    [activeTabData, activeTab, filterDesignation, filterLocation, filterExperience],
   );
 
   const JOB_LINKS_PER_PAGE = 15;
