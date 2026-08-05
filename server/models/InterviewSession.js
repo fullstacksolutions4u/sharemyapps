@@ -13,7 +13,7 @@ const sectionSchema = new mongoose.Schema({
 }, { _id: false });
 
 const interviewSessionSchema = new mongoose.Schema({
-  user:          { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  user:          { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
   evaluatedBy:   { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   vacancy:       { type: mongoose.Schema.Types.ObjectId, ref: 'Vacancy', default: null },
   sessionNumber: { type: Number, default: 1 },  // auto-incremented per user

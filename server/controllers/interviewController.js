@@ -11,11 +11,12 @@ const DEFAULT_SECTIONS = [
 // GET /admin/interviews — list sessions with filters
 exports.listSessions = async (req, res) => {
   try {
-    const { userId, vacancyId, date, minRating, maxRating, shared, page = 1, limit = 30 } = req.query;
+    const { userId, vacancyId, date, minRating, maxRating, shared, unassigned, page = 1, limit = 30 } = req.query;
     const filter = {};
 
     if (userId)    filter.user = userId;
     if (vacancyId) filter.vacancy = vacancyId;
+    if (unassigned === 'true') filter.user = null;
     if (shared !== undefined) filter.sharedWithCandidate = shared === 'true';
     if (date) {
       const d = new Date(date);
@@ -55,6 +56,48 @@ exports.getUserSessions = async (req, res) => {
       .sort({ sessionNumber: -1 })
       .lean();
     res.json({ sessions });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+// POST /admin/interviews — create general (unassigned) session slot
+exports.createGeneralSession = async (req, res) => {
+  try {
+    const { googleMeetLink, status, interviewedAt, user, vacancy } = req.body;
+
+    let sessionNumber;
+    if (user) {
+      const userExists = await User.findById(user).lean();
+      if (!userExists) return res.status(404).json({ message: 'User not found' });
+      const lastUserSession = await InterviewSession.findOne({ user })
+        .sort({ sessionNumber: -1 })
+        .lean();
+      sessionNumber = (lastUserSession?.sessionNumber || 0) + 1;
+    } else {
+      const lastSession = await InterviewSession.findOne()
+        .sort({ sessionNumber: -1 })
+        .lean();
+      sessionNumber = (lastSession?.sessionNumber || 0) + 1;
+    }
+
+    const session = await InterviewSession.create({
+      user:          user || null,
+      evaluatedBy:   req.user._id,
+      vacancy:       vacancy || null,
+      sessionNumber,
+      overallRating: 5,
+      googleMeetLink: googleMeetLink ?? '',
+      status:        status ?? 'scheduled',
+      sections:      DEFAULT_SECTIONS,
+      interviewedAt: interviewedAt ? new Date(interviewedAt) : new Date(),
+    });
+
+    await session.populate('evaluatedBy', 'name avatar');
+    if (session.user) await session.populate('user', 'name email avatar regNumber designations');
+    if (session.vacancy) await session.populate('vacancy', 'title company status');
+
+    res.status(201).json({ session });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -109,11 +152,26 @@ exports.createSession = async (req, res) => {
 // PUT /admin/interviews/:sessionId — update session
 exports.updateSession = async (req, res) => {
   try {
-    const { overallRating, headline, summary, googleMeetLink, status, sections, pros, cons, improvementTips, interviewedAt, mcqAssessments, vacancy } = req.body;
+    const { user, overallRating, headline, summary, googleMeetLink, status, sections, pros, cons, improvementTips, interviewedAt, mcqAssessments, vacancy } = req.body;
+
+    const updates = { overallRating, headline, summary, googleMeetLink, status, sections, pros, cons, improvementTips, interviewedAt, mcqAssessments };
+    if (vacancy !== undefined) updates.vacancy = vacancy || null;
+    if (user !== undefined) {
+      updates.user = user || null;
+      if (user) {
+        const existing = await InterviewSession.findById(req.params.sessionId).lean();
+        if (!existing?.user) {
+          const lastSession = await InterviewSession.findOne({ user })
+            .sort({ sessionNumber: -1 })
+            .lean();
+          updates.sessionNumber = (lastSession?.sessionNumber || 0) + 1;
+        }
+      }
+    }
 
     const session = await InterviewSession.findByIdAndUpdate(
       req.params.sessionId,
-      { overallRating, headline, summary, googleMeetLink, status, sections, pros, cons, improvementTips, interviewedAt, mcqAssessments, ...(vacancy !== undefined ? { vacancy: vacancy || null } : {}) },
+      updates,
       { new: true }
     )
       .populate('user', 'name email avatar regNumber designations')

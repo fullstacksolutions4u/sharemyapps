@@ -22,6 +22,49 @@ const getLocalDatetimeString = (date = new Date()) => {
   return new Date(date.getTime() - tzOffset).toISOString().slice(0, 16);
 };
 
+const ACTIVE_UPCOMING_STATUSES = new Set(['scheduled', 'postponed']);
+
+function filterUpcomingSessions(sessions) {
+  const now = Date.now();
+  return (sessions || [])
+    .filter(s => {
+      if (!ACTIVE_UPCOMING_STATUSES.has(s.status)) return false;
+      if (s.user?._id || s.user) return false;
+      return new Date(s.interviewedAt).getTime() >= now - 60_000;
+    })
+    .sort((a, b) => new Date(a.interviewedAt) - new Date(b.interviewedAt));
+}
+
+function formatSessionOptionLabel(session) {
+  const date = new Date(session.interviewedAt).toLocaleString('en-IN', {
+    day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit',
+  });
+  const statusLabel = session.status === 'postponed' ? 'Postponed' : 'Scheduled';
+  const slot = session.sessionNumber ? `#${session.sessionNumber}` : '';
+  return `${slot ? `Slot ${slot} · ` : ''}${date} · ${statusLabel}`;
+}
+
+function buildScreeningApplicantOptions(jobs, screeningStatuses) {
+  const options = [];
+  for (const job of jobs) {
+    const statusMap = job.applicantStatus || {};
+    for (const u of job.interests || []) {
+      if (!u || u.isDeleted) continue;
+      const st = statusMap[u._id] || statusMap[u._id?.toString()] || 'applied';
+      if (!screeningStatuses.has(st)) continue;
+      options.push({
+        key: `${u._id}|${job._id}`,
+        userId: u._id,
+        jobId: job._id,
+        name: u.name,
+        jobTitle: job.title,
+        company: job.company,
+      });
+    }
+  }
+  return options.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+}
+
 // ─── Star Rating Component ────────────────────────────────────────────────────
 function StarRating({ value, onChange, max = 5 }) {
   return (
@@ -85,8 +128,205 @@ function ChipInput({ label, chips, setChips, placeholder, colorClass = 'bg-blue-
   );
 }
 
+// ─── Job + applicant picker (screening pool) ──────────────────────────────────
+function ScreeningJobApplicantPicker({
+  jobs,
+  loading,
+  selectedJobId,
+  selectedApplicantId,
+  jobApplicants,
+  onJobSelect,
+  onApplicantSelect,
+  helperText,
+}) {
+  return (
+    <div className="bg-white border border-[#E5E1DA] rounded-2xl p-4 mb-6 space-y-4">
+      <div className="flex items-center gap-2">
+        <Users size={15} className="text-[#00A693]" />
+        <h3 className="text-sm font-bold text-[#1A1A1A]">Start an interview session</h3>
+      </div>
+
+      <div>
+        <label className="block text-xs font-semibold text-[#6B7280] mb-1.5">Job / Vacancy</label>
+        <div className="relative">
+          <select
+            value={selectedJobId}
+            onChange={e => onJobSelect(e.target.value)}
+            disabled={loading}
+            className={`${inp} appearance-none pr-10 cursor-pointer disabled:opacity-60`}
+          >
+            <option value="">— Choose a job —</option>
+            {jobs.map(j => (
+              <option key={j._id} value={j._id}>
+                {j.title}{j.company ? ` — ${j.company}` : ''} ({j.status})
+              </option>
+            ))}
+          </select>
+          <ChevronDown size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#9CA3AF] pointer-events-none" />
+        </div>
+      </div>
+
+      <div>
+        <label className="block text-xs font-semibold text-[#6B7280] mb-1.5">Interview Screening Applicant</label>
+        <div className="relative">
+          <select
+            value={selectedApplicantId}
+            onChange={e => onApplicantSelect(e.target.value)}
+            disabled={loading || !selectedJobId}
+            className={`${inp} appearance-none pr-10 cursor-pointer disabled:opacity-60`}
+          >
+            <option value="">
+              {!selectedJobId
+                ? '— Select a job first —'
+                : jobApplicants.length === 0
+                  ? '— No screening applicants for this job —'
+                  : '— Choose an applicant —'}
+            </option>
+            {jobApplicants.map(u => (
+              <option key={u._id} value={u._id}>{u.name}</option>
+            ))}
+          </select>
+          <ChevronDown size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#9CA3AF] pointer-events-none" />
+        </div>
+        {selectedJobId && !loading && (
+          <p className="text-[11px] text-[#9CA3AF] mt-1.5">
+            Showing contacted / interview-round applicants for this job ({jobApplicants.length}).
+          </p>
+        )}
+      </div>
+
+      {loading && <p className="text-xs text-[#9CA3AF]">Loading jobs...</p>}
+      {!loading && jobs.length === 0 && (
+        <p className="text-xs text-[#9CA3AF]">No jobs found. Add vacancies under Opportunities first.</p>
+      )}
+      {helperText && <p className="text-xs text-[#6B7280]">{helperText}</p>}
+    </div>
+  );
+}
+
+// ─── Create interview session (general pool slot) ─────────────────────────────
+function CreateInterviewSessionTab({ jobs, loading, screeningStatuses, onCreated }) {
+  const [applicantKey, setApplicantKey] = useState('');
+  const [interviewedAt, setInterviewedAt] = useState(() => getLocalDatetimeString());
+  const [googleMeetLink, setGoogleMeetLink] = useState('');
+  const [status, setStatus] = useState('scheduled');
+  const [saving, setSaving] = useState(false);
+
+  const applicantOptions = useMemo(
+    () => buildScreeningApplicantOptions(jobs, screeningStatuses),
+    [jobs, screeningStatuses]
+  );
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!interviewedAt) return toast.error('Set interview date and time');
+    setSaving(true);
+    try {
+      const payload = {
+        interviewedAt: new Date(interviewedAt).toISOString(),
+        googleMeetLink: googleMeetLink.trim(),
+        status,
+      };
+      if (applicantKey) {
+        const [userId, jobId] = applicantKey.split('|');
+        payload.user = userId;
+        payload.vacancy = jobId;
+      }
+      await api.post('/admin/interviews', payload);
+      toast.success('Interview session created');
+      setApplicantKey('');
+      setGoogleMeetLink('');
+      setStatus('scheduled');
+      setInterviewedAt(getLocalDatetimeString());
+      onCreated?.();
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to create session');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="max-w-xl">
+      <div className="bg-white border border-[#E5E1DA] rounded-2xl p-4 space-y-4">
+        <div>
+          <label className="block text-xs font-semibold text-[#6B7280] mb-1.5">Interview Screening Applicant</label>
+          <div className="relative">
+            <select
+              value={applicantKey}
+              onChange={e => setApplicantKey(e.target.value)}
+              disabled={loading}
+              className={`${inp} appearance-none pr-10 cursor-pointer disabled:opacity-60`}
+            >
+              <option value="">
+                {loading
+                  ? '— Loading applicants —'
+                  : applicantOptions.length === 0
+                    ? '— No screening applicants —'
+                    : '— Choose an applicant (optional) —'}
+              </option>
+              {applicantOptions.map(o => (
+                <option key={o.key} value={o.key}>
+                  {o.name}{o.jobTitle ? ` — ${o.jobTitle}` : ''}{o.company ? ` (${o.company})` : ''}
+                </option>
+              ))}
+            </select>
+            <ChevronDown size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#9CA3AF] pointer-events-none" />
+          </div>
+        </div>
+
+        <div>
+          <label className="block text-xs font-semibold text-[#6B7280] mb-1.5">Interview date & time</label>
+          <input
+            type="datetime-local"
+            value={interviewedAt}
+            onChange={e => setInterviewedAt(e.target.value)}
+            className={inp}
+            required
+          />
+        </div>
+
+        <div>
+          <label className="block text-xs font-semibold text-[#6B7280] mb-1.5">Google Meet link</label>
+          <input
+            type="url"
+            value={googleMeetLink}
+            onChange={e => setGoogleMeetLink(e.target.value)}
+            placeholder="https://meet.google.com/..."
+            className={inp}
+          />
+        </div>
+
+        <div>
+          <label className="block text-xs font-semibold text-[#6B7280] mb-1.5">Session status</label>
+          <div className="relative">
+            <select
+              value={status}
+              onChange={e => setStatus(e.target.value)}
+              className={`${inp} appearance-none pr-10 cursor-pointer`}
+            >
+              <option value="scheduled">Scheduled</option>
+              <option value="postponed">Postponed</option>
+            </select>
+            <ChevronDown size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#9CA3AF] pointer-events-none" />
+          </div>
+        </div>
+
+        <button
+          type="submit"
+          disabled={saving}
+          className="flex items-center justify-center gap-2 px-5 py-3 bg-[#00A693] hover:bg-[#008f7e] disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-xl text-sm font-semibold transition"
+        >
+          <Plus size={16} />
+          {saving ? 'Creating...' : 'Create interview session'}
+        </button>
+      </div>
+    </form>
+  );
+}
+
 // ─── Evaluation Drawer ────────────────────────────────────────────────────────
-function EvaluationDrawer({ user, onClose, onSaved }) {
+function EvaluationDrawer({ user, vacancy, onClose, onSaved }) {
   const [sessions, setSessions] = useState([]);
   const [saving, setSaving] = useState(false);
   const [sharing, setSharing] = useState(false);
@@ -267,7 +507,8 @@ function EvaluationDrawer({ user, onClose, onSaved }) {
     try {
       const payload = {
         ...form,
-        interviewedAt: form.interviewedAt ? new Date(form.interviewedAt).toISOString() : new Date().toISOString()
+        vacancy: vacancy?._id || null,
+        interviewedAt: form.interviewedAt ? new Date(form.interviewedAt).toISOString() : new Date().toISOString(),
       };
       let res;
       if (editingId) {
@@ -340,6 +581,11 @@ function EvaluationDrawer({ user, onClose, onSaved }) {
             <h2 className="font-bold text-[#1A1A1A] text-base truncate">{user.name}</h2>
             <p className="text-xs text-[#6B7280] flex items-center flex-wrap gap-1.5">
               <span>#{user.regNumber} • {(user.designations || []).join(', ') || 'Developer'}</span>
+              {vacancy && (
+                <span className="text-[10px] px-2 py-0.5 rounded-full font-semibold bg-[#F3F0EB] text-[#6B7280]">
+                  {vacancy.title}{vacancy.company ? ` · ${vacancy.company}` : ''}
+                </span>
+              )}
               {sessions.length > 0 && (
                 <span className={`px-2 py-0.5 rounded-full font-bold bg-[#FAF7F2] border border-[#E5E1DA] ${ratingColor(sessions[0].overallRating)}`}>
                   Rating: {sessions[0].overallRating}/10
@@ -868,7 +1114,7 @@ function AllSessionsTab({ onEditSession }) {
                   <div className="flex items-center gap-1 shrink-0">
                     {u && (
                       <button
-                        onClick={() => onEditSession(u, s.vacancy)}
+                        onClick={() => onEditSession(u, s.vacancy, s)}
                         className="p-2 hover:bg-[#F3F0EB] rounded-xl transition text-[#00A693]"
                         title="Open session"
                       >
@@ -906,7 +1152,10 @@ export default function AdminCurationSection() {
   const [selectedApplicantId, setSelectedApplicantId] = useState('');
   const [modulesApplicant, setModulesApplicant] = useState(null);
   const [modulesVacancy, setModulesVacancy] = useState(null);
-  const [drawerUser, setDrawerUser] = useState(null);
+  const [selectedSessionId, setSelectedSessionId] = useState('');
+  const [selectedSession, setSelectedSession] = useState(null);
+  const [upcomingSessions, setUpcomingSessions] = useState([]);
+  const [loadingSessions, setLoadingSessions] = useState(false);
   const [allSessionsCount, setAllSessionsCount] = useState(0);
 
   const SCREENING_STATUSES = useMemo(
@@ -960,6 +1209,9 @@ export default function AdminCurationSection() {
   const handleJobSelect = (jobId) => {
     setSelectedJobId(jobId);
     setSelectedApplicantId('');
+    setSelectedSessionId('');
+    setSelectedSession(null);
+    setUpcomingSessions([]);
     setModulesApplicant(null);
     setModulesVacancy(jobId ? (jobs.find(j => j._id === jobId) || null) : null);
     if (tab === 'modules') setTab('session');
@@ -967,8 +1219,11 @@ export default function AdminCurationSection() {
 
   const handleApplicantSelect = (userId) => {
     setSelectedApplicantId(userId);
+    setSelectedSessionId('');
+    setSelectedSession(null);
     if (!userId || !selectedJob) {
       setModulesApplicant(null);
+      setUpcomingSessions([]);
       if (tab === 'modules') setTab('session');
       return;
     }
@@ -976,15 +1231,57 @@ export default function AdminCurationSection() {
     if (user) {
       setModulesApplicant(user);
       setModulesVacancy(selectedJob);
-      setTab('modules');
     }
   };
 
-  const canOpenModules = Boolean(modulesApplicant);
+  const handleSessionSelect = async (sessionId) => {
+    setSelectedSessionId(sessionId);
+    const session = upcomingSessions.find(s => s._id === sessionId) || null;
+    setSelectedSession(session);
+    if (!sessionId || !selectedApplicantId || !selectedJobId) return;
+    try {
+      const res = await api.put(`/admin/interviews/${sessionId}`, {
+        user: selectedApplicantId,
+        vacancy: selectedJobId,
+      });
+      setSelectedSession(res.data.session);
+      setUpcomingSessions(prev => prev.filter(s => s._id !== sessionId));
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to assign session');
+      setSelectedSessionId('');
+      setSelectedSession(null);
+    }
+  };
+
+  const fetchUpcomingPoolSessions = async (ignore = false) => {
+    setLoadingSessions(true);
+    try {
+      const res = await api.get('/admin/interviews?unassigned=true&limit=200');
+      if (!ignore) setUpcomingSessions(filterUpcomingSessions(res.data.sessions));
+    } catch {
+      if (!ignore) toast.error('Failed to load sessions');
+    } finally {
+      if (!ignore) setLoadingSessions(false);
+    }
+  };
+
+  useEffect(() => {
+    if (!selectedApplicantId || !selectedJobId) {
+      setUpcomingSessions([]);
+      setSelectedSessionId('');
+      setSelectedSession(null);
+      return;
+    }
+    let ignore = false;
+    fetchUpcomingPoolSessions(ignore);
+    return () => { ignore = true; };
+  }, [selectedApplicantId, selectedJobId]);
+
+  const canOpenModules = Boolean(modulesApplicant && selectedSessionId);
 
   const handleTabChange = (key) => {
     if (key === 'modules' && !canOpenModules) {
-      toast.error('Select a job and applicant from Interview Session first');
+      toast.error('Select a job, applicant, and upcoming session from Interview Session first');
       return;
     }
     setTab(key);
@@ -997,6 +1294,7 @@ export default function AdminCurationSection() {
         {[
           { key: 'session', label: 'Interview Session', icon: ClipboardList },
           { key: 'modules', label: 'Interview Modules', icon: Layers, locked: !canOpenModules },
+          { key: 'create', label: 'Create Interview Session', icon: Plus },
           { key: 'sessions', label: 'Interview Sessions', icon: BookMarked, count: allSessionsCount },
         ].map(t => (
           <button
@@ -1004,7 +1302,7 @@ export default function AdminCurationSection() {
             type="button"
             onClick={() => handleTabChange(t.key)}
             disabled={!!t.locked}
-            title={t.locked ? 'Select a job and applicant from Interview Session first' : undefined}
+            title={t.locked ? 'Select job, applicant, and upcoming session from Interview Session first' : undefined}
             className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition ${
               tab === t.key
                 ? 'bg-white shadow text-[#1A1A1A]'
@@ -1023,101 +1321,85 @@ export default function AdminCurationSection() {
 
       {tab === 'modules' && canOpenModules ? (
         <AdminInterviewModulesSection
-          key={modulesApplicant?._id || 'none'}
+          key={`${modulesApplicant?._id}-${selectedSessionId}`}
           initialApplicant={modulesApplicant}
           initialVacancy={modulesVacancy}
+          initialSession={selectedSession}
+        />
+      ) : tab === 'create' ? (
+        <CreateInterviewSessionTab
+          jobs={jobs}
+          loading={loading}
+          screeningStatuses={SCREENING_STATUSES}
+          onCreated={() => {
+            fetchData();
+            if (selectedApplicantId && selectedJobId) fetchUpcomingPoolSessions();
+          }}
         />
       ) : tab === 'sessions' ? (
         <AllSessionsTab
-          onEditSession={(user, vacancy) => {
+          onEditSession={(user, vacancy, session) => {
+            setSelectedJobId(vacancy?._id || '');
+            setSelectedApplicantId(user._id);
             setModulesApplicant(user);
             setModulesVacancy(vacancy || null);
-            setSelectedApplicantId(user._id);
-            if (vacancy?._id) setSelectedJobId(vacancy._id);
+            setSelectedSessionId(session?._id || '');
+            setSelectedSession(session || null);
             setTab('modules');
           }}
         />
       ) : (
         <>
-          <div className="bg-white border border-[#E5E1DA] rounded-2xl p-4 mb-6 space-y-4">
-            <div className="flex items-center gap-2">
-              <Users size={15} className="text-[#00A693]" />
-              <h3 className="text-sm font-bold text-[#1A1A1A]">Start interview by job</h3>
-            </div>
+          <ScreeningJobApplicantPicker
+            jobs={jobs}
+            loading={loading}
+            selectedJobId={selectedJobId}
+            selectedApplicantId={selectedApplicantId}
+            jobApplicants={jobApplicants}
+            onJobSelect={handleJobSelect}
+            onApplicantSelect={handleApplicantSelect}
+          />
 
-            {/* Job dropdown */}
-            <div>
-              <label className="block text-xs font-semibold text-[#6B7280] mb-1.5">Job / Vacancy</label>
+          {selectedApplicantId && selectedJobId && (
+            <div className="bg-white border border-[#E5E1DA] rounded-2xl p-4 mb-6">
+              <label className="block text-xs font-semibold text-[#6B7280] mb-1.5">Upcoming interview session</label>
               <div className="relative">
                 <select
-                  value={selectedJobId}
-                  onChange={e => handleJobSelect(e.target.value)}
-                  disabled={loading}
-                  className={`${inp} appearance-none pr-10 cursor-pointer disabled:opacity-60`}
-                >
-                  <option value="">— Choose a job —</option>
-                  {jobs.map(j => (
-                    <option key={j._id} value={j._id}>
-                      {j.title}{j.company ? ` — ${j.company}` : ''} ({j.status})
-                    </option>
-                  ))}
-                </select>
-                <ChevronDown size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#9CA3AF] pointer-events-none" />
-              </div>
-            </div>
-
-            {/* Applicants for selected job */}
-            <div>
-              <label className="block text-xs font-semibold text-[#6B7280] mb-1.5">Interview Screening Applicant</label>
-              <div className="relative">
-                <select
-                  value={selectedApplicantId}
-                  onChange={e => handleApplicantSelect(e.target.value)}
-                  disabled={loading || !selectedJobId}
+                  value={selectedSessionId}
+                  onChange={e => handleSessionSelect(e.target.value)}
+                  disabled={loadingSessions}
                   className={`${inp} appearance-none pr-10 cursor-pointer disabled:opacity-60`}
                 >
                   <option value="">
-                    {!selectedJobId
-                      ? '— Select a job first —'
-                      : jobApplicants.length === 0
-                        ? '— No screening applicants for this job —'
-                        : '— Choose an applicant —'}
+                    {loadingSessions
+                      ? '— Loading sessions —'
+                      : upcomingSessions.length === 0
+                        ? '— No upcoming sessions —'
+                        : '— Select an upcoming session —'}
                   </option>
-                  {jobApplicants.map(u => (
-                    <option key={u._id} value={u._id}>{u.name}</option>
+                  {upcomingSessions.map(s => (
+                    <option key={s._id} value={s._id}>{formatSessionOptionLabel(s)}</option>
                   ))}
                 </select>
                 <ChevronDown size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#9CA3AF] pointer-events-none" />
               </div>
-              {selectedJobId && !loading && (
-                <p className="text-[11px] text-[#9CA3AF] mt-1.5">
-                  Showing contacted / interview-round applicants for this job ({jobApplicants.length}).
+              <p className="text-[11px] text-[#9CA3AF] mt-1.5">
+                All unassigned upcoming sessions (scheduled or postponed, future date).
+              </p>
+              {!loadingSessions && upcomingSessions.length === 0 && (
+                <p className="text-xs text-[#6B7280] mt-2">
+                  Create a session in the <strong>Create Interview Session</strong> tab first.
+                </p>
+              )}
+              {selectedSessionId && (
+                <p className="text-xs text-[#00A693] font-medium mt-2">
+                  Session selected — open Interview Modules to run the evaluation.
                 </p>
               )}
             </div>
-
-            {loading && <p className="text-xs text-[#9CA3AF]">Loading jobs...</p>}
-            {!loading && jobs.length === 0 && (
-              <p className="text-xs text-[#9CA3AF]">No jobs found. Add vacancies under Opportunities first.</p>
-            )}
-          </div>
-
-          {!loading && jobs.length > 0 && (
-            <div className="text-center py-16 text-[#9CA3AF] bg-white border border-[#E5E1DA] border-dashed rounded-2xl">
-              <Users size={36} className="mx-auto mb-3 opacity-30" />
-              <p className="font-medium text-[#6B7280]">Select a job, then an applicant</p>
-              <p className="text-sm mt-1">Choosing an applicant opens Interview Modules for that job application.</p>
-            </div>
           )}
-        </>
-      )}
 
-      {drawerUser && (
-        <EvaluationDrawer
-          user={drawerUser}
-          onClose={() => setDrawerUser(null)}
-          onSaved={() => { fetchData(); }}
-        />
+        </>
       )}
     </div>
   );

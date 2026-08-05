@@ -1239,6 +1239,7 @@ router.delete('/job-recommendations/sessions/:id', async (req, res) => {
 
 // ── Candidate Curation — Interview Sessions ───────────────────────────────────
 router.get('/interviews',                          interview.listSessions);
+router.post('/interviews',                         interview.createGeneralSession);
 router.get('/interviews/user/:userId',             interview.getUserSessions);
 router.post('/interviews/user/:userId',            interview.createSession);
 router.put('/interviews/:sessionId',               interview.updateSession);

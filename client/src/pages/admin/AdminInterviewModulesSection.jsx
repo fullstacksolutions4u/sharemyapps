@@ -154,7 +154,7 @@ function TopicQuestionsForm({ questions, onChange }) {
   );
 }
 
-export default function AdminInterviewModulesSection({ initialApplicant = null, initialVacancy = null }) {
+export default function AdminInterviewModulesSection({ initialApplicant = null, initialVacancy = null, initialSession = null }) {
   const [modules, setModules] = useState([]);
   const [loading, setLoading] = useState(true);
   const [expandedModId, setExpandedModId] = useState(null);
@@ -260,7 +260,7 @@ export default function AdminInterviewModulesSection({ initialApplicant = null, 
     if (mcqAssessments.length === 0) return toast.error('Mark at least one question Correct or Incorrect');
     setSavingSession(true);
     try {
-      await api.post(`/admin/interviews/user/${selectedApplicant._id}`, {
+      const payload = {
         mcqAssessments,
         status: 'completed',
         overallRating: evalForm.overallRating,
@@ -271,7 +271,12 @@ export default function AdminInterviewModulesSection({ initialApplicant = null, 
         cons: evalForm.cons,
         improvementTips: evalForm.improvementTips,
         vacancy: initialVacancy?._id || null,
-      });
+      };
+      if (initialSession?._id) {
+        await api.put(`/admin/interviews/${initialSession._id}`, payload);
+      } else {
+        await api.post(`/admin/interviews/user/${selectedApplicant._id}`, payload);
+      }
       toast.success(
         initialVacancy?.title
           ? `Session saved for ${selectedApplicant.name} · ${initialVacancy.title}`
