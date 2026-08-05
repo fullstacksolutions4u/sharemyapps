@@ -33,6 +33,7 @@ const Mentors            = lazy(() => import('./pages/Mentors'));
 const FreelanceDevelopers = lazy(() => import('./pages/FreelanceDevelopers'));
 const ForgotPassword     = lazy(() => import('./pages/ForgotPassword'));
 const PaidServices       = lazy(() => import('./pages/PaidServices'));
+const JobPostLinksPremium  = lazy(() => import('./pages/JobPostLinksPremium'));
 const MentorshipProgram  = lazy(() => import('./pages/MentorshipProgram'));
 const AddVacancy         = lazy(() => import('./pages/AddVacancy'));
 const LearningTracker    = lazy(() => import('./pages/LearningTracker'));
@@ -156,6 +157,7 @@ function AppRoutes() {
             <Route path="/mentors" element={<ProtectedRoute><Mentors /></ProtectedRoute>} />
             <Route path="/freelance-developers" element={<FreelanceDevelopers />} />
             <Route path="/placement-services" element={<PaidServices />} />
+            <Route path="/job-post-links-premium" element={<JobPostLinksPremium />} />
             <Route path="/mentorship-program" element={<MentorshipProgram />} />
             <Route path="/career-services" element={<Navigate to="/dashboard/premium" replace />} />
             <Route path="/quiz-zone" element={<LearningTracker />} />

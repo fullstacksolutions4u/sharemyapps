@@ -6,6 +6,7 @@ const Plan = require('../models/Plan');
 const Notification = require('../models/Notification');
 const { getConfig } = require('../utils/configCache');
 const { sendPlacementPaymentEmail } = require('../utils/email');
+const { hasJobLinkUnlimitedApply } = require('../utils/jobLinkAccess');
 
 const razorpay = new Razorpay({
   key_id: process.env.RAZORPAY_KEY_ID,
@@ -141,7 +142,7 @@ const createPlacementOrder = async (req, res) => {
     }
 
     let amountPaise = plan.price * 100;
-    if (req.user.hasCoinDiscount) {
+    if (req.user.hasCoinDiscount && plan.name !== 'JobLinkUnlimited') {
       amountPaise = Math.round(plan.price * 0.70) * 100;
     }
     const order = await razorpay.orders.create({
@@ -178,8 +179,10 @@ const verifyPlacementPayment = async (req, res) => {
     const plan = await Plan.findById(planId).lean();
     if (!plan) return res.status(404).json({ message: 'Plan not found.' });
 
+    const isJobLinkPlan = plan.name === 'JobLinkUnlimited';
+
     let amountPaise = plan.price * 100;
-    if (req.user.hasCoinDiscount) {
+    if (req.user.hasCoinDiscount && !isJobLinkPlan) {
       amountPaise = Math.round(plan.price * 0.70) * 100;
     }
 
@@ -193,7 +196,23 @@ const verifyPlacementPayment = async (req, res) => {
       status:            'success',
     });
 
-    // Unlock premium service for the user (pull first to avoid duplicates, then push)
+    if (isJobLinkPlan) {
+      await User.updateOne({ _id: req.user._id }, { $pull: { premiumServices: { key: 'job_link_unlimited_apply' } } });
+      await User.updateOne({ _id: req.user._id }, {
+        $push: { premiumServices: { key: 'job_link_unlimited_apply', notes: `Payment: ${razorpay_payment_id}` } },
+      });
+
+      await Notification.create({
+        user:    req.user._id,
+        type:    'payment_success',
+        title:   'Unlimited Job Applies Unlocked 🎉',
+        message: `Your ₹${plan.price} payment was successful. You now have unlimited Apply Now on Job Post Links.`,
+      });
+
+      return res.json({ ok: true, planName: plan.name, service: 'job_link_unlimited_apply' });
+    }
+
+    // Unlock full placement premium service (pull first to avoid duplicates, then push)
     await User.updateOne({ _id: req.user._id }, { $pull: { premiumServices: { key: 'placement_session' } } });
     const updateQuery = { $push: { premiumServices: { key: 'placement_session', notes: `Payment: ${razorpay_payment_id}` } } };
     await User.updateOne({ _id: req.user._id }, updateQuery);

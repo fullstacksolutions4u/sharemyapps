@@ -20,6 +20,22 @@ const SEED_PLANS = [
   },
 ];
 
+const JOB_LINK_PLAN = {
+  name: 'JobLinkUnlimited',
+  price: 399,
+  order: 2,
+  variant: 'accent',
+  badge: '',
+  badgeStyle: '',
+  description: 'Unlimited Apply Now on Job Post Links.',
+  features: [
+    'Unlimited Apply Now through Job Post Links',
+    'No weekly 2-apply limit',
+    'Skip contribute-to-unlock — apply to every listing',
+  ],
+  active: true,
+};
+
 async function seedIfEmpty() {
   const count = await Plan.countDocuments();
   if (count === 0) {
@@ -27,9 +43,18 @@ async function seedIfEmpty() {
   }
 }
 
+async function ensureJobLinkPlan() {
+  await Plan.findOneAndUpdate(
+    { name: JOB_LINK_PLAN.name },
+    { $setOnInsert: JOB_LINK_PLAN },
+    { upsert: true }
+  );
+}
+
 exports.getPublicPlans = async (req, res) => {
   try {
     await seedIfEmpty();
+    await ensureJobLinkPlan();
     const plans = await Plan.find({ active: true }).sort({ order: 1 }).lean();
     res.json(plans);
   } catch (err) {
@@ -40,10 +65,22 @@ exports.getPublicPlans = async (req, res) => {
 exports.adminGetPlans = async (req, res) => {
   try {
     await seedIfEmpty();
+    await ensureJobLinkPlan();
     const plans = await Plan.find().sort({ order: 1 }).lean();
     res.json(plans);
   } catch (err) {
     res.status(500).json({ message: 'Failed to load plans' });
+  }
+};
+
+exports.getJobLinkUnlimitedPlan = async (req, res) => {
+  try {
+    await ensureJobLinkPlan();
+    const plan = await Plan.findOne({ name: JOB_LINK_PLAN.name, active: true }).lean();
+    if (!plan) return res.status(404).json({ message: 'Plan not found' });
+    res.json(plan);
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to load plan' });
   }
 };
 

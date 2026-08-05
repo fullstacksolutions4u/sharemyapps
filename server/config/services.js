@@ -13,4 +13,11 @@ module.exports = [
     serviceType: 'document',
     number: 2,
   },
+  {
+    key: 'job_link_unlimited_apply',
+    label: 'Unlimited Job Post Link Applies',
+    shortLabel: 'Job Link Applies',
+    serviceType: 'unlock',
+    number: 3,
+  },
 ];

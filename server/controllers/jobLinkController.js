@@ -4,6 +4,7 @@ const CompanyContact = require('../models/CompanyContact');
 const OpenAI = require('openai');
 const { sendJobLinkRejectedEmail, sendJobLinkUnlockedEmail } = require('../utils/email');
 const { getCurrentWeekStartMonday6AM } = require('../utils/weekBoundary');
+const { hasJobLinkUnlimitedApply } = require('../utils/jobLinkAccess');
 const {
   normalizeJobDesignation,
   titlesEquivalent,
@@ -128,7 +129,7 @@ async function getJobLinkApplyEligibility(userId) {
     User.findById(userId).select('premiumServices').lean(),
   ]);
 
-  const isPremium = !!(userDoc?.premiumServices?.length > 0);
+  const isPremium = hasJobLinkUnlimitedApply(userDoc?.premiumServices);
 
   const clickedIds = clickedDocs.map((d) => d._id.toString());
   const weeklyApplyCount = weeklyApplyDocs.length;

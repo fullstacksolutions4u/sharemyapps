@@ -3,7 +3,8 @@ import { X, ShieldCheck, Check, Sparkles } from 'lucide-react';
 import api from '../api/axios';
 import toast from 'react-hot-toast';
 
-export default function PlacementPaymentModal({ plan, user, onClose, onSuccess }) {
+export default function PlacementPaymentModal({ plan, user, onClose, onSuccess, description, successToast, themeColor = '#B45309', variant = 'amber' }) {
+  const isWhite = variant === 'white';
   const [loading, setLoading] = useState(false);
 
   const handlePay = async () => {
@@ -16,7 +17,7 @@ export default function PlacementPaymentModal({ plan, user, onClose, onSuccess }
         amount: order.amount,
         currency: order.currency,
         name: 'ShareMyApps',
-        description: `Placement Support – ${order.planName} Plan`,
+        description: description || `Placement Support – ${order.planName} Plan`,
         order_id: order.orderId,
         handler: async (response) => {
           try {
@@ -26,7 +27,7 @@ export default function PlacementPaymentModal({ plan, user, onClose, onSuccess }
               razorpay_signature:  response.razorpay_signature,
               planId: plan._id,
             });
-            toast.success(`Payment successful! Our HR team will reach out shortly.`);
+            toast.success(successToast || `Payment successful! Our HR team will reach out shortly.`);
             onSuccess();
           } catch {
             toast.error('Payment verification failed. Contact support.');
@@ -38,7 +39,7 @@ export default function PlacementPaymentModal({ plan, user, onClose, onSuccess }
           email: user?.email || '',
           contact: user?.phone || '',
         },
-        theme: { color: '#B45309' },
+        theme: { color: themeColor },
       };
 
       const rzp = new window.Razorpay(options);
@@ -69,9 +70,13 @@ export default function PlacementPaymentModal({ plan, user, onClose, onSuccess }
 
         {/* Body */}
         <div className="px-5 py-5 space-y-4">
-          <div className="bg-amber-50 border border-amber-200 rounded-2xl px-4 py-4 text-center">
-            <p className="text-3xl font-bold text-amber-700">₹{Number(plan.price).toLocaleString('en-IN')}</p>
-            <p className="text-sm text-amber-800/60 mt-1">one-time payment</p>
+          <div className={`rounded-2xl px-4 py-4 text-center border ${
+            isWhite ? 'bg-white border-amber-300' : 'bg-amber-50 border-amber-200'
+          }`}>
+            <p className={`text-3xl font-bold ${isWhite ? 'text-gray-900' : 'text-amber-700'}`}>
+              ₹{Number(plan.price).toLocaleString('en-IN')}
+            </p>
+            <p className={`text-sm mt-1 ${isWhite ? 'text-gray-500' : 'text-amber-800/60'}`}>one-time payment</p>
           </div>
 
           <ul className="space-y-2.5">
@@ -84,7 +89,7 @@ export default function PlacementPaymentModal({ plan, user, onClose, onSuccess }
           </ul>
 
           <div className="flex items-center justify-center gap-1.5 text-[11px] text-muted">
-            <ShieldCheck size={12} className="text-emerald-500 shrink-0" />
+            <ShieldCheck size={12} className="text-amber-500 shrink-0" />
             Secured by Razorpay · UPI, Cards, Net Banking accepted
           </div>
         </div>
@@ -94,11 +99,15 @@ export default function PlacementPaymentModal({ plan, user, onClose, onSuccess }
           <button
             onClick={handlePay}
             disabled={loading}
-            className="w-full flex items-center justify-center gap-2 bg-amber-600 hover:bg-amber-700 disabled:opacity-60 disabled:cursor-not-allowed text-white font-semibold py-3 rounded-xl transition-colors text-sm"
+            className={`w-full flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed font-semibold py-3 rounded-xl transition-colors text-sm ${
+              isWhite
+                ? 'bg-white border border-amber-400 hover:border-amber-500 hover:bg-amber-50/30 text-gray-900'
+                : 'bg-amber-600 hover:bg-amber-700 text-white'
+            }`}
           >
             {loading
-              ? <span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
-              : <Sparkles size={14} />}
+              ? <span className={`w-4 h-4 border-2 rounded-full animate-spin ${isWhite ? 'border-amber-300 border-t-amber-500' : 'border-white/40 border-t-white'}`} />
+              : <Sparkles size={14} className={isWhite ? 'text-amber-500' : undefined} />}
             {loading ? 'Opening payment…' : `Pay ₹${Number(plan.price).toLocaleString('en-IN')}`}
           </button>
         </div>

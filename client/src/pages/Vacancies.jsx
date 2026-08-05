@@ -551,9 +551,26 @@ export default function Vacancies() {
               );
             })}
           </div>
-          <a href="/career-services" className="flex items-center gap-1.5 bg-amber-50 border border-amber-200 hover:bg-amber-100 text-amber-600 text-xs font-semibold px-3 py-1.5 rounded-full transition-colors shrink-0 mb-1">
-            <Crown size={12} /> Job Assistance Services
-          </a>
+          {activeTab === 'job-links' ? (
+            <Link
+              to="/job-post-links-premium"
+              className="flex items-center gap-1.5 bg-white border border-amber-300 hover:border-amber-400 text-gray-700 text-xs font-semibold px-3 py-1.5 rounded-full transition-colors shrink-0 mb-1"
+            >
+              <Crown size={12} className="text-amber-500 shrink-0" />
+              <span>Unlimited Applies with Premium</span>
+              <span className="inline-flex items-center gap-0.5">
+                <IndianRupee size={11} className="text-gray-700" />
+                399/-
+              </span>
+            </Link>
+          ) : (
+            <Link
+              to="/placement-services"
+              className="flex items-center gap-1.5 bg-white border border-amber-300 hover:border-amber-400 text-gray-700 text-xs font-semibold px-3 py-1.5 rounded-full transition-colors shrink-0 mb-1"
+            >
+              <Crown size={12} className="text-amber-500" /> Job Assistance Services
+            </Link>
+          )}
         </div>
       </div>
       
