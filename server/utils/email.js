@@ -87,10 +87,23 @@ const sendEmailWithFallback = async (brevoOptions) => {
     console.log('[EMAIL-DEBUG] Brevo daily quota of 300 exceeded. Routing directly to fallbacks...');
   }
 
-  // 2. If Brevo failed, or we are out of quota, use Resend
+  // 2. If Brevo failed, or we are out of quota, use SendPulse
+  if (!emailSent && process.env.SENDPULSE_SMTP_HOST) {
+    try {
+      console.log('[EMAIL-DEBUG] Sending via SendPulse API (Secondary)...');
+      resultInfo = await transporter.sendMail(mailOptions);
+      console.log('[EMAIL-DEBUG] SendPulse Success! MessageId:', resultInfo.messageId);
+      emailSent = true;
+    } catch (error) {
+      console.error('[EMAIL-DEBUG] SendPulse failed!', error.message);
+      console.log('[EMAIL-DEBUG] Initiating Resend Fallback process...');
+    }
+  }
+
+  // 3. If SendPulse failed, or credentials missing, use Resend
   if (!emailSent && process.env.RESEND_API_KEY) {
     try {
-      console.log('[EMAIL-DEBUG] Attempting to send via Resend API (Secondary)...');
+      console.log('[EMAIL-DEBUG] Attempting to send via Resend API (Tertiary)...');
       const fromStr = `"${brevoOptions.sender?.name || 'ShareMyApps'}" <${brevoOptions.sender?.email || process.env.EMAIL_FROM}>`;
       const toArr = (brevoOptions.to || []).map(t => t.email);
       
@@ -114,21 +127,8 @@ const sendEmailWithFallback = async (brevoOptions) => {
       resultInfo = data;
       emailSent = true;
     } catch (resendError) {
-      console.error('[EMAIL-DEBUG] Resend failed! Error details:', resendError.message);
-      console.log('[EMAIL-DEBUG] Initiating SendPulse Fallback process...');
-    }
-  }
-
-  // 3. If Resend failed, or API key missing, use SendPulse
-  if (!emailSent && process.env.SENDPULSE_SMTP_HOST) {
-    try {
-      console.log('[EMAIL-DEBUG] Sending via SendPulse API (Tertiary)...');
-      resultInfo = await transporter.sendMail(mailOptions);
-      console.log('[EMAIL-DEBUG] SendPulse Success! MessageId:', resultInfo.messageId);
-      emailSent = true;
-    } catch (error) {
-      console.error('[EMAIL-DEBUG] CRITICAL ERROR: SendPulse failed!', error.message);
-      throw error;
+      console.error('[EMAIL-DEBUG] CRITICAL ERROR: Resend failed!', resendError.message);
+      throw resendError;
     }
   } 
 
