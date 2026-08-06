@@ -521,32 +521,22 @@ exports.sendJobApplicationEmail = async ({ to, name, vacancy }) => {
           <h2 style="margin:0 0 8px;font-size:18px;color:#1A1A1A;">Application Received!</h2>
           <p style="color:#374151;margin:0 0 16px;">Hi ${name},</p>
           <p style="color:#374151;margin:0 0 16px;">
-            You've successfully applied for the <strong>${vacancy.title}</strong> position. The recruiter will directly contact you if your profile matches their requirements.
+            You've successfully applied for the <strong>${vacancy.title}</strong> position. An executive will contact you if your resume is shortlisted.
           </p>
           <p style="color:#6B7280;font-size:13px;margin:0 0 20px;line-height:1.7;">
-            There are some vacancies that are not listed and you don't need to apply — recruiters will directly contact you based on your skills and projects you've added. So make sure your profile is always up to date. Add your latest resume, showcase your projects, and keep your skills current to increase your chances of getting noticed. Also, practice and sharpen your skills using Quiz Zone.
+            Job post links and our client vacancies are actively listed in the Opportunities section. Explore these opportunities and make sure your profile is always up to date with your latest resume and projects to increase your chances of getting noticed.
           </p>
           <table style="width:100%;border-collapse:collapse;margin-top:8px;">
             <tr>
-              <td style="padding:0 6px 0 0;">
-                <a href="${BASE_URL}/profile" style="display:block;text-align:center;background:#00A693;color:#fff;text-decoration:none;padding:11px 10px;border-radius:8px;font-weight:600;font-size:13px;">
-                  Complete Profile
-                </a>
-              </td>
-              <td style="padding:0 6px;">
-                <a href="${BASE_URL}/opportunities" style="display:block;text-align:center;background:#1D4ED8;color:#fff;text-decoration:none;padding:11px 10px;border-radius:8px;font-weight:600;font-size:13px;">
+              <td>
+                <a href="${BASE_URL}/opportunities" style="display:block;text-align:center;background:#5a788b;color:#fff;text-decoration:none;padding:11px 10px;border-radius:8px;font-weight:600;font-size:13px;">
                   More Opportunities
                 </a>
               </td>
-              <td style="padding:0 0 0 6px;">
-                <a href="${BASE_URL}/quiz-zone" style="display:block;text-align:center;background:#7C3AED;color:#fff;text-decoration:none;padding:11px 10px;border-radius:8px;font-weight:600;font-size:13px;">
-                  Quiz Zone
-                </a>
-              </td>
             </tr>
-            <tr><td colspan="3" style="height:10px;"></td></tr>
+            <tr><td style="height:10px;"></td></tr>
             <tr>
-              <td colspan="3">
+              <td>
                 <a href="${BASE_URL}/dashboard/premium" style="display:block;text-align:center;background:linear-gradient(135deg,#F59E0B 0%,#D97706 100%);color:#fff;text-decoration:none;padding:12px 10px;border-radius:8px;font-weight:700;font-size:13px;">
                   ✨ Explore Placement Services
                 </a>
