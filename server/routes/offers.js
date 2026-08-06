@@ -30,8 +30,8 @@ router.post('/claim-coin-discount', protect, async (req, res) => {
     if (req.user.hasCoinDiscount) {
       return res.status(400).json({ message: 'Discount already claimed.' });
     }
-    if (req.user.points < 500) {
-      return res.status(400).json({ message: 'You need at least 500 coins to claim this discount.' });
+    if (req.user.points < 300) {
+      return res.status(400).json({ message: 'You need at least 300 coins to claim this discount.' });
     }
     
     req.user.hasCoinDiscount = true;

@@ -238,17 +238,17 @@ export default function PaidServices() {
         {user && !user.hasCoinDiscount && !(freeOfferActive || hasPremiumAccess || hasFreeGrant) && (
           <button
             onClick={handleClaimDiscount}
-            disabled={planLoading || (user.coins || 0) < 500}
+            disabled={planLoading || (user.coins || 0) < 300}
             style={{
               width: '100%', background: 'linear-gradient(135deg, #f59e0b, #d97706)', color: '#fff',
               border: 'none', borderRadius: '10px', padding: '14px', fontSize: '14px',
               fontWeight: 700, letterSpacing: '.02em', fontFamily: "'Manrope', sans-serif",
-              boxShadow: (user.coins || 0) < 500 ? 'none' : '0 6px 16px rgba(245, 158, 11, 0.25)',
-              cursor: (planLoading || (user.coins || 0) < 500) ? 'not-allowed' : 'pointer', 
-              opacity: (planLoading || (user.coins || 0) < 500) ? 0.5 : 1,
+              boxShadow: (user.coins || 0) < 300 ? 'none' : '0 6px 16px rgba(245, 158, 11, 0.25)',
+              cursor: (planLoading || (user.coins || 0) < 300) ? 'not-allowed' : 'pointer', 
+              opacity: (planLoading || (user.coins || 0) < 300) ? 0.5 : 1,
             }}
           >
-            {planLoading ? 'Processing…' : `Claim 30% Discount (${user.coins || 0}/500 Coins)`}
+            {planLoading ? 'Processing…' : `Claim 30% Discount (${user.coins || 0}/300 Coins)`}
           </button>
         )}
         <button
