@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Target, TrendingUp, HelpCircle, ChevronDown, ChevronUp } from 'lucide-react';
+import { Target, HelpCircle, ChevronDown, ChevronUp } from 'lucide-react';
 import api from '../api/axios';
 
 
