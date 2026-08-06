@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { MapPin, Briefcase, CheckCircle, XCircle, ArrowRight, Laptop, Crown, IndianRupee, ExternalLink, Building, Clock, Calendar, Plus, Info } from 'lucide-react';
+import { MapPin, Briefcase, CheckCircle, XCircle, ArrowRight, Laptop, Crown, Banknote, ExternalLink, Building, Clock, Calendar, Plus, Info } from 'lucide-react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
@@ -916,20 +916,28 @@ export default function Vacancies() {
                         </div>
                       </div>
 
-                      {/* Info Row: Experience, Salary, Location */}
+                      {/* Info Row: Experience, Salary, Type, Location */}
                       <div className="flex flex-wrap items-center gap-x-3 gap-y-2 text-[13px] text-gray-600 font-medium">
                         <div className="flex items-center gap-1.5">
-                          <Briefcase size={15} className="text-gray-400" />
+                          <Briefcase size={15} className="text-indigo-500" />
                           {v.experience || '0-5 Yrs'}
                         </div>
                         <div className="w-[1px] h-3.5 bg-gray-300"></div>
                         <div className="flex items-center gap-1.5">
-                          <IndianRupee size={14} className="text-gray-400" />
+                          <Banknote size={15} className="text-emerald-500" />
                           {v.salaryRange || v.budget || 'Not specified'}
                         </div>
-                        <div className="w-[1px] h-3.5 bg-gray-300"></div>
+                        {v.type && (
+                          <>
+                            <div className="w-[1px] h-3.5 bg-gray-300"></div>
+                            <div className="flex items-center gap-1.5 capitalize">
+                              {v.type === 'onsite' ? <Building size={15} className="text-amber-500" /> : <Laptop size={15} className="text-amber-500" />}
+                              {v.type}
+                            </div>
+                          </>
+                        )}
                         <div className="flex items-center gap-1.5">
-                          <MapPin size={15} className="text-gray-400" />
+                          <MapPin size={15} className="text-rose-500" />
                           {v.location || 'Remote'}
                         </div>
                       </div>
