@@ -3,7 +3,7 @@ import {
   ClipboardList, Plus, Pencil, Trash2, ChevronDown, ChevronUp,
   ExternalLink, X, Check, Copy, AlertTriangle,
   Code2, Database, Cpu, Globe, Layers, Smartphone, BarChart2, Shield, BookOpen,
-  Users, Save, Send, GitBranch, Link2, FileText, MapPin, Briefcase, DollarSign,
+  Users, Save, Send, GitBranch, Link2, FileText, MapPin, Briefcase, DollarSign, Terminal, Activity, Sparkles
 } from 'lucide-react';
 import api from '../../api/axios';
 import toast from 'react-hot-toast';
@@ -31,23 +31,29 @@ const emptyEvalForm = () => ({
 });
 
 const CATEGORY_DEFS = [
-  { key: 'frontend', label: 'Frontend', description: 'HTML, CSS, React, UI/UX', icon: Globe, color: 'text-blue-600', bgColor: 'bg-blue-50', borderColor: 'border-blue-200', headerBg: 'bg-gradient-to-r from-blue-50 to-blue-100/50', keywords: ['frontend', 'html', 'css', 'react', 'vue', 'angular', 'ui', 'ux', 'tailwind', 'next'] },
+  { key: 'frontend', label: 'Frontend', description: 'HTML, CSS, React, UI/UX, State Management', icon: Globe, color: 'text-blue-600', bgColor: 'bg-blue-50', borderColor: 'border-blue-200', headerBg: 'bg-gradient-to-r from-blue-50 to-blue-100/50', keywords: ['frontend', 'html', 'css', 'react', 'vue', 'angular', 'ui', 'ux', 'tailwind', 'next', 'state management', 'redux', 'zustand', 'context api', 'mobx'] },
   { key: 'backend', label: 'Backend', description: 'Node.js, Express, APIs', icon: Layers, color: 'text-emerald-600', bgColor: 'bg-emerald-50', borderColor: 'border-emerald-200', headerBg: 'bg-gradient-to-r from-emerald-50 to-emerald-100/50', keywords: ['backend', 'node', 'express', 'api', 'server', 'rest', 'graphql'] },
   { key: 'database', label: 'Database', description: 'MongoDB, SQL, NoSQL', icon: Database, color: 'text-violet-600', bgColor: 'bg-violet-50', borderColor: 'border-violet-200', headerBg: 'bg-gradient-to-r from-violet-50 to-violet-100/50', keywords: ['database', 'mongodb', 'sql', 'nosql', 'postgres', 'mysql', 'redis', 'mongo'] },
   { key: 'programming', label: 'Programming Languages', description: 'JavaScript, Python, Java', icon: Code2, color: 'text-amber-600', bgColor: 'bg-amber-50', borderColor: 'border-amber-200', headerBg: 'bg-gradient-to-r from-amber-50 to-amber-100/50', keywords: ['javascript', 'python', 'java', 'typescript', 'c++', 'c#', 'rust', 'go', 'php', 'programming language', 'script'] },
   { key: 'dsa', label: 'DSA', description: 'Data Structures & Algorithms', icon: BarChart2, color: 'text-rose-600', bgColor: 'bg-rose-50', borderColor: 'border-rose-200', headerBg: 'bg-gradient-to-r from-rose-50 to-rose-100/50', keywords: ['dsa', 'data structure', 'algorithm', 'sorting', 'searching', 'tree', 'graph'] },
   { key: 'mobile', label: 'Mobile Development', description: 'Android, iOS, Flutter, React Native', icon: Smartphone, color: 'text-cyan-600', bgColor: 'bg-cyan-50', borderColor: 'border-cyan-200', headerBg: 'bg-gradient-to-r from-cyan-50 to-cyan-100/50', keywords: ['react native', 'react-native', 'mobile', 'android', 'ios', 'flutter', 'swift', 'kotlin'] },
-  { key: 'system_design', label: 'System Design', description: 'Architecture, scalability', icon: Cpu, color: 'text-indigo-600', bgColor: 'bg-indigo-50', borderColor: 'border-indigo-200', headerBg: 'bg-gradient-to-r from-indigo-50 to-indigo-100/50', keywords: ['system design', 'architecture', 'microservice', 'scalab', 'distributed'] },
+  { key: 'system_design', label: 'System Design', description: 'Architecture, scalability', icon: Cpu, color: 'text-indigo-600', bgColor: 'bg-indigo-50', borderColor: 'border-indigo-200', headerBg: 'bg-gradient-to-r from-indigo-50 to-indigo-100/50', keywords: ['system design', 'architecture', 'microservice', 'micro services', 'micro-services', 'scalab', 'distributed'] },
   { key: 'ai', label: 'AI / Machine Learning', description: 'ML, NLP, deep learning', icon: BookOpen, color: 'text-pink-600', bgColor: 'bg-pink-50', borderColor: 'border-pink-200', headerBg: 'bg-gradient-to-r from-pink-50 to-pink-100/50', keywords: ['ai', 'artificial intelligence', 'machine learning', 'nlp', 'deep learning', 'ml'] },
-  { key: 'others', label: 'Others', description: 'Security, Data Science & more', icon: Shield, color: 'text-gray-600', bgColor: 'bg-gray-50', borderColor: 'border-gray-200', headerBg: 'bg-gradient-to-r from-gray-50 to-gray-100/50', keywords: [] },
+  { key: 'devops', label: 'DevOps', description: 'Deployment fundamentals and advanced', icon: Terminal, color: 'text-orange-600', bgColor: 'bg-orange-50', borderColor: 'border-orange-200', headerBg: 'bg-gradient-to-r from-orange-50 to-orange-100/50', keywords: ['devops', 'deployment', 'fundamentals', 'advanced', 'docker', 'kubernetes', 'ci/cd', 'aws', 'jenkins', 'pipeline'] },
+  { key: 'data_science', label: 'Data Science', description: 'Data analysis, statistics', icon: Activity, color: 'text-teal-600', bgColor: 'bg-teal-50', borderColor: 'border-teal-200', headerBg: 'bg-gradient-to-r from-teal-50 to-teal-100/50', keywords: ['data science', 'data analysis', 'statistics', 'pandas', 'numpy', 'jupyter'] },
+  { key: 'cyber_security', label: 'Cyber Security', description: 'Security, cryptography', icon: Shield, color: 'text-red-600', bgColor: 'bg-red-50', borderColor: 'border-red-200', headerBg: 'bg-gradient-to-r from-red-50 to-red-100/50', keywords: ['cyber security', 'security', 'cryptography', 'ethical hacking', 'penetration testing'] },
+  { key: 'hr', label: 'HR & Soft Skills', description: 'Communication, behavioral questions', icon: Users, color: 'text-pink-600', bgColor: 'bg-pink-50', borderColor: 'border-pink-200', headerBg: 'bg-gradient-to-r from-pink-50 to-pink-100/50', keywords: ['hr', 'human resources', 'communication', 'behavioral', 'soft skills', 'interview prep'] },
+  { key: 'custom_modules', label: 'New Modules', description: 'Custom created modules', icon: ClipboardList, color: 'text-purple-600', bgColor: 'bg-purple-50', borderColor: 'border-purple-200', headerBg: 'bg-gradient-to-r from-purple-50 to-purple-100/50', keywords: [] },
 ];
 
 function getModuleCategory(mod) {
+  if (mod.category === 'Custom') return 'custom_modules';
+  
   const haystack = `${mod.title} ${mod.category || ''}`.toLowerCase();
-  // Longest keyword wins so "react native" beats frontend's "react"
-  let bestKey = 'others';
+  let bestKey = null;
   let bestLen = -1;
-  for (const cat of CATEGORY_DEFS.slice(0, -1)) {
+  for (const cat of CATEGORY_DEFS) {
+    if (cat.key === 'custom_modules') continue;
     for (const kw of cat.keywords) {
       if (haystack.includes(kw) && kw.length > bestLen) {
         bestKey = cat.key;
@@ -55,7 +61,7 @@ function getModuleCategory(mod) {
       }
     }
   }
-  return bestKey;
+  return bestKey || 'custom_modules';
 }
 
 function Modal({ title, onClose, children, wide }) {
@@ -177,6 +183,9 @@ export default function AdminInterviewModulesSection({ initialApplicant = null, 
   const [loadingTopicId, setLoadingTopicId] = useState(null);
   // evaluations: { [`${topicId}_${qi}`]: { result: null|'correct'|'incorrect', comment: string } }
   const [evaluations, setEvaluations] = useState({});
+  const [aiReport, setAiReport] = useState(null);
+  const [generatingAI, setGeneratingAI] = useState(false);
+  const [showAIModal, setShowAIModal] = useState(false);
 
   const setEval = (topicId, qi, field, value) => {
     const key = `${topicId}_${qi}`;
@@ -312,13 +321,13 @@ export default function AdminInterviewModulesSection({ initialApplicant = null, 
   const buildSessionPayload = () => ({
     mcqAssessments: buildMcqAssessments(),
     status: 'completed',
-    overallRating: 5,
-    headline: initialSession?.headline || '',
-    summary: JSON.stringify(todos),
-    sections: emptyEvalForm().sections,
-    pros: [],
-    cons: [],
-    improvementTips: [],
+    overallRating: aiReport?.overallRating || 5,
+    headline: aiReport?.headline || initialSession?.headline || '',
+    summary: aiReport?.summary || JSON.stringify(todos),
+    sections: aiReport?.sections || emptyEvalForm().sections,
+    pros: aiReport?.pros || [],
+    cons: aiReport?.cons || [],
+    improvementTips: aiReport?.improvementTips || [],
     vacancy: initialVacancy?._id || null,
   });
 
@@ -345,6 +354,27 @@ export default function AdminInterviewModulesSection({ initialApplicant = null, 
       });
     }
     return mcqAssessments;
+  };
+
+  const handleGenerateAIReport = async () => {
+    const mcqAssessments = buildMcqAssessments();
+    if (mcqAssessments.length === 0) return toast.error('No assessments to analyze');
+    setGeneratingAI(true);
+    try {
+      const res = await api.post('/admin/interviews/analyze-report', {
+        mcqAssessments,
+        applicantName: selectedApplicant?.name,
+        jobTitle: initialVacancy?.title
+      }, {
+        timeout: 60000 // 60 seconds specifically for AI generation
+      });
+      setAiReport(res.data.data);
+      setShowAIModal(true);
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to generate AI report');
+    } finally {
+      setGeneratingAI(false);
+    }
   };
 
   const handleSaveSession = async () => {
@@ -394,7 +424,9 @@ export default function AdminInterviewModulesSection({ initialApplicant = null, 
       // UI Evaluation Module is separate; skip similarly named bank modules from categories
       if (/^evaluation module$/i.test(mod.title || '')) return;
       const key = getModuleCategory(mod);
-      map[key].push(mod);
+      if (key && map[key]) {
+        map[key].push(mod);
+      }
     });
     return map;
   }, [modules]);
@@ -428,8 +460,18 @@ export default function AdminInterviewModulesSection({ initialApplicant = null, 
     if (!moduleForm.title.trim()) return toast.error('Module title is required');
     setSaving(true);
     try {
-      await api.post('/interview-modules', { title: moduleForm.title.trim(), order: modules.length });
-      toast.success('Module created'); setShowCreateModule(false); setModuleForm(emptyModule()); fetchModules();
+      const res = await api.post('/interview-modules', { title: moduleForm.title.trim(), category: 'Custom', order: modules.length });
+      const newModule = res.data.data;
+      toast.success('Module created'); 
+      setShowCreateModule(false); 
+      setModuleForm(emptyModule()); 
+      await fetchModules();
+      
+      if (newModule) {
+        const catKey = getModuleCategory(newModule);
+        setExpandedCats(prev => ({ ...prev, [catKey]: true }));
+        setExpandedModId(newModule._id);
+      }
     } catch (err) { toast.error(err.response?.data?.message || 'Failed to create module'); }
     finally { setSaving(false); }
   };
@@ -707,19 +749,9 @@ export default function AdminInterviewModulesSection({ initialApplicant = null, 
             </div>
           </div>
         </div>
-      ) : (
-        <div className="bg-white border border-border rounded-2xl p-4 mb-6 flex items-center gap-2 text-muted">
-          <Users size={15} className="text-accent shrink-0" />
-          <p className="text-sm">Select a job and applicant from the <span className="font-semibold text-text">Interview Session</span> tab first.</p>
-        </div>
-      )}
+      ) : null}
 
-      {/* ── Module Header ────────────────────────────────────────────────── */}
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h2 className="text-lg font-bold text-text flex items-center gap-2"><ClipboardList size={20} className="text-accent" />Interview Modules</h2>
-        </div>
-      </div>
+
 
       {modules.length === 0 ? (
         <div className="bg-white border border-border rounded-2xl p-12 text-center">
@@ -768,8 +800,8 @@ export default function AdminInterviewModulesSection({ initialApplicant = null, 
                             <p className="text-xs text-muted">{mod.topics?.length || 0} topic{(mod.topics?.length || 0) !== 1 ? 's' : ''}</p>
                           </div>
                           <div className="flex items-center gap-1 shrink-0">
-                            <button onClick={() => { setSelectedModule(mod); setModuleForm({ title: mod.title }); setShowEditModule(true); }} className="w-7 h-7 flex items-center justify-center rounded-lg text-blue-500 hover:bg-blue-50 transition-all opacity-40 blur-[0.5px] hover:opacity-100 hover:blur-none"><Pencil size={12} /></button>
-                            <button onClick={() => handleDeleteModule(mod)} className="w-7 h-7 flex items-center justify-center rounded-lg text-red-400 hover:bg-red-50 transition-all opacity-40 blur-[0.5px] hover:opacity-100 hover:blur-none"><Trash2 size={12} /></button>
+                            <button onClick={() => { setSelectedModule(mod); setModuleForm({ title: mod.title }); setShowEditModule(true); }} className="w-7 h-7 flex items-center justify-center rounded-lg text-blue-500 hover:bg-blue-50 transition-colors"><Pencil size={12} /></button>
+                            <button onClick={() => handleDeleteModule(mod)} className="w-7 h-7 flex items-center justify-center rounded-lg text-red-400 hover:bg-red-50 transition-colors"><Trash2 size={12} /></button>
                             <button onClick={() => setExpandedModId(expandedModId === mod._id ? null : mod._id)} className="w-7 h-7 flex items-center justify-center rounded-lg text-muted hover:bg-gray-100 transition-colors">
                               {expandedModId === mod._id ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
                             </button>
@@ -965,8 +997,16 @@ export default function AdminInterviewModulesSection({ initialApplicant = null, 
             </p>
           )}
           <button
+            onClick={handleGenerateAIReport}
+            disabled={generatingAI}
+            className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600 disabled:opacity-50 text-white text-sm font-semibold rounded-xl transition-colors shadow-sm"
+          >
+            {generatingAI ? <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> : <Sparkles size={14} />}
+            Auto-Generate AI Report
+          </button>
+          <button
             onClick={handleSaveSession}
-            disabled={savingSession || publishing || !selectedApplicant || !initialSession?._id}
+            disabled={savingSession || publishing}
             className="flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white text-sm font-semibold rounded-xl transition-colors"
           >
             {savingSession ? <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> : <Save size={14} />}
@@ -974,7 +1014,7 @@ export default function AdminInterviewModulesSection({ initialApplicant = null, 
           </button>
           <button
             onClick={handlePublishSession}
-            disabled={publishing || savingSession || !selectedApplicant || !initialSession?._id || isPublished}
+            disabled={publishing || savingSession || isPublished}
             title={isPublished ? 'Already published to applicant dashboard' : 'Save and publish to applicant dashboard'}
             className="flex items-center gap-2 px-4 py-2 bg-accent hover:bg-accent-hover disabled:opacity-50 text-white text-sm font-semibold rounded-xl transition-colors"
           >
@@ -1067,6 +1107,53 @@ export default function AdminInterviewModulesSection({ initialApplicant = null, 
           </div>
         </Modal>
       )}
+
+      {/* ── AI Report Modal ────────────────────────────────────────────────────── */}
+      {showAIModal && aiReport && (
+        <Modal title="Review AI Generated Report" onClose={() => setShowAIModal(false)} wide>
+          <div className="space-y-4">
+            <div>
+              <label className={labelCls}>Headline</label>
+              <input type="text" className={inputCls} value={aiReport.headline || ''} onChange={e => setAiReport({...aiReport, headline: e.target.value})} />
+            </div>
+            <div>
+              <label className={labelCls}>Summary</label>
+              <textarea className={inputCls} rows={4} value={aiReport.summary || ''} onChange={e => setAiReport({...aiReport, summary: e.target.value})} />
+            </div>
+            <div className="flex gap-4">
+              <div className="flex-1">
+                <label className={labelCls}>Pros (one per line)</label>
+                <textarea className={inputCls} rows={4} value={(aiReport.pros || []).join('\n')} onChange={e => setAiReport({...aiReport, pros: e.target.value.split('\n')})} />
+              </div>
+              <div className="flex-1">
+                <label className={labelCls}>Cons (one per line)</label>
+                <textarea className={inputCls} rows={4} value={(aiReport.cons || []).join('\n')} onChange={e => setAiReport({...aiReport, cons: e.target.value.split('\n')})} />
+              </div>
+            </div>
+            <div className="bg-gray-50 p-4 rounded-xl border border-border">
+              <p className="text-sm font-semibold mb-2">Sections Breakdown</p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {aiReport.sections?.map((sec, idx) => (
+                  <div key={idx} className="bg-white p-3 rounded-lg border border-border flex justify-between items-center">
+                    <div>
+                      <p className="text-xs font-bold">{sec.title}</p>
+                      <p className="text-xs text-muted truncate max-w-[150px]">{sec.notes}</p>
+                    </div>
+                    <span className="text-sm font-black text-accent">{sec.rating}/5</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="flex justify-end pt-4 gap-3">
+              <button onClick={() => setShowAIModal(false)} className="px-4 py-2 bg-gray-100 text-text hover:bg-gray-200 rounded-xl font-medium transition-colors">Close</button>
+              <button onClick={() => { setShowAIModal(false); toast.success('Report applied! Click Save Session to finalize.'); }} className="px-5 py-2 bg-gradient-to-r from-purple-500 to-indigo-500 text-white rounded-xl font-semibold hover:shadow-lg transition-all">
+                Apply to Session
+              </button>
+            </div>
+          </div>
+        </Modal>
+      )}
+
     </div>
   );
 }

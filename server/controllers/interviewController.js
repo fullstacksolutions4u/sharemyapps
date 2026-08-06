@@ -249,6 +249,7 @@ exports.getMyFeedback = async (req, res) => {
       sharedWithCandidate: true,
     })
       .populate('evaluatedBy', 'name avatar')
+      .populate('vacancy', 'title')
       .sort({ sessionNumber: -1 })
       .lean();
 

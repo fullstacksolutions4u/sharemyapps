@@ -48,6 +48,7 @@ const { aiChat } = require('../controllers/aiChatController');
 const { adminGetPlans, adminCreatePlan, adminUpdatePlan, adminDeletePlan } = require('../controllers/planController');
 const { adminGetOffers, adminUpdateOffer, adminDeleteOffer, adminGetOfferStats, adminGetOfferPortfolio, adminMarkWhatsappContacted, adminToggleEnroll, adminActivate } = require('../controllers/freeOfferController');
 const interview = require('../controllers/interviewController');
+const aiReport = require('../controllers/aiReportController');
 const showcase  = require('../controllers/showcaseController');
 
 router.use(protect, requireAdmin);
@@ -1238,7 +1239,8 @@ router.delete('/job-recommendations/sessions/:id', async (req, res) => {
 });
 
 // ── Candidate Curation — Interview Sessions ───────────────────────────────────
-router.get('/interviews',                          interview.listSessions);
+router.post('/interviews/analyze-report', protect, requireAdmin, aiReport.analyzeReport);
+router.get('/interviews', protect, requireAdmin, interview.listSessions);
 router.post('/interviews',                         interview.createGeneralSession);
 router.get('/interviews/user/:userId',             interview.getUserSessions);
 router.post('/interviews/user/:userId',            interview.createSession);
