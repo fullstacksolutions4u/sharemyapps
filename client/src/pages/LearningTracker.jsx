@@ -228,7 +228,7 @@ const LearningTracker = ({ embedded = false }) => {
       setShowSuggestModal(false);
       setSuggestTopicText('');
       toast.success('Thank you! Your suggestion has been sent to the admin.');
-    } catch (err) {
+    } catch {
       toast.error('Failed to send suggestion. Please try again.');
     } finally {
       setIsSubmittingSuggestion(false);
