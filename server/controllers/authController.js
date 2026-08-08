@@ -60,11 +60,6 @@ exports.register = async (req, res) => {
     const user = await User.create({ name, email, password, regNumber });
     const token = signToken(user._id);
     setCookie(res, token);
-    
-    // Track new signup
-    const { userActivityCounter } = require('../utils/customMetrics');
-    userActivityCounter.inc({ action: 'signup' });
-
     res.status(201).json({ user: user.toAuthJSON(), token });
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -89,11 +84,6 @@ exports.login = async (req, res) => {
 
     const token = signToken(user._id);
     setCookie(res, token);
-    
-    // Track login
-    const { userActivityCounter } = require('../utils/customMetrics');
-    userActivityCounter.inc({ action: 'login' });
-
     res.json({ user: user.toAuthJSON(), token });
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -265,13 +255,7 @@ exports.selectRole = async (req, res) => {
     const user = await User.findById(req.user._id);
     if (!user) return res.status(404).json({ message: 'User not found' });
     
-    // Only track the duration the very first time they complete onboarding
-    if (!user.onboardingComplete) {
-      const { onboardingDuration } = require('../utils/customMetrics');
-      const timeTakenSeconds = (Date.now() - new Date(user.createdAt).getTime()) / 1000;
-      onboardingDuration.observe({ userType: userType }, timeTakenSeconds);
-    }
-    
+
     user.userType = userType;
     user.onboardingComplete = true;
 

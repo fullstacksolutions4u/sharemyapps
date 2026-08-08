@@ -1,1 +1,0 @@
-const { Resend } = require('resend'); const resend = new Resend('re_NPrW8pAr_GtZXe9dJLtQHniA75oCZWuqM'); resend.emails.send({ from: 'ShareMyApps <hello@sharemyapps.in>', to: 'cv4amirali@gmail.com', subject: 'Resend Verified', html: '<p>Success! Domain Verified.</p>' }).then(data => console.log('Sent', data)).catch(console.error);

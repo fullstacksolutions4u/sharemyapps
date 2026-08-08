@@ -1,9 +1,0 @@
-global:
-  scrape_interval: 5s
-
-scrape_configs:
-  - job_name: 'nodejs_app'
-    static_configs:
-      - targets: ['host.docker.internal:5000']
-        labels:
-          app: 'sharemyapps'
