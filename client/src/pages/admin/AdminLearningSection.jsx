@@ -79,9 +79,9 @@ export default function AdminLearningSection() {
     }
   };
 
-  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => {
     if (activeTab === 'requests') {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       fetchRequestedTopics();
     }
   }, [activeTab]);
