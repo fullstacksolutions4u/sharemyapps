@@ -35,6 +35,10 @@ export default function AdminLearningSection() {
   const [loading, setLoading] = useState(true);
   const [expandedId, setExpandedId] = useState(null);
 
+  const [activeTab, setActiveTab] = useState('modules'); // 'modules' | 'requests'
+  const [requestedTopics, setRequestedTopics] = useState([]);
+  const [loadingRequests, setLoadingRequests] = useState(false);
+
   const [showCreateModule, setShowCreateModule] = useState(false);
   const [showEditModule, setShowEditModule] = useState(false);
   const [showAddTopic, setShowAddTopic] = useState(false);
@@ -62,6 +66,35 @@ export default function AdminLearningSection() {
 
   // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { fetchModules(); }, []);
+
+  const fetchRequestedTopics = async () => {
+    try {
+      setLoadingRequests(true);
+      const res = await api.get('/learning-feedback');
+      setRequestedTopics(res.data.data || []);
+    } catch {
+      toast.error('Failed to load requested topics');
+    } finally {
+      setLoadingRequests(false);
+    }
+  };
+
+  useEffect(() => {
+    if (activeTab === 'requests') {
+      fetchRequestedTopics();
+    }
+  }, [activeTab]);
+
+  const handleDeleteRequest = async (id) => {
+    if (!window.confirm('Delete this requested topic?')) return;
+    try {
+      await api.delete(`/learning-feedback/${id}`);
+      toast.success('Request deleted');
+      fetchRequestedTopics();
+    } catch {
+      toast.error('Failed to delete request');
+    }
+  };
 
   /* ── Module CRUD ── */
   const handleCreateModule = async () => {
@@ -220,7 +253,7 @@ export default function AdminLearningSection() {
     setTopicMode('bulk');
   };
 
-  if (loading) {
+  if (loading && activeTab === 'modules') {
     return (
       <div className="space-y-3">
         {Array.from({ length: 4 }).map((_, i) => (
@@ -233,15 +266,49 @@ export default function AdminLearningSection() {
   return (
     <div>
 
+      {/* Tabs */}
+      <div className="flex gap-6 border-b border-border mb-4 px-2">
+        <button onClick={() => setActiveTab('modules')} className={`pb-2 text-sm font-semibold transition-colors ${activeTab === 'modules' ? 'border-b-2 border-accent text-accent' : 'text-muted hover:text-text'}`}>
+          Modules & Topics
+        </button>
+        <button onClick={() => setActiveTab('requests')} className={`pb-2 text-sm font-semibold transition-colors ${activeTab === 'requests' ? 'border-b-2 border-accent text-accent' : 'text-muted hover:text-text'}`}>
+          Requested Topics
+        </button>
+      </div>
 
-      {/* Module list */}
-      {modules.length === 0 ? (
-        <div className="bg-white border border-border rounded-2xl p-12 text-center">
-          <BookOpen size={28} className="text-muted mx-auto mb-3" />
-          <p className="text-sm font-medium text-text mb-1">No modules yet</p>
-          <p className="text-xs text-muted">Create your first learning module to get started.</p>
+      {activeTab === 'requests' ? (
+        <div className="space-y-3">
+          {loadingRequests ? (
+            Array.from({ length: 3 }).map((_, i) => <div key={i} className="h-16 bg-white border border-border rounded-xl animate-pulse" />)
+          ) : requestedTopics.length === 0 ? (
+            <div className="bg-white border border-border rounded-2xl p-12 text-center">
+              <p className="text-sm font-medium text-text mb-1">No requested topics</p>
+              <p className="text-xs text-muted">User suggestions will appear here.</p>
+            </div>
+          ) : (
+            requestedTopics.map((req) => (
+              <div key={req._id} className="bg-white border border-border rounded-xl p-4 flex items-start justify-between gap-4">
+                <div>
+                  <p className="text-sm font-medium text-text mb-1">{req.message}</p>
+                  <p className="text-xs text-muted">Requested by: <span className="font-medium text-text">{req.username}</span> • {new Date(req.createdAt).toLocaleDateString()}</p>
+                </div>
+                <button onClick={() => handleDeleteRequest(req._id)} className="w-8 h-8 flex items-center justify-center rounded-lg text-red-400 hover:bg-red-50 hover:text-red-600 transition-colors shrink-0" title="Delete request">
+                  <Trash2 size={14} />
+                </button>
+              </div>
+            ))
+          )}
         </div>
       ) : (
+        <>
+          {/* Module list */}
+          {modules.length === 0 ? (
+            <div className="bg-white border border-border rounded-2xl p-12 text-center">
+              <BookOpen size={28} className="text-muted mx-auto mb-3" />
+              <p className="text-sm font-medium text-text mb-1">No modules yet</p>
+              <p className="text-xs text-muted">Create your first learning module to get started.</p>
+            </div>
+          ) : (
         <div className="space-y-2">
           {modules.map((mod, index) => (
             <div key={mod._id} className="bg-white border border-border rounded-xl overflow-hidden">
@@ -356,6 +423,8 @@ export default function AdminLearningSection() {
             </div>
           ))}
         </div>
+      )}
+      </>
       )}
 
       {/* ── Create Module Modal ── */}

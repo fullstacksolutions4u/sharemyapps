@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Trophy, Crown } from 'lucide-react';
-import { moduleAPI, progressAPI } from '../api/tick2test';
+import { moduleAPI, progressAPI, feedbackAPI } from '../api/tick2test';
 import { useAuth } from '../context/AuthContext';
 import AnimatedCoin from '../components/common/AnimatedCoin';
 import confetti from 'canvas-confetti';
@@ -9,6 +9,7 @@ import TopicQuizModal from '../components/user/TopicQuizModal';
 import _Lottie from 'lottie-react';
 import modulesAnimation from '../assets/modules.json';
 import { optimizeImage } from '../utils/image';
+import { toast } from 'react-hot-toast';
 
 const Lottie = _Lottie.default ?? _Lottie;
 
@@ -31,6 +32,10 @@ const LearningTracker = ({ embedded = false }) => {
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [selectedQuiz, setSelectedQuiz] = useState(null);
   const [loadingQuizTopicId, setLoadingQuizTopicId] = useState(null);
+  const [showSuggestModal, setShowSuggestModal] = useState(false);
+  const [suggestTopicText, setSuggestTopicText] = useState('');
+  const [suggestingModule, setSuggestingModule] = useState(null);
+  const [isSubmittingSuggestion, setIsSubmittingSuggestion] = useState(false);
   const sliderRef = useRef(null);
   const [dailyTarget] = useState(() => {
     const saved = localStorage.getItem('dailyTarget');
@@ -179,7 +184,7 @@ const LearningTracker = ({ embedded = false }) => {
                 return module;
               })
             );
-            alert('Failed to update topic. Changes have been reverted.');
+            toast.error('Failed to update topic. Changes have been reverted.');
           }
         })
         .catch(err => {
@@ -205,10 +210,28 @@ const LearningTracker = ({ embedded = false }) => {
               return module;
             })
           );
-          alert('Failed to update topic. Please try again.');
+          toast.error('Failed to update topic. Please try again.');
         });
     } catch (err) {
       console.error(err);
+    }
+  };
+
+  const handleSuggestTopicSubmit = async (e) => {
+    e.preventDefault();
+    if (!suggestTopicText.trim()) return;
+    try {
+      setIsSubmittingSuggestion(true);
+      await feedbackAPI.create({
+        message: `Suggested topic for module "${suggestingModule?.title || 'Unknown'}": ${suggestTopicText}`
+      });
+      setShowSuggestModal(false);
+      setSuggestTopicText('');
+      toast.success('Thank you! Your suggestion has been sent to the admin.');
+    } catch (err) {
+      toast.error('Failed to send suggestion. Please try again.');
+    } finally {
+      setIsSubmittingSuggestion(false);
     }
   };
 
@@ -421,7 +444,7 @@ const LearningTracker = ({ embedded = false }) => {
                                                     if (res.data.success) {
                                                       setSelectedQuiz({ quizzes: res.data.data, moduleId: module._id, topicId: topic._id, topicName: topic.name });
                                                     }
-                                                  } catch { alert('Failed to load quiz. Please try again.'); }
+                                                  } catch { toast.error('Failed to load quiz. Please try again.'); }
                                                   finally { setLoadingQuizTopicId(null); }
                                                 } else {
                                                   setSelectedQuiz({ quizzes: topic.quizzes || [], moduleId: module._id, topicId: topic._id, topicName: topic.name });
@@ -440,6 +463,26 @@ const LearningTracker = ({ embedded = false }) => {
                                         </div>
                                       );
                                     })}
+                                    
+                                    {regularTopics.length > 0 && (
+                                      <div className="flex items-center justify-center p-2 mt-2">
+                                        <button 
+                                          onClick={() => {
+                                            if (!isAuthenticated) {
+                                              setShowLoginModal(true);
+                                              return;
+                                            }
+                                            setSuggestingModule(module);
+                                            setShowSuggestModal(true);
+                                          }}
+                                          className="flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded-lg border-2 border-dashed transition-colors"
+                                          style={{ color: '#9B7D43', borderColor: '#D4B896', backgroundColor: 'transparent' }}
+                                        >
+                                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
+                                          Suggest Missing Topic
+                                        </button>
+                                      </div>
+                                    )}
                                   </div>
 
                                 </div>
@@ -615,6 +658,32 @@ const LearningTracker = ({ embedded = false }) => {
                 <button onClick={() => setShowLoginModal(false)} className="flex-1 px-4 py-3 rounded-xl font-semibold transition-transform hover:scale-105" style={{ backgroundColor: 'transparent', color: '#1C1A17', border: '2px solid #D4B896' }}>Cancel</button>
               </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Suggest Topic Modal */}
+      {showSuggestModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+          <div className="rounded-2xl p-6 max-w-md w-full shadow-2xl relative overflow-hidden" style={{ backgroundColor: '#FAF7F2', border: '1px solid #E0D8CC' }}>
+            <h3 className="text-xl font-bold mb-4" style={{ color: '#1C1A17', fontFamily: "'Playfair Display', Georgia, serif" }}>Suggest Missing Topic</h3>
+            <p className="text-sm mb-4" style={{ color: '#5A5550' }}>What topic is missing from the <strong>{suggestingModule?.title?.replace(/^Module\s+\d+\s*[:\s-]+\s*/i, '')}</strong> module?</p>
+            <form onSubmit={handleSuggestTopicSubmit}>
+              <textarea
+                value={suggestTopicText}
+                onChange={(e) => setSuggestTopicText(e.target.value)}
+                placeholder="Type your suggestion here..."
+                className="w-full rounded-lg p-3 mb-4 text-sm resize-none focus:outline-none focus:ring-2"
+                style={{ backgroundColor: '#FFF', border: '1px solid #E0D8CC', color: '#1C1A17', minHeight: '100px' }}
+                required
+              />
+              <div className="flex gap-3 w-full">
+                <button type="submit" disabled={isSubmittingSuggestion || !suggestTopicText.trim()} className="flex-1 px-4 py-2 text-white rounded-xl font-semibold transition-transform hover:scale-105 disabled:opacity-50 disabled:hover:scale-100" style={{ backgroundColor: '#9B7D43' }}>
+                  {isSubmittingSuggestion ? 'Submitting...' : 'Submit'}
+                </button>
+                <button type="button" onClick={() => { setShowSuggestModal(false); setSuggestTopicText(''); }} className="flex-1 px-4 py-2 rounded-xl font-semibold transition-transform hover:scale-105" style={{ backgroundColor: 'transparent', color: '#1C1A17', border: '2px solid #D4B896' }}>Cancel</button>
+              </div>
+            </form>
           </div>
         </div>
       )}
