@@ -311,7 +311,7 @@ export default function Feed() {
       
       {/* LEFT: Shared Job Links */}
       <div className="w-full lg:max-w-[25%] flex flex-col sticky top-20 max-h-[calc(100vh-100px)]">
-        <div className="bg-white rounded-xl shadow-sm border border-[#5a788b] flex flex-col h-full relative overflow-hidden">
+        <div className="bg-[#FAF7F2] rounded-xl shadow-sm border border-[#5a788b] flex flex-col h-full relative overflow-hidden">
           {/* Abstract wavy background at the bottom */}
           <div className="absolute bottom-0 left-0 right-0 h-32 pointer-events-none opacity-50 flex items-end">
             <svg viewBox="0 0 1440 320" className="absolute bottom-0 w-full h-full object-cover" preserveAspectRatio="none">
