@@ -26,7 +26,7 @@ export default function AdminJobAlertsWrapperSection() {
               : 'border-transparent text-gray-500 hover:text-gray-700'
           }`}
         >
-          Job Alert History
+          Job Alert Calender
         </button>
       </div>
 

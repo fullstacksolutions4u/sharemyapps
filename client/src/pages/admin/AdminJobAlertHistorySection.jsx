@@ -32,7 +32,7 @@ export default function AdminJobAlertHistorySection() {
 
         setHistoryData(grouped);
       })
-      .catch(() => toast.error('Failed to load job alert history'))
+      .catch(() => toast.error('Failed to load job alert calender'))
       .finally(() => setLoading(false));
   }, []);
 

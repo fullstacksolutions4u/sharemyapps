@@ -490,7 +490,7 @@ export default function JobAlerts() {
       <div className="mt-2">
         <div className="flex flex-col sm:flex-row sm:items-baseline gap-2 sm:gap-4 mb-3">
           <div className="flex items-baseline gap-2">
-            <h2 className="text-base font-bold text-[#1A1A1A]">📅 Job Alert History</h2>
+            <h2 className="text-base font-bold text-[#1A1A1A]">📅 Job Alert Calender</h2>
             <span className="text-xs text-[#6B7280] font-normal hidden sm:inline">(select a date to view job alerts)</span>
           </div>
         </div>
