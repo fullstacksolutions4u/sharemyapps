@@ -90,20 +90,26 @@ function FilterDropdown({ icon: Icon, placeholder, value, onChange, options }) {
       <button
         onClick={() => setOpen(o => !o)}
         className={`flex items-center gap-2 pl-3.5 pr-3 py-2 rounded-xl border text-[13px] font-medium transition-all duration-200 select-none ${
-          active
+          active && (value === 'Out of India' || value === 'Remote Jobs')
+            ? 'border-[#5a788b] bg-[#5a788b]/10 text-[#5a788b] shadow-sm'
+            : active
             ? 'border-accent bg-accent/5 text-accent shadow-sm'
             : 'border-border bg-white text-gray-500 hover:border-gray-300 hover:text-gray-700 hover:shadow-sm'
         }`}
       >
-        <Icon size={13} className={active ? 'text-accent' : 'text-gray-400'} />
+        <Icon size={13} className={active ? (value === 'Out of India' || value === 'Remote Jobs' ? 'text-[#5a788b]' : 'text-accent') : 'text-gray-400'} />
         <span className="whitespace-nowrap">{label}</span>
         <svg
           width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"
-          className={`transition-transform duration-200 ${open ? 'rotate-180' : ''} ${active ? 'text-accent' : 'text-gray-400'}`}
+          className={`transition-transform duration-200 ${open ? 'rotate-180' : ''} ${
+            active ? (value === 'Out of India' || value === 'Remote Jobs' ? 'text-[#5a788b]' : 'text-accent') : 'text-gray-400'
+          }`}
         >
           <path d="M6 9l6 6 6-6"/>
         </svg>
-        {active && <span className="w-1.5 h-1.5 rounded-full bg-accent absolute -top-0.5 -right-0.5 animate-pulse" />}
+        {active && <span className={`w-1.5 h-1.5 rounded-full absolute -top-0.5 -right-0.5 animate-pulse ${
+          value === 'Out of India' || value === 'Remote Jobs' ? 'bg-[#5a788b]' : 'bg-accent'
+        }`} />}
       </button>
 
       {open && (
@@ -119,18 +125,30 @@ function FilterDropdown({ icon: Icon, placeholder, value, onChange, options }) {
               {placeholder}
             </button>
             <div className="h-px bg-border mx-3" />
-            {options.map(opt => (
-              <button
-                key={opt}
-                onClick={() => { onChange(opt); setOpen(false); }}
-                className={`w-full text-left px-4 py-2.5 text-[13px] flex items-center gap-2 transition-colors ${
-                  value === opt ? 'bg-accent/5 text-accent font-semibold' : 'text-gray-700 hover:bg-gray-50'
-                }`}
-              >
-                {value === opt && <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M20 6L9 17l-5-5"/></svg>}
-                <span className={value === opt ? '' : 'ml-[20px]'}>{opt}</span>
-              </button>
-            ))}
+            {options.map(opt => {
+              const isSpecial = opt === 'Out of India' || opt === 'Remote Jobs';
+              const isSelected = value === opt;
+              
+              let btnClass = 'text-gray-700 hover:bg-gray-50';
+              if (isSelected && isSpecial) {
+                btnClass = 'bg-[#5a788b]/10 text-[#5a788b] font-semibold';
+              } else if (isSelected) {
+                btnClass = 'bg-accent/5 text-accent font-semibold';
+              } else if (isSpecial) {
+                btnClass = 'text-[#5a788b] font-medium hover:bg-gray-50';
+              }
+
+              return (
+                <button
+                  key={opt}
+                  onClick={() => { onChange(opt); setOpen(false); }}
+                  className={`w-full text-left px-4 py-2.5 text-[13px] flex items-center gap-2 transition-colors ${btnClass}`}
+                >
+                  {isSelected && <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M20 6L9 17l-5-5"/></svg>}
+                  <span className={isSelected ? '' : 'ml-[20px]'}>{opt}</span>
+                </button>
+              );
+            })}
           </div>
         </div>
       )}
@@ -138,7 +156,7 @@ function FilterDropdown({ icon: Icon, placeholder, value, onChange, options }) {
   );
 }
 
-const INDIA_STATES = ['Kerala', 'Karnataka', 'Tamil Nadu', 'Andhra Pradesh', 'Arunachal Pradesh', 'Assam', 'Bihar', 'Chhattisgarh', 'Goa', 'Gujarat', 'Haryana', 'Himachal Pradesh', 'Jharkhand', 'Madhya Pradesh', 'Maharashtra', 'Manipur', 'Meghalaya', 'Mizoram', 'Nagaland', 'Odisha', 'Punjab', 'Rajasthan', 'Sikkim', 'Telangana', 'Tripura', 'Uttar Pradesh', 'Uttarakhand', 'West Bengal', 'Andaman and Nicobar Islands', 'Chandigarh', 'Dadra and Nagar Haveli and Daman and Diu', 'Delhi', 'Jammu and Kashmir', 'Ladakh', 'Lakshadweep', 'Puducherry', 'Out of India'];
+const INDIA_STATES = ['Kerala', 'Karnataka', 'Tamil Nadu', 'Andhra Pradesh', 'Arunachal Pradesh', 'Assam', 'Bihar', 'Chhattisgarh', 'Goa', 'Gujarat', 'Haryana', 'Himachal Pradesh', 'Jharkhand', 'Madhya Pradesh', 'Maharashtra', 'Manipur', 'Meghalaya', 'Mizoram', 'Nagaland', 'Odisha', 'Punjab', 'Rajasthan', 'Sikkim', 'Telangana', 'Tripura', 'Uttar Pradesh', 'Uttarakhand', 'West Bengal', 'Andaman and Nicobar Islands', 'Chandigarh', 'Dadra and Nagar Haveli and Daman and Diu', 'Delhi', 'Jammu and Kashmir', 'Ladakh', 'Lakshadweep', 'Puducherry', 'Out of India', 'Remote Jobs'];
 
 const ScrollingPlaceholderInput = ({ value, onChange, className }) => {
   const fullText = "Found a job opening posted somewhere that isn't relevant to you? Share it here to help others!          ";
@@ -243,15 +261,21 @@ function filterOpportunityItems(data, activeTab, filterDesignation, filterLocati
     if (filterLocation) {
       const loc = (d.location || '').toLowerCase();
       if (filterLocation === 'Out of India') {
-        const states = INDIA_STATES.filter((s) => s !== 'Out of India').map((s) => s.toLowerCase());
-        const isInIndia = loc.includes('india') || states.some((state) => loc.includes(state));
-        if (isInIndia) return false;
+        const states = INDIA_STATES.filter((s) => s !== 'Out of India' && s !== 'Remote Jobs').map((s) => s.toLowerCase());
+        const cities = ['kochi', 'mohali', 'bengaluru', 'bangalore', 'chennai', 'gurugram', 'gurgaon', 'indore', 'coimbatore', 'pune', 'trivandrum', 'thiruvananthapuram', 'mumbai', 'ahmedabad', 'noida', 'delhi', 'new delhi', 'hyderabad', 'kolkata', 'chandigarh', 'kozhikode', 'calicut', 'madurai', 'mysore', 'bhubaneswar', 'nagpur', 'lucknow', 'jaipur', 'surat', 'kanpur', 'patna', 'bhopal', 'vadodara', 'ludhiana', 'agra', 'nashik', 'faridabad', 'meerut', 'rajkot', 'varanasi', 'srinagar', 'aurangabad', 'dhanbad', 'amritsar', 'allahabad', 'ranchi', 'howrah', 'jabalpur', 'gwalior', 'vijayawada', 'jodhpur', 'raipur', 'kota', 'guwahati', 'solapur', 'hubli', 'dharwad', 'bareilly', 'moradabad', 'mysuru', 'tiruchirappalli', 'jalandhar', 'salem', 'warangal', 'guntur', 'bhiwandi', 'saharanpur', 'gorakhpur', 'bikaner', 'amravati', 'jamshedpur', 'bhilai', 'cuttack', 'firozabad', 'bhavnagar', 'dehradun', 'durgapur', 'asansol', 'rourkela', 'nanded', 'kolhapur', 'ajmer', 'gulbarga', 'jamnagar', 'ujjain', 'loni', 'siliguri', 'jhansi', 'ulhasnagar', 'jammu', 'sangli', 'mangalore', 'erode', 'belgaum', 'kurnool', 'tirunelveli', 'malegaon', 'gaya', 'udaipur', 'kakinada', 'davangere', 'akola', 'tumkur', 'bhagalpur', 'bellary', 'latur', 'dhule', 'rohtak', 'korba', 'bhilwara', 'brahmapur', 'muzaffarpur', 'ahmednagar', 'mathura', 'kollam', 'kadapa', 'bilaspur', 'shahjahanpur', 'satara', 'bijapur', 'rampur', 'shivamogga', 'chandrapur', 'junagadh', 'thrissur', 'alwar', 'bardhaman', 'nizamabad', 'parbhani', 'tumakuru', 'khammam', 'panipat', 'darbhanga', 'aizawl', 'dewas', 'ichalkaranji', 'karnal', 'bathinda', 'jalna', 'eluru', 'barasat', 'purnia', 'satna', 'mau', 'sonipat', 'farrukhabad', 'sagar', 'durg', 'imphal', 'ratlam', 'hapur', 'anantapur', 'arrah', 'karimnagar', 'etawah', 'bharatpur', 'begusarai', 'gandhidham', 'puducherry', 'sikar', 'thoothukudi', 'rewa', 'mirzapur', 'raichur', 'pali', 'ramagundam', 'silchar', 'haridwar', 'vijayanagaram', 'tenali', 'nagercoil', 'sri ganganagar', 'thanjavur', 'bulandshahr', 'katni', 'sambhal', 'singrauli', 'nadiad', 'secunderabad', 'yamunanagar', 'bidar', 'munger', 'panchkula', 'burhanpur', 'kharagpur', 'dindigul', 'gandhinagar', 'hosapete', 'malda', 'ongole', 'deoghar', 'chapra', 'haldia', 'khandwa', 'nandyal', 'morena', 'amroha', 'anand', 'bhind', 'bhiwani', 'berhampore', 'ambala', 'morbi', 'fatehpur', 'raebareli', 'chittoor', 'bhusawal', 'orai', 'bahraich', 'phagwara', 'machilipatnam', 'midnapore', 'bhadrak', 'navsari', 'guntakal', 'hindupur', 'krishnanagar', 'dibrugarh', 'hazaribagh', 'palakkad', 'kannur', 'alappuzha', 'kottayam', 'kasaragod', 'pathanamthitta', 'malappuram', 'wayanad', 'idukki', 'ernakulam'];
+        const isInIndia = loc.includes('india') || states.some((state) => loc.includes(state)) || cities.some((city) => loc.includes(city));
+        const isRemote = (d.workMode && d.workMode.toLowerCase() === 'remote') || loc.includes('remote');
+        if (isInIndia || isRemote) return false;
+      } else if (filterLocation === 'Remote Jobs') {
+        const isRemote = (d.workMode && d.workMode.toLowerCase() === 'remote') || loc.includes('remote');
+        if (!isRemote) return false;
       } else if (!d.location || !loc.includes(filterLocation.toLowerCase())) {
         return false;
       }
     }
 
     if (filterExperience && !matchExperience(d.experience, filterExperience)) return false;
+
     return true;
   });
 }
