@@ -363,7 +363,7 @@ export default function AdminJobRecommendationsSection() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-[2.5fr_1fr] gap-6 items-start">
       <div className="bg-white border border-[#E5E1DA] rounded-2xl p-5 space-y-4">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
@@ -371,7 +371,7 @@ export default function AdminJobRecommendationsSection() {
               {links.map((link, i) => (
                 <tr key={i} className="border-b border-[#F3F0EB] last:border-0">
                   <td className="py-2 pr-3 text-[#6B7280] text-center">{i + 1}</td>
-                  <td className="py-2 pr-3 w-1/3">
+                  <td className="py-2 pr-3 w-[25rem]">
                     <input
                       value={link.company}
                       onChange={e => handleLinkChange(i, 'company', e.target.value)}
