@@ -2,7 +2,7 @@ const Vacancy = require('../models/Vacancy');
 const Notification = require('../models/Notification');
 const { sendJobApplicationEmail, sendApplicationReviewingEmail } = require('../utils/email');
 const User = require('../models/User');
-
+const InterviewSession = require('../models/InterviewSession');
 const parseSkills = (skills) =>
   Array.isArray(skills)
     ? skills.map(s => s.trim()).filter(Boolean)
@@ -237,6 +237,23 @@ exports.markVacancyViewed = async (req, res) => {
     const vacancy = await Vacancy.findByIdAndUpdate(req.params.id, { isViewed: true }, { new: true });
     if (!vacancy) return res.status(404).json({ message: 'Vacancy not found' });
     res.json(vacancy);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+exports.getSharedProfiles = async (req, res) => {
+  try {
+    const vacancy = await Vacancy.findById(req.params.id)
+      .select('title company description skills location type experience salaryRange');
+    if (!vacancy) return res.status(404).json({ message: 'Vacancy not found' });
+
+    const sessions = await InterviewSession.find({ vacancy: req.params.id })
+      .populate('user', 'name email phone linkedinUrl githubUrl portfolioUrl cvUrl avatar bio yearsOfExperience skills designations')
+      .sort({ overallRating: -1 }) // Sort by best evaluated
+      .lean();
+
+    res.json({ success: true, vacancy, sessions });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

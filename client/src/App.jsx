@@ -43,6 +43,8 @@ const CurationShowcase   = lazy(() => import('./pages/CurationShowcase'));
 const DeveloperInterviewFeedback = lazy(() => import('./pages/DeveloperInterviewFeedback'));
 const Overview           = lazy(() => import('./pages/Overview'));
 const ProjectsSection    = lazy(() => import('./pages/Dashboard').then(m => ({ default: m.ProjectsSection })));
+const SharedProfiles     = lazy(() => import('./pages/SharedProfiles'));
+const SharedProfileDetail = lazy(() => import('./pages/SharedProfileDetail'));
 
 class ErrorBoundary extends Component {
   state = { error: null };
@@ -162,6 +164,8 @@ function AppRoutes() {
             <Route path="/career-services" element={<Navigate to="/dashboard/premium" replace />} />
             <Route path="/quiz-zone" element={<LearningTracker />} />
             <Route path="/portfolio/:userId" element={<PublicPortfolio />} />
+            <Route path="/shared-profiles/:id" element={<SharedProfiles />} />
+            <Route path="/shared-profiles/:id/candidate/:sessionId" element={<SharedProfileDetail />} />
             <Route path="/showcase/:slug" element={<CurationShowcase />} />
             <Route path="/admin" element={<AdminRoute><AdminPanel /></AdminRoute>} />
             <Route path="*" element={<NotFound />} />

@@ -249,6 +249,22 @@ const matchExperience = (jobExpStr, filterVal) => {
   }
 };
 
+const getTwoSentences = (text) => {
+  if (!text) return { text: '', hasMore: false };
+  let sentences = text.match(/[^.!?\n]+[.!?]+(\s|$)|[^.!?\n]+$/g);
+  if (sentences && sentences.length > 2) {
+    let truncated = sentences.slice(0, 2).join(' ').trim();
+    if (truncated.length > 180) {
+      return { text: truncated.slice(0, 180) + '...', hasMore: true };
+    }
+    return { text: truncated + '...', hasMore: true };
+  }
+  if (text.length > 180) {
+    return { text: text.slice(0, 180) + '...', hasMore: true };
+  }
+  return { text, hasMore: false };
+};
+
 function filterOpportunityItems(data, activeTab, filterDesignation, filterLocation, filterExperience) {
   return data.filter((d) => {
     if (activeTab === 'job-links') {
@@ -932,7 +948,8 @@ export default function Vacancies() {
                       className={`sticky-curly ${rotClass} p-6 flex flex-col gap-4 ${v.status === 'closed' ? 'opacity-70' : ''}`}
                       style={{ '--sticky-bg': colorObj.bg, '--sticky-fold': colorObj.fold }}
                     >
-                      {/* Header: Title, Company */}
+                      <div className="flex flex-col gap-4 flex-1">
+                        {/* Header: Title, Company */}
                       <div className="flex justify-between items-start">
                         <div>
                           <h2 className="text-[17px] font-semibold text-gray-900">{v.title}</h2>
@@ -968,10 +985,10 @@ export default function Vacancies() {
 
                       {/* Description */}
                       <div>
-                        <p className={`text-[13.5px] text-gray-600 leading-relaxed ${expanded[v._id] ? '' : 'line-clamp-2'}`}>
-                          {v.description}
+                        <p className={`text-[13.5px] text-gray-600 leading-relaxed ${expanded[v._id] ? 'whitespace-pre-wrap' : ''}`}>
+                          {expanded[v._id] ? v.description : getTwoSentences(v.description).text}
                         </p>
-                        {v.description?.length > 100 && (
+                        {(getTwoSentences(v.description).hasMore || v.description?.length > 100) && (
                           <button
                             onClick={() => setExpanded(e => ({ ...e, [v._id]: !e[v._id] }))}
                             className="text-[12.5px] font-medium text-accent hover:text-accent-hover mt-1 transition-colors"
@@ -982,12 +999,24 @@ export default function Vacancies() {
                       </div>
 
                       {/* Skills / Tags */}
-                      <div className="text-[13.5px] text-gray-500">
-                        {v.skills && v.skills.length > 0 ? v.skills.join(' · ') : v.topics && v.topics.length > 0 ? v.topics.join(' · ') : 'Skills not specified'}
+                      <div>
+                        <div className={`text-[13.5px] text-gray-500 ${expanded[`${v._id}_skills`] ? '' : 'line-clamp-2'}`}>
+                          {v.skills && v.skills.length > 0 ? v.skills.join(' · ') : v.topics && v.topics.length > 0 ? v.topics.join(' · ') : 'Skills not specified'}
+                        </div>
+                        {((v.skills?.join(' · ') || v.topics?.join(' · ') || '').length > 70) && (
+                          <button
+                            onClick={() => setExpanded(e => ({ ...e, [`${v._id}_skills`]: !e[`${v._id}_skills`] }))}
+                            className="text-[12.5px] font-medium text-accent hover:text-accent-hover mt-0.5 transition-colors"
+                          >
+                            {expanded[`${v._id}_skills`] ? 'less' : '+ more'}
+                          </button>
+                        )}
+                      </div>
+
                       </div>
 
                       {/* Footer */}
-                      <div className="flex items-center justify-between mt-2 border-t border-transparent">
+                      <div className="flex items-center justify-between pt-4 border-t border-gray-200">
                         <div className="text-[12px] text-gray-400">
                           {v.createdAt ? (() => {
                             const days = Math.floor((new Date() - new Date(v.createdAt)) / (1000 * 60 * 60 * 24));

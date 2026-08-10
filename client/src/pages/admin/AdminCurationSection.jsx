@@ -3,7 +3,8 @@ import {
   Search, Plus,
   ClipboardList,
   Edit3, RefreshCw, Trash2,
-  Video, BookMarked, Users, ChevronDown, Layers
+  Video, BookMarked, Users, ChevronDown, Layers,
+  Share2, Copy, ExternalLink
 } from 'lucide-react';
 import api from '../../api/axios';
 import toast from 'react-hot-toast';
@@ -430,6 +431,86 @@ function AllSessionsTab({ onEditSession }) {
   );
 }
 
+// ─── Share Profiles Tab ────────────────────────────────────────────────────────
+function ShareProfilesTab({ jobs, loading }) {
+  const [selectedJobId, setSelectedJobId] = useState('');
+  const [sessionCount, setSessionCount] = useState(0);
+
+  const selectedJob = jobs.find(j => j._id === selectedJobId) || null;
+
+  useEffect(() => {
+    if (!selectedJobId) {
+      setSessionCount(0);
+      return;
+    }
+    // Quick fetch to get count of sessions for this vacancy
+    api.get('/admin/interviews?limit=500').then(res => {
+      const validSessions = (res.data.sessions || []).filter(s => s.vacancy && String(s.vacancy._id || s.vacancy) === selectedJobId);
+      setSessionCount(validSessions.length);
+    }).catch(() => {});
+  }, [selectedJobId]);
+
+  const copyLink = () => {
+    const link = `${window.location.origin}/shared-profiles/${selectedJobId}`;
+    navigator.clipboard.writeText(link);
+    toast.success('Shareable link copied to clipboard');
+  };
+
+  return (
+    <div className="max-w-xl">
+      <div className="bg-white border border-[#E5E1DA] rounded-2xl p-4 space-y-4">
+        <div>
+          <label className="block text-xs font-semibold text-[#6B7280] mb-1.5">Select Job / Vacancy</label>
+          <div className="relative">
+            <select
+              value={selectedJobId}
+              onChange={e => setSelectedJobId(e.target.value)}
+              disabled={loading}
+              className={`${inp} appearance-none pr-10 cursor-pointer disabled:opacity-60`}
+            >
+              <option value="">— Choose a job —</option>
+              {jobs.map(j => (
+                <option key={j._id} value={j._id}>
+                  {j.title}{j.company ? ` — ${j.company}` : ''} ({j.status})
+                </option>
+              ))}
+            </select>
+            <ChevronDown size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#9CA3AF] pointer-events-none" />
+          </div>
+        </div>
+        
+        {selectedJobId && (
+          <div className="bg-[#FAF7F2] p-4 rounded-xl border border-[#E5E1DA]">
+            <p className="text-sm font-medium text-[#1A1A1A] mb-1">Vacancy selected: {selectedJob?.title}</p>
+            <p className="text-xs text-[#6B7280] mb-4">
+              Found <strong className="text-[#00A693]">{sessionCount}</strong> shortlisted candidates with evaluation reports.
+            </p>
+            
+            <div className="flex items-center gap-3">
+              <button
+                onClick={copyLink}
+                disabled={sessionCount === 0}
+                className="flex flex-1 items-center justify-center gap-2 px-4 py-2.5 bg-[#00A693] hover:bg-[#008f7e] disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-xl text-sm font-semibold transition"
+              >
+                <Copy size={16} /> Copy Shareable Link
+              </button>
+              
+              <a
+                href={`/shared-profiles/${selectedJobId}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={`flex shrink-0 items-center justify-center gap-2 px-4 py-2.5 border border-[#E5E1DA] text-[#6B7280] hover:text-[#1A1A1A] hover:bg-white rounded-xl text-sm font-semibold transition ${sessionCount === 0 ? 'opacity-50 pointer-events-none' : ''}`}
+              >
+                <ExternalLink size={16} /> Preview
+              </a>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // ─── Main Component ───────────────────────────────────────────────────────────
 export default function AdminCurationSection() {
   const [tab, setTab] = useState('session');
@@ -597,6 +678,7 @@ export default function AdminCurationSection() {
           { key: 'modules', label: 'Interview Modules', icon: Layers },
           { key: 'create', label: 'Create Interview Session', icon: Plus },
           { key: 'sessions', label: 'Interview Sessions', icon: BookMarked, count: allSessionsCount },
+          { key: 'share', label: 'Share Profiles', icon: Share2 },
         ].map(t => (
           <button
             key={t.key}
@@ -645,6 +727,8 @@ export default function AdminCurationSection() {
             setTab('modules');
           }}
         />
+      ) : tab === 'share' ? (
+        <ShareProfilesTab jobs={jobs} loading={loading} />
       ) : (
         <>
           <ScreeningJobApplicantPicker
