@@ -440,7 +440,6 @@ function ShareProfilesTab({ jobs, loading }) {
 
   useEffect(() => {
     if (!selectedJobId) {
-      setSessionCount(0);
       return;
     }
     // Quick fetch to get count of sessions for this vacancy
@@ -464,7 +463,11 @@ function ShareProfilesTab({ jobs, loading }) {
           <div className="relative">
             <select
               value={selectedJobId}
-              onChange={e => setSelectedJobId(e.target.value)}
+              onChange={e => {
+                const val = e.target.value;
+                setSelectedJobId(val);
+                if (!val) setSessionCount(0);
+              }}
               disabled={loading}
               className={`${inp} appearance-none pr-10 cursor-pointer disabled:opacity-60`}
             >
