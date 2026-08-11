@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { MapPin, Briefcase, CheckCircle, XCircle, ArrowRight, Laptop, Crown, Banknote, IndianRupee, ExternalLink, Building, Clock, Calendar, Plus, Info } from 'lucide-react';
+import { MapPin, Briefcase, CheckCircle, XCircle, ArrowRight, Laptop, Crown, Banknote, IndianRupee, ExternalLink, Building, Clock, Calendar } from 'lucide-react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
