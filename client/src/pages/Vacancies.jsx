@@ -748,21 +748,10 @@ export default function Vacancies() {
                           </h2>
                         </div>
 
-                        {(link.company || link.location) && (
+                        {link.location && (
                           <div className="flex items-center gap-1.5 text-[13px] text-gray-600">
-                            {link.company && (
-                              <>
-                                <Building size={14} className="text-gray-400 shrink-0" />
-                                <span className="truncate">{link.company}</span>
-                              </>
-                            )}
-                            {link.company && link.location && <span className="text-gray-300 mx-0.5 shrink-0">•</span>}
-                            {link.location && (
-                              <>
-                                <MapPin size={14} className="text-gray-400 shrink-0" />
-                                <span className="truncate">{link.location}</span>
-                              </>
-                            )}
+                            <MapPin size={14} className="text-gray-400 shrink-0" />
+                            <span className="truncate">{link.location}</span>
                           </div>
                         )}
 

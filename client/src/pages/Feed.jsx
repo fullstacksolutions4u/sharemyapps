@@ -310,11 +310,7 @@ export default function Feed() {
                               {link.title || 'Job Opportunity'}
                             </span>
                           </div>
-                          {link.company && (
-                            <div className="text-[11.5px] text-gray-600 font-medium truncate flex items-center gap-1 mt-0.5">
-                              <Building size={11} className="text-gray-400" /> {link.company}
-                            </div>
-                          )}
+
                           
                           <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-gray-500 mt-0.5">
                             {link.experience && (
