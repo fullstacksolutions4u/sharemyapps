@@ -99,7 +99,7 @@ function findDuplicateAgainstList({ url, title, company, excludeId, approvedLink
 }
 
 const APPLY_INSTRUCTION =
-  'Get 2 free applies weekly — share 1 job post to unlock unlimited applies.';
+  'Get 2 free applies weekly. Upgrade to Premium for ₹399/- for unlimited lifetime applies.';
 
 /**
  * Apply Now rules for Job Post Links:
@@ -112,20 +112,11 @@ async function getJobLinkApplyEligibility(userId) {
   const since = weekStart();
 
   const User = require('../models/User');
-  const [clickedDocs, weeklyApplyDocs, weeklyApprovedCount, pendingContributionCount, userDoc] = await Promise.all([
+  const [clickedDocs, weeklyApplyDocs, userDoc] = await Promise.all([
     JobLink.find({ clicks: userId }).select('_id').lean(),
     JobLink.find({
       clickEvents: { $elemMatch: { user: userId, at: { $gte: since } } },
     }).select('_id').lean(),
-    JobLink.countDocuments({
-      createdBy: userId,
-      status: { $in: ['approved', 'access_granted'] },
-      $or: [
-        { approvedAt: { $gte: since } },
-        { $and: [{ approvedAt: { $exists: false } }, { updatedAt: { $gte: since } }] },
-      ],
-    }),
-    JobLink.countDocuments({ createdBy: userId, status: 'pending' }),
     User.findById(userId).select('premiumServices').lean(),
   ]);
 
@@ -133,15 +124,11 @@ async function getJobLinkApplyEligibility(userId) {
 
   const clickedIds = clickedDocs.map((d) => d._id.toString());
   const weeklyApplyCount = weeklyApplyDocs.length;
-  const hasWeeklyContribution = weeklyApprovedCount > 0;
-  const pendingContribution = pendingContributionCount > 0;
-  const canApplyMore = isPremium || hasWeeklyContribution || weeklyApplyCount < FREE_APPLY_LIMIT;
+  const canApplyMore = isPremium || weeklyApplyCount < FREE_APPLY_LIMIT;
 
   return {
     canApplyMore,
     isPremium,
-    hasWeeklyContribution,
-    pendingContribution,
     freeApplyUsed: weeklyApplyCount >= FREE_APPLY_LIMIT,
     applyCount: weeklyApplyCount,
     freeApplyLimit: FREE_APPLY_LIMIT,

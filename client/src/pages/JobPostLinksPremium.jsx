@@ -9,7 +9,6 @@ import PlacementPaymentModal from '../components/PlacementPaymentModal';
 const FEATURES = [
   'Unlimited Applies on every job post',
   'No weekly 2-apply limit',
-  'Apply without sharing posts',
   'One time payment',
 ];
 

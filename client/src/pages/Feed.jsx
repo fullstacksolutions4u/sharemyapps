@@ -91,31 +91,7 @@ const getDesignationStyle = (title) => {
 
 
 
-const ScrollingPlaceholderInput = ({ value, onChange, className }) => {
-  const fullText = "Found a job opening posted somewhere that isn't relevant to you? Share it here to help others!          ";
-  const [offset, setOffset] = useState(0);
 
-  useEffect(() => {
-    if (value) return;
-    const interval = setInterval(() => {
-      setOffset((prev) => (prev + 1) % fullText.length);
-    }, 180);
-    return () => clearInterval(interval);
-  }, [value]);
-
-  const displayPlaceholder = fullText.slice(offset) + fullText.slice(0, offset);
-
-  return (
-    <input
-      type="url"
-      required
-      placeholder={value ? "" : displayPlaceholder}
-      value={value}
-      onChange={onChange}
-      className={className}
-    />
-  );
-};
 
 const parsePostedDate = (dateStr, createdAt) => {
   if (!dateStr) return new Date(createdAt || 0).getTime();
@@ -145,8 +121,6 @@ export default function Feed() {
   const [loading, setLoading] = useState(true);
   const [showReportModal, setShowReportModal] = useState(false);
   const [jobLinks, setJobLinks] = useState([]);
-  const [inlineUrl, setInlineUrl] = useState('');
-  const [submittingLink, setSubmittingLink] = useState(false);
 
   const [clickedLinks, setClickedLinks] = useState(() => {
     try {
@@ -273,27 +247,7 @@ export default function Feed() {
     fetchMoreData();
   }, [page]);
 
-  const handleInlineJobLinkSubmit = async (e) => {
-    e.preventDefault();
-    if (!inlineUrl) return;
-    setSubmittingLink(true);
-    try {
-      const res = await axios.post('/job-links', { url: inlineUrl, platform: 'other' });
-      if (res.data.success) {
-        toast.success('Job link submitted! It will appear after admin approval.', { duration: 5000 });
-        setInlineUrl('');
-      }
-    } catch (error) {
-      console.error(error);
-      if (error.response?.data?.message) {
-        toast.error(error.response.data.message);
-      } else {
-        toast.error('Failed to share job link.');
-      }
-    } finally {
-      setSubmittingLink(false);
-    }
-  };
+
 
   if (loading) return (
     <div className="flex justify-center items-center h-[70vh] w-full">
@@ -321,48 +275,13 @@ export default function Feed() {
           </div>
           <div className="relative z-10 flex flex-col h-full overflow-hidden">
           <div className="p-4 border-b border-black/5 bg-transparent shrink-0 flex items-center justify-center">
-            <h3 className="text-[13px] font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-[#008b74] to-[#5a788b] tracking-wide drop-shadow-sm text-center uppercase whitespace-nowrap">
-              Jobs Post Shared by community members
+            <h3 className="text-[11px] font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-[#008b74] to-[#5a788b] tracking-wide drop-shadow-sm text-center uppercase leading-snug">
+              STOP EASY APPLY<br />
+              START TO APPLY THROUGH JOB POSTS
             </h3>
           </div>
 
-          {user && (
-            <div className="p-3 border-b border-black/5 bg-white/40 shrink-0 relative">
-              <form
-                onSubmit={handleInlineJobLinkSubmit}
-                className="w-full flex items-center gap-1 bg-white rounded-xl border border-black/20 animate-border-gemini-shine focus-within:!border-accent/50 focus-within:!shadow-[0_0_0_2px_rgba(0,166,147,0.1)] transition-all p-1 pl-1.5 overflow-hidden relative"
-              >
-                <ScrollingPlaceholderInput
-                  value={inlineUrl}
-                  onChange={e => setInlineUrl(e.target.value)}
-                  className="flex-1 bg-transparent text-[12px] outline-none px-1 text-gray-700 min-w-0 placeholder:text-gray-400"
-                />
-                <button
-                  type="submit"
-                  disabled={submittingLink}
-                  className="bg-accent hover:bg-accent-hover text-white p-1.5 rounded-md transition-colors disabled:opacity-50 shrink-0 flex items-center justify-center"
-                >
-                  <Plus size={14} />
-                </button>
-              </form>
 
-              <div className="absolute right-[5px] top-[2px] group flex items-center justify-center cursor-help shrink-0 z-20">
-                <div className="text-gray-400 hover:text-accent transition-colors">
-                  <Info size={13} />
-                </div>
-                
-                <div className="absolute right-0 top-full mt-2 w-[270px] bg-white border border-gray-200 text-gray-700 text-[12px] p-3.5 rounded-xl shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 text-left">
-                  <ul className="list-disc pl-4 space-y-1.5 text-gray-600">
-                    <li>Share software job post links only.</li>
-                    <li>Must be posted within the last 5 days.</li>
-                    <li>Genuine posts only (no "comment if interested" engagement traps).</li>
-                    <li>Direct job post links only (no generic job portal links).</li>
-                  </ul>
-                  <div className="absolute -top-1.5 right-2 w-3 h-3 bg-white border-t border-l border-gray-200 transform rotate-45"></div>
-                </div>
-              </div>
-            </div>
-          )}
           <div className="overflow-y-auto custom-scrollbar p-2 flex-1">
             {filteredJobLinks.length === 0 ? (
               <p className="text-sm text-gray-500 text-center py-6">No job links match this filter.</p>

@@ -8,7 +8,7 @@ import toast from 'react-hot-toast';
 import { normalizeJobDesignation } from '../utils/jobDesignation';
 
 const JOB_LINK_APPLY_INSTRUCTION =
-  'Get 2 free applies weekly — share 1 job post to unlock unlimited applies.';
+  'Get 2 free applies weekly. Upgrade to Premium for ₹399/- for unlimited lifetime applies.';
 
 const getStatusConfig = (status) => {
   const s = (status || '').toLowerCase();
@@ -157,32 +157,6 @@ function FilterDropdown({ icon: Icon, placeholder, value, onChange, options }) {
 }
 
 const INDIA_STATES = ['Kerala', 'Karnataka', 'Tamil Nadu', 'Andhra Pradesh', 'Arunachal Pradesh', 'Assam', 'Bihar', 'Chhattisgarh', 'Goa', 'Gujarat', 'Haryana', 'Himachal Pradesh', 'Jharkhand', 'Madhya Pradesh', 'Maharashtra', 'Manipur', 'Meghalaya', 'Mizoram', 'Nagaland', 'Odisha', 'Punjab', 'Rajasthan', 'Sikkim', 'Telangana', 'Tripura', 'Uttar Pradesh', 'Uttarakhand', 'West Bengal', 'Andaman and Nicobar Islands', 'Chandigarh', 'Dadra and Nagar Haveli and Daman and Diu', 'Delhi', 'Jammu and Kashmir', 'Ladakh', 'Lakshadweep', 'Puducherry', 'Out of India', 'Remote Jobs'];
-
-const ScrollingPlaceholderInput = ({ value, onChange, className }) => {
-  const fullText = "Found a job opening posted somewhere that isn't relevant to you? Share it here to help others!          ";
-  const [offset, setOffset] = useState(0);
-
-  useEffect(() => {
-    if (value) return;
-    const interval = setInterval(() => {
-      setOffset((prev) => (prev + 1) % fullText.length);
-    }, 180);
-    return () => clearInterval(interval);
-  }, [value]);
-
-  const displayPlaceholder = fullText.slice(offset) + fullText.slice(0, offset);
-
-  return (
-    <input
-      type="url"
-      required
-      placeholder={value ? "" : displayPlaceholder}
-      value={value}
-      onChange={onChange}
-      className={className}
-    />
-  );
-};
 
 const EXPERIENCE_OPTIONS = [
   'Fresher',
@@ -344,8 +318,6 @@ export default function Vacancies() {
   const [filterLocation, setFilterLocation] = useState('');
   const [filterExperience, setFilterExperience] = useState('');
   
-  const [inlineUrl, setInlineUrl] = useState('');
-  const [submittingLink, setSubmittingLink] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
 
   const [localClickedLinks, setLocalClickedLinks] = useState(() => {
@@ -571,49 +543,55 @@ export default function Vacancies() {
     }
   };
 
-  const handleInlineJobLinkSubmit = async (e) => {
-    e.preventDefault();
-    if (!inlineUrl) return;
-    setSubmittingLink(true);
-    try {
-      const res = await api.post('/job-links', { url: inlineUrl, platform: 'other' });
-      if (res.data.success) {
-        toast.success('Job link submitted! It will appear after admin approval.', { duration: 5000 });
-        setInlineUrl('');
-        refetchEligibility();
-      }
-    } catch (error) {
-      console.error(error);
-      if (error.response?.data?.message) {
-        toast.error(error.response.data.message);
-      } else {
-        toast.error('Failed to share job link.');
-      }
-    } finally {
-      setSubmittingLink(false);
+
+
+  const getBackgroundStyles = () => {
+    switch (activeTab) {
+      case 'job-links':
+        return {
+          wrapper: 'from-[#5a788b]/20 via-white to-[#5a788b]/10',
+          pattern: 'radial-gradient(circle, #5a788b 1px, transparent 1px)',
+        };
+      case 'vacancies':
+        return {
+          wrapper: 'from-emerald-100/50 via-white to-emerald-50/50',
+          pattern: 'radial-gradient(circle, #10b981 1px, transparent 1px)', // emerald-500
+        };
+      case 'freelance':
+        return {
+          wrapper: 'from-violet-100/50 via-white to-violet-50/50',
+          pattern: 'radial-gradient(circle, #8b5cf6 1px, transparent 1px)', // violet-500
+        };
+      default:
+        return {
+          wrapper: 'from-accent/10 via-white to-violet-50',
+          pattern: 'radial-gradient(circle, #00A693 1px, transparent 1px)',
+        };
     }
   };
 
+  const bgStyles = getBackgroundStyles();
+
   return (
-    <div className="min-h-screen bg-linear-to-br from-accent/10 via-white to-violet-50 relative">
-      <div className="absolute inset-0 opacity-20 pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle, #00A693 1px, transparent 1px)', backgroundSize: '28px 28px' }} />
+    <div className={`min-h-screen bg-linear-to-br ${bgStyles.wrapper} relative transition-colors duration-500`}>
+      <div className="absolute inset-0 opacity-20 pointer-events-none transition-all duration-500" style={{ backgroundImage: bgStyles.pattern, backgroundSize: '28px 28px' }} />
       {/* Tabs header */}
-      <div className="relative border-b border-border overflow-hidden">
-        <div className="relative max-w-[1550px] mx-auto px-2 sm:px-3 flex items-center justify-between">
-          <div className="flex gap-1 flex-1 justify-center">
+      <div className="relative border-b border-white/20 shadow-sm overflow-hidden bg-white/30 backdrop-blur-md">
+        <div className="relative max-w-[1550px] mx-auto px-2 sm:px-3 flex items-center justify-between py-2">
+          <div className="flex gap-1.5 flex-1 justify-center">
             {TABS.map(({ key, label, icon: Icon }) => {
               const tabColors = {
                 'job-links': {
-                  active: 'border-blue-600 text-blue-600 bg-blue-50/70 shadow-xs',
-                  inactive: 'border-transparent text-blue-500/80 bg-blue-50/5 hover:text-blue-600 hover:bg-blue-50/20'
+                  active: 'bg-[#5a788b] text-white shadow-md scale-105',
+                  inactive: 'text-gray-600 hover:bg-white/60 hover:text-[#5a788b]'
                 },
                 'vacancies': {
-                  active: 'border-emerald-600 text-emerald-600 bg-emerald-50/70 shadow-xs',
-                  inactive: 'border-transparent text-emerald-600/80 bg-emerald-50/5 hover:text-emerald-600 hover:bg-emerald-50/20'
+                  active: 'bg-emerald-600 text-white shadow-md scale-105',
+                  inactive: 'text-gray-600 hover:bg-white/60 hover:text-emerald-700'
                 },
                 'freelance': {
-                  active: 'border-violet-600 text-violet-600 bg-violet-50/70 shadow-xs',
-                  inactive: 'border-transparent text-violet-600/80 bg-violet-50/5 hover:text-violet-600 hover:bg-violet-50/20'
+                  active: 'bg-violet-600 text-white shadow-md scale-105',
+                  inactive: 'text-gray-600 hover:bg-white/60 hover:text-violet-700'
                 }
               };
               const colors = tabColors[key] || { active: '', inactive: '' };
@@ -628,11 +606,11 @@ export default function Vacancies() {
                     setCurrentPage(1);
                     navigate(`?tab=${key}`, { replace: true });
                   }}
-                  className={`flex items-center gap-1.5 px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
+                  className={`flex items-center gap-2 px-5 py-2.5 text-[14px] font-bold rounded-xl transition-all duration-300 ${
                     activeTab === key ? colors.active : colors.inactive
                   }`}
                 >
-                  <Icon size={14} />
+                  <Icon size={16} />
                   {label}
                 </button>
               );
@@ -665,7 +643,7 @@ export default function Vacancies() {
       {!TAB_CONFIG[activeTab].loading && (TAB_CONFIG[activeTab].data.length > 0 || activeTab === 'job-links') && (
         <div className="border-b border-border/40">
           <div className="max-w-[1550px] mx-auto px-2 sm:px-3 py-3">
-            <div className="flex flex-wrap gap-3 items-center justify-start">
+            <div className="flex flex-wrap gap-3 items-center justify-center">
               
               <FilterDropdown
                 icon={Briefcase}
@@ -709,46 +687,6 @@ export default function Vacancies() {
                 </p>
               )}
 
-              {activeTab === 'job-links' && user && (
-                <div className="w-full sm:w-auto min-w-[200px] sm:min-w-[280px] sm:flex-1 sm:max-w-[520px] shrink-0">
-                  <div className="relative min-w-0">
-                    <form
-                      onSubmit={handleInlineJobLinkSubmit}
-                      className="flex items-center gap-1 bg-white rounded-xl border border-black/20 animate-border-gemini-shine focus-within:!border-accent/50 focus-within:!shadow-[0_0_0_2px_rgba(0,166,147,0.1)] transition-all p-1 pl-1.5 overflow-hidden"
-                    >
-                      <ScrollingPlaceholderInput
-                        value={inlineUrl}
-                        onChange={e => setInlineUrl(e.target.value)}
-                        className="flex-1 bg-transparent text-[12px] outline-none px-1 text-gray-700 min-w-0 placeholder:text-gray-400"
-                      />
-                      <button
-                        type="submit"
-                        disabled={submittingLink}
-                        className="bg-accent hover:bg-accent-hover text-white p-1.5 rounded-md transition-colors disabled:opacity-50 shrink-0 flex items-center justify-center"
-                      >
-                        <Plus size={14} />
-                      </button>
-                    </form>
-
-                    <div className="absolute -top-2.5 -right-5 group z-10">
-                      <div className="text-gray-400 hover:text-accent transition-colors p-0.5 bg-white rounded-full border border-gray-200 shadow-sm">
-                        <Info size={14} />
-                      </div>
-
-                      <div className="absolute right-0 top-full mt-2 w-[300px] bg-white border border-gray-200 text-gray-700 text-[12px] p-3.5 rounded-xl shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 text-left pointer-events-none">
-                        <div className="font-semibold text-[13px] mb-2 text-accent">Guidelines for sharing:</div>
-                        <ul className="list-disc pl-4 space-y-1.5 text-gray-600">
-                          <li>Share software job post links only.</li>
-                          <li>Must be posted within the last 5 days.</li>
-                          <li>Don&apos;t share &quot;comment here if interested&quot; kind of engagement posts.</li>
-                          <li>Don&apos;t share job portals direct links.</li>
-                        </ul>
-                        <div className="absolute -top-1.5 right-2 w-3 h-3 bg-white border-t border-l border-gray-200 transform rotate-45"></div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
               
             </div>
           </div>
@@ -882,12 +820,12 @@ export default function Vacancies() {
                           <div className="relative group/unlock z-10">
                             <button
                               type="button"
-                              onClick={(e) => handleLinkClick(e, link._id, link.url)}
-                              className="py-1.5 px-3 rounded-lg text-[12px] font-semibold flex items-center justify-center gap-1.5 bg-gray-200 text-gray-500 border-b-[3px] border-gray-300 transition-all"
+                              onClick={(e) => { e.preventDefault(); navigate('/job-post-links-premium'); }}
+                              className="py-1.5 px-3 rounded-lg text-[12px] font-semibold flex items-center justify-center gap-1.5 bg-amber-100 text-amber-700 hover:bg-amber-200 border-b-[3px] border-amber-300 transition-all"
                               aria-describedby={`unlock-tip-${link._id}`}
                             >
-                              <span>Contribute to unlock</span>
-                              <ExternalLink size={12} />
+                              <span>Upgrade to unlimited applies</span>
+                              <Crown size={12} />
                             </button>
                             <div
                               id={`unlock-tip-${link._id}`}
@@ -895,7 +833,7 @@ export default function Vacancies() {
                               className="absolute bottom-full right-0 mb-2 w-[260px] p-3.5 bg-white text-left rounded-xl shadow-[0_8px_28px_-6px_rgba(0,0,0,0.18)] border border-[#E5E1DA] opacity-0 invisible translate-y-1 group-hover/unlock:opacity-100 group-hover/unlock:visible group-hover/unlock:translate-y-0 group-focus-within/unlock:opacity-100 group-focus-within/unlock:visible group-focus-within/unlock:translate-y-0 transition-all duration-200 pointer-events-none z-[100]"
                             >
                               <p className="text-[11px] font-semibold text-[#1A1A1A] mb-2">
-                                How to unlock Apply Now
+                                Weekly limit reached
                               </p>
                               <ul className="space-y-1.5 text-[11px] text-[#4A4A4A] leading-relaxed">
                                 <li className="flex gap-1.5">
@@ -904,11 +842,11 @@ export default function Vacancies() {
                                 </li>
                                 <li className="flex gap-1.5">
                                   <span className="text-amber-600 shrink-0">•</span>
-                                  <span>Share at least <strong className="font-semibold text-[#1A1A1A]">1 job post</strong> with the community this week.</span>
+                                  <span>Upgrade to Premium for <strong className="font-semibold text-[#1A1A1A]">₹399/-</strong>.</span>
                                 </li>
                                 <li className="flex gap-1.5">
                                   <span className="text-amber-600 shrink-0">•</span>
-                                  <span>Then unlock <strong className="font-semibold text-[#1A1A1A]">unlimited</strong> applies.</span>
+                                  <span>Unlock <strong className="font-semibold text-[#1A1A1A]">unlimited lifetime</strong> applies instantly.</span>
                                 </li>
                               </ul>
                               <span className="absolute top-full right-5 border-[6px] border-transparent border-t-[#E5E1DA]" />
