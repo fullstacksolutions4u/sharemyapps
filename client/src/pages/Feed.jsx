@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import axios from '../api/axios';
 import { formatDistanceToNow } from 'date-fns';
 import { Trophy, MessageCircle, Heart, Star, TrendingUp, UserPlus, Crown, Sparkles, Plus, MapPin, Laptop, ExternalLink, Clock, Building, Calendar, Info, Coins } from 'lucide-react';
@@ -121,7 +121,11 @@ export default function Feed() {
   const [loading, setLoading] = useState(true);
   const [showReportModal, setShowReportModal] = useState(false);
   const [jobLinks, setJobLinks] = useState([]);
-
+  const navigate = useNavigate();
+  const [applyEligibility, setApplyEligibility] = useState(null);
+  
+  const isPremium = applyEligibility?.isPremium;
+  const canApplyMore = !user || applyEligibility?.canApplyMore !== false;
   const [clickedLinks, setClickedLinks] = useState(() => {
     try {
       const saved = localStorage.getItem('clicked_job_links');
@@ -196,12 +200,13 @@ export default function Feed() {
   useEffect(() => {
     const fetchInitialData = async () => {
       try {
-        const [feedRes, leaderRes, oppRes, jobLinksRes] = await Promise.all([
+        const [feedRes, leaderRes, oppRes, jobLinksRes, applyEligRes] = await Promise.all([
           axios.get('/feed?page=1'),
           axios.get('/learning-progress/leaderboard'),
           axios.get('/vacancies').catch(() => ({ data: [] })),
           axios.get('/job-links').catch(() => ({ data: { success: false } })),
-          new Promise(resolve => setTimeout(resolve, 2000)) // ensure spinner shows for at least 2 seconds
+          user ? axios.get('/job-links/apply-eligibility').catch(() => null) : Promise.resolve(null),
+          new Promise(resolve => setTimeout(resolve, 2000))
         ]);
         if (feedRes.data.success) {
           setActivities(feedRes.data.data);
@@ -216,6 +221,9 @@ export default function Feed() {
         }
         if (jobLinksRes.data && jobLinksRes.data.success) {
           setJobLinks(jobLinksRes.data.data);
+        }
+        if (applyEligRes && applyEligRes.data && applyEligRes.data.success) {
+          setApplyEligibility(applyEligRes.data.data);
         }
       } catch (err) {
         console.error('Failed to load feed', err);
@@ -290,12 +298,8 @@ export default function Feed() {
                 {filteredJobLinks.slice(0, 5).map(link => {
                   const isApplied = clickedLinks.includes(link._id);
                   return (
-                    <a 
+                    <div 
                       key={link._id} 
-                      href={link.url} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      onClick={() => handleLinkClick(link._id)}
                       className={`block pl-3 pr-2 py-2.5 rounded-lg border transition group ${
                         isApplied ? 'bg-[#006994]/5 border-[#006994]/30' : 'hover:bg-blue-50/50 border-transparent hover:border-blue-100'
                       }`}
@@ -344,27 +348,53 @@ export default function Feed() {
                             </div>
                           )}
                         </div>
-
-                        <div className="flex flex-col items-end gap-2">
-                          <div className={`flex items-center justify-center shrink-0 px-1.5 py-1 rounded-md transition-colors border text-[9px] font-bold uppercase gap-0.5 ${
-                            isApplied 
-                              ? 'bg-white text-[#006994] border-[#006994]' 
-                              : 'bg-[#006994] text-white border-[#006994] hover:bg-[#005578]'
-                          }`}>
-                            {isApplied ? 'Visited' : 'Apply'} <ExternalLink size={9} />
-                          </div>
+                        
+                        <div className="flex flex-col items-end gap-2 shrink-0">
+                          {!user ? (
+                            <Link
+                              to="/login"
+                              className="py-1 px-3 rounded text-[11px] font-bold uppercase tracking-wider transition-colors border flex items-center gap-1.5 shrink-0 bg-[#006994] text-white border-[#006994] hover:bg-[#005578]"
+                            >
+                              Sign in to apply
+                            </Link>
+                          ) : !isApplied && !canApplyMore && !isPremium ? (
+                            <div className="relative group/unlock z-10">
+                              <button
+                                type="button"
+                                onClick={(e) => { e.preventDefault(); navigate('/job-post-links-premium'); }}
+                                className="py-1 px-2 rounded-lg text-[10px] font-semibold flex items-center justify-center gap-1 bg-amber-100 text-amber-700 hover:bg-amber-200 border-b-2 border-amber-300 transition-all shadow-sm"
+                              >
+                                <span>Upgrade</span>
+                                <Crown size={10} />
+                              </button>
+                            </div>
+                          ) : (
+                            <a 
+                              href={link.url} 
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                              onClick={() => handleLinkClick(link._id)}
+                              className={`flex items-center justify-center shrink-0 px-2 py-1 rounded-md transition-colors border text-[10px] font-bold uppercase gap-1 ${
+                              isApplied 
+                                ? 'bg-white text-[#006994] border-[#006994]' 
+                                : 'bg-[#006994] text-white border-[#006994] hover:bg-[#005578]'
+                            }`}>
+                              {isApplied ? 'Visited' : 'Apply'} <ExternalLink size={10} />
+                            </a>
+                          )}
+                          
                           {isApplied && (
-                            <div className="text-[10px] text-gray-500 flex flex-col items-end gap-1">
+                            <div className="text-[10px] text-gray-500 flex flex-col items-end gap-1 mt-1">
                               <span>Heard back?</span>
                               <div className="flex gap-1">
                                 <button 
-                                  onClick={(e) => { e.preventDefault(); handleFeedback(link._id, true); }} 
+                                  onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleFeedback(link._id, true); }} 
                                   className={`px-1.5 py-0.5 rounded border transition-colors ${feedbackGiven[link._id] === 'yes' ? 'bg-emerald-50 text-emerald-600 border-emerald-200 font-medium' : 'border-gray-200 hover:bg-emerald-50 hover:text-emerald-600'}`}
                                 >
                                   Yes
                                 </button>
                                 <button 
-                                  onClick={(e) => { e.preventDefault(); handleFeedback(link._id, false); }} 
+                                  onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleFeedback(link._id, false); }} 
                                   className={`px-1.5 py-0.5 rounded border transition-colors ${feedbackGiven[link._id] === 'no' ? 'bg-red-50 text-red-600 border-red-200 font-medium' : 'border-gray-200 hover:bg-red-50 hover:text-red-600'}`}
                                 >
                                   No
@@ -374,7 +404,7 @@ export default function Feed() {
                           )}
                         </div>
                       </div>
-                    </a>
+                    </div>
                   );
                 })}
                 

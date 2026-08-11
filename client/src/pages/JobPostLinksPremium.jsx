@@ -9,6 +9,7 @@ import PlacementPaymentModal from '../components/PlacementPaymentModal';
 const FEATURES = [
   'Unlimited Applies on every job post',
   'No weekly 2-apply limit',
+  'Included FREE with Job Assistance Services',
   'One time payment',
 ];
 

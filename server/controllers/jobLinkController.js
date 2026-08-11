@@ -112,15 +112,19 @@ async function getJobLinkApplyEligibility(userId) {
   const since = weekStart();
 
   const User = require('../models/User');
-  const [clickedDocs, weeklyApplyDocs, userDoc] = await Promise.all([
+  const FreeOffer = require('../models/FreeOffer');
+  const [clickedDocs, weeklyApplyDocs, userDoc, freeOfferDoc] = await Promise.all([
     JobLink.find({ clicks: userId }).select('_id').lean(),
     JobLink.find({
       clickEvents: { $elemMatch: { user: userId, at: { $gte: since } } },
     }).select('_id').lean(),
-    User.findById(userId).select('premiumServices').lean(),
+    User.findById(userId).select('premiumServices freePremiumGrant').lean(),
+    FreeOffer.findOne({ user: userId }).select('_id').lean(),
   ]);
 
-  const isPremium = hasJobLinkUnlimitedApply(userDoc?.premiumServices);
+  const hasPremiumServices = hasJobLinkUnlimitedApply(userDoc?.premiumServices);
+  const isApplicant = !!freeOfferDoc || !!userDoc?.freePremiumGrant?.granted;
+  const isPremium = hasPremiumServices || isApplicant;
 
   const clickedIds = clickedDocs.map((d) => d._id.toString());
   const weeklyApplyCount = weeklyApplyDocs.length;
