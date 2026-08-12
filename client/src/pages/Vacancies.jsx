@@ -622,7 +622,7 @@ export default function Vacancies() {
               className="flex items-center gap-1.5 bg-white border border-amber-300 hover:border-amber-400 text-gray-700 text-xs font-semibold px-3 py-1.5 rounded-full transition-colors shrink-0 mb-1"
             >
               <Crown size={12} className="text-amber-500 shrink-0" />
-              <span>Unlimited Applies with Premium</span>
+              <span>Unlimited Job Post Applies with Premium</span>
               <span className="inline-flex items-center gap-0.5">
                 <IndianRupee size={11} className="text-gray-700" />
                 399/-
@@ -813,7 +813,7 @@ export default function Vacancies() {
                               className="py-1.5 px-3 rounded-lg text-[12px] font-semibold flex items-center justify-center gap-1.5 bg-amber-100 text-amber-700 hover:bg-amber-200 border-b-[3px] border-amber-300 transition-all"
                               aria-describedby={`unlock-tip-${link._id}`}
                             >
-                              <span>Upgrade to unlimited applies</span>
+                              <span>Upgrade to unlimited job post applies</span>
                               <Crown size={12} />
                             </button>
                             <div

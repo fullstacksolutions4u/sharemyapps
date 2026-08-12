@@ -7,9 +7,9 @@ import toast from 'react-hot-toast';
 import PlacementPaymentModal from '../components/PlacementPaymentModal';
 
 const FEATURES = [
-  'Unlimited Applies on every job post',
+  'Unlimited job post applies',
   'No weekly 2-apply limit',
-  'Included FREE with Job Assistance Services',
+  'ATS Compatible Resume & Cover letter Optimization',
   'One time payment',
 ];
 
@@ -62,10 +62,10 @@ export default function JobPostLinksPremium() {
           onSuccess={() => {
             setPayModal(null);
             setHasAccess(true);
-            toast.success('Payment successful! Unlimited applies are now unlocked.');
+            toast.success('Payment successful! Unlimited job post applies are now unlocked.');
           }}
-          description="Job Post Links — Unlimited Applies"
-          successToast="Payment successful! Unlimited applies are now unlocked."
+          description="Job Post Links — Unlimited Job Post Applies"
+          successToast="Payment successful! Unlimited job post applies are now unlocked."
           variant="premium-orange"
         />
       )}
@@ -79,7 +79,7 @@ export default function JobPostLinksPremium() {
             </div>
 
             <h1 className="text-[24px] font-bold tracking-tight text-[#1a1a2e] leading-tight">
-              Unlimited Applies
+              Unlimited Job Post Applies
             </h1>
             <p className="text-sm text-gray-500 mt-1">For lifetime access</p>
 
@@ -109,7 +109,7 @@ export default function JobPostLinksPremium() {
             {hasAccess ? (
               <div className="rounded-2xl bg-emerald-50 border border-emerald-100 px-4 py-4 text-center">
                 <p className="text-sm font-bold text-emerald-800">Premium unlocked 🎉</p>
-                <p className="text-xs text-emerald-700/80 mt-1">You have unlimited applies on Job Post Links.</p>
+                <p className="text-xs text-emerald-700/80 mt-1">You have unlimited job post applies.</p>
                 <Link
                   to="/opportunities?tab=job-links"
                   className="mt-2 inline-flex items-center gap-1.5 text-sm font-semibold text-orange-500 hover:text-orange-600"
