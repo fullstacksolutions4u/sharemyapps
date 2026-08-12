@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import api from '../../api/axios';
 import { toast } from 'react-hot-toast';
-import { Briefcase, Check, X, ExternalLink, Link as LinkIcon, MapPin, Laptop, Edit2, Plus, Save, Clock, Sparkles, Building, Calendar, Share2, ChevronDown, Copy, Download, MousePointerClick, Unlock } from 'lucide-react';
+import { Briefcase, Check, X, ExternalLink, Link as LinkIcon, MapPin, Laptop, Edit2, Plus, Save, Clock, Sparkles, Building, Calendar, ChevronDown, Copy, Download, MousePointerClick, Unlock } from 'lucide-react';
 
 const DESIGNATION_OPTIONS = [
   "Frontend Developer",
