@@ -472,7 +472,7 @@ export default function Vacancies() {
     [activeTabData, activeTab, filterDesignation, filterLocation, filterExperience],
   );
 
-  const JOB_LINKS_PER_PAGE = 15;
+  const JOB_LINKS_PER_PAGE = 30;
   const jobLinksTotal = activeTab === 'job-links' ? filteredTabData.length : 0;
   const jobLinksRangeStart = jobLinksTotal === 0 ? 0 : (currentPage - 1) * JOB_LINKS_PER_PAGE + 1;
   const jobLinksRangeEnd = Math.min(currentPage * JOB_LINKS_PER_PAGE, jobLinksTotal);

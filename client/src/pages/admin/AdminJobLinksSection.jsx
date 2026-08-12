@@ -500,7 +500,7 @@ export default function AdminJobLinksSection() {
   return (
     <div className="space-y-6 max-w-5xl">
       {/* Tabs */}
-      <div className="flex justify-between items-center border-b border-border flex-wrap gap-2">
+      <div className="flex justify-between items-center border-b border-border flex-wrap gap-4 mb-6">
         <div className="flex">
           <button
             onClick={() => { setActiveTab('approved'); setCurrentPage(1); }}
@@ -508,12 +508,7 @@ export default function AdminJobLinksSection() {
           >
             Approved Links ({approvedLinks.length})
           </button>
-          <button
-            onClick={() => { setActiveTab('pending'); setCurrentPage(1); }}
-            className={`px-4 py-3 font-medium text-sm transition-colors border-b-2 ${activeTab === 'pending' ? 'border-accent text-accent' : 'border-transparent text-muted hover:text-text'}`}
-          >
-            Pending Verification ({pendingLinks.length})
-          </button>
+
           <button
             onClick={() => { setActiveTab('companies'); setCurrentPage(1); }}
             className={`px-4 py-3 font-medium text-sm transition-colors border-b-2 ${activeTab === 'companies' ? 'border-accent text-accent' : 'border-transparent text-muted hover:text-text'}`}
@@ -521,56 +516,60 @@ export default function AdminJobLinksSection() {
             Companies ({filteredCompanies.length})
           </button>
         </div>
-        {activeTab === 'approved' && (
-          <button
-            onClick={() => {
-              if (!showAddForm) {
-                setAiText('');
-                setAiSuccess(false);
-                setDrafts([createBlankDraft()]);
-              } else {
-                setDrafts([]);
-              }
-              setShowAddForm(!showAddForm);
-            }}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium bg-accent text-white rounded-lg hover:bg-accent-hover transition-colors mb-1"
-          >
-            {showAddForm ? <X size={16} /> : <Plus size={16} />}
-            {showAddForm ? 'Cancel' : 'Add New'}
-          </button>
-        )}
-        {activeTab === 'companies' && (
-          <button
-            onClick={handleExportCompanies}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors mb-1"
-          >
-            <Download size={16} />
-            Export to Excel
-          </button>
-        )}
-      </div>
+        
+        {/* Right Side Controls */}
+        <div className="flex flex-wrap items-center gap-3 mb-1">
+          {/* Search Bar */}
+          <div className="relative w-64 max-w-full">
+            <svg className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+            <input
+              type="text"
+              value={companySearch}
+              onChange={e => { setCompanySearch(e.target.value); setCurrentPage(1); }}
+              placeholder="Search by company name..."
+              className="w-full pl-9 pr-8 py-1.5 text-[12px] text-gray-700 border border-gray-200 rounded-lg focus:outline-none focus:border-violet-400 focus:ring-1 focus:ring-violet-400 bg-white shadow-sm transition-all"
+            />
+            {companySearch && (
+              <button onClick={() => { setCompanySearch(''); setCurrentPage(1); }} className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                <X size={14} />
+              </button>
+            )}
+          </div>
+          
+          {/* Total Clicks */}
+          <div className="bg-violet-50 border border-violet-100 rounded-lg px-3 py-1.5 flex items-center gap-1.5 shrink-0 shadow-sm text-[12px] font-bold text-violet-700">
+            <MousePointerClick size={14} className="text-violet-600" />
+            <span>Total Click {totalClicks}</span>
+          </div>
 
-      {/* Search Bar & Total Clicks Stats */}
-      <div className="flex gap-4 items-center mb-6">
-        <div className="relative flex-1 max-w-md">
-          <svg className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
-          <input
-            type="text"
-            value={companySearch}
-            onChange={e => { setCompanySearch(e.target.value); setCurrentPage(1); }}
-            placeholder="Search by company name..."
-            className="w-full pl-10 pr-10 py-3 text-[13px] text-gray-700 border border-gray-100 rounded-xl focus:outline-none focus:border-violet-400 focus:ring-1 focus:ring-violet-400 bg-white shadow-sm transition-all"
-          />
-          {companySearch && (
-            <button onClick={() => { setCompanySearch(''); setCurrentPage(1); }} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
-              <X size={14} />
+          {activeTab === 'approved' && (
+            <button
+              onClick={() => {
+                if (!showAddForm) {
+                  setAiText('');
+                  setAiSuccess(false);
+                  setDrafts([createBlankDraft()]);
+                } else {
+                  setDrafts([]);
+                }
+                setShowAddForm(!showAddForm);
+              }}
+              className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium bg-accent text-white rounded-lg hover:bg-accent-hover transition-colors"
+            >
+              {showAddForm ? <X size={16} /> : <Plus size={16} />}
+              {showAddForm ? 'Cancel' : 'Add New'}
             </button>
           )}
-        </div>
-        
-        <div className="bg-violet-50 border border-violet-100 rounded-xl px-4 py-2.5 flex items-center gap-2 shrink-0 shadow-sm text-[13px] font-bold text-violet-700">
-          <MousePointerClick size={16} className="text-violet-600" />
-          <span>Total Click {totalClicks}</span>
+
+          {activeTab === 'companies' && (
+            <button
+              onClick={handleExportCompanies}
+              className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+            >
+              <Download size={16} />
+              Export to Excel
+            </button>
+          )}
         </div>
       </div>
 
@@ -876,109 +875,26 @@ export default function AdminJobLinksSection() {
           const duplicateInfo = editForms[link._id];
           
           return (
-            <div key={link._id} className={`bg-white rounded-xl shadow-sm border p-4 sm:p-5 flex flex-col gap-4 transition hover:shadow-md mb-2 ${aiDuplicate || isUrlDuplicate ? 'border-amber-300' : 'border-gray-100'}`}>
+            <div key={link._id} className={`bg-white rounded-xl shadow-sm border p-4 sm:p-5 flex flex-row gap-4 transition hover:shadow-md mb-2 ${aiDuplicate || isUrlDuplicate ? 'border-amber-300' : 'border-gray-100'}`}>
               
-              {/* Header Row: Single Line Row */}
-              <div className="flex flex-row items-center gap-3 sm:gap-4 w-full overflow-hidden">
+              {/* Left Column for Content */}
+              <div className="flex flex-col gap-4 flex-1 min-w-0">
                 
-                {/* 1. Share Icon */}
-                <div className="w-10 h-10 bg-[#f4f7ff] text-[#4f70fa] rounded-xl flex items-center justify-center shrink-0">
-                  <Share2 size={18} />
-                </div>
-                
-                {/* 2. Name */}
-                <div className="text-[14px] font-bold text-[#1f2937] whitespace-nowrap shrink-0">
-                  {link.createdBy?.name || 'Admin ShareMyApps'}
-                </div>
-                
-                {/* 3. Link */}
-                <div className="flex items-center gap-2 min-w-0 flex-1">
-                  <a href={editForms[link._id]?.url !== undefined ? editForms[link._id].url : link.url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 rounded-lg text-[12px] font-semibold transition shadow-sm w-fit" title="Open Job Link">
-                    <ExternalLink size={14} className="text-gray-400" /> Open Link
-                  </a>
-                  {(isUrlDuplicate || aiDuplicate) && (
-                    <span className="text-[10px] font-bold px-2 py-1 rounded-full bg-amber-50 text-amber-700 border border-amber-200 uppercase tracking-wide shrink-0" title="Same URL or AI match — prefer Allow Access">
-                      {aiDuplicate ? 'AI: Duplicate' : 'Duplicate URL'}
-                    </span>
-                  )}
-                </div>
-
-                {/* 4. Status and Actions */}
-                <div className="flex flex-row items-center gap-3 shrink-0 ml-auto">
-                  <span className={`text-[10px] font-bold px-3 py-1.5 rounded-full uppercase tracking-wide shrink-0
-                    ${link.status === 'approved' ? 'bg-[#dcfce7] text-[#166534]' : 
-                      link.status === 'access_granted' ? 'bg-blue-100 text-blue-700' :
-                      link.status === 'rejected' ? 'bg-red-100 text-red-700' : 
-                      'bg-[#fff7d1] text-[#b4710a]'}`}
-                  >
-                    {link.status === 'access_granted' ? 'access granted' : link.status}
-                  </span>
-
-                  <div className="flex flex-row items-center gap-2 shrink-0">
-                    {activeTab === 'pending' && (
-                      <>
-                        <button
-                          onClick={() => handleUpdate(link._id, 'approved')}
-                          className="flex items-center justify-center gap-1.5 px-3.5 py-1.5 bg-white border border-[#10b981] text-[#10b981] hover:bg-[#10b981] hover:text-white rounded-lg text-[12px] font-bold transition shadow-sm"
-                        >
-                          <Check size={14} /> Approve
-                        </button>
-                        <button
-                          onClick={() => handleUpdate(link._id, 'access_granted')}
-                          title="Unlock applies for this user without listing the link publicly (use for duplicates)"
-                          className="flex items-center justify-center gap-1.5 px-3.5 py-1.5 bg-white border border-blue-500 text-blue-600 hover:bg-blue-500 hover:text-white rounded-lg text-[12px] font-bold transition shadow-sm"
-                        >
-                          <Unlock size={14} /> Allow Access
-                        </button>
-                        <button
-                          onClick={() => { setLinkToReject(link); setRejectModalOpen(true); }}
-                          className="flex items-center justify-center gap-1.5 px-3.5 py-1.5 bg-white border border-red-500 text-red-500 hover:bg-red-500 hover:text-white rounded-lg text-[12px] font-bold transition shadow-sm"
-                        >
-                          <X size={14} /> Reject
-                        </button>
-                      </>
-                    )}
-                    
-                    {activeTab === 'approved' && !isEditing && (
-                      <button
-                        onClick={() => startEditing(link)}
-                        className="flex items-center justify-center gap-1.5 px-3.5 py-1.5 bg-white border border-blue-500 text-blue-500 hover:bg-blue-500 hover:text-white rounded-lg text-[12px] font-bold transition shadow-sm"
-                      >
-                        <Edit2 size={14} /> Edit
-                      </button>
-                    )}
-
-                    {activeTab === 'approved' && isEditing && (
-                      <>
-                        <button
-                          onClick={() => handleUpdate(link._id, 'approved')}
-                          className="flex items-center justify-center gap-1.5 px-3.5 py-1.5 bg-white border border-[#10b981] text-[#10b981] hover:bg-[#10b981] hover:text-white rounded-lg text-[12px] font-bold transition shadow-sm"
-                        >
-                          <Save size={14} /> Save
-                        </button>
-                        <button
-                          onClick={cancelEditing}
-                          className="flex items-center justify-center gap-1.5 px-3.5 py-1.5 bg-white border border-gray-300 text-gray-600 hover:bg-gray-50 rounded-lg text-[12px] font-bold transition shadow-sm"
-                        >
-                          <X size={14} /> Cancel
-                        </button>
-                      </>
-                    )}
-
-                    {activeTab === 'approved' && !isEditing && (
-                      <button
-                        onClick={() => { setLinkToReject(link); setRejectModalOpen(true); }}
-                        className="flex items-center justify-center gap-1.5 px-3.5 py-1.5 bg-white border border-red-500 text-red-500 hover:bg-red-500 hover:text-white rounded-lg text-[12px] font-bold transition shadow-sm"
-                      >
-                        <X size={14} /> Remove
-                      </button>
+                {/* Header Row: Single Line Row */}
+                <div className="flex flex-row items-center gap-3 sm:gap-4 w-full overflow-hidden">
+                  
+                  {/* 3. Link Badges */}
+                  <div className="flex items-center gap-2 min-w-0 flex-1">
+                    {(isUrlDuplicate || aiDuplicate) && (
+                      <span className="text-[10px] font-bold px-2 py-1 rounded-full bg-amber-50 text-amber-700 border border-amber-200 uppercase tracking-wide shrink-0" title="Same URL or AI match — prefer Allow Access">
+                        {aiDuplicate ? 'AI: Duplicate' : 'Duplicate URL'}
+                      </span>
                     )}
                   </div>
                 </div>
-              </div>
 
-              {/* Form Content Area */}
-              <div className="w-full mt-1">
+                {/* Form Content Area */}
+                <div className="w-full mt-1">
                   {/* Form for adding details if Pending or Editing */}
                   {isEditing ? (
                     <>
@@ -1184,6 +1100,72 @@ export default function AdminJobLinksSection() {
                       )}
                     </div>
                   )}
+              </div>
+              </div>
+
+              {/* Right Column for Actions */}
+              <div className="flex flex-col justify-start items-stretch gap-2 shrink-0">
+                <a href={editForms[link._id]?.url !== undefined ? editForms[link._id].url : link.url} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-1.5 px-3.5 py-1.5 bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 rounded-lg text-[12px] font-semibold transition shadow-sm w-full" title="Open Job Link">
+                  <ExternalLink size={14} className="text-gray-400" /> Open Link
+                </a>
+                {activeTab === 'pending' && (
+                  <>
+                    <button
+                      onClick={() => handleUpdate(link._id, 'approved')}
+                      className="flex items-center justify-center gap-1.5 px-3.5 py-1.5 bg-white border border-[#10b981] text-[#10b981] hover:bg-[#10b981] hover:text-white rounded-lg text-[12px] font-bold transition shadow-sm"
+                    >
+                      <Check size={14} /> Approve
+                    </button>
+                    <button
+                      onClick={() => handleUpdate(link._id, 'access_granted')}
+                      title="Unlock applies for this user without listing the link publicly (use for duplicates)"
+                      className="flex items-center justify-center gap-1.5 px-3.5 py-1.5 bg-white border border-blue-500 text-blue-600 hover:bg-blue-500 hover:text-white rounded-lg text-[12px] font-bold transition shadow-sm"
+                    >
+                      <Unlock size={14} /> Allow Access
+                    </button>
+                    <button
+                      onClick={() => { setLinkToReject(link); setRejectModalOpen(true); }}
+                      className="flex items-center justify-center gap-1.5 px-3.5 py-1.5 bg-white border border-red-500 text-red-500 hover:bg-red-500 hover:text-white rounded-lg text-[12px] font-bold transition shadow-sm"
+                    >
+                      <X size={14} /> Reject
+                    </button>
+                  </>
+                )}
+                
+                {activeTab === 'approved' && !isEditing && (
+                  <button
+                    onClick={() => startEditing(link)}
+                    className="flex items-center justify-center gap-1.5 px-3.5 py-1.5 bg-white border border-blue-500 text-blue-500 hover:bg-blue-500 hover:text-white rounded-lg text-[12px] font-bold transition shadow-sm"
+                  >
+                    <Edit2 size={14} /> Edit
+                  </button>
+                )}
+
+                {activeTab === 'approved' && isEditing && (
+                  <>
+                    <button
+                      onClick={() => handleUpdate(link._id, 'approved')}
+                      className="flex items-center justify-center gap-1.5 px-3.5 py-1.5 bg-white border border-[#10b981] text-[#10b981] hover:bg-[#10b981] hover:text-white rounded-lg text-[12px] font-bold transition shadow-sm"
+                    >
+                      <Save size={14} /> Save
+                    </button>
+                    <button
+                      onClick={cancelEditing}
+                      className="flex items-center justify-center gap-1.5 px-3.5 py-1.5 bg-white border border-gray-300 text-gray-600 hover:bg-gray-50 rounded-lg text-[12px] font-bold transition shadow-sm"
+                    >
+                      <X size={14} /> Cancel
+                    </button>
+                  </>
+                )}
+
+                {activeTab === 'approved' && !isEditing && (
+                  <button
+                    onClick={() => { setLinkToReject(link); setRejectModalOpen(true); }}
+                    className="flex items-center justify-center gap-1.5 px-3.5 py-1.5 bg-white border border-red-500 text-red-500 hover:bg-red-500 hover:text-white rounded-lg text-[12px] font-bold transition shadow-sm"
+                  >
+                    <X size={14} /> Remove
+                  </button>
+                )}
               </div>
             </div>
           );

@@ -38,7 +38,7 @@ const NAV = [
 ];
 
 export default function AdminPanel() {
-  const [section, setSection] = useState('overview');
+  const [section, setSection] = useState('job_links');
   const [stats, setStats] = useState(null);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [unreadMessages, setUnreadMessages] = useState(0);
