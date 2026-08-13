@@ -643,7 +643,8 @@ export default function Vacancies() {
       {!TAB_CONFIG[activeTab].loading && (TAB_CONFIG[activeTab].data.length > 0 || activeTab === 'job-links') && (
         <div className="border-b border-border/40">
           <div className="max-w-[1550px] mx-auto px-2 sm:px-3 py-3">
-            <div className="flex flex-wrap gap-3 items-center justify-center">
+            <div className="flex flex-wrap gap-3 items-center justify-between">
+              <div className="flex flex-wrap gap-3 items-center justify-center sm:justify-start flex-1 min-w-0">
               
               <FilterDropdown
                 icon={Briefcase}
@@ -687,21 +688,20 @@ export default function Vacancies() {
                 </p>
               )}
 
-              
+              </div>
+
+              {activeTab === 'job-links' && !TAB_CONFIG[activeTab].loading && (
+                <p className="text-[13px] text-gray-500 shrink-0 whitespace-nowrap">
+                  <span className="font-semibold text-gray-800">{jobLinksRangeStart}–{jobLinksRangeEnd}</span> of{' '}
+                  <span className="font-semibold text-gray-800">{jobLinksTotal}</span> active job posts
+                </p>
+              )}
             </div>
           </div>
         </div>
       )}
 
       <div className="max-w-[1550px] mx-auto px-2 sm:px-3 pt-4 pb-16">
-      {activeTab === 'job-links' && !TAB_CONFIG[activeTab].loading && (
-        <div className="flex justify-end mb-3 pr-6 sm:pr-10">
-          <p className="text-[13px] text-gray-500">
-            <span className="font-semibold text-gray-800">{jobLinksRangeStart}–{jobLinksRangeEnd}</span> of{' '}
-            <span className="font-semibold text-gray-800">{jobLinksTotal}</span> active job posts
-          </p>
-        </div>
-      )}
       {(() => {
         const filteredData = filteredTabData;
         const ITEMS_PER_PAGE = activeTab === 'job-links' ? JOB_LINKS_PER_PAGE : 12;
