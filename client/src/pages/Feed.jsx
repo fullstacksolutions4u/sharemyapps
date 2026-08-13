@@ -5,6 +5,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { Trophy, MessageCircle, Heart, Star, TrendingUp, UserPlus, Crown, Sparkles, MapPin, Laptop, ExternalLink, Clock, Calendar, Coins } from 'lucide-react';
 import _Lottie from 'lottie-react';
 import feedAnimation from '../assets/feed.json';
+import easyApplyBanner from '../assets/easyapply.png';
 import FeedProjectCard from '../components/FeedProjectCard';
 import { useAuth } from '../context/AuthContext';
 import ReportVacancyModal from '../components/ReportVacancyModal';
@@ -281,11 +282,12 @@ export default function Feed() {
             </svg>
           </div>
           <div className="relative z-10 flex flex-col h-full overflow-hidden">
-          <div className="p-4 border-b border-black/5 bg-transparent shrink-0 flex items-center justify-center">
-            <h3 className="text-[11px] font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-[#008b74] to-[#5a788b] tracking-wide drop-shadow-sm text-center uppercase leading-snug">
-              STOP EASY APPLY<br />
-              START TO APPLY THROUGH JOB POSTS
-            </h3>
+          <div className="px-1.5 py-2 border-b border-black/5 bg-transparent shrink-0">
+            <img
+              src={easyApplyBanner}
+              alt="Stop Easy Apply — Start to apply through job posts"
+              className="w-full h-auto rounded-md"
+            />
           </div>
 
 
