@@ -12,6 +12,7 @@ const vacancySchema = new mongoose.Schema({
   experience:  { type: String, enum: ['', 'Fresher', '0-1 years', '0-2 years', '1-3 years', '3-5 years', '5-8 years', '8+ years'], default: '' },
   salaryRange: { type: String, trim: true, default: '' },
   status:      { type: String, enum: ['active', 'closed', 'pending'], default: 'active' },
+  listOnOpportunities: { type: Boolean, default: true }, // false = internal eval vacancy (interviews + reports, hidden from Opportunities)
   isViewed:    { type: Boolean, default: false },
   createdBy:   { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
   interests:   [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],

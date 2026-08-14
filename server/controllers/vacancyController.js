@@ -12,7 +12,10 @@ const parseSkills = (skills) =>
 
 exports.getVacancies = async (req, res) => {
   try {
-    const vacancies = await Vacancy.find({ createdBy: { $exists: true, $ne: null } }).sort({ status: 1, createdAt: -1 }).limit(200).lean();
+    const vacancies = await Vacancy.find({
+      createdBy: { $exists: true, $ne: null },
+      listOnOpportunities: { $ne: false },
+    }).sort({ status: 1, createdAt: -1 }).limit(200).lean();
     const userId = req.user?._id?.toString();
     const result = vacancies.map(v => ({
       ...v,
@@ -102,11 +105,12 @@ exports.getAllVacanciesAdmin = async (req, res) => {
 
 exports.createVacancy = async (req, res) => {
   try {
-    const { title, company, description, skills, location, type, industry, jobType, experience, salaryRange } = req.body;
+    const { title, company, description, skills, location, type, industry, jobType, experience, salaryRange, listOnOpportunities } = req.body;
     const vacancy = await Vacancy.create({
       title, company, description,
       skills: parseSkills(skills),
       location, type, industry, jobType, experience, salaryRange,
+      listOnOpportunities: listOnOpportunities !== false,
       createdBy: req.user._id,
     });
     res.status(201).json(vacancy);

@@ -1,6 +1,6 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import {
-  Search, Plus,
+  Search, Plus, X,
   ClipboardList,
   Edit3, RefreshCw, Trash2,
   Video, BookMarked, Users, ChevronDown, Layers,
@@ -12,6 +12,126 @@ import { optimizeImage } from '../../utils/image';
 import AdminInterviewModulesSection from './AdminInterviewModulesSection';
 
 const inp = 'w-full px-3.5 py-2.5 border border-[#E5E1DA] rounded-xl text-sm text-[#1A1A1A] bg-white placeholder-[#9CA3AF] focus:outline-none focus:border-[#00A693] focus:ring-2 focus:ring-[#00A693]/10 transition';
+
+const AVATAR_COLORS = ['bg-violet-500', 'bg-sky-500', 'bg-emerald-500', 'bg-amber-500', 'bg-rose-500', 'bg-teal-500'];
+const avatarColor = (name = '') => AVATAR_COLORS[name.charCodeAt(0) % AVATAR_COLORS.length];
+
+// ─── @ user picker (all users, admin) ─────────────────────────────────────────
+function AtUserSelect({
+  value,
+  selectedUser,
+  onChange,
+  disabled,
+  placeholder = 'Type @ to search users...',
+  label,
+}) {
+  const [users, setUsers] = useState([]);
+  const [loadingUsers, setLoadingUsers] = useState(false);
+  const [input, setInput] = useState('');
+  const [showDrop, setShowDrop] = useState(false);
+  const ref = useRef(null);
+
+  useEffect(() => {
+    let ignore = false;
+    setLoadingUsers(true);
+    api.get('/admin/users')
+      .then(res => {
+        if (!ignore) setUsers((res.data || []).filter(u => !u.isDeleted));
+      })
+      .catch(() => {})
+      .finally(() => { if (!ignore) setLoadingUsers(false); });
+    return () => { ignore = true; };
+  }, []);
+
+  const atIdx = input.lastIndexOf('@');
+  const query = atIdx < 0 ? null : input.slice(atIdx + 1).trim().toLowerCase();
+
+  const filtered = useMemo(() => {
+    if (query === null) return [];
+    if (!query) return users.slice(0, 80);
+    return users.filter(u =>
+      (u.name || '').toLowerCase().includes(query) ||
+      (u.email || '').toLowerCase().includes(query)
+    ).slice(0, 40);
+  }, [users, query]);
+
+  useEffect(() => {
+    const handleClick = (e) => {
+      if (ref.current && !ref.current.contains(e.target)) setShowDrop(false);
+    };
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, []);
+
+  const pickUser = (u) => {
+    onChange(u._id, u);
+    setInput('');
+    setShowDrop(false);
+  };
+
+  const clear = () => {
+    onChange('', null);
+    setInput('');
+  };
+
+  return (
+    <div>
+      {label && (
+        <label className="block text-xs font-semibold text-[#6B7280] mb-1.5">{label}</label>
+      )}
+      {selectedUser && value && (
+        <div className="mb-2">
+          <span className="inline-flex items-center gap-1.5 bg-[#F3F0EB] border border-[#E5E1DA] text-[#1A1A1A] text-xs font-medium px-2.5 py-1.5 rounded-full">
+            {selectedUser.avatar
+              ? <img src={optimizeImage(selectedUser.avatar, 150)} alt={selectedUser.name} className="w-4 h-4 rounded-full object-cover" />
+              : <span className={`w-4 h-4 rounded-full ${avatarColor(selectedUser.name)} text-white text-[9px] flex items-center justify-center font-semibold`}>{selectedUser.name?.[0]?.toUpperCase()}</span>
+            }
+            {selectedUser.name}
+            <button type="button" onClick={clear} className="text-[#9CA3AF] hover:text-red-400 transition-colors ml-0.5">
+              <X size={11} />
+            </button>
+          </span>
+        </div>
+      )}
+      <div className="relative" ref={ref}>
+        <input
+          type="text"
+          value={input}
+          onChange={e => {
+            setInput(e.target.value);
+            if (e.target.value.includes('@')) setShowDrop(true);
+          }}
+          onFocus={() => { if (input.includes('@')) setShowDrop(true); }}
+          disabled={disabled || loadingUsers}
+          placeholder={loadingUsers ? 'Loading users...' : placeholder}
+          className={inp}
+        />
+        {showDrop && filtered.length > 0 && (
+          <ul className="absolute z-20 top-full mt-1 left-0 right-0 bg-white border border-[#E5E1DA] rounded-xl shadow-lg overflow-hidden max-h-60 overflow-y-auto">
+            {filtered.map(u => (
+              <li key={u._id}>
+                <button
+                  type="button"
+                  onMouseDown={() => pickUser(u)}
+                  className="w-full flex items-center gap-2.5 px-3.5 py-2.5 hover:bg-[#F3F0EB] transition-colors text-left"
+                >
+                  {u.avatar
+                    ? <img src={optimizeImage(u.avatar, 150)} alt={u.name} className="w-7 h-7 rounded-full object-cover shrink-0" />
+                    : <span className={`w-7 h-7 rounded-full ${avatarColor(u.name)} text-white text-xs flex items-center justify-center font-semibold shrink-0`}>{u.name?.[0]?.toUpperCase()}</span>
+                  }
+                  <div className="min-w-0">
+                    <p className="text-sm text-[#1A1A1A] truncate">{u.name}</p>
+                    {u.email && <p className="text-[11px] text-[#6B7280] truncate">{u.email}</p>}
+                  </div>
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+    </div>
+  );
+}
 
 const ratingColor = (r) => r >= 8 ? 'text-emerald-600' : r >= 6 ? 'text-amber-500' : 'text-red-500';
 
@@ -49,25 +169,86 @@ function formatSessionOptionLabel(session) {
   return `${slot ? `Slot ${slot} · ` : ''}${date} · ${statusLabel}`;
 }
 
-function buildScreeningApplicantOptions(jobs, screeningStatuses) {
-  const options = [];
-  for (const job of jobs) {
-    const statusMap = job.applicantStatus || {};
-    for (const u of job.interests || []) {
-      if (!u || u.isDeleted || ['Amir Ali', 'Tony Sunny'].includes(u.name)) continue;
-      const st = statusMap[u._id] || statusMap[u._id?.toString()] || 'applied';
-      if (!screeningStatuses.has(st)) continue;
-      options.push({
-        key: `${u._id}|${job._id}`,
-        userId: u._id,
-        jobId: job._id,
-        name: u.name,
-        jobTitle: job.title,
-        company: job.company,
+function formatJobOptionLabel(job) {
+  return job.title || '';
+}
+
+// ─── Quick add evaluation vacancy (interview + report, not on Opportunities) ───
+function QuickInterviewVacancyModal({ open, onClose, onCreated }) {
+  const [title, setTitle] = useState('');
+  const [company, setCompany] = useState('');
+  const [saving, setSaving] = useState(false);
+
+  if (!open) return null;
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!title.trim()) return toast.error('Job title is required');
+    setSaving(true);
+    try {
+      const res = await api.post('/admin/vacancies', {
+        title: title.trim(),
+        company: company.trim(),
+        description: 'Vacancy for conducting interviews and preparing evaluation reports.',
+        listOnOpportunities: false,
+        status: 'active',
       });
+      toast.success('Vacancy created — ready for interview and evaluation');
+      onCreated?.(res.data);
+      setTitle('');
+      setCompany('');
+      onClose();
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to create vacancy');
+    } finally {
+      setSaving(false);
     }
-  }
-  return options.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm" onClick={onClose}>
+      <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-5" onClick={e => e.stopPropagation()}>
+        <h3 className="text-sm font-bold text-[#1A1A1A] mb-4">Add evaluation vacancy</h3>
+        <form onSubmit={handleSubmit} className="space-y-3">
+          <div>
+            <label className="block text-xs font-semibold text-[#6B7280] mb-1.5">Job title</label>
+            <input
+              value={title}
+              onChange={e => setTitle(e.target.value)}
+              className={inp}
+              placeholder="e.g. Senior React Developer"
+              required
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-semibold text-[#6B7280] mb-1.5">Company (optional)</label>
+            <input
+              value={company}
+              onChange={e => setCompany(e.target.value)}
+              className={inp}
+              placeholder="Company name"
+            />
+          </div>
+          <div className="flex gap-2 pt-1">
+            <button
+              type="button"
+              onClick={onClose}
+              className="flex-1 px-4 py-2.5 border border-[#E5E1DA] rounded-xl text-sm font-medium text-[#6B7280] hover:bg-[#F3F0EB]"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={saving}
+              className="flex-1 px-4 py-2.5 bg-[#00A693] hover:bg-[#008f7e] disabled:opacity-50 text-white rounded-xl text-sm font-semibold"
+            >
+              {saving ? 'Adding...' : 'Add vacancy'}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
 }
 
 // ─── Job + applicant picker (screening pool) ──────────────────────────────────
@@ -76,9 +257,10 @@ function ScreeningJobApplicantPicker({
   loading,
   selectedJobId,
   selectedApplicantId,
-  jobApplicants,
+  selectedApplicant,
   onJobSelect,
   onApplicantSelect,
+  onAddVacancy,
   helperText,
 }) {
   return (
@@ -90,51 +272,46 @@ function ScreeningJobApplicantPicker({
 
       <div>
         <label className="block text-xs font-semibold text-[#6B7280] mb-1.5">Job / Vacancy</label>
-        <div className="relative">
-          <select
-            value={selectedJobId}
-            onChange={e => onJobSelect(e.target.value)}
-            disabled={loading}
-            className={`${inp} appearance-none pr-10 cursor-pointer disabled:opacity-60`}
-          >
-            <option value="">— Choose a job —</option>
-            {jobs.map(j => (
-              <option key={j._id} value={j._id}>
-                {j.title}{j.company ? ` — ${j.company}` : ''} ({j.status})
-              </option>
-            ))}
-          </select>
-          <ChevronDown size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#9CA3AF] pointer-events-none" />
+        <div className="flex items-stretch gap-2">
+          <div className="relative flex-1 min-w-0">
+            <select
+              value={selectedJobId}
+              onChange={e => onJobSelect(e.target.value)}
+              disabled={loading}
+              className={`${inp} appearance-none pr-10 cursor-pointer disabled:opacity-60`}
+            >
+              <option value="">— Choose a job —</option>
+              {jobs.map(j => (
+                <option key={j._id} value={j._id}>{formatJobOptionLabel(j)}</option>
+              ))}
+            </select>
+            <ChevronDown size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#9CA3AF] pointer-events-none" />
+          </div>
+          {onAddVacancy && (
+            <button
+              type="button"
+              onClick={onAddVacancy}
+              title="Add vacancy for interview & evaluation"
+              className="shrink-0 w-11 rounded-xl border border-[#00A693] bg-[#00A693]/10 text-[#00A693] hover:bg-[#00A693] hover:text-white transition flex items-center justify-center"
+            >
+              <Plus size={18} />
+            </button>
+          )}
         </div>
       </div>
 
-      <div>
-        <label className="block text-xs font-semibold text-[#6B7280] mb-1.5">Interview Screening Applicant</label>
-        <div className="relative">
-          <select
-            value={selectedApplicantId}
-            onChange={e => onApplicantSelect(e.target.value)}
-            disabled={loading || !selectedJobId}
-            className={`${inp} appearance-none pr-10 cursor-pointer disabled:opacity-60`}
-          >
-            <option value="">
-              {!selectedJobId
-                ? '— Select a job first —'
-                : jobApplicants.length === 0
-                  ? '— No screening applicants for this job —'
-                  : '— Choose an applicant —'}
-            </option>
-            {jobApplicants.map(u => (
-              <option key={u._id} value={u._id}>{u.name}</option>
-            ))}
-          </select>
-          <ChevronDown size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#9CA3AF] pointer-events-none" />
-        </div>
-      </div>
+      <AtUserSelect
+        label="Interview Screening Applicant"
+        value={selectedApplicantId}
+        selectedUser={selectedApplicant}
+        onChange={onApplicantSelect}
+        disabled={loading}
+        placeholder="Type @ to search and select a user..."
+      />
 
       {loading && <p className="text-xs text-[#9CA3AF]">Loading jobs...</p>}
       {!loading && jobs.length === 0 && (
-        <p className="text-xs text-[#9CA3AF]">No jobs found. Add vacancies under Opportunities first.</p>
+        <p className="text-xs text-[#9CA3AF]">No jobs found. Use + to add a vacancy for interview and evaluation.</p>
       )}
       {helperText && <p className="text-xs text-[#6B7280]">{helperText}</p>}
     </div>
@@ -142,17 +319,33 @@ function ScreeningJobApplicantPicker({
 }
 
 // ─── Create interview session (general pool slot) ─────────────────────────────
-function CreateInterviewSessionTab({ jobs, loading, screeningStatuses, onCreated }) {
-  const [applicantKey, setApplicantKey] = useState('');
+function CreateInterviewSessionTab({ jobs, loading, onCreated, onAddVacancy, selectJobId }) {
+  const [jobId, setJobId] = useState('');
+  const [applicantId, setApplicantId] = useState('');
+  const [selectedApplicant, setSelectedApplicant] = useState(null);
   const [interviewedAt, setInterviewedAt] = useState(() => getLocalDatetimeString());
   const [googleMeetLink, setGoogleMeetLink] = useState('');
   const [status, setStatus] = useState('scheduled');
   const [saving, setSaving] = useState(false);
 
-  const applicantOptions = useMemo(
-    () => buildScreeningApplicantOptions(jobs, screeningStatuses),
-    [jobs, screeningStatuses]
-  );
+  useEffect(() => {
+    if (selectJobId) {
+      setJobId(selectJobId);
+      setApplicantId('');
+      setSelectedApplicant(null);
+    }
+  }, [selectJobId]);
+
+  const handleJobChange = (id) => {
+    setJobId(id);
+    setApplicantId('');
+    setSelectedApplicant(null);
+  };
+
+  const handleApplicantChange = (userId, user) => {
+    setApplicantId(userId);
+    setSelectedApplicant(user);
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -164,14 +357,13 @@ function CreateInterviewSessionTab({ jobs, loading, screeningStatuses, onCreated
         googleMeetLink: googleMeetLink.trim(),
         status,
       };
-      if (applicantKey) {
-        const [userId, jobId] = applicantKey.split('|');
-        payload.user = userId;
-        payload.vacancy = jobId;
-      }
+      if (applicantId) payload.user = applicantId;
+      if (jobId) payload.vacancy = jobId;
       await api.post('/admin/interviews', payload);
       toast.success('Interview session created');
-      setApplicantKey('');
+      setJobId('');
+      setApplicantId('');
+      setSelectedApplicant(null);
       setGoogleMeetLink('');
       setStatus('scheduled');
       setInterviewedAt(getLocalDatetimeString());
@@ -187,30 +379,43 @@ function CreateInterviewSessionTab({ jobs, loading, screeningStatuses, onCreated
     <form onSubmit={handleSubmit} className="max-w-xl">
       <div className="bg-white border border-[#E5E1DA] rounded-2xl p-4 space-y-4">
         <div>
-          <label className="block text-xs font-semibold text-[#6B7280] mb-1.5">Interview Screening Applicant</label>
-          <div className="relative">
-            <select
-              value={applicantKey}
-              onChange={e => setApplicantKey(e.target.value)}
-              disabled={loading}
-              className={`${inp} appearance-none pr-10 cursor-pointer disabled:opacity-60`}
-            >
-              <option value="">
-                {loading
-                  ? '— Loading applicants —'
-                  : applicantOptions.length === 0
-                    ? '— No screening applicants —'
-                    : '— Choose an applicant (optional) —'}
-              </option>
-              {applicantOptions.map(o => (
-                <option key={o.key} value={o.key}>
-                  {o.name}{o.jobTitle ? ` — ${o.jobTitle}` : ''}{o.company ? ` (${o.company})` : ''}
-                </option>
-              ))}
-            </select>
-            <ChevronDown size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#9CA3AF] pointer-events-none" />
+          <label className="block text-xs font-semibold text-[#6B7280] mb-1.5">Job / Vacancy</label>
+          <div className="flex items-stretch gap-2">
+            <div className="relative flex-1 min-w-0">
+              <select
+                value={jobId}
+                onChange={e => handleJobChange(e.target.value)}
+                disabled={loading}
+                className={`${inp} appearance-none pr-10 cursor-pointer disabled:opacity-60`}
+              >
+                <option value="">— Choose a job (optional) —</option>
+                {jobs.map(j => (
+                  <option key={j._id} value={j._id}>{formatJobOptionLabel(j)}</option>
+                ))}
+              </select>
+              <ChevronDown size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#9CA3AF] pointer-events-none" />
+            </div>
+            {onAddVacancy && (
+              <button
+                type="button"
+                onClick={onAddVacancy}
+                title="Add vacancy for interview & evaluation"
+                className="shrink-0 w-11 rounded-xl border border-[#00A693] bg-[#00A693]/10 text-[#00A693] hover:bg-[#00A693] hover:text-white transition flex items-center justify-center"
+              >
+                <Plus size={18} />
+              </button>
+            )}
           </div>
         </div>
+
+        <AtUserSelect
+          label="Interview Screening Applicant"
+          value={applicantId}
+          selectedUser={selectedApplicant}
+          onChange={handleApplicantChange}
+          disabled={loading}
+          placeholder="Type @ to search and select a user (optional)..."
+        />
 
         <div>
           <label className="block text-xs font-semibold text-[#6B7280] mb-1.5">Interview date & time</label>
@@ -472,11 +677,9 @@ function ShareProfilesTab({ jobs, loading }) {
               className={`${inp} appearance-none pr-10 cursor-pointer disabled:opacity-60`}
             >
               <option value="">— Choose a job —</option>
-              {jobs.map(j => (
-                <option key={j._id} value={j._id}>
-                  {j.title}{j.company ? ` — ${j.company}` : ''} ({j.status})
-                </option>
-              ))}
+                  {jobs.map(j => (
+                    <option key={j._id} value={j._id}>{formatJobOptionLabel(j)}</option>
+                  ))}
             </select>
             <ChevronDown size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#9CA3AF] pointer-events-none" />
           </div>
@@ -528,11 +731,8 @@ export default function AdminCurationSection() {
   const [upcomingSessions, setUpcomingSessions] = useState([]);
   const [loadingSessions, setLoadingSessions] = useState(false);
   const [allSessionsCount, setAllSessionsCount] = useState(0);
-
-  const SCREENING_STATUSES = useMemo(
-    () => new Set(['contacted', '1 round interview', '2nd round interview', '3rd round interview']),
-    []
-  );
+  const [showVacancyModal, setShowVacancyModal] = useState(false);
+  const [createTabSelectJobId, setCreateTabSelectJobId] = useState('');
 
   const fetchData = async (ignore = false) => {
     try {
@@ -566,18 +766,6 @@ export default function AdminCurationSection() {
   );
 
   const selectedJob = jobs.find(j => j._id === selectedJobId) || null;
-
-  const jobApplicants = useMemo(() => {
-    if (!selectedJob) return [];
-    const statusMap = selectedJob.applicantStatus || {};
-    return (selectedJob.interests || [])
-      .filter(u => {
-        if (!u || u.isDeleted || ['Amir Ali', 'Tony Sunny'].includes(u.name)) return false;
-        const st = statusMap[u._id] || statusMap[u._id?.toString()] || 'applied';
-        return SCREENING_STATUSES.has(st);
-      })
-      .sort((a, b) => (a.name || '').localeCompare(b.name || ''));
-  }, [selectedJob, SCREENING_STATUSES]);
 
   const fetchUpcomingPoolSessions = async (ignore = false, applicantId = selectedApplicantId, jobId = selectedJobId) => {
     if (!applicantId || !jobId) return;
@@ -615,7 +803,7 @@ export default function AdminCurationSection() {
     if (tab === 'modules') setTab('session');
   };
 
-  const handleApplicantSelect = (userId) => {
+  const handleApplicantSelect = (userId, user) => {
     setSelectedApplicantId(userId);
     setSelectedSessionId('');
     setSelectedSession(null);
@@ -625,12 +813,9 @@ export default function AdminCurationSection() {
       if (tab === 'modules') setTab('session');
       return;
     }
-    const user = jobApplicants.find(u => u._id === userId);
-    if (user) {
-      setModulesApplicant(user);
-      setModulesVacancy(selectedJob);
-      fetchUpcomingPoolSessions(false, userId, selectedJob._id);
-    }
+    setModulesApplicant(user);
+    setModulesVacancy(selectedJob);
+    fetchUpcomingPoolSessions(false, userId, selectedJob._id);
   };
 
   const handleSessionSelect = async (sessionId) => {
@@ -670,6 +855,15 @@ export default function AdminCurationSection() {
 
   const handleTabChange = (key) => {
     setTab(key);
+  };
+
+  const handleInterviewVacancyCreated = async (vacancy) => {
+    await fetchData();
+    if (vacancy?._id) {
+      setSelectedJobId(vacancy._id);
+      setSelectedApplicantId('');
+      setCreateTabSelectJobId(vacancy._id);
+    }
   };
 
   return (
@@ -712,7 +906,8 @@ export default function AdminCurationSection() {
         <CreateInterviewSessionTab
           jobs={jobs}
           loading={loading}
-          screeningStatuses={SCREENING_STATUSES}
+          selectJobId={createTabSelectJobId}
+          onAddVacancy={() => setShowVacancyModal(true)}
           onCreated={() => {
             fetchData();
             if (selectedApplicantId && selectedJobId) fetchUpcomingPoolSessions();
@@ -739,9 +934,10 @@ export default function AdminCurationSection() {
             loading={loading}
             selectedJobId={selectedJobId}
             selectedApplicantId={selectedApplicantId}
-            jobApplicants={jobApplicants}
+            selectedApplicant={modulesApplicant}
             onJobSelect={handleJobSelect}
             onApplicantSelect={handleApplicantSelect}
+            onAddVacancy={() => setShowVacancyModal(true)}
           />
 
           {selectedApplicantId && selectedJobId && (
@@ -777,6 +973,12 @@ export default function AdminCurationSection() {
 
         </>
       )}
+
+      <QuickInterviewVacancyModal
+        open={showVacancyModal}
+        onClose={() => setShowVacancyModal(false)}
+        onCreated={handleInterviewVacancyCreated}
+      />
     </div>
   );
 }

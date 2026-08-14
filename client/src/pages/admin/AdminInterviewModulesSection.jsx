@@ -11,6 +11,32 @@ import toast from 'react-hot-toast';
 const inputCls = 'w-full px-3 py-2 border border-border rounded-xl focus:ring-0 focus:border-accent bg-white text-text text-sm outline-none transition-colors';
 const labelCls = 'block text-xs font-medium text-muted mb-1';
 
+function salaryToMonthlyAmount(n) {
+  if (isNaN(n)) return null;
+  if (n <= 100) return n * 100000 / 12; // LPA
+  if (n < 100000) return n; // monthly figure
+  return n / 12; // annual rupees (profile)
+}
+
+function formatSalaryMonthly(value) {
+  const raw = String(value ?? '').trim();
+  if (!raw) return null;
+
+  const rangeMatch = raw.match(/^(\d+(?:[.,]\d+)?)\s*(?:-|–|to)\s*(\d+(?:[.,]\d+)?)$/i);
+  const fmt = n => `₹${Math.round(n).toLocaleString('en-IN')}`;
+
+  if (rangeMatch) {
+    const lo = salaryToMonthlyAmount(parseFloat(rangeMatch[1].replace(',', '')));
+    const hi = salaryToMonthlyAmount(parseFloat(rangeMatch[2].replace(',', '')));
+    if (!lo || !hi) return null;
+    return `${fmt(lo)}–${fmt(hi)}/month`;
+  }
+
+  const monthly = salaryToMonthlyAmount(parseFloat(raw.replace(',', '')));
+  if (!monthly) return null;
+  return `${fmt(monthly)}/month`;
+}
+
 const emptyTopic = () => ({ name: '', isPracticalProblem: false, problemUrl: '', quizzes: [] });
 const emptyModule = () => ({ title: '' });
 const emptyEvalForm = () => ({
@@ -631,6 +657,9 @@ export default function AdminInterviewModulesSection({ initialApplicant = null, 
                       onBlur={e => convertSalaryToLpa('currentSalary', e.target.value)}
                       className="w-full text-xs px-2.5 py-1.5 border border-border rounded-lg bg-bg focus:border-accent focus:outline-none text-text placeholder:text-muted/50 transition-colors"
                     />
+                    {formatSalaryMonthly(applicantMeta.currentSalary) && (
+                      <p className="text-[10px] text-muted mt-0.5">{formatSalaryMonthly(applicantMeta.currentSalary)}</p>
+                    )}
                   </div>
                   <div className="flex gap-1.5">
                     <div className="flex-1 min-w-0">
@@ -643,6 +672,9 @@ export default function AdminInterviewModulesSection({ initialApplicant = null, 
                         onBlur={e => convertSalaryToLpa('expectedSalary', e.target.value)}
                         className="w-full text-xs px-2.5 py-1.5 border border-border rounded-lg bg-bg focus:border-accent focus:outline-none text-text placeholder:text-muted/50 transition-colors"
                       />
+                      {formatSalaryMonthly(applicantMeta.expectedSalary) && (
+                        <p className="text-[10px] text-muted mt-0.5">{formatSalaryMonthly(applicantMeta.expectedSalary)}</p>
+                      )}
                     </div>
                     {metaDirty && (
                       <button
