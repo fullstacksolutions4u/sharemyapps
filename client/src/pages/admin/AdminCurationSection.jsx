@@ -26,14 +26,13 @@ function AtUserSelect({
   label,
 }) {
   const [users, setUsers] = useState([]);
-  const [loadingUsers, setLoadingUsers] = useState(false);
+  const [loadingUsers, setLoadingUsers] = useState(true);
   const [input, setInput] = useState('');
   const [showDrop, setShowDrop] = useState(false);
   const ref = useRef(null);
 
   useEffect(() => {
     let ignore = false;
-    setLoadingUsers(true);
     api.get('/admin/users')
       .then(res => {
         if (!ignore) setUsers((res.data || []).filter(u => !u.isDeleted));
@@ -319,22 +318,14 @@ function ScreeningJobApplicantPicker({
 }
 
 // ─── Create interview session (general pool slot) ─────────────────────────────
-function CreateInterviewSessionTab({ jobs, loading, onCreated, onAddVacancy, selectJobId }) {
-  const [jobId, setJobId] = useState('');
+function CreateInterviewSessionTab({ jobs, loading, onCreated, onAddVacancy, initialJobId = '' }) {
+  const [jobId, setJobId] = useState(initialJobId);
   const [applicantId, setApplicantId] = useState('');
   const [selectedApplicant, setSelectedApplicant] = useState(null);
   const [interviewedAt, setInterviewedAt] = useState(() => getLocalDatetimeString());
   const [googleMeetLink, setGoogleMeetLink] = useState('');
   const [status, setStatus] = useState('scheduled');
   const [saving, setSaving] = useState(false);
-
-  useEffect(() => {
-    if (selectJobId) {
-      setJobId(selectJobId);
-      setApplicantId('');
-      setSelectedApplicant(null);
-    }
-  }, [selectJobId]);
 
   const handleJobChange = (id) => {
     setJobId(id);
@@ -904,9 +895,10 @@ export default function AdminCurationSection() {
         />
       ) : tab === 'create' ? (
         <CreateInterviewSessionTab
+          key={createTabSelectJobId || 'create-session'}
           jobs={jobs}
           loading={loading}
-          selectJobId={createTabSelectJobId}
+          initialJobId={createTabSelectJobId}
           onAddVacancy={() => setShowVacancyModal(true)}
           onCreated={() => {
             fetchData();
