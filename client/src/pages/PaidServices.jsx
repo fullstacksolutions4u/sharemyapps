@@ -19,7 +19,6 @@ const PREMIUM_FEATURES = [
   'LinkedIn & Job Portals Profile Optimization',
   'Dedicated Placement Officer Support Until You Get Hired',
   'Mock Interviews for freshers with Industry Experts',
-  'Personalized daily job recommendations via registered email',
 ];
 
 export default function PaidServices() {
