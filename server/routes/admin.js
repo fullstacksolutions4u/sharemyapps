@@ -46,7 +46,7 @@ const freelance = require('../controllers/freelanceOpportunityController');
 const mentorship = require('../controllers/mentorshipOpportunityController');
 const { aiChat } = require('../controllers/aiChatController');
 const { adminGetPlans, adminCreatePlan, adminUpdatePlan, adminDeletePlan } = require('../controllers/planController');
-const { adminGetOffers, adminUpdateOffer, adminDeleteOffer, adminGetOfferStats, adminGetOfferPortfolio, adminMarkWhatsappContacted, adminToggleEnroll, adminActivate } = require('../controllers/freeOfferController');
+const { adminGetOffers, adminUpdateOffer, adminDeleteOffer, adminGetOfferStats, adminGetOfferPortfolio, adminMarkWhatsappContacted, adminToggleEnroll, adminActivate, activateUserPremiumAccess } = require('../controllers/freeOfferController');
 const interview = require('../controllers/interviewController');
 const aiReport = require('../controllers/aiReportController');
 const showcase  = require('../controllers/showcaseController');
@@ -698,7 +698,7 @@ router.get('/premium-services/free-access', async (_req, res) => {
   try {
     const FreeOffer = require('../models/FreeOffer');
     const users = await User.find({ 'freePremiumGrant.granted': true, isDeleted: { $ne: true } })
-      .select('name email avatar freePremiumGrant')
+      .select('name email avatar freePremiumGrant premiumServices')
       .sort({ 'freePremiumGrant.grantedAt': -1 })
       .lean();
     const offers = await FreeOffer.find({ user: { $in: users.map(u => u._id) } }).lean();
@@ -707,36 +707,37 @@ router.get('/premium-services/free-access', async (_req, res) => {
     res.json({
       users: users.map(u => {
         const offer = offerByUser[String(u._id)];
+        const hasPremium = (u.premiumServices || []).some(s => s.key === 'placement_session');
+        const activated = hasPremium || (offer?.status === 'approved' && offer?.enrolled);
         return {
           _id: u._id,
           name: u.name,
           email: u.email,
           avatar: u.avatar,
           grantedAt: u.freePremiumGrant?.grantedAt || null,
-          // pipeline stage: invited → applied → activated
-          stage: !offer ? 'invited' : (offer.status === 'approved' && offer.enrolled) ? 'activated' : 'applied',
+          stage: activated ? 'activated' : (!offer ? 'invited' : 'applied'),
         };
       }),
     });
   } catch (err) { res.status(500).json({ message: err.message }); }
 });
 
-// Grant free premium access: invites the user — they get an Apply button on the
-// Premium page. Applying puts them in Placement Applicants (pending); activation
-// there unlocks services and the Premium Member tag.
+// Grant free premium access — immediately activates all premium services (no user apply step)
 router.post('/premium-services/:userId/grant-free', async (req, res) => {
   try {
-    const user = await User.findById(req.params.userId).select('premiumServices freePremiumGrant isDeleted');
+    const user = await User.findById(req.params.userId).select('premiumServices isDeleted');
     if (!user || user.isDeleted) return res.status(404).json({ message: 'User not found' });
-    if (user.freePremiumGrant?.granted) return res.status(409).json({ message: 'User already has a free access grant' });
-    const FreeOffer = require('../models/FreeOffer');
-    const existing = await FreeOffer.findOne({ user: user._id }).lean();
-    if (existing) return res.status(409).json({ message: 'User already has a placement application' });
     if (user.premiumServices.some(s => s.key === 'placement_session'))
       return res.status(409).json({ message: 'User already has premium access' });
-    user.freePremiumGrant = { granted: true, grantedAt: new Date(), grantedBy: req.user._id };
-    await user.save();
-    res.status(201).json({ ok: true });
+
+    await activateUserPremiumAccess(user._id, req.user._id, { notes: FREE_ACCESS_NOTE });
+
+    await User.updateOne(
+      { _id: user._id },
+      { $set: { freePremiumGrant: { granted: true, grantedAt: new Date(), grantedBy: req.user._id } } }
+    );
+
+    res.status(201).json({ ok: true, activated: true });
   } catch (err) { res.status(500).json({ message: err.message }); }
 });
 

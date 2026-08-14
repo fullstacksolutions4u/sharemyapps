@@ -119,6 +119,43 @@ async function adminToggleEnroll(req, res) {
   }
 }
 
+async function unlockAllPremiumServices(user, adminUserId, notes) {
+  const allServices = await PremiumService.find({ active: true }).select('key').lean();
+  const existing = new Set(user.premiumServices.map(s => s.key));
+  for (const svc of allServices) {
+    if (!existing.has(svc.key)) {
+      user.premiumServices.push({ key: svc.key, notes, unlockedBy: adminUserId });
+    }
+  }
+}
+
+async function ensureActivatedOffer(userId) {
+  let offer = await FreeOffer.findOne({ user: userId });
+  if (offer) {
+    offer.status = 'approved';
+    offer.enrolled = true;
+    if (!offer.enrolledAt) offer.enrolledAt = new Date();
+    await offer.save();
+    return offer;
+  }
+  return FreeOffer.create({
+    user: userId,
+    status: 'approved',
+    enrolled: true,
+    enrolledAt: new Date(),
+  });
+}
+
+async function activateUserPremiumAccess(userId, adminUserId, { notes = 'Auto-unlocked on activation', sendEmail = true } = {}) {
+  const user = await User.findById(userId);
+  if (!user) return null;
+  await ensureActivatedOffer(userId);
+  await unlockAllPremiumServices(user, adminUserId, notes);
+  await user.save();
+  if (sendEmail) sendActivationEmail({ to: user.email, name: user.name }).catch(() => {});
+  return user;
+}
+
 async function adminActivate(req, res) {
   try {
     const offer = await FreeOffer.findById(req.params.id).lean();
@@ -133,20 +170,7 @@ async function adminActivate(req, res) {
       .populate('user', 'name email avatar phone designations');
 
     if (activate) {
-      const [user, allServices] = await Promise.all([
-        User.findById(offer.user),
-        PremiumService.find({ active: true }).select('key').lean(),
-      ]);
-      if (user) {
-        const existing = new Set(user.premiumServices.map(s => s.key));
-        for (const svc of allServices) {
-          if (!existing.has(svc.key)) {
-            user.premiumServices.push({ key: svc.key, notes: 'Auto-unlocked on activation', unlockedBy: req.user._id });
-          }
-        }
-        await user.save();
-        sendActivationEmail({ to: user.email, name: user.name }).catch(() => {});
-      }
+      await activateUserPremiumAccess(offer.user, req.user._id, { sendEmail: true });
     }
 
     res.json(updated);
@@ -188,4 +212,8 @@ async function adminGetOfferPortfolio(req, res) {
   }
 }
 
-module.exports = { applyForFreeOffer, getMyOffer, adminGetOffers, adminUpdateOffer, adminDeleteOffer, adminGetOfferStats, adminGetOfferPortfolio, adminMarkWhatsappContacted, adminToggleEnroll, adminActivate };
+module.exports = {
+  applyForFreeOffer, getMyOffer, adminGetOffers, adminUpdateOffer, adminDeleteOffer,
+  adminGetOfferStats, adminGetOfferPortfolio, adminMarkWhatsappContacted, adminToggleEnroll,
+  adminActivate, activateUserPremiumAccess,
+};

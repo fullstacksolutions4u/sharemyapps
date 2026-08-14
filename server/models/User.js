@@ -75,8 +75,7 @@ const userSchema = new mongoose.Schema({
   badges: [{ type: String }],
   // Job Post Links: unlock email sent at most once per Mon 6 AM IST week
   jobLinkUnlockEmailSentAt: { type: Date, default: null },
-  // Admin invitation to premium services for free — user still applies, then gets
-  // activated from Placement Applicants
+  // Admin-granted free premium access (activated immediately by admin)
   freePremiumGrant: {
     granted:   { type: Boolean, default: false },
     grantedAt: { type: Date, default: null },

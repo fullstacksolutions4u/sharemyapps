@@ -207,7 +207,7 @@ function FreeAccessCard() {
     );
   }, [allUsers, query]);
 
-  const selectableFiltered = filteredUsers.filter(u => !u.hasPremium && !u.hasOffer && !u.hasGrant);
+  const selectableFiltered = filteredUsers.filter(u => !u.hasPremium);
   const allFilteredSelected = selectableFiltered.length > 0 && selectableFiltered.every(u => selected.some(s => s._id === u._id));
 
   const isSelected = (id) => selected.some(s => s._id === id);
@@ -251,7 +251,7 @@ function FreeAccessCard() {
 
     if (grantedIds.length > 0) {
       toast.success(
-        `Free premium access granted to ${grantedIds.length} user${grantedIds.length === 1 ? '' : 's'}` +
+        `Premium services activated for ${grantedIds.length} user${grantedIds.length === 1 ? '' : 's'}` +
         (templateId && !emailFailed ? ' and email sent.' : '.')
       );
     }
@@ -263,7 +263,7 @@ function FreeAccessCard() {
     setSelected([]);
     setQuery('');
     const grantedSet = new Set(grantedIds);
-    setAllUsers(prev => prev.map(u => grantedSet.has(u._id) ? { ...u, hasGrant: true } : u));
+    setAllUsers(prev => prev.map(u => grantedSet.has(u._id) ? { ...u, hasPremium: true, hasGrant: true, hasOffer: true } : u));
     loadGranted();
   };
 
@@ -316,9 +316,8 @@ function FreeAccessCard() {
                 ))}
               </div>
               <p className="text-xs text-muted leading-relaxed">
-                These users will see an Apply button for free premium services on the Premium page.
-                After they apply, activate them in Placement Applicants to unlock services and the
-                Premium Member tag. Optionally pick an email template to notify them now.
+                Premium services and the Premium Member tag are enabled immediately — no user acceptance required.
+                Optionally pick an email template to notify them.
               </p>
               <div>
                 <label className="block text-xs font-semibold text-muted mb-1.5">Email notification</label>
@@ -368,7 +367,7 @@ function FreeAccessCard() {
         <div>
           <p className="text-sm font-semibold text-text">Free Premium Access</p>
           <p className="text-xs text-muted">
-            Selected users get an Apply button for free premium services. Once they apply, activate them in Placement Applicants to unlock services and the Premium Member tag.
+            Grant free premium access — services are activated immediately for selected users.
           </p>
         </div>
       </div>
@@ -432,7 +431,7 @@ function FreeAccessCard() {
             )}
             <div className="mt-2 max-h-72 overflow-y-auto divide-y divide-border border border-border rounded-xl">
               {filteredUsers.map(u => {
-                const blocked = u.hasPremium || u.hasOffer || u.hasGrant;
+                const blocked = u.hasPremium;
                 return (
                   <label
                     key={u._id}
