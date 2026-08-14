@@ -7,7 +7,7 @@ import {
   Crown, UserCircle, LogOut, Menu, X, Plus,
   Pencil, Trash2, ExternalLink, Clock, CheckCircle, XCircle,
   AlertCircle, Copy, Check, Eye, EyeOff, Heart, Star, Target,
-  Lock, Briefcase, GraduationCap, Inbox, FileText
+  Briefcase, GraduationCap, Inbox, FileText
 } from 'lucide-react';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
@@ -24,7 +24,6 @@ const NAV = [
   { key: 'premium',            label: 'Job Assistance Services', icon: Crown, isGolden: true },
   { key: 'interview-feedback', label: 'Interview Feedback',    icon: Target, isGolden: true, requiresInterview: true },
   { key: 'mentorship',         label: 'Mentorship Program', icon: GraduationCap, isGolden: true },
-  { key: 'services',           label: 'Services',         icon: Lock, isPremiumService: true, isGolden: true },
   { key: 'job-alerts',         label: 'Job Alerts',      icon: Briefcase, isJobAlertEligible: true, isGolden: true },
 ];
 
@@ -279,15 +278,11 @@ export default function Dashboard() {
   const location = useLocation();
   const activeSection = location.pathname.split('/').filter(Boolean)[1] || 'overview';
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [offerApproved, setOfferApproved] = useState(false);
   const [jobAlertsEligible, setJobAlertsEligible] = useState(false);
   const [interviewEligible, setInterviewEligible] = useState(false);
 
   useEffect(() => {
     if (!user) return;
-    api.get('/offers/my-offer')
-      .then(r => setOfferApproved(r.data?.status === 'approved'))
-      .catch(() => {});
     api.get('/premium-services/job-alerts/eligibility')
       .then(r => setJobAlertsEligible(!!r.data?.eligible))
       .catch(() => {});
@@ -329,7 +324,6 @@ export default function Dashboard() {
 
         <nav className="flex-1 px-3 py-4 space-y-1.5 overflow-y-auto">
           {NAV.filter(item =>
-            (!item.isPremiumService || offerApproved) &&
             (!item.isJobAlertEligible || jobAlertsEligible) &&
             (!item.requiresInterview || interviewEligible)
           ).map(({ key, label, icon: Icon, isGolden }) => (

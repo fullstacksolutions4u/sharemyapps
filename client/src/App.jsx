@@ -38,7 +38,6 @@ const MentorshipProgram  = lazy(() => import('./pages/MentorshipProgram'));
 const AddVacancy         = lazy(() => import('./pages/AddVacancy'));
 const LearningTracker    = lazy(() => import('./pages/LearningTracker'));
 const Profile            = lazy(() => import('./pages/Profile'));
-const Services           = lazy(() => import('./pages/Services'));
 const CurationShowcase   = lazy(() => import('./pages/CurationShowcase'));
 const DeveloperInterviewFeedback = lazy(() => import('./pages/DeveloperInterviewFeedback'));
 const Overview           = lazy(() => import('./pages/Overview'));
@@ -138,7 +137,7 @@ function AppRoutes() {
               <Route path="interview-feedback" element={<DeveloperInterviewFeedback />} />
               <Route path="premium" element={<PaidServices />} />
               <Route path="mentorship" element={<MentorshipProgram />} />
-              <Route path="services" element={<Services />} />
+              <Route path="services" element={<Navigate to="/dashboard/overview" replace />} />
               <Route path="profile" element={<Profile />} />
             </Route>
             <Route path="/inbox" element={<ProtectedRoute><Inbox /></ProtectedRoute>} />
