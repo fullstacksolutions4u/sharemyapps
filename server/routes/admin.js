@@ -126,7 +126,7 @@ router.post('/plans', adminCreatePlan);
 router.put('/plans/:id', adminUpdatePlan);
 router.delete('/plans/:id', adminDeletePlan);
 
-// ── Mentorship Program applications ──────────────────────────────────────────
+// ── Mentorship Program applications ───────────────────────────────────
 router.get('/mentorship-applications', async (req, res) => {
   try {
     const MentorshipApplication = require('../models/MentorshipApplication');
