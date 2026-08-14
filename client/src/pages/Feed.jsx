@@ -282,11 +282,11 @@ export default function Feed() {
             </svg>
           </div>
           <div className="relative z-10 flex flex-col h-full overflow-hidden">
-          <div className="px-1.5 py-2 border-b border-black/5 bg-transparent shrink-0">
+          <div className="shrink-0 overflow-hidden border-b border-black/5">
             <img
               src={easyApplyBanner}
               alt="Stop Easy Apply — Start to apply through job posts"
-              className="w-full h-auto rounded-md"
+              className="w-full h-auto block rounded-t-xl"
             />
           </div>
 
