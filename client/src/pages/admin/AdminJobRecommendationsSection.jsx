@@ -173,6 +173,17 @@ export default function AdminJobRecommendationsSection() {
     });
   };
 
+  const selectableUsers = editingSessionSent ? editingSessionRecipients : users;
+  const allSelected = selectableUsers.length > 0 && selectableUsers.every(u => selectedIds.has(u._id));
+
+  const toggleAllUsers = () => {
+    if (editingSessionSent) return;
+    setSelectedIds(prev => {
+      if (allSelected) return new Set();
+      return new Set(selectableUsers.map(u => u._id));
+    });
+  };
+
   const handleSend = async (isDraft = false) => {
     if (validJobs.length === 0 && validLinks.length === 0) { toast.error('Add at least one job (company name + email id) or one career page link'); return; }
     if (!isDraft && selectedIds.size === 0 && !editingSessionSent) { toast.error('Select at least one user'); return; }
@@ -337,9 +348,20 @@ export default function AdminJobRecommendationsSection() {
         <div className="bg-white border border-[#E5E1DA] rounded-2xl p-5 space-y-3">
           <div className="flex items-center justify-between gap-2">
             <p className="text-sm font-semibold text-[#1A1A1A]">Premium users</p>
-            {!loadingUsers && users.length > 0 && (
-              <span className="text-[11px] text-[#6B7280]">{users.length} total</span>
-            )}
+            <div className="flex items-center gap-3">
+              {!loadingUsers && users.length > 0 && !editingSessionSent && (
+                <button
+                  type="button"
+                  onClick={toggleAllUsers}
+                  className="text-[11px] font-medium text-[#00A693] hover:text-[#007D6F] transition-colors"
+                >
+                  {allSelected ? 'Deselect all' : 'Select all'}
+                </button>
+              )}
+              {!loadingUsers && users.length > 0 && (
+                <span className="text-[11px] text-[#6B7280]">{users.length} total</span>
+              )}
+            </div>
           </div>
           {loadingUsers ? (
             <div className="text-center py-8 text-sm text-[#9CA3AF]">Loading premium users…</div>
@@ -348,7 +370,7 @@ export default function AdminJobRecommendationsSection() {
               No premium users found. Activate users under Plans &amp; Payments first.
             </div>
           ) : (
-            <div className="max-h-72 overflow-y-auto space-y-1 border border-[#F3F0EB] rounded-xl p-2">
+            <div className="max-h-96 overflow-y-auto space-y-1 border border-[#F3F0EB] rounded-xl p-2">
               {(editingSessionSent ? editingSessionRecipients : users).map(u => (
                 <label
                   key={u._id}

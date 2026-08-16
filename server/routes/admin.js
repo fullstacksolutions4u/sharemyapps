@@ -996,10 +996,34 @@ router.get('/form-responses', async (_req, res) => {
 // ── Job Recommendations (all premium / placement members) ──
 
 async function getJobAlertEligibleUsers() {
-  return User.find({
-    isDeleted: { $ne: true },
-    'premiumServices.key': 'placement_session',
-  })
+  const FreeOffer = require('../models/FreeOffer');
+  const Payment = require('../models/Payment');
+
+  const [placementUsers, enrolledOffers, approvedOffers, payments, grantedUsers, anyPremium] = await Promise.all([
+    User.find({ isDeleted: { $ne: true }, 'premiumServices.key': 'placement_session' }).select('_id').lean(),
+    FreeOffer.find({ enrolled: true }).select('user').lean(),
+    FreeOffer.find({ status: 'approved' }).select('user').lean(),
+    Payment.find({ status: 'success', pack: /^placement_/ }).select('user').lean(),
+    User.find({ isDeleted: { $ne: true }, 'freePremiumGrant.granted': true }).select('_id').lean(),
+    User.find({
+      isDeleted: { $ne: true },
+      'premiumServices.0': { $exists: true },
+    }).select('_id').lean(),
+  ]);
+
+  const idSet = new Set();
+  const addId = (id) => { if (id) idSet.add(String(id)); };
+
+  for (const u of placementUsers) addId(u._id);
+  for (const o of enrolledOffers) addId(o.user);
+  for (const o of approvedOffers) addId(o.user);
+  for (const p of payments) addId(p.user);
+  for (const u of grantedUsers) addId(u._id);
+  for (const u of anyPremium) addId(u._id);
+
+  if (!idSet.size) return [];
+
+  return User.find({ _id: { $in: [...idSet] }, isDeleted: { $ne: true } })
     .select('name email avatar')
     .sort({ name: 1 })
     .lean();
