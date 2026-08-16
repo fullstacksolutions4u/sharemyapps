@@ -40,7 +40,7 @@ export default function AdminJobRecommendationsSection() {
     setLoadingUsers(true);
     api.get('/admin/job-recommendations/premium-users')
       .then(res => setUsers(res.data.users || []))
-      .catch(() => toast.error('Failed to load eligible users'))
+      .catch(() => toast.error('Failed to load premium users'))
       .finally(() => setLoadingUsers(false));
   }, []);
 
@@ -334,12 +334,18 @@ export default function AdminJobRecommendationsSection() {
           </button>
         </div>
 
-        <div className="bg-white border border-[#E5E1DA] rounded-2xl p-5 space-y-4">
+        <div className="bg-white border border-[#E5E1DA] rounded-2xl p-5 space-y-3">
+          <div className="flex items-center justify-between gap-2">
+            <p className="text-sm font-semibold text-[#1A1A1A]">Premium users</p>
+            {!loadingUsers && users.length > 0 && (
+              <span className="text-[11px] text-[#6B7280]">{users.length} total</span>
+            )}
+          </div>
           {loadingUsers ? (
             <div className="text-center py-8 text-sm text-[#9CA3AF]">Loading premium users…</div>
           ) : users.length === 0 && !editingSessionSent ? (
             <div className="text-center py-8 text-sm text-[#9CA3AF]">
-              No users with resume &amp; cover letter delivered yet.
+              No premium users found. Activate users under Plans &amp; Payments first.
             </div>
           ) : (
             <div className="max-h-72 overflow-y-auto space-y-1 border border-[#F3F0EB] rounded-xl p-2">

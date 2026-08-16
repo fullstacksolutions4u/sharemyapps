@@ -706,8 +706,6 @@ exports.sendResumeReadyEmail = async ({ to, name, serviceLabel, completionLink, 
 };
 
 exports.sendActivationEmail = async ({ to, name }) => {
-  const servicesUrl = `${BASE_URL}/dashboard/services`;
-
   await sendEmailWithFallback({
     sender: FROM,
     to: [{ email: to, name }],
@@ -720,19 +718,9 @@ exports.sendActivationEmail = async ({ to, name }) => {
         <div style="padding:32px;">
           <h2 style="margin:0 0 8px;font-size:20px;color:#1A1A1A;">🎉 You've been activated!</h2>
           <p style="color:#374151;margin:0 0 16px;font-size:14px;">Hi ${name},</p>
-          <p style="color:#374151;margin:0 0 16px;font-size:14px;">
+          <p style="color:#374151;margin:0 0 20px;font-size:14px;">
             Great news — our team has reviewed your application and you've been <strong>approved for placement support</strong>. All placement services on ShareMyApps are now unlocked for you.
           </p>
-
-          <p style="color:#374151;margin:0 0 20px;font-size:14px;">
-            To get started, visit the <strong>Services</strong> section in your dashboard page and <strong>schedule your 1:1 session with a placement officer</strong>.
-          </p>
-
-          <div style="text-align:center;margin-bottom:24px;">
-            <a href="${servicesUrl}" style="display:inline-block;background:#0A7373;color:#fff;text-decoration:none;padding:13px 32px;border-radius:8px;font-weight:700;font-size:14px;">
-              Schedule Your Session →
-            </a>
-          </div>
 
           <p style="color:#6B7280;font-size:13px;margin:0;">
             Have questions? Reply to this email or reach us at <a href="mailto:hello@sharemyapps.in" style="color:#00A693;text-decoration:none;">hello@sharemyapps.in</a>.

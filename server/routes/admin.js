@@ -993,19 +993,16 @@ router.get('/form-responses', async (_req, res) => {
   }
 });
 
-// ── Job Recommendations (premium users who received resume/cover letter documents) ──
+// ── Job Recommendations (all premium / placement members) ──
 
 async function getJobAlertEligibleUsers() {
-  const SessionRequest = require('../models/SessionRequest');
-
-  const completed = await SessionRequest.find({
-    serviceKey: 'ats_compatible_resume_cover_letter_optimization',
-    status: 'completed',
-    completionLink: { $ne: '' },
-  }).select('user').lean();
-
-  const userIds = [...new Set(completed.map(sr => String(sr.user)))];
-  return User.find({ _id: { $in: userIds }, isDeleted: { $ne: true } }).select('name email').lean();
+  return User.find({
+    isDeleted: { $ne: true },
+    'premiumServices.key': 'placement_session',
+  })
+    .select('name email avatar')
+    .sort({ name: 1 })
+    .lean();
 }
 
 router.get('/job-recommendations/premium-users', async (_req, res) => {
