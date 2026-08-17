@@ -65,13 +65,9 @@ async function adminUpdateOffer(req, res) {
 
     if (!offer) return res.status(404).json({ message: 'Not found' });
 
-    // Auto-unlock placement_session service when approving
+    // Auto-unlock all premium services when approving
     if (status === 'approved') {
-      const user = await User.findById(offer.user._id);
-      if (user && !user.premiumServices.find(s => s.key === 'placement_session')) {
-        user.premiumServices.push({ key: 'placement_session', notes: 'Auto-unlocked on offer approval', unlockedBy: req.user._id });
-        await user.save();
-      }
+      await activateUserPremiumAccess(offer.user._id, req.user._id, { sendEmail: false });
     }
 
     res.json(offer);

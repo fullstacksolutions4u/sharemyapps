@@ -689,18 +689,11 @@ export default function Services() {
     );
   }
 
-  const placementSession = getSession('placement_session');
-  const atsSession = getSession('ats_compatible_resume_cover_letter_optimization');
-  const placementScheduled =
-    placementSession?.status === 'scheduled' ||
-    placementSession?.status === 'completed' ||
-    !!atsSession?.completionLink;
-
   return (
     <div style={{ flex: 1, overflowY: 'auto', padding: '28px 24px', fontFamily: "'Manrope', system-ui, sans-serif", background: '#f2efe8' }}>
       {intake && <CandidateIntakeSummary intake={intake} onEdit={() => setEditingIntake(true)} />}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-        {catalog.filter(service => service.serviceType !== 'document' || placementScheduled).map(service => (
+        {catalog.map(service => (
           <ServiceRow
             key={service.key}
             service={service}

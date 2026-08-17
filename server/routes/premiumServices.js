@@ -7,15 +7,7 @@ const JobAlert = require('../models/JobAlert');
 const ApplicantJobStatus = require('../models/ApplicantJobStatus');
 const CandidateIntake = require('../models/CandidateIntake');
 const CATALOG = require('../config/services');
-
-async function getDocumentDelivery(userId) {
-  return SessionRequest.findOne({
-    user: userId,
-    serviceKey: 'ats_compatible_resume_cover_letter_optimization',
-    status: 'completed',
-    completionLink: { $ne: '' },
-  }).sort({ updatedAt: 1 }).lean();
-}
+const { getPremiumAccess } = require('../utils/premiumAccess');
 
 // All active services (used by the user-facing Services page)
 router.get('/catalog', (_req, res) => {
@@ -25,24 +17,22 @@ router.get('/catalog', (_req, res) => {
 // The calling user's unlocked service entries
 router.get('/my-services', protect, async (req, res) => {
   try {
-    const [user, offer] = await Promise.all([
+    const [user, { hasAccess: isEntitled }] = await Promise.all([
       User.findById(req.user._id).select('premiumServices').lean(),
-      FreeOffer.findOne({ user: req.user._id, status: 'approved' }).lean(),
+      getPremiumAccess(req.user._id),
     ]);
     const catalog = CATALOG;
     let services = user?.premiumServices || [];
 
-    // User is entitled to all catalog services if they have placement_session or an approved offer
-    const isEntitled = !!offer || services.some(s => s.key === 'placement_session');
     if (isEntitled) {
       for (const catalogService of catalog) {
         if (!services.find(s => s.key === catalogService.key)) {
-          services = [...services, { key: catalogService.key, notes: 'Unlocked via approved offer' }];
+          services = [...services, { key: catalogService.key, notes: 'Unlocked via premium access' }];
         }
       }
     }
 
-    // Auto-create pending SessionRequests for document-type services the user is entitled to
+    // Auto-create pending SessionRequests for document-type services when entitled
     const documentServices = catalog.filter(s => s.serviceType === 'document');
     for (const ds of documentServices) {
       if (services.find(s => s.key === ds.key)) {
@@ -79,14 +69,12 @@ router.get('/my-sessions', protect, async (req, res) => {
 router.post('/:key/session-request', protect, async (req, res) => {
   try {
     const { message, availabilityFrom, availabilityTo } = req.body;
-    const [user, offer] = await Promise.all([
+    const [{ hasAccess }, user] = await Promise.all([
+      getPremiumAccess(req.user._id),
       User.findById(req.user._id).select('premiumServices').lean(),
-      FreeOffer.findOne({ user: req.user._id, status: 'approved' }).lean(),
     ]);
     const hasDirectUnlock = user?.premiumServices?.some(s => s.key === req.params.key);
-    const hasPlacementSession = user?.premiumServices?.some(s => s.key === 'placement_session');
-    const unlocked = hasDirectUnlock || hasPlacementSession || !!offer;
-    if (!unlocked) return res.status(403).json({ message: 'Service not unlocked' });
+    if (!hasAccess && !hasDirectUnlock) return res.status(403).json({ message: 'Service not unlocked' });
 
     const existing = await SessionRequest.findOne({ user: req.user._id, serviceKey: req.params.key, status: { $in: ['pending', 'scheduled'] } });
     if (existing) return res.status(409).json({ message: 'You already have an active request for this service' });
@@ -109,22 +97,22 @@ router.post('/:key/session-request', protect, async (req, res) => {
 // Whether the calling user is eligible to view the Job Alerts page
 router.get('/job-alerts/eligibility', protect, async (req, res) => {
   try {
-    const delivery = await getDocumentDelivery(req.user._id);
-    res.json({ eligible: !!delivery, eligibleSince: delivery?.updatedAt || null });
+    const { hasAccess, since } = await getPremiumAccess(req.user._id);
+    res.json({ eligible: hasAccess, eligibleSince: since });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 });
 
-// Job alerts broadcast list (only visible to users who received resume/cover letter documents)
+// Job alerts broadcast list (premium members)
 router.get('/job-alerts', protect, async (req, res) => {
   try {
-    const delivery = await getDocumentDelivery(req.user._id);
-    if (!delivery) return res.status(403).json({ message: 'Not eligible for job alerts' });
+    const { hasAccess, since } = await getPremiumAccess(req.user._id);
+    if (!hasAccess) return res.status(403).json({ message: 'Not eligible for job alerts' });
 
     const alerts = await JobAlert.find({ notified: true, recipients: req.user._id }).sort({ createdAt: -1 }).limit(30).lean();
     const statuses = await ApplicantJobStatus.find({ user: req.user._id }).lean();
-    res.json({ alerts, statuses, eligibleSince: delivery.updatedAt });
+    res.json({ alerts, statuses, eligibleSince: since });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -133,6 +121,9 @@ router.get('/job-alerts', protect, async (req, res) => {
 // Upsert a job alert status for a specific company
 router.put('/job-alerts/status', protect, async (req, res) => {
   try {
+    const { hasAccess } = await getPremiumAccess(req.user._id);
+    if (!hasAccess) return res.status(403).json({ message: 'Not eligible for job alerts' });
+
     const { alertId, company, status, comment } = req.body;
     if (!alertId || !company) return res.status(400).json({ message: 'alertId and company are required' });
 

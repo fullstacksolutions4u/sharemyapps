@@ -212,22 +212,12 @@ const verifyPlacementPayment = async (req, res) => {
       return res.json({ ok: true, planName: plan.name, service: 'job_link_unlimited_apply' });
     }
 
-    // Unlock full placement premium service (pull first to avoid duplicates, then push)
-    await User.updateOne({ _id: req.user._id }, { $pull: { premiumServices: { key: 'placement_session' } } });
-    const updateQuery = { $push: { premiumServices: { key: 'placement_session', notes: `Payment: ${razorpay_payment_id}` } } };
-    await User.updateOne({ _id: req.user._id }, updateQuery);
-
-    // Create FreeOffer entry so user appears in admin Premium Applicants list
-    const FreeOffer = require('../models/FreeOffer');
-    const existingOffer = await FreeOffer.findOne({ user: req.user._id }).lean();
-    if (!existingOffer) {
-      await FreeOffer.create({
-        user:       req.user._id,
-        status:     'approved',
-        enrolled:   true,
-        enrolledAt: new Date(),
-      });
-    }
+    // Unlock all premium services on successful placement payment
+    const { activateUserPremiumAccess } = require('./freeOfferController');
+    await activateUserPremiumAccess(req.user._id, req.user._id, {
+      notes: `Payment: ${razorpay_payment_id}`,
+      sendEmail: false,
+    });
 
     // In-app notification
     await Notification.create({

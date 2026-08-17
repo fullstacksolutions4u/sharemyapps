@@ -59,20 +59,12 @@ router.get('/applications', protect, async (req, res) => {
 router.get('/overview-stats', protect, async (req, res) => {
   try {
     const userId = req.user._id;
-    const SessionRequest = require('../models/SessionRequest');
+    const { getPremiumAccess } = require('../utils/premiumAccess');
+    const mongoose = require('mongoose');
     const JobAlertModel = require('../models/JobAlert');
     const JobLink = require('../models/JobLink');
     const { buildOverviewActivity } = require('../utils/overviewActivity');
-
-    const delivery = await SessionRequest.findOne({
-      user: userId,
-      serviceKey: 'ats_compatible_resume_cover_letter_optimization',
-      status: 'completed',
-      completionLink: { $ne: '' },
-    }).select('_id').lean();
-    const isJobAlertEligible = !!delivery;
-
-    const mongoose = require('mongoose');
+    const { hasAccess: isJobAlertEligible } = await getPremiumAccess(userId);
     const userObjectId = new mongoose.Types.ObjectId(userId);
 
     const [applicationsCount, jobPostLinksCount, progressDoc, projectsCount, modules, jobAlertAgg, activity] = await Promise.all([
@@ -344,36 +336,17 @@ router.get('/developers', optionalAuth, async (req, res) => {
       },
     };
 
-    // Job alert eligibility — only need to know if ≥1 exists
-    const jobAlertLookup = {
-      $lookup: {
-        from: 'sessionrequests',
-        let: { uid: '$_id' },
-        pipeline: [
-          { $match: {
-              $expr: { $eq: ['$user', '$$uid'] },
-              serviceKey: 'ats_compatible_resume_cover_letter_optimization',
-              status: 'completed',
-              completionLink: { $nin: ['', null] }
-          }},
-          { $limit: 1 },
-          { $project: { _id: 1 } },
-        ],
-        as: '_jobAlertSessions',
-      }
-    };
-
+    // Job alert premium badge — any activated premium membership
     const [result] = await User.aggregate([
       { $match: matchStage },
       ownProjectsLookup,
-      jobAlertLookup,
       {
         $addFields: {
           hasProjects:        { $gt: [{ $size: '$projects' }, 0] },
           isPremium:          { $gt: [{ $size: { $ifNull: ['$premiumServices', []] } }, 0] },
           hasCoins:           { $gt: [{ $ifNull: ['$points', 0] }, 0] },
           lastProjectAt:      { $max: '$projects.createdAt' },
-          isJobAlertPremium:  { $cond: [{ $gt: [{ $size: '$_jobAlertSessions' }, 0] }, 1, 0] },
+          isJobAlertPremium:  { $cond: [{ $gt: [{ $size: { $ifNull: ['$premiumServices', []] } }, 0] }, 1, 0] },
           isComplete: {
             $cond: [
               {

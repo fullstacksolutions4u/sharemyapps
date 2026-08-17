@@ -63,12 +63,17 @@ export default function PaidServices() {
       api.get('/premium-services/my-services'),
       api.get('/offers/my-grant'),
     ]).then(([pay, svc, grant]) => {
-      if (pay.status === 'fulfilled' && pay.value.data?.length > 0) setPaidSuccess(true);
-      // covers activated premium access (paid, offer-approved or admin-activated)
-      if (svc.status === 'fulfilled' && (svc.value.data?.services || []).some(s => s.key === 'placement_session')) {
+      if (pay.status === 'fulfilled' && pay.value.data?.length > 0) {
+        setPaidSuccess(true);
         setHasPremiumAccess(true);
       }
-      if (grant.status === 'fulfilled' && grant.value.data?.granted) setHasFreeGrant(true);
+      if (svc.status === 'fulfilled' && (svc.value.data?.services || []).length > 0) {
+        setHasPremiumAccess(true);
+      }
+      if (grant.status === 'fulfilled' && grant.value.data?.granted) {
+        setHasFreeGrant(true);
+        setHasPremiumAccess(true);
+      }
     }).finally(() => setCheckingPaid(false));
   }, [user]);
 

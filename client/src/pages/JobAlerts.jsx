@@ -327,7 +327,7 @@ export default function JobAlerts() {
         <Briefcase size={32} className="text-[#9CA3AF] mx-auto mb-3" />
         <h1 className="text-lg font-semibold text-[#1A1A1A] mb-1">Job Alerts not available yet</h1>
         <p className="text-sm text-[#6B7280]">
-          This page unlocks once our team has sent you your ATS-optimized resume and cover letter.
+          Job alerts unlock when you have premium placement access. Contact support if you believe this is an error.
         </p>
       </div>
     );
