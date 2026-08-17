@@ -178,7 +178,7 @@ export default function AdminJobRecommendationsSection() {
 
   const toggleAllUsers = () => {
     if (editingSessionSent) return;
-    setSelectedIds(prev => {
+    setSelectedIds(() => {
       if (allSelected) return new Set();
       return new Set(selectableUsers.map(u => u._id));
     });
