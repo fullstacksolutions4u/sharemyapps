@@ -127,7 +127,7 @@ const toggleTopicCompletion = async (req, res) => {
 
     const isFirstTopic = isCompleted && progressDoc.completedTopics.length === 1;
     const firstTopicMessage = isFirstTopic
-      ? "🎯 Great start! Earn coins by completing quizzes. Every 100 coins unlocks a new badge! 🏆 Happy learning! 🌟"
+      ? '🎯 Great start! Complete quizzes to build your skills and climb the leaderboard. 🏆 Happy learning! 🌟'
       : null;
 
     res.status(200).json({
@@ -238,18 +238,11 @@ const submitQuizAttempt = async (req, res) => {
           const newRank = devsAfter.findIndex(d => d._id.toString() === userDoc._id.toString()) + 1;
 
           // Event triggers
-          const { sendTop10CongratsEmail, sendTop5CongratsEmail, sendRank1Email, sendPushedDownEmail, sendCoinDiscountUnlockedEmail } = require('../utils/email');
+          const { sendTop10CongratsEmail, sendTop5CongratsEmail, sendRank1Email, sendPushedDownEmail } = require('../utils/email');
 
           // 1. Enter into Top 10 (prev > 10, new <= 10, and new > 5)
           if (prevRank > 10 && newRank <= 10 && newRank > 5) {
             sendTop10CongratsEmail({ to: userDoc.email, name: userDoc.name }).catch(err => console.error('[Leaderboard Email] Top 10 failed:', err));
-          }
-
-          // 2. Coin Discount Unlocked (Reached 500 coins)
-          if (oldPoints < 500 && newPoints >= 500 && !userDoc.coinDiscountEmailSent) {
-            sendCoinDiscountUnlockedEmail({ to: userDoc.email, name: userDoc.name }).catch(err => console.error('[Coin Email] failed:', err));
-            userDoc.coinDiscountEmailSent = true;
-            await userDoc.save();
           }
 
           // 3. Enter into Top 5 (prev > 5, new <= 5, and new > 1)

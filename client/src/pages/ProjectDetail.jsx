@@ -182,9 +182,6 @@ export default function ProjectDetail() {
           : (old.likes || []).filter(l => (l._id || l).toString() !== user._id.toString());
         return { ...old, likes: newLikes };
       });
-      if (res.data.awardedCoins) {
-        toast.success(`You earned ${res.data.awardedCoins} coins!`, { icon: '🪙', duration: 2000 });
-      }
     } catch { toast.error('Failed to like'); }
     finally { setLiking(false); }
   };
@@ -219,11 +216,7 @@ export default function ProjectDetail() {
         else updatedRatings.push({ user: uid, value });
         return { ...old, ratings: updatedRatings };
       });
-      if (res.data.awardedCoins) {
-        toast.success(`Rating saved & earned ${res.data.awardedCoins} coins!`, { icon: '🪙', duration: 2000 });
-      } else {
-        toast.success('Rating saved!');
-      }
+      toast.success('Rating saved!');
     } catch { toast.error('Failed to rate'); }
     finally { setRating(false); }
   };
@@ -237,9 +230,6 @@ export default function ProjectDetail() {
       const res = await api.post(`/projects/${id}/comments`, { text: commentText });
       setCommentsLocal([res.data, ...comments]);
       setCommentText('');
-      if (res.data.awardedCoins) {
-        toast.success(`You earned ${res.data.awardedCoins} coins!`, { icon: '🪙', duration: 2000 });
-      }
     } catch { toast.error('Failed to post comment'); }
     finally { setSubmitting(false); }
   };

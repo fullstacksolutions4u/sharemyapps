@@ -100,9 +100,6 @@ export default function FeedProjectCard({ activity, index = 0 }) {
         setLikes(likes.filter(id => (id._id || id).toString() !== authUser._id.toString()));
       }
       
-      if (res.data.awardedCoins) {
-        toast.success(`You earned ${res.data.awardedCoins} coins!`, { icon: '🪙', duration: 2000 });
-      }
     } catch {
       toast.error('Failed to like');
     } finally {
@@ -122,12 +119,7 @@ export default function FeedProjectCard({ activity, index = 0 }) {
       else newRatings.push({ user: authUser._id, value });
       setRatings(newRatings);
       setShowRating(false);
-      
-      if (res.data.awardedCoins) {
-        toast.success(`Rating saved & earned ${res.data.awardedCoins} coins!`, { icon: '🪙', duration: 2000 });
-      } else {
-        toast.success('Rating saved!');
-      }
+      toast.success('Rating saved!');
     } catch {
       toast.error('Failed to rate');
     } finally {
@@ -157,10 +149,6 @@ export default function FeedProjectCard({ activity, index = 0 }) {
       const res = await axios.post(`/projects/${project._id}/comments`, { text: commentText });
       setComments([res.data, ...comments]);
       setCommentText('');
-      
-      if (res.data.awardedCoins) {
-        toast.success(`You earned ${res.data.awardedCoins} coins!`, { icon: '🪙', duration: 2000 });
-      }
     } catch {
       toast.error('Failed to post comment');
     } finally {

@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from '../api/axios';
 import { formatDistanceToNow } from 'date-fns';
-import { Trophy, MessageCircle, Heart, Star, TrendingUp, UserPlus, Crown, Sparkles, MapPin, Laptop, ExternalLink, Clock, Calendar, Coins } from 'lucide-react';
+import { Trophy, MessageCircle, Heart, Star, TrendingUp, UserPlus, Crown, Sparkles, MapPin, Laptop, ExternalLink, Clock, Calendar } from 'lucide-react';
 import _Lottie from 'lottie-react';
 import feedAnimation from '../assets/feed.json';
 import easyApplyBanner from '../assets/easyapply.png';
@@ -512,7 +512,7 @@ export default function Feed() {
                     
                     <div className="flex items-center gap-1.5 bg-amber-50 px-2.5 py-1 rounded-full border border-amber-100/50 shadow-[0_2px_8px_rgba(245,158,11,0.1)] shrink-0 transition-transform group-hover:scale-105">
                       <span className="text-[13px] font-extrabold text-amber-600">{user.points}</span>
-                      <Coins size={14} className="text-amber-500 drop-shadow-sm" strokeWidth={2.5} />
+                      <span className="text-[10px] font-bold text-amber-500 uppercase">pts</span>
                     </div>
                   </Link>
                 ))}

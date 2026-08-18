@@ -85,7 +85,6 @@ const PRESET_DESIGNATIONS = [
 const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 const DAY_SHORT = { Monday: 'Mon', Tuesday: 'Tue', Wednesday: 'Wed', Thursday: 'Thu', Friday: 'Fri', Saturday: 'Sat', Sunday: 'Sun' };
 import api from '../api/axios';
-import CoinIcon from '../components/common/AnimatedCoin';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
 import { optimizeImage } from '../utils/image';
@@ -424,8 +423,8 @@ export default function Profile() {
             <div className="bg-white rounded-[14px] p-5 relative">
               {user && (
                 <div className="absolute top-2 left-3 flex flex-col gap-0.5">
-                  <span className="flex items-center gap-1 text-[10px] font-semibold text-amber-700">
-                    <CoinIcon className="w-3.5 h-3.5" /> {user.points ?? 0} pts
+                  <span className="text-[10px] font-semibold text-amber-700">
+                    {user.points ?? 0} pts
                   </span>
                 </div>
               )}

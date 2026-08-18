@@ -8,7 +8,7 @@ import toast from 'react-hot-toast';
 import { normalizeJobDesignation } from '../utils/jobDesignation';
 
 const JOB_LINK_APPLY_INSTRUCTION =
-  'Get 2 free applies weekly. Upgrade to Premium for ₹399/- for unlimited lifetime applies.';
+  'Get 2 free applies weekly. Upgrade to Premium for ₹499/- for unlimited lifetime applies.';
 
 const getStatusConfig = (status) => {
   const s = (status || '').toLowerCase();
@@ -625,7 +625,7 @@ export default function Vacancies() {
               <span>Unlimited Job Post Applies with Premium</span>
               <span className="inline-flex items-center gap-0.5">
                 <IndianRupee size={11} className="text-gray-700" />
-                399/-
+                499/-
               </span>
             </Link>
           ) : (
@@ -831,7 +831,7 @@ export default function Vacancies() {
                                 </li>
                                 <li className="flex gap-1.5">
                                   <span className="text-amber-600 shrink-0">•</span>
-                                  <span>Upgrade to Premium for <strong className="font-semibold text-[#1A1A1A]">₹399/-</strong>.</span>
+                                  <span>Upgrade to Premium for <strong className="font-semibold text-[#1A1A1A]">₹499/-</strong>.</span>
                                 </li>
                                 <li className="flex gap-1.5">
                                   <span className="text-amber-600 shrink-0">•</span>

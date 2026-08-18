@@ -418,26 +418,16 @@ exports.toggleLike = async (req, res) => {
     if (!project) return res.status(404).json({ message: 'Project not found' });
     const uid = req.user._id.toString();
     const idx = project.likes.findIndex(l => l.toString() === uid);
-    let awardedCoins = 0;
     if (idx >= 0) {
       project.likes.splice(idx, 1);
     } else {
       project.likes.push(req.user._id);
-      
-      // Check if this is the first like to award coins
-      const isFirstLike = !(await Activity.exists({ user: req.user._id, type: 'PROJECT_LIKED', project: project._id }));
-      
-      // Log feed activity
+
       await Activity.create({
         user: req.user._id,
         type: 'PROJECT_LIKED',
         project: project._id,
       }).catch(() => {});
-
-      if (isFirstLike && project.owner.toString() !== uid) {
-        await User.findByIdAndUpdate(req.user._id, { $inc: { points: 5 } });
-        awardedCoins = 5;
-      }
 
       // notify owner once per user per project (not if they liked their own project)
       if (project.owner.toString() !== uid) {
@@ -455,7 +445,7 @@ exports.toggleLike = async (req, res) => {
       }
     }
     await project.save();
-    res.json({ likes: project.likes.length, liked: idx < 0, awardedCoins });
+    res.json({ likes: project.likes.length, liked: idx < 0 });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -471,7 +461,6 @@ exports.rateProject = async (req, res) => {
     const uid = req.user._id.toString();
     const idx = project.ratings.findIndex(r => r.user.toString() === uid);
     const isNew = idx < 0;
-    let awardedCoins = 0;
 
     if (idx >= 0) project.ratings[idx].value = value;
     else {
@@ -484,11 +473,6 @@ exports.rateProject = async (req, res) => {
         project: project._id,
         meta: { rating: value }
       }).catch(() => {});
-
-      if (project.owner.toString() !== uid) {
-        await User.findByIdAndUpdate(req.user._id, { $inc: { points: 10 } });
-        awardedCoins = 10;
-      }
     }
     await project.save();
     // notify owner only on first-time rating, not updates
@@ -503,7 +487,7 @@ exports.rateProject = async (req, res) => {
       });
     }
     const avg = project.ratings.reduce((s, r) => s + r.value, 0) / project.ratings.length;
-    res.json({ avg: Math.round(avg * 10) / 10, count: project.ratings.length, userRating: value, awardedCoins });
+    res.json({ avg: Math.round(avg * 10) / 10, count: project.ratings.length, userRating: value });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -529,21 +513,11 @@ exports.addComment = async (req, res) => {
     const comment = await Comment.create({ project: req.params.id, user: req.user._id, text });
     await comment.populate('user', 'name avatar');
     
-    // Check if this is the first comment to award coins
-    const isFirstComment = !(await Activity.exists({ user: req.user._id, type: 'PROJECT_COMMENTED', project: project._id }));
-
-    // Log feed activity
     await Activity.create({
       user: req.user._id,
       type: 'PROJECT_COMMENTED',
       project: project._id,
     }).catch(() => {});
-
-    let awardedCoins = 0;
-    if (isFirstComment && project.owner.toString() !== req.user._id.toString()) {
-      await User.findByIdAndUpdate(req.user._id, { $inc: { points: 15 } });
-      awardedCoins = 15;
-    }
 
     // notify owner, not if they commented on their own project
     if (project.owner.toString() !== req.user._id.toString()) {
@@ -557,11 +531,7 @@ exports.addComment = async (req, res) => {
       });
     }
     
-    // Convert to object so we can add awardedCoins
-    const responseData = comment.toObject();
-    responseData.awardedCoins = awardedCoins;
-
-    res.status(201).json(responseData);
+    res.status(201).json(comment);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

@@ -22,7 +22,7 @@ const SEED_PLANS = [
 
 const JOB_LINK_PLAN = {
   name: 'JobLinkUnlimited',
-  price: 399,
+  price: 499,
   order: 2,
   variant: 'accent',
   badge: '',
@@ -46,16 +46,40 @@ async function seedIfEmpty() {
 async function ensureJobLinkPlan() {
   await Plan.findOneAndUpdate(
     { name: JOB_LINK_PLAN.name },
-    { $setOnInsert: JOB_LINK_PLAN },
+    { $set: { price: JOB_LINK_PLAN.price }, $setOnInsert: JOB_LINK_PLAN },
     { upsert: true }
   );
+}
+
+async function ensurePremiumPlan() {
+  const existing = await Plan.findOne({ name: 'Premium' }).lean();
+  if (!existing) {
+    await Plan.create({
+      name: 'Premium',
+      price: SEED_PLANS[1].price,
+      order: 1,
+      variant: 'dark',
+      badge: 'Best Value',
+      badgeStyle: 'top-center',
+      description: SEED_PLANS[1].description,
+      features: SEED_PLANS[1].features,
+      active: true,
+    });
+  }
 }
 
 exports.getPublicPlans = async (req, res) => {
   try {
     await seedIfEmpty();
+    await ensurePremiumPlan();
     await ensureJobLinkPlan();
     const plans = await Plan.find({ active: true }).sort({ order: 1 }).lean();
+    // Placement page must always receive Premium pricing even if misconfigured inactive
+    const premium = await Plan.findOne({ name: 'Premium' }).lean();
+    if (premium && !plans.some((p) => p.name === 'Premium')) {
+      plans.push(premium);
+      plans.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+    }
     res.json(plans);
   } catch (err) {
     res.status(500).json({ message: 'Failed to load plans' });
@@ -98,6 +122,18 @@ exports.adminUpdatePlan = async (req, res) => {
   try {
     const plan = await Plan.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
     if (!plan) return res.status(404).json({ message: 'Plan not found' });
+
+    if (plan.name === 'Premium' && req.body.price != null) {
+      const SiteConfig = require('../models/SiteConfig');
+      const { invalidateCache } = require('../utils/configCache');
+      await SiteConfig.findOneAndUpdate(
+        { key: 'main' },
+        { $set: { premiumServicePricePaise: Math.round(Number(req.body.price) * 100) } },
+        { upsert: true }
+      );
+      invalidateCache();
+    }
+
     res.json(plan);
   } catch (err) {
     res.status(400).json({ message: err.message });

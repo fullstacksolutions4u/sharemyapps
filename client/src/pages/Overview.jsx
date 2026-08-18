@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { 
-  FileText, ExternalLink, GraduationCap, Coins, Bell,
+  FileText, ExternalLink, GraduationCap, Bell,
   Loader2 
 } from 'lucide-react';
 import api from '../api/axios';
@@ -74,15 +74,6 @@ export default function Overview() {
       icon: GraduationCap,
       iconColor: 'bg-purple-50 text-purple-600 border border-purple-100'
     },
-    {
-      title: 'COINS EARNED',
-      value: (stats?.coins || 0).toLocaleString(),
-      badge: '',
-      badgeColor: 'bg-amber-50 text-amber-700 border-amber-200 cursor-pointer hover:bg-amber-100',
-      description: 'Redeem once reach 500',
-      icon: Coins,
-      iconColor: 'bg-amber-50 text-amber-600 border border-amber-100'
-    }
   ];
 
   const skillsList = stats?.skillPathStats || [];

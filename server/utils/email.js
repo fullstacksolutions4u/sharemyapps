@@ -955,7 +955,7 @@ exports.sendTop10CongratsEmail = async ({ to, name }) => {
           </p>
           <div style="text-align:center;margin-bottom:24px;">
             <a href="${leaderboardUrl}" style="display:inline-block;background:linear-gradient(135deg,#22C55E 0%,#15803D 100%);color:#fff;text-decoration:none;padding:13px 32px;border-radius:8px;font-weight:700;font-size:14px;">
-              Earn More Coins →
+              Earn More Points →
             </a>
           </div>
         </div>
@@ -996,7 +996,7 @@ exports.sendRank1Email = async ({ to, name }) => {
             <p style="margin:0;font-size:13px;color:#3f4948;">As a special reward for reaching #1, you can claim the Premium Placement Plan for just <strong>₹${offerPrice}</strong>! Go to Placement Services in your dashboard to claim it.</p>
           </div>
           <p style="color:#374151;margin:0 0 24px;font-size:14px;line-height:1.6;">
-            Keep earning coins and completing quizzes to maintain your position, as other developers are fighting to overtake you!
+            Keep completing quizzes and modules to maintain your position, as other developers are fighting to overtake you!
           </p>
           <div style="text-align:center;margin-bottom:24px;">
             <a href="${leaderboardUrl}" style="display:inline-block;background:linear-gradient(135deg,#D97706 0%,#B45309 100%);color:#fff;text-decoration:none;padding:13px 32px;border-radius:8px;font-weight:700;font-size:14px;">
@@ -1033,7 +1033,7 @@ exports.sendPushedDownEmail = async ({ to, name }) => {
             <p style="margin:0;font-size:14px;color:#991B1B;font-weight:600;">Time to win back your crown!</p>
           </div>
           <p style="color:#374151;margin:0 0 24px;font-size:14px;line-height:1.6;">
-            Complete more quizzes and modules right now to earn coins and claim back your #1 champion rank.
+            Complete more quizzes and modules right now to climb back to your #1 champion rank.
           </p>
           <div style="text-align:center;margin-bottom:24px;">
             <a href="${leaderboardUrl}" style="display:inline-block;background:linear-gradient(135deg,#EF4444 0%,#B91C1C 100%);color:#fff;text-decoration:none;padding:13px 32px;border-radius:8px;font-weight:700;font-size:14px;">

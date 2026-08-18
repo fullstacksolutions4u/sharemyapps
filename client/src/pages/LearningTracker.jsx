@@ -3,7 +3,6 @@ import { useNavigate, Link } from 'react-router-dom';
 import { Trophy, Crown } from 'lucide-react';
 import { moduleAPI, progressAPI, feedbackAPI } from '../api/tick2test';
 import { useAuth } from '../context/AuthContext';
-import AnimatedCoin from '../components/common/AnimatedCoin';
 import confetti from 'canvas-confetti';
 import TopicQuizModal from '../components/user/TopicQuizModal';
 import _Lottie from 'lottie-react';
@@ -506,7 +505,7 @@ const LearningTracker = ({ embedded = false }) => {
                       <span className="text-xs font-bold text-[#1C1A17]">{streakCount}</span>
                     </div>
                     <div className="px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-sm" style={{ backgroundColor: '#FFF8E8', border: '1px solid rgba(201,169,110,0.3)' }} title="Points">
-                      <AnimatedCoin className="w-4 h-4" />
+                      <span className="text-[10px] font-bold uppercase text-[#9B7D43]">pts</span>
                       <span className="text-xs font-bold text-[#1C1A17]">{userPoints}</span>
                     </div>
                     <div className="px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-sm" style={{ backgroundColor: '#F0FDF4', border: '1px solid rgba(34,197,94,0.3)' }} title="Completed Modules">

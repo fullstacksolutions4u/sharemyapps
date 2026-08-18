@@ -142,9 +142,6 @@ const createPlacementOrder = async (req, res) => {
     }
 
     let amountPaise = plan.price * 100;
-    if (req.user.hasCoinDiscount && plan.name !== 'JobLinkUnlimited') {
-      amountPaise = Math.round(plan.price * 0.70) * 100;
-    }
     const order = await razorpay.orders.create({
       amount: amountPaise,
       currency: 'INR',
@@ -182,9 +179,6 @@ const verifyPlacementPayment = async (req, res) => {
     const isJobLinkPlan = plan.name === 'JobLinkUnlimited';
 
     let amountPaise = plan.price * 100;
-    if (req.user.hasCoinDiscount && !isJobLinkPlan) {
-      amountPaise = Math.round(plan.price * 0.70) * 100;
-    }
 
     await Payment.create({
       user:              req.user._id,

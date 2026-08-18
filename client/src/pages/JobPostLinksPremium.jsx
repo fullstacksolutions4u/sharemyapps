@@ -38,7 +38,7 @@ export default function JobPostLinksPremium() {
     }).finally(() => setLoading(false));
   }, [user]);
 
-  const priceAmount = plan ? Number(plan.price).toLocaleString('en-IN') : '399';
+  const priceAmount = plan ? Number(plan.price).toLocaleString('en-IN') : '499';
 
   const handlePay = () => {
     if (!user) {

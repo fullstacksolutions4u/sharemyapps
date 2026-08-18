@@ -100,7 +100,7 @@ function findDuplicateAgainstList({ url, title, company, excludeId, approvedLink
 }
 
 const APPLY_INSTRUCTION =
-  'Get 2 free applies weekly. Upgrade to Premium for ₹399/- for unlimited lifetime applies.';
+  'Get 2 free applies weekly. Upgrade to Premium for ₹499/- for unlimited lifetime applies.';
 
 /**
  * Apply Now rules for Job Post Links:
