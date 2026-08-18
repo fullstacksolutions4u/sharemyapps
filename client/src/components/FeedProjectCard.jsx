@@ -111,7 +111,7 @@ export default function FeedProjectCard({ activity, index = 0 }) {
     if (!authUser) return toast.error('Sign in to rate');
     setRatingLoading(true);
     try {
-      const res = await axios.post(`/projects/${project._id}/rate`, { value });
+      await axios.post(`/projects/${project._id}/rate`, { value });
       // Update local ratings
       const existing = ratings.findIndex(r => (r.user?._id || r.user)?.toString() === authUser._id.toString());
       const newRatings = [...ratings];

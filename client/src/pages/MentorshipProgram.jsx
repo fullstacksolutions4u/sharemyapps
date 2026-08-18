@@ -99,8 +99,8 @@ export default function MentorshipProgram() {
   const navigate = useNavigate();
   const [payModal, setPayModal] = useState(null);
   const [applyOpen, setApplyOpen] = useState(false);
-  const [planLoading, setPlanLoading] = useState(false);
   const [plans, setPlans] = useState(null);
+  const [plansLoading, setPlansLoading] = useState(true);
   const [purchased, setPurchased] = useState(false);
   const [application, setApplication] = useState(null);
   const [checking, setChecking] = useState(user != null);
@@ -118,7 +118,10 @@ export default function MentorshipProgram() {
   }, [user]);
 
   useEffect(() => {
-    api.get('/plans').then(r => setPlans(r.data)).catch(() => {});
+    api.get('/plans')
+      .then((r) => setPlans(Array.isArray(r.data) ? r.data : []))
+      .catch(() => setPlans([]))
+      .finally(() => setPlansLoading(false));
   }, []);
 
   const mentorshipPlan = plans?.find(p => p.name === 'Mentorship');
@@ -152,10 +155,10 @@ export default function MentorshipProgram() {
           </div>
           <button
             onClick={handlePayClick}
-            disabled={planLoading}
-            style={{ width: '100%', background: '#0c8c8c', color: '#fff', border: 'none', borderRadius: '8px', padding: '14px', fontSize: '13.5px', fontWeight: 700, letterSpacing: '.02em', cursor: planLoading ? 'default' : 'pointer', opacity: planLoading ? 0.7 : 1, fontFamily: "'Manrope', sans-serif" }}
+            disabled={plansLoading}
+            style={{ width: '100%', background: '#0c8c8c', color: '#fff', border: 'none', borderRadius: '8px', padding: '14px', fontSize: '13.5px', fontWeight: 700, letterSpacing: '.02em', cursor: plansLoading ? 'default' : 'pointer', opacity: plansLoading ? 0.7 : 1, fontFamily: "'Manrope', sans-serif" }}
           >
-            {planLoading ? 'Loading…' : `Pay ${priceDisplay.replace('/-', '')} & Start`}
+            {plansLoading ? 'Loading…' : `Pay ${priceDisplay.replace('/-', '')} & Start`}
           </button>
         </>
       );

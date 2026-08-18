@@ -31,7 +31,6 @@ export default function PaidServices() {
   const [plans, setPlans] = useState(null);
   const [plansLoading, setPlansLoading] = useState(true);
   const [payModal, setPayModal] = useState(null);
-  const [planLoading, setPlanLoading] = useState(false);
   const [paidSuccess, setPaidSuccess] = useState(false);
   const [hasPremiumAccess, setHasPremiumAccess] = useState(false);
   const [hasFreeGrant, setHasFreeGrant] = useState(false);
@@ -233,16 +232,16 @@ export default function PaidServices() {
       <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '26px' }}>
         <button
           onClick={handlePaidClick}
-          disabled={planLoading || plansLoading || !priceDisplay}
+          disabled={plansLoading || !priceDisplay}
           style={{
             width: '100%', background: '#008b74', color: '#fff',
             border: 'none', borderRadius: '10px', padding: '14px', fontSize: '14px',
             fontWeight: 700, letterSpacing: '.02em', fontFamily: "'Manrope', sans-serif",
             boxShadow: '0 6px 16px rgba(0, 139, 116, 0.25)',
-            cursor: planLoading ? 'default' : 'pointer', opacity: planLoading ? 0.7 : 1,
+            cursor: plansLoading ? 'default' : 'pointer', opacity: plansLoading ? 0.7 : 1,
           }}
         >
-          {planLoading || plansLoading ? 'Loading…' : priceDisplay ? `Get Started — ${priceDisplay}` : 'Get Started'}
+          {plansLoading ? 'Loading…' : priceDisplay ? `Get Started — ${priceDisplay}` : 'Get Started'}
         </button>
       </div>
     );
