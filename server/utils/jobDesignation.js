@@ -24,6 +24,8 @@ const CANONICAL_DESIGNATIONS = [
   'Other',
 ];
 
+const { normalizeJobLocation } = require('./indiaLocation');
+
 function normalizeKey(str) {
   return String(str || '')
     .toLowerCase()
@@ -138,7 +140,7 @@ function inferCompanyFromEmail(email) {
     .join(' ');
 }
 
-const { normalizeJobLocation } = require('./indiaLocation');
+function normalizeExperienceLevel(raw, sourceText = '') {
   let exp = String(raw || '').trim();
   if (/freshers?/i.test(exp)) return 'Fresher';
   if (!exp && /freshers?|recent graduate|entry level/i.test(sourceText)) return 'Fresher';
