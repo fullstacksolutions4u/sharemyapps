@@ -1,3 +1,4 @@
+const JobLink = require('../models/JobLink');
 const { normalizeJobLocation } = require('../utils/indiaLocation');
 const JobLinkFeedback = require('../models/JobLinkFeedback');
 const CompanyContact = require('../models/CompanyContact');
