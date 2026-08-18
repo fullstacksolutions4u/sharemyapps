@@ -72,3 +72,4 @@ function enrichExtractedLocation(extracted) {
     if (state) extracted.locationState = state;
   }
   return extracted;
+}
