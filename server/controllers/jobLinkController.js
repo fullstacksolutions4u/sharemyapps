@@ -1,4 +1,4 @@
-const JobLink = require('../models/JobLink');
+const { normalizeJobLocation } = require('../utils/indiaLocation');
 const JobLinkFeedback = require('../models/JobLinkFeedback');
 const CompanyContact = require('../models/CompanyContact');
 const OpenAI = require('openai');
@@ -224,15 +224,17 @@ exports.createAdminJobLink = async (req, res) => {
       return res.status(400).json({ success: false, message: 'URL, Designation, and Work Mode are required' });
     }
 
+    const normalized = normalizeJobLocation(location, state, '');
+
     const jobLink = await JobLink.create({
       url,
       title: normalizeJobDesignation(title),
       company: company || '',
       postedDate: postedDate || '',
       workMode,
-      location,
+      location: normalized.location,
       experience: experience || '',
-      state: state || '',
+      state: normalized.state,
       expiresAt: calculateExpirationDate(postedDate),
       approvedAt: new Date(),
       platform: platform || 'other',
@@ -280,10 +282,17 @@ exports.updateJobLink = async (req, res) => {
     if (company !== undefined) link.company = company;
     if (postedDate !== undefined) link.postedDate = postedDate;
     if (workMode !== undefined) link.workMode = workMode;
-    if (location !== undefined) link.location = location;
+    if (location !== undefined || state !== undefined) {
+      const normalized = normalizeJobLocation(
+        location !== undefined ? location : link.location,
+        state !== undefined ? state : link.state,
+        ''
+      );
+      link.location = normalized.location;
+      link.state = normalized.state;
+    }
     if (url !== undefined) link.url = url;
     if (experience !== undefined) link.experience = experience;
-    if (state !== undefined) link.state = state;
     if (req.body.adminNote !== undefined) link.adminNote = req.body.adminNote;
 
     await link.save();
@@ -378,6 +387,12 @@ ${designationBlock}
 ALREADY APPROVED / LISTED JOB POSTS (use these to flag duplicates — same company+role or same opening even if wording differs):
 ${existingCatalog || '(none yet)'}
 
+LOCATION EXTRACTION (critical — used for state filter on user side):
+1. If ANY city, town, district, area, or tech park is mentioned, location MUST be "Place, State" for India.
+2. Always infer the Indian state: Mohali → Mohali, Punjab | Ernakulam/Infopark/Kochi → Ernakulam, Kerala | Chakan → Chakan, Maharashtra.
+3. Never return only the city name for Indian locations (e.g. "Mohali" alone is wrong).
+4. Fill the "state" field with the state name whenever location has an Indian place.
+
 Return ONLY a valid JSON object with a single "jobs" key containing an array of objects (no markdown, no explanation, just raw JSON):
 {
   "jobs": [
@@ -386,8 +401,8 @@ Return ONLY a valid JSON object with a single "jobs" key containing an array of 
       "company": "company name if mentioned, if an email ID is present extract the company name from the domain name (e.g., from name@example.com extract 'Example', remove common extensions like .com, .in, .net), else empty string",
       "postedDate": "job posting date if mentioned. If relative (e.g. '1w', '2d'), calculate the exact date based on CURRENT DATE and output in 'Month DD' format (e.g. 'July 21'). Else empty string",
       "workMode": "one of: Remote, Onsite, Hybrid — infer from context. Job title 'Remote Support' does NOT mean Remote work mode if a physical office/location is specified (e.g. Infopark → Onsite)",
-      "location": "city and state/country if mentioned. For Indian cities, use the state name instead of 'India' (e.g. 'Jaipur, Rajasthan', 'Bengaluru, Karnataka', 'Mumbai, Maharashtra', 'Hyderabad, Telangana'). For non-Indian locations use city and country. Else empty string.",
-      "state": "the Indian state name — ONLY fill if there is exactly ONE clear Indian city or area mentioned (e.g. 'Bengaluru' → 'Karnataka', 'Hyderabad' → 'Telangana'). If a non-Indian country/city is mentioned (e.g. 'USA', 'London'), return 'Out of India'. If multiple locations are mentioned, or if the location is Remote, return empty string.",
+      "location": "REQUIRED when any city, area, office, or tech park is mentioned. Format MUST be 'Place, State' for India (e.g. 'Ernakulam, Kerala', 'Mohali, Punjab', 'Chakan, Maharashtra', 'Bengaluru, Karnataka'). Always infer the Indian state from the place name — never return only the city (e.g. 'Mohali' alone is WRONG; use 'Mohali, Punjab'). For non-Indian locations use 'City, Country' and set state to 'Out of India'. Empty only if fully remote with no place mentioned.",
+      "state": "Indian state name matching the location (e.g. 'Kerala', 'Punjab', 'Maharashtra'). REQUIRED whenever location has an Indian place. Use 'Out of India' for foreign locations. Empty only for Remote or when no location at all.",
       "experience": "experience requirement as a short string (e.g. 2-4 years, 3+ years, Fresher). Put Freshers/Fresher/Entry Level here — not in title",
       "email": "any email address found in the job posting (e.g. hr@company.com), else empty string",
       "aiLikelyDuplicate": true or false — true if this opening clearly matches an ALREADY APPROVED listing above (same company + same/similar role, or same job post),
@@ -487,7 +502,7 @@ ${text.slice(0, 4000)}`;
         postedDate: processed.postedDate || '',
         workMode: ['Remote', 'Onsite', 'Hybrid'].includes(processed.workMode) ? processed.workMode : '',
         location: processed.location || '',
-        state: processed.state || job.state || '',
+        state: processed.state || '',
         experience: processed.experience || '',
         email: jobEmail,
         isDuplicate,

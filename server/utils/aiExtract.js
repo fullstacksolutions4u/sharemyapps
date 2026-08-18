@@ -39,8 +39,8 @@ Normalization rules:
 - minYears: extract the minimum years required (e.g. "3+ years" -> 3, "2-4 years" -> 2). Null if not mentioned.
 - level: infer from seniority language even if not explicit ("entry-level" -> "junior", "lead" -> "senior").
 - locationType: "onsite" if job requires physical presence, "remote" if fully remote, "hybrid" if mixed, "any" if not mentioned.
-- locationCity: the city name if an onsite/hybrid location is specified (e.g. "Kochi", "Bangalore"). Null if remote or not mentioned.
-- locationState: the state or region for the city (e.g. "Kerala" for Kochi, "Karnataka" for Bangalore). Null if not applicable.
+- locationCity: the city or area name if an onsite/hybrid location is specified (e.g. "Kochi", "Mohali", "Ernakulam"). Null if remote or not mentioned.
+- locationState: ALWAYS infer the state/region for the city (e.g. "Kerala" for Kochi/Ernakulam, "Punjab" for Mohali, "Maharashtra" for Pune/Chakan). Never leave null when a place is mentioned.
 
 JD:
 ${jdText}`,
@@ -50,13 +50,25 @@ ${jdText}`,
 
   const text = response.choices[0].message.content;
   try {
-    return JSON.parse(text);
+    const parsed = JSON.parse(text);
+    return enrichExtractedLocation(parsed);
   } catch {
     const match = text.match(/\{[\s\S]*\}/);
     try {
-      return match ? JSON.parse(match[0]) : { skills: [], roles: [], level: 'any', minYears: null, niceToHave: [], locationType: 'any', locationCity: null, locationState: null };
+      const parsed = match ? JSON.parse(match[0]) : { skills: [], roles: [], level: 'any', minYears: null, niceToHave: [], locationType: 'any', locationCity: null, locationState: null };
+      return enrichExtractedLocation(parsed);
     } catch {
       return { skills: [], roles: [], level: 'any', minYears: null, niceToHave: [], locationType: 'any', locationCity: null, locationState: null };
     }
   }
 };
+
+function enrichExtractedLocation(extracted) {
+  const { inferStateFromPlace } = require('./indiaLocation');
+  const city = extracted.locationCity?.trim() || '';
+  let state = extracted.locationState?.trim() || '';
+  if (city && !state) {
+    state = inferStateFromPlace(city) || '';
+    if (state) extracted.locationState = state;
+  }
+  return extracted;

@@ -138,7 +138,7 @@ function inferCompanyFromEmail(email) {
     .join(' ');
 }
 
-function normalizeExperienceLevel(raw, sourceText = '') {
+const { normalizeJobLocation } = require('./indiaLocation');
   let exp = String(raw || '').trim();
   if (/freshers?/i.test(exp)) return 'Fresher';
   if (!exp && /freshers?|recent graduate|entry level/i.test(sourceText)) return 'Fresher';
@@ -183,7 +183,7 @@ function postProcessExtractedJob(job, sourceText) {
   if (!company && email) company = inferCompanyFromEmail(email);
 
   const experience = normalizeExperienceLevel(job.experience, sourceText);
-  const location = String(job.location || '').trim();
+  const { location, state } = normalizeJobLocation(job.location, job.state, sourceText);
   const workMode = inferWorkMode({
     workMode: job.workMode,
     location,
@@ -198,6 +198,7 @@ function postProcessExtractedJob(job, sourceText) {
     experience,
     workMode,
     location,
+    state,
   };
 }
 function normalizeJobDesignation(raw) {
