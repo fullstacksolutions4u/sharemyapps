@@ -89,6 +89,35 @@ const LearningTracker = ({ embedded = false }) => {
     });
   };
 
+  const refreshLeaderboard = async () => {
+    try {
+      const leaderRes = await progressAPI.getLeaderboard();
+      if (leaderRes.data.success) {
+        setLeaderboard(leaderRes.data.leaderboard);
+      }
+    } catch (err) {
+      console.error('Failed to load leaderboard', err);
+    }
+  };
+
+  const handlePointsUpdate = (points) => {
+    setUserPoints(prev => prev + points);
+    const userId = user?._id?.toString?.() ?? user?.id?.toString?.();
+    if (userId) {
+      setLeaderboard(prev =>
+        [...prev]
+          .map(u =>
+            (u.userId?.toString?.() ?? String(u.userId)) === userId
+              ? { ...u, points: (u.points || 0) + points }
+              : u
+          )
+          .sort((a, b) => b.points - a.points)
+          .map((u, i) => ({ ...u, rank: i + 1 }))
+      );
+    }
+    refreshLeaderboard();
+  };
+
   const fetchModulesAndProgress = async () => {
     try {
       setLoading(true);
@@ -109,14 +138,7 @@ const LearningTracker = ({ embedded = false }) => {
           setUserPoints(progressData.userStats.points || 0);
         }
 
-        try {
-          const leaderRes = await progressAPI.getLeaderboard();
-          if (leaderRes.data.success) {
-            setLeaderboard(leaderRes.data.leaderboard);
-          }
-        } catch (err) {
-          console.error('Failed to load leaderboard', err);
-        }
+        await refreshLeaderboard();
         const modulesWithProgress = fetchedModules.map(module => ({
           ...module,
           topics: module.topics.map(topic => ({
@@ -170,6 +192,7 @@ const LearningTracker = ({ embedded = false }) => {
             setUserProgress(data.progress);
             if (data.userStats) {
               setUserPoints(data.userStats.points);
+              refreshLeaderboard();
               if (data.userStats.newBadges?.length > 0) {
                 confetti({ particleCount: 200, spread: 100, origin: { y: 0.6 }, colors: ['#FFD700', '#C0C0C0', '#E5E4E2'] });
               }
@@ -700,7 +723,7 @@ const LearningTracker = ({ embedded = false }) => {
           onBadgeEarned={() => {
             confetti({ particleCount: 200, spread: 100, origin: { y: 0.6 }, colors: ['#FFD700', '#C0C0C0', '#E5E4E2'] });
           }}
-          onPointsUpdate={(points) => setUserPoints(prev => prev + points)}
+          onPointsUpdate={handlePointsUpdate}
           onQuizAttempt={(attemptData) => {
             setUserProgress(prev => prev ? { ...prev, attemptedQuizzes: [...(prev.attemptedQuizzes || []), attemptData] } : prev);
           }}
