@@ -9,6 +9,10 @@
  *   node scripts/generate-quizzes.js --apply scripts/generated/nextjs.json
  *   → only fills topics whose quizzes are still empty; existing quizzes are never touched
  *
+ * Replace existing quizzes (e.g. regenerate FastAPI/Django topics):
+ *   node scripts/generate-quizzes.js --module "Python, FastAPI, Django" --replace --topic-filter "FastAPI|Django"
+ *   node scripts/generate-quizzes.js --apply scripts/generated/python-fastapi-django.json --replace
+ *
  * Env: MONGO_URI (from .env), OPENAI_API_KEY (from .env)
  */
 
@@ -27,6 +31,20 @@ const getArg = (name) => {
 const MODULE_ARG = getArg('--module');
 const APPLY_FILE = getArg('--apply');
 const COUNT = parseInt(getArg('--count') || '5', 10);
+const REPLACE = args.includes('--replace');
+const TOPIC_FILTER = getArg('--topic-filter');
+const topicFilterRe = TOPIC_FILTER ? new RegExp(TOPIC_FILTER, 'i') : null;
+
+function topicMatchesFilter(topicName) {
+  return !topicFilterRe || topicFilterRe.test(topicName || '');
+}
+
+function isTargetTopic(topic) {
+  if (topic.isPracticalProblem) return false;
+  if (!topicMatchesFilter(topic.name)) return false;
+  const hasQuizzes = Array.isArray(topic.quizzes) && topic.quizzes.length > 0;
+  return REPLACE || !hasQuizzes;
+}
 
 const looseSchema = new mongoose.Schema({}, { strict: false });
 const normTitle = (s) => (s || '').replace(/^module\s+\d+\s*[:\s-]+\s*/i, '').trim().toLowerCase();
@@ -104,10 +122,11 @@ async function runGenerate() {
     await conn.close(); process.exit(1);
   }
 
-  const targets = (mod.topics || []).filter(t =>
-    !t.isPracticalProblem && !(Array.isArray(t.quizzes) && t.quizzes.length > 0)
-  );
-  console.log(`\n📘  "${mod.title}" — ${targets.length} topic(s) need quizzes (${COUNT} each).\n`);
+  const targets = (mod.topics || []).filter(isTargetTopic);
+  const modeLabel = REPLACE ? 'regenerate' : 'need quizzes';
+  console.log(`\n📘  "${mod.title}" — ${targets.length} topic(s) to ${modeLabel} (${COUNT} each).`);
+  if (TOPIC_FILTER) console.log(`     topic filter: /${TOPIC_FILTER}/i\n`);
+  else console.log('');
 
   const out = { moduleId: String(mod._id), moduleTitle: mod.title, generatedAt: new Date().toISOString(), topics: [] };
   let failed = 0;
@@ -153,7 +172,7 @@ async function runApply() {
   for (const t of data.topics) {
     const dbTopic = (mod.topics || []).find(x => String(x._id) === t.topicId);
     if (!dbTopic) { console.log(`  ⚠️  topic not found, skipping: ${t.topicName}`); skipped++; continue; }
-    if (Array.isArray(dbTopic.quizzes) && dbTopic.quizzes.length > 0) {
+    if (!REPLACE && Array.isArray(dbTopic.quizzes) && dbTopic.quizzes.length > 0) {
       console.log(`  ⏭️   already has quizzes, skipping: ${t.topicName}`); skipped++; continue;
     }
     await Module.updateOne(
@@ -170,6 +189,6 @@ async function runApply() {
 if (APPLY_FILE) runApply().catch(e => { console.error('❌ ', e); process.exit(1); });
 else if (MODULE_ARG) runGenerate().catch(e => { console.error('❌ ', e); process.exit(1); });
 else {
-  console.log('\nUsage:\n  node scripts/generate-quizzes.js --module "Nextjs" [--count 5]\n  node scripts/generate-quizzes.js --apply scripts/generated/nextjs.json\n');
+  console.log('\nUsage:\n  node scripts/generate-quizzes.js --module "Nextjs" [--count 5] [--replace] [--topic-filter "regex"]\n  node scripts/generate-quizzes.js --apply scripts/generated/nextjs.json [--replace]\n');
   process.exit(1);
 }

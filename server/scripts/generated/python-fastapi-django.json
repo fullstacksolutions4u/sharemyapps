@@ -1,0 +1,875 @@
+{
+  "moduleId": "6a3a23db9a460185578288f8",
+  "moduleTitle": "Python, FastAPI, Django",
+  "generatedAt": "2026-08-21T08:29:21.849Z",
+  "topics": [
+    {
+      "topicId": "6a880c51431032bfaff2ecf6",
+      "topicName": "FastAPI Authentication (OAuth2, JWT, and Security)",
+      "quizzes": [
+        {
+          "question": "What does OAuth2 primarily provide for applications?",
+          "options": [
+            "User authentication",
+            "Authorization delegation",
+            "Data encryption",
+            "Session management"
+          ],
+          "correctAnswer": 1,
+          "explanation": "OAuth2 is designed to delegate authorization, allowing applications to access user data without sharing passwords."
+        },
+        {
+          "question": "In FastAPI, which dependency is typically used to handle OAuth2 password flows?",
+          "options": [
+            "Depends",
+            "OAuth2PasswordBearer",
+            "JWTBearer",
+            "Security"
+          ],
+          "correctAnswer": 1,
+          "explanation": "The 'OAuth2PasswordBearer' is a FastAPI class used to implement the OAuth2 Password Flow style of authentication."
+        },
+        {
+          "question": "Which of the following is true about JWT tokens in FastAPI?",
+          "options": [
+            "They can only be used with OAuth2",
+            "They are automatically verified by FastAPI",
+            "They contain user details and expiration information",
+            "They require an external library to decode"
+          ],
+          "correctAnswer": 2,
+          "explanation": "JWT tokens hold claims including user details and expiration, which can be decoded and verified by the server."
+        },
+        {
+          "question": "When creating a JWT in FastAPI, which library would you typically use for encoding and decoding?",
+          "options": [
+            "requests",
+            "JWT",
+            "PyJWT",
+            "fastapi-jwt-auth"
+          ],
+          "correctAnswer": 2,
+          "explanation": "PyJWT is a common library used in Python development for encoding and decoding JSON Web Tokens (JWT)."
+        },
+        {
+          "question": "What is a common security consideration when implementing OAuth2 with FastAPI?",
+          "options": [
+            "Always store the JWT in a cookie",
+            "Use a short expiration time for access tokens",
+            "Never validate the access token",
+            "Use HTTP instead of HTTPS for security"
+          ],
+          "correctAnswer": 1,
+          "explanation": "It is advisable to use short expiration times for access tokens to limit the risk of token misuse."
+        }
+      ]
+    },
+    {
+      "topicId": "6a880c51431032bfaff2ecf7",
+      "topicName": "FastAPI Database Integration with SQLAlchemy",
+      "quizzes": [
+        {
+          "question": "What is the primary purpose of SQLAlchemy in a FastAPI application?",
+          "options": [
+            "To manage application routing",
+            "To handle database interactions",
+            "To serve static files",
+            "To execute JavaScript code"
+          ],
+          "correctAnswer": 1,
+          "explanation": "SQLAlchemy is an SQL toolkit and Object-Relational Mapping (ORM) system for Python, primarily used to handle database interactions in FastAPI applications."
+        },
+        {
+          "question": "Which of the following is the correct way to define a SQLAlchemy model in FastAPI?",
+          "options": [
+            "class User(Base): ...",
+            "Base(User): ...",
+            "User[Base]: ...",
+            "database.Model(User): ..."
+          ],
+          "correctAnswer": 0,
+          "explanation": "To define a SQLAlchemy model in FastAPI, you subclass Base with your model class, like 'class User(Base): ...'."
+        },
+        {
+          "question": "Which FastAPI dependency is typically used to obtain a database session for each request?",
+          "options": [
+            "get_db",
+            "get_session",
+            "create_session",
+            "connect_db"
+          ],
+          "correctAnswer": 0,
+          "explanation": "The 'get_db' dependency is a common convention in FastAPI to yield a database session for usage within route handlers."
+        },
+        {
+          "question": "How would you define a relationship between two SQLAlchemy models in FastAPI?",
+          "options": [
+            "Using the foreign key method",
+            "Using relationship() method",
+            "Both A and B",
+            "None of the above"
+          ],
+          "correctAnswer": 2,
+          "explanation": "To define a relationship, you typically use both a foreign key in the model and the relationship() method to establish a link between models."
+        },
+        {
+          "question": "What could be a potential issue when using session.commit() in an asynchronous FastAPI route handler?",
+          "questionCode": "async def create_user(user: UserCreate):\n    db = SessionLocal()\n    db.add(user)\n    db.commit()\n    db.refresh(user)\n    return user",
+          "options": [
+            "No issue, it's always safe",
+            "Blocking the event loop",
+            "Data isn't persisted",
+            "None of the above"
+          ],
+          "correctAnswer": 1,
+          "explanation": "Using session.commit() in an asynchronous route can block the event loop, leading to performance issues, as it is a blocking operation.",
+          "sampleCode": "async def create_user(user: UserCreate):\n    async with SessionLocal() as session:\n        session.add(user)\n        await session.commit()"
+        }
+      ]
+    },
+    {
+      "topicId": "6a880c51431032bfaff2ecf8",
+      "topicName": "FastAPI WebSockets and Streaming Responses",
+      "quizzes": [
+        {
+          "question": "What is the primary purpose of WebSockets in FastAPI?",
+          "options": [
+            "To send HTTP requests",
+            "To establish a persistent connection for real-time communication",
+            "To store data in memory",
+            "To serve static files"
+          ],
+          "correctAnswer": 1,
+          "explanation": "WebSockets allow for real-time, two-way communication between the client and server, making it suitable for applications like chat apps or live updates."
+        },
+        {
+          "question": "How do you set up a WebSocket route in FastAPI?",
+          "questionCode": "from fastapi import FastAPI, WebSocket\napp = FastAPI()\n@app.websocket(\"/ws\")\nasync def websocket_endpoint(websocket: WebSocket):\n    await websocket.accept()",
+          "options": [
+            "Use 'app.get' decorator",
+            "Use 'app.websocket' decorator",
+            "Use 'app.route' decorator",
+            "Use 'app.post' decorator"
+          ],
+          "correctAnswer": 1,
+          "explanation": "The 'app.websocket' decorator is specifically designed to handle WebSocket connections in FastAPI.",
+          "sampleCode": "from fastapi import FastAPI, WebSocket\n\napp = FastAPI()\n\n@app.websocket(\"/ws\")\nasync def websocket_endpoint(websocket: WebSocket):\n    await websocket.accept()"
+        },
+        {
+          "question": "What is the main advantage of using Streaming Responses in FastAPI?",
+          "options": [
+            "To reduce CPU usage",
+            "To handle large data efficiently and improve UX",
+            "To automatically compress responses",
+            "To make requests synchronous"
+          ],
+          "correctAnswer": 1,
+          "explanation": "Streaming Responses allow for large data to be sent in smaller chunks, improving user experience and reducing memory consumption."
+        },
+        {
+          "question": "In which scenario would you prefer using a WebSocket over a standard HTTP request?",
+          "options": [
+            "When sending a single request for data retrieval",
+            "When you need to maintain a continuous connection for updates",
+            "When static data needs to be fetched",
+            "When making a form submission"
+          ],
+          "correctAnswer": 1,
+          "explanation": "WebSockets are ideal when maintaining a continuous connection is needed, such as for real-time notifications or live chat."
+        },
+        {
+          "question": "Which of the following statements is true about WebSocket connections in FastAPI?",
+          "options": [
+            "WebSockets are inherently slower than HTTP requests",
+            "FastAPI automatically handles reconnections for WebSockets",
+            "WebSocket connections are stateful and can maintain sessions",
+            "WebSockets do not support binary data transmission"
+          ],
+          "correctAnswer": 2,
+          "explanation": "WebSocket connections are stateful, allowing for a persistent connection that can maintain the session state across multiple messages."
+        }
+      ]
+    },
+    {
+      "topicId": "6a880c51431032bfaff2ecf9",
+      "topicName": "FastAPI Background Tasks and Lifespan Events",
+      "quizzes": [
+        {
+          "question": "What is the primary purpose of background tasks in FastAPI?",
+          "options": [
+            "To execute tasks concurrently without blocking the main thread",
+            "To manage database connections",
+            "To handle HTTP requests",
+            "To serve static files"
+          ],
+          "correctAnswer": 0,
+          "explanation": "Background tasks are designed to run operations concurrently, allowing the main thread to continue processing other requests without waiting for the background task to complete."
+        },
+        {
+          "question": "Which decorator is used to define a background task in FastAPI?",
+          "options": [
+            "@fastapi.background_task",
+            "@background",
+            "@app.on_event",
+            "@app.background_task"
+          ],
+          "correctAnswer": 0,
+          "explanation": "The correct way to define a background task in FastAPI uses the @background decorator that is available through fastapi.BackgroundTasks."
+        },
+        {
+          "question": "Which event is triggered when FastAPI starts up?",
+          "options": [
+            "on_startup",
+            "on_shutdown",
+            "startup_event",
+            "startup"
+          ],
+          "correctAnswer": 0,
+          "explanation": "The 'on_startup' event is triggered when the FastAPI application starts, allowing developers to perform necessary startup operations."
+        },
+        {
+          "question": "Given the following FastAPI function, what will happen when you call it? \n\n```python\n@app.post(\"/send-email/\")\ndef send_email(email: str, background_tasks: BackgroundTasks):\n    background_tasks.add_task(send_email_task, email)\n    return \"Email will be sent\"\n```",
+          "questionCode": "code",
+          "options": [
+            "The response will wait until the email is sent.",
+            "An error will occur if the email sending function is long-running.",
+            "The response will be immediate, and the email will be sent in the background.",
+            "The function will return before the background task is initialized."
+          ],
+          "correctAnswer": 2,
+          "explanation": "The task is added to the background, allowing the response to be sent immediately while the email is processed concurrently."
+        },
+        {
+          "question": "In FastAPI, what is the purpose of custom lifespan events?",
+          "options": [
+            "To manage database connections only",
+            "To execute tasks after the application has started or before shutting down",
+            "To define middleware operations",
+            "To automatically log all incoming requests"
+          ],
+          "correctAnswer": 1,
+          "explanation": "Custom lifespan events allow developers to run setup and teardown code, managing resources required for the duration of the application lifecycle."
+        }
+      ]
+    },
+    {
+      "topicId": "6a880c51431032bfaff2ecfa",
+      "topicName": "FastAPI Testing with pytest and TestClient",
+      "quizzes": [
+        {
+          "question": "What is the primary purpose of using pytest with FastAPI?",
+          "options": [
+            "To create database migrations",
+            "To test HTTP requests and responses",
+            "To optimize application performance",
+            "To manage application dependencies"
+          ],
+          "correctAnswer": 1,
+          "explanation": "pytest is primarily used for testing Python code, and in the context of FastAPI, it helps to test HTTP requests and ensure that the application behaves as expected."
+        },
+        {
+          "question": "Which of the following is required to test FastAPI endpoints using TestClient?",
+          "options": [
+            "An async database connection",
+            "A running FastAPI application instance",
+            "The command line interface for pytest",
+            "An external web server"
+          ],
+          "correctAnswer": 1,
+          "explanation": "The TestClient works by making requests to a FastAPI application instance, hence a running instance is necessary for testing endpoints."
+        },
+        {
+          "question": "Which method would you use to send a GET request to an endpoint using TestClient?",
+          "options": [
+            "client.post('/path')",
+            "client.get('/path')",
+            "client.put('/path')",
+            "client.delete('/path')"
+          ],
+          "correctAnswer": 1,
+          "explanation": "The correct method to send a GET request with TestClient in FastAPI is `client.get('/path')`."
+        },
+        {
+          "question": "How can you test if a FastAPI endpoint returns a specific JSON response?",
+          "options": [
+            "Using assert response.text == 'expected_json'",
+            "Using assert response.json() == expected_json",
+            "Using assert response.status_code == 200",
+            "Using assert response.data == expected_json"
+          ],
+          "correctAnswer": 1,
+          "explanation": "The appropriate way to check if the response contains the expected JSON data is to use `assert response.json() == expected_json`. This will decode the JSON response for comparison."
+        },
+        {
+          "question": "In a FastAPI test, how can you handle dependency overrides when using TestClient?",
+          "options": [
+            "Using Dependency Injection manually",
+            "Setting up app dependencies in a separate test file",
+            "Modifying the FastAPI app during test setup",
+            "Using pytest fixtures for dependency replacement"
+          ],
+          "correctAnswer": 3,
+          "explanation": "By utilizing pytest fixtures, you can provide dependency overrides in your tests, allowing you to replace certain dependencies without modifying the application code."
+        }
+      ]
+    },
+    {
+      "topicId": "6a880c51431032bfaff2ecfb",
+      "topicName": "Deploying FastAPI Applications (Docker and Cloud)",
+      "quizzes": [
+        {
+          "question": "What command is used to build a Docker image from a Dockerfile?",
+          "options": [
+            "docker image build",
+            "docker create",
+            "docker image pull",
+            "docker run"
+          ],
+          "correctAnswer": 0,
+          "explanation": "The command 'docker image build' is used to create a Docker image from the instructions specified in a Dockerfile."
+        },
+        {
+          "question": "Which option is needed in a Dockerfile to specify the base image?",
+          "options": [
+            "FROM",
+            "BASE",
+            "IMAGE",
+            "RUN"
+          ],
+          "correctAnswer": 0,
+          "explanation": "The 'FROM' instruction in a Dockerfile sets the base image for subsequent instructions."
+        },
+        {
+          "question": "In deploying FastAPI with Docker on a cloud platform, what is the primary purpose of using a reverse proxy like NGINX?",
+          "options": [
+            "To serve static files",
+            "To provide load balancing",
+            "To route traffic to the FastAPI application",
+            "All of the above"
+          ],
+          "correctAnswer": 3,
+          "explanation": "A reverse proxy like NGINX can serve multiple purposes, including serving static files, load balancing, and routing traffic to the FastAPI application."
+        },
+        {
+          "question": "Which of the following is NOT a benefit of using Docker for deploying FastAPI applications?",
+          "options": [
+            "Isolation of dependencies",
+            "Easy version control",
+            "Automatic scaling",
+            "Consistent environment across platforms"
+          ],
+          "correctAnswer": 2,
+          "explanation": "While Docker provides many benefits, automatic scaling is typically managed by orchestration tools like Kubernetes, not Docker itself."
+        },
+        {
+          "question": "When deploying a FastAPI application in a Docker container, what is the significance of exposing the correct port in the Dockerfile?",
+          "questionCode": "EXPOSE 8000",
+          "options": [
+            "It makes the application publicly accessible",
+            "It optimizes the application's performance",
+            "It sets the default port for the application",
+            "It prevents port conflicts"
+          ],
+          "correctAnswer": 0,
+          "explanation": "Exposing the correct port in the Dockerfile ensures that the application can be accessed externally through that port, making it publicly accessible."
+        }
+      ]
+    },
+    {
+      "topicId": "6a880c51431032bfaff2ecfc",
+      "topicName": "Django Admin Interface and Customization",
+      "quizzes": [
+        {
+          "question": "What is the purpose of the Django Admin interface?",
+          "options": [
+            "To manage database migrations",
+            "To provide a user-friendly interface for managing application data",
+            "To handle API requests",
+            "To provide authentication services"
+          ],
+          "correctAnswer": 1,
+          "explanation": "The Django Admin interface is designed to provide a user-friendly environment for managing application data received from models."
+        },
+        {
+          "question": "How can you customize the ordering of items listed in the Django Admin interface?",
+          "options": [
+            "By overriding the save_model method",
+            "By using the ordering attribute in the ModelAdmin class",
+            "By modifying the HTML structure manually",
+            "By changing the database column order"
+          ],
+          "correctAnswer": 1,
+          "explanation": "You can customize the ordering of items in the Django Admin by setting the 'ordering' attribute in the ModelAdmin class."
+        },
+        {
+          "question": "What method can be used to change how a model is displayed in the Django Admin interface?",
+          "options": [
+            "get_absolute_url",
+            "str",
+            "get_admin_display",
+            "get_queryset"
+          ],
+          "correctAnswer": 1,
+          "explanation": "Overriding the '__str__' method in a Django model allows for custom display of that model in the Django Admin interface."
+        },
+        {
+          "question": "Which of the following can you use to group related fields together in a Django Admin form?",
+          "options": [
+            "Fieldsets",
+            "Tabs",
+            "Panels",
+            "Sections"
+          ],
+          "correctAnswer": 0,
+          "explanation": "The 'fieldsets' attribute in a ModelAdmin defines the grouping of related fields in the Django Admin form layout."
+        },
+        {
+          "question": "To add custom actions to the list view in Django Admin, which method should you override?",
+          "options": [
+            "get_actions",
+            "custom_action",
+            "list_display",
+            "action"
+          ],
+          "correctAnswer": 0,
+          "explanation": "You can add custom actions by overriding the 'get_actions' method in your ModelAdmin class to specify the new actions available."
+        }
+      ]
+    },
+    {
+      "topicId": "6a880c51431032bfaff2ecfd",
+      "topicName": "Django Forms, ModelForms, and Validation",
+      "quizzes": [
+        {
+          "question": "What is the primary purpose of Django Forms?",
+          "options": [
+            "To create database models",
+            "To handle form submissions and validations",
+            "To define URL routes",
+            "To manage static files"
+          ],
+          "correctAnswer": 1,
+          "explanation": "Django Forms are specifically designed to handle user input, including form submissions and validations."
+        },
+        {
+          "question": "What class do you typically use to create a form based on a Django model?",
+          "options": [
+            "forms.Form",
+            "forms.ModelForm",
+            "forms.BaseForm",
+            "forms.AbstractForm"
+          ],
+          "correctAnswer": 1,
+          "explanation": "The 'forms.ModelForm' class is used to create forms based on Django models, simplifying form creation and data validation."
+        },
+        {
+          "question": "Which method is automatically called to validate the data in a Django Form?",
+          "options": [
+            "validate()",
+            "is_valid()",
+            "clean()",
+            "save()"
+          ],
+          "correctAnswer": 1,
+          "explanation": "The 'is_valid()' method is called to trigger the validation process for Django Forms, returning True if the data is valid."
+        },
+        {
+          "question": "In a Django ModelForm, how can you customize the error message for a field?",
+          "options": [
+            "By overriding the field's 'label' attribute",
+            "By adding a 'widgets' dictionary",
+            "By using 'error_messages' dictionary in Meta class",
+            "By altering the model directly"
+          ],
+          "correctAnswer": 2,
+          "explanation": "The 'error_messages' dictionary in the Meta class of a ModelForm allows customization of error messages for specific fields."
+        },
+        {
+          "question": "When using ModelForms, which method would you override to add additional validation logic that depends on multiple fields?",
+          "questionCode": "class MyForm(forms.ModelForm):\n    def clean(self):\n        cleaned_data = super().clean()\n        # Custom validation logic here\n",
+          "options": [
+            "clean_<fieldname>()",
+            "clean_fields()",
+            "clean()",
+            "validate()"
+          ],
+          "correctAnswer": 2,
+          "explanation": "Overriding the 'clean()' method allows you to perform validation that checks the values of multiple fields in a ModelForm.",
+          "sampleCode": "class MyForm(forms.ModelForm):\n    def clean(self):\n        cleaned_data = super().clean()\n        # Custom validation logic here\n"
+        }
+      ]
+    },
+    {
+      "topicId": "6a880c51431032bfaff2ecfe",
+      "topicName": "Django Middleware, Signals, and Custom Managers",
+      "quizzes": [
+        {
+          "question": "What is the primary function of Django middleware?",
+          "options": [
+            "To handle HTTP requests and responses",
+            "To manage database migrations",
+            "To serve static files",
+            "To create and validate forms"
+          ],
+          "correctAnswer": 0,
+          "explanation": "Django middleware is designed to process HTTP requests and responses globally, allowing the developer to add a variety of processing functions."
+        },
+        {
+          "question": "Which method on a Django signal allows you to connect a signal to a receiver function?",
+          "options": [
+            "dispatch",
+            "send",
+            "connect",
+            "emit"
+          ],
+          "correctAnswer": 2,
+          "explanation": "The 'connect' method is used to link a signal to a receiver function, allowing the receiver to be triggered when the signal is sent."
+        },
+        {
+          "question": "In a Django custom model manager, which method is typically overridden to provide a custom queryset?",
+          "options": [
+            "get_queryset",
+            "create",
+            "filter",
+            "get"
+          ],
+          "correctAnswer": 0,
+          "explanation": "Overriding the 'get_queryset' method in a custom model manager allows developers to return a custom queryset that can include specific filtering or ordering."
+        },
+        {
+          "question": "What is the outcome of the following middleware implementation where 'get_response' is not properly called?",
+          "questionCode": "def simple_middleware(get_response):\n    def middleware(request):\n        # Some processing\n        return\n    return middleware",
+          "options": [
+            "The middleware will process requests and responses correctly.",
+            "The middleware will result in a server error as it lacks a response.",
+            "The middleware will skip processing requests altogether.",
+            "The middleware will return an empty response."
+          ],
+          "correctAnswer": 1,
+          "explanation": "Not returning a response in the middleware causes it to result in a server error, since Django expects a response object to be returned from middleware."
+        },
+        {
+          "question": "How can you use Django signals to automatically update a timestamp field whenever a model instance is saved?",
+          "options": [
+            "Connect a receiver to the post_save signal.",
+            "Use a model method to handle the update.",
+            "Create a custom manager for the model.",
+            "Override the save method of the model."
+          ],
+          "correctAnswer": 0,
+          "explanation": "Connecting a receiver to the post_save signal enables you to execute code automatically whenever an instance of the model is saved, thereby allowing you to update a timestamp field."
+        }
+      ]
+    },
+    {
+      "topicId": "6a880c51431032bfaff2ecff",
+      "topicName": "Django Authentication, Users, and Permissions",
+      "quizzes": [
+        {
+          "question": "What is the default user model provided by Django?",
+          "options": [
+            "MyUser",
+            "AbstractUser",
+            "User",
+            "CustomUser"
+          ],
+          "correctAnswer": 2,
+          "explanation": "Django provides a default user model called 'User', which includes fields for username, password, email, etc."
+        },
+        {
+          "question": "Which method is used to authenticate a user in Django?",
+          "options": [
+            "authenticate_user()",
+            "check_password()",
+            "authenticate()",
+            "is_authenticated()"
+          ],
+          "correctAnswer": 2,
+          "explanation": "The 'authenticate()' function is used in Django to verify the credentials of a user."
+        },
+        {
+          "question": "How can you restrict access to a view in Django for authenticated users only?",
+          "options": [
+            "@login_required",
+            "@permission_required",
+            "@user_passes_test",
+            "@staff_member_required"
+          ],
+          "correctAnswer": 0,
+          "explanation": "The @login_required decorator is used to restrict access to a view to only authenticated users."
+        },
+        {
+          "question": "What is the use of permissions in Django?",
+          "options": [
+            "To manage database connections",
+            "To control access to views and model actions",
+            "To improve server performance",
+            "To handle user sessions"
+          ],
+          "correctAnswer": 1,
+          "explanation": "Permissions in Django are used to control access to views and actions on models based on user roles."
+        },
+        {
+          "question": "In a custom user model, which method should be overridden to ensure email uniqueness?",
+          "questionCode": "class CustomUser(AbstractBaseUser):\n    email = models.EmailField(unique=True)\n    \n    def save(self, *args, **kwargs):\n        super().save(*args, **kwargs)",
+          "options": [
+            "create_user()",
+            "save()",
+            "clean()",
+            "validate_email()"
+          ],
+          "correctAnswer": 1,
+          "explanation": "Overriding the 'save()' method allows you to add additional logic before the user instance is saved, such as ensuring email uniqueness."
+        }
+      ]
+    },
+    {
+      "topicId": "6a880c51431032bfaff2ed00",
+      "topicName": "Django Caching, Sessions, and Performance",
+      "quizzes": [
+        {
+          "question": "What is the primary purpose of caching in Django?",
+          "options": [
+            "To reduce database hits and improve performance",
+            "To store user sessions securely",
+            "To increase application complexity",
+            "To serialize data for API responses"
+          ],
+          "correctAnswer": 0,
+          "explanation": "Caching primarily serves to store frequently accessed data to minimize database queries, thereby improving overall performance."
+        },
+        {
+          "question": "Which caching backend does Django use by default?",
+          "options": [
+            "Memcached",
+            "Redis",
+            "File-based caching",
+            "Database caching"
+          ],
+          "correctAnswer": 2,
+          "explanation": "Django's default caching mechanism is file-based caching, which stores cache data in the file system."
+        },
+        {
+          "question": "How can you store session data in the database using Django?",
+          "options": [
+            "Set SESSION_ENGINE to 'django.contrib.sessions.backends.db'",
+            "Use Redis as the session engine",
+            "Set SESSION_EXPIRE_AT_BROWSER_CLOSE to True",
+            "Use cached sessions"
+          ],
+          "correctAnswer": 0,
+          "explanation": "To store session data in the database, you need to configure Django to use the database session engine by setting SESSION_ENGINE accordingly."
+        },
+        {
+          "question": "Which of the following settings would you adjust to improve the performance of a Django application under heavy load?",
+          "options": [
+            "DEBUG = False",
+            "USE_TZ = True",
+            "INSTALLED_APPS = ['django.contrib.staticfiles']",
+            "ALLOWED_HOSTS = ['*']"
+          ],
+          "correctAnswer": 0,
+          "explanation": "Setting DEBUG to False is essential in production, as it reduces overhead and improves performance by disabling debug mode."
+        },
+        {
+          "question": "What is a potential downside of using in-memory caching in Django with a large dataset?",
+          "options": [
+            "It may lead to increased database queries",
+            "It can consume a lot of server memory and may not persist across restarts",
+            "It is slower than database caching",
+            "It is incompatible with session management"
+          ],
+          "correctAnswer": 1,
+          "explanation": "In-memory caching can lead to high memory usage and is volatile, meaning data is lost when the server restarts, making it unsuitable for large datasets in persistent applications."
+        }
+      ]
+    },
+    {
+      "topicId": "6a880c51431032bfaff2ed01",
+      "topicName": "Django File Uploads and Static/Media Files",
+      "quizzes": [
+        {
+          "question": "What is the purpose of the MEDIA_URL setting in Django?",
+          "options": [
+            "To define the URL prefix for accessing media files",
+            "To specify the location of static files",
+            "To set the database URL",
+            "To configure logging settings"
+          ],
+          "correctAnswer": 0,
+          "explanation": "MEDIA_URL is used to define the base URL from which media files will be served, allowing for easy access to user-uploaded files."
+        },
+        {
+          "question": "Which command is used to collect static files in Django?",
+          "options": [
+            "python manage.py collectmedia",
+            "python manage.py collectstatic",
+            "python manage.py staticfiles",
+            "python manage.py gatherstatic"
+          ],
+          "correctAnswer": 1,
+          "explanation": "The command 'python manage.py collectstatic' collects static files from each app and puts them into the directory defined by STATIC_ROOT."
+        },
+        {
+          "question": "What is the correct way to define a model field for file uploads in Django?",
+          "options": [
+            "FileField",
+            "UploadField",
+            "ImageField",
+            "MediaField"
+          ],
+          "correctAnswer": 0,
+          "explanation": "FileField is the Django model field used to define file uploads, allowing files to be uploaded and stored associated with a model instance.",
+          "sampleCode": "file = models.FileField(upload_to='uploads/')"
+        },
+        {
+          "question": "In a Django view, how do you handle a file upload from a request?",
+          "options": [
+            "Use request.POST to access the file",
+            "Use request.FILES to access the uploaded file",
+            "Directly access the file using request.data",
+            "Use request.body to read the file"
+          ],
+          "correctAnswer": 1,
+          "explanation": "In Django, file uploads are accessed using request.FILES, which is a dictionary-like object containing all uploaded files."
+        },
+        {
+          "question": "What could be a consequence of not properly configuring media file handling in Django?",
+          "options": [
+            "Users will not be able to log in",
+            "Uploaded files may not be served correctly by the application",
+            "Static files will not load at all",
+            "Database migrations will fail"
+          ],
+          "correctAnswer": 1,
+          "explanation": "If media file handling isn't configured correctly, user-uploaded files may not be accessible through the application, potentially leading to broken functionality."
+        }
+      ]
+    },
+    {
+      "topicId": "6a880c51431032bfaff2ed02",
+      "topicName": "Django Testing with pytest-django",
+      "quizzes": [
+        {
+          "question": "What command is used to run tests in a Django application using pytest-django?",
+          "options": [
+            "pytest tests",
+            "python manage.py test",
+            "pytest-django run",
+            "pytest"
+          ],
+          "correctAnswer": 3,
+          "explanation": "The correct command to run tests with pytest-django is 'pytest'."
+        },
+        {
+          "question": "Which file is typically used to configure pytest-django settings?",
+          "options": [
+            "pytest.ini",
+            "settings.py",
+            "tox.ini",
+            "setup.py"
+          ],
+          "correctAnswer": 0,
+          "explanation": "The 'pytest.ini' file is used to configure pytest, including pytest-django settings."
+        },
+        {
+          "question": "When using pytest-django, which fixture should be used to create a database transaction for each test case?",
+          "options": [
+            "client",
+            "db",
+            "transaction",
+            "override_settings"
+          ],
+          "correctAnswer": 1,
+          "explanation": "The 'db' fixture in pytest-django creates a database transaction for each test, ensuring a clean state."
+        },
+        {
+          "question": "What is the purpose of the 'client' fixture in pytest-django?",
+          "options": [
+            "To simulate HTTP requests to the application",
+            "To test database queries",
+            "To manage user sessions",
+            "To mock third-party APIs"
+          ],
+          "correctAnswer": 0,
+          "explanation": "The 'client' fixture allows you to simulate HTTP requests to your Django application in tests."
+        },
+        {
+          "question": "How can you test if a view returns a specific status code using pytest-django?",
+          "questionCode": "response = client.get('/some-url/')",
+          "options": [
+            "assert response.status_code == 200",
+            "assert response.equals(200)",
+            "response.status_code.should.be.equal(200)",
+            "response.check_status(200)"
+          ],
+          "correctAnswer": 0,
+          "explanation": "In pytest-django, you can assert the status code of a response by comparing it directly, such as using 'assert response.status_code == 200'.",
+          "sampleCode": "def test_some_view(client):\n    response = client.get('/some-url/')\n    assert response.status_code == 200"
+        }
+      ]
+    },
+    {
+      "topicId": "6a880c51431032bfaff2ed03",
+      "topicName": "Django Celery and Background Jobs",
+      "quizzes": [
+        {
+          "question": "What is the primary purpose of Celery in a Django application?",
+          "options": [
+            "To handle database migrations",
+            "To manage asynchronous background tasks",
+            "To serve static files",
+            "To provide HTTP routing capabilities"
+          ],
+          "correctAnswer": 1,
+          "explanation": "Celery is designed to handle the execution of asynchronous tasks in the background, allowing Django applications to perform long-running jobs without blocking the main thread."
+        },
+        {
+          "question": "Which command is used to start the Celery worker process?",
+          "options": [
+            "celery run worker",
+            "celery worker --start",
+            "celery -A myproject worker",
+            "python manage.py start_celery"
+          ],
+          "correctAnswer": 2,
+          "explanation": "The correct command to start the Celery worker is 'celery -A myproject worker', where 'myproject' is the name of your Django project."
+        },
+        {
+          "question": "In Django with Celery, how would you define a simple task?",
+          "questionCode": "from celery import shared_task\n\n@shared_task\ndef my_task():\n    return 'Task completed!'",
+          "options": [
+            "def my_task(): pass",
+            "@app.task def my_task(): return 'Done'",
+            "@shared_task def my_task(): return 'Task completed!'",
+            "def my_task() -> str: return 'Complete'"
+          ],
+          "correctAnswer": 2,
+          "explanation": "Using the @shared_task decorator allows the function to be recognized as a Celery task, enabling it to be executed asynchronously."
+        },
+        {
+          "question": "Which backend can be used with Celery for task result storage?",
+          "options": [
+            "SQLite",
+            "Redis",
+            "Mongodb",
+            "PostgreSQL"
+          ],
+          "correctAnswer": 1,
+          "explanation": "Redis is often used as a message broker and result backend for Celery, allowing for efficient task management and result storage."
+        },
+        {
+          "question": "What happens if a Celery task fails and no retry policy is applied?",
+          "options": [
+            "The task will automatically restart",
+            "The task will be lost, and no further actions will occur",
+            "The task will log an error but still complete",
+            "The task will queue up for future execution"
+          ],
+          "correctAnswer": 1,
+          "explanation": "If a Celery task fails and no retry policy is defined, the task is considered failed, and the result is not saved, effectively losing the task's execution details."
+        }
+      ]
+    }
+  ]
+}
