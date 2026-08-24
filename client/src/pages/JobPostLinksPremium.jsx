@@ -19,48 +19,81 @@ const DEFAULT_PLAN = {
   features: FEATURES,
 };
 
+async function fetchJobLinkPlan() {
+  try {
+    const res = await api.get('/plans/job-link-unlimited');
+    return res.data;
+  } catch {
+    const res = await api.get('/plans');
+    const list = Array.isArray(res.data) ? res.data : [];
+    return list.find((p) => p.name === 'JobLinkUnlimited') || null;
+  }
+}
+
 export default function JobPostLinksPremium() {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [plan, setPlan] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [plan, setPlan] = useState(DEFAULT_PLAN);
+  const [accessChecking, setAccessChecking] = useState(!!user);
   const [hasAccess, setHasAccess] = useState(false);
   const [payModal, setPayModal] = useState(null);
+  const [payLoading, setPayLoading] = useState(false);
 
   useEffect(() => {
-    Promise.allSettled([
-      api.get('/plans/job-link-unlimited'),
-      user ? api.get('/job-links/apply-eligibility') : Promise.resolve(null),
-      user ? api.get('/payments/placement/my-purchases') : Promise.resolve(null),
-    ]).then(([planRes, eligRes, purchasesRes]) => {
-      if (planRes.status === 'fulfilled') {
-        setPlan(planRes.value.data);
-      } else {
-        console.error('Failed to load job-link plan:', planRes.reason);
-        setPlan(DEFAULT_PLAN);
-        toast.error('Could not load plan price. Using default ₹499.');
-      }
+    fetchJobLinkPlan()
+      .then((serverPlan) => {
+        if (serverPlan?.price != null) setPlan((prev) => ({ ...prev, ...serverPlan }));
+      })
+      .catch(() => {});
+  }, []);
 
-      if (eligRes?.status === 'fulfilled' && eligRes.value?.data?.data?.isPremium) {
+  useEffect(() => {
+    if (!user) {
+      setAccessChecking(false);
+      return;
+    }
+
+    setAccessChecking(true);
+    Promise.allSettled([
+      api.get('/job-links/apply-eligibility'),
+      api.get('/payments/placement/my-purchases'),
+    ]).then(([eligRes, purchasesRes]) => {
+      if (eligRes.status === 'fulfilled' && eligRes.value?.data?.data?.isPremium) {
         setHasAccess(true);
       }
-
-      if (user && purchasesRes?.status === 'fulfilled' && purchasesRes.value?.data) {
+      if (purchasesRes.status === 'fulfilled' && purchasesRes.value?.data) {
         const bought = (purchasesRes.value.data || []).some((p) => p.pack === 'placement_joblinkunlimited');
         if (bought) setHasAccess(true);
       }
-    }).finally(() => setLoading(false));
+    }).finally(() => setAccessChecking(false));
   }, [user]);
 
-  const activePlan = plan || DEFAULT_PLAN;
-  const priceAmount = Number(activePlan.price).toLocaleString('en-IN');
+  const priceAmount = Number(plan.price ?? DEFAULT_PLAN.price).toLocaleString('en-IN');
 
-  const handlePay = () => {
+  const handlePay = async () => {
     if (!user) {
       navigate('/login', { state: { from: '/job-post-links-premium' } });
       return;
     }
-    setPayModal({ ...activePlan, features: FEATURES });
+
+    setPayLoading(true);
+    try {
+      let payPlan = plan;
+      if (!payPlan._id) {
+        const serverPlan = await fetchJobLinkPlan();
+        if (serverPlan) {
+          payPlan = { ...payPlan, ...serverPlan };
+          setPlan(payPlan);
+        }
+      }
+      if (!payPlan._id) {
+        toast.error('Could not load plan. Please try again.');
+        return;
+      }
+      setPayModal({ ...payPlan, features: FEATURES });
+    } finally {
+      setPayLoading(false);
+    }
   };
 
   return (
@@ -97,7 +130,7 @@ export default function JobPostLinksPremium() {
             <div className="mt-4 flex items-center justify-center gap-1">
               <IndianRupee size={28} className="text-[#1a1a2e] shrink-0" strokeWidth={2.5} />
               <span className="text-[44px] font-bold text-orange-500 leading-none tracking-tight">
-                {loading ? '…' : priceAmount}
+                {priceAmount}
               </span>
             </div>
           </div>
@@ -117,7 +150,11 @@ export default function JobPostLinksPremium() {
           </div>
 
           <div className="px-10 pt-4 pb-7">
-            {hasAccess ? (
+            {accessChecking ? (
+              <div className="flex items-center justify-center py-3.5">
+                <span className="w-5 h-5 border-2 border-orange-200 border-t-orange-500 rounded-full animate-spin" />
+              </div>
+            ) : hasAccess ? (
               <div className="rounded-2xl bg-emerald-50 border border-emerald-100 px-4 py-4 text-center">
                 <p className="text-sm font-bold text-emerald-800">Premium unlocked 🎉</p>
                 <p className="text-xs text-emerald-700/80 mt-1">You have unlimited job post applies.</p>
@@ -132,10 +169,10 @@ export default function JobPostLinksPremium() {
               <button
                 type="button"
                 onClick={handlePay}
-                disabled={loading}
+                disabled={payLoading}
                 className="w-full flex items-center justify-center gap-2 bg-orange-500 hover:bg-orange-600 active:bg-orange-600 disabled:opacity-60 disabled:cursor-not-allowed text-white font-bold py-3.5 rounded-2xl transition-colors text-[15px] shadow-[0_8px_20px_-4px_rgba(249,115,22,0.45)]"
               >
-                {loading ? (
+                {payLoading ? (
                   <span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
                 ) : (
                   <>
