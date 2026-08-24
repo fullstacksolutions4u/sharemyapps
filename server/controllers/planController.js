@@ -44,11 +44,14 @@ async function seedIfEmpty() {
 }
 
 async function ensureJobLinkPlan() {
-  await Plan.findOneAndUpdate(
-    { name: JOB_LINK_PLAN.name },
-    { $set: { price: JOB_LINK_PLAN.price }, $setOnInsert: JOB_LINK_PLAN },
-    { upsert: true }
-  );
+  const existing = await Plan.findOne({ name: JOB_LINK_PLAN.name });
+  if (!existing) {
+    await Plan.create(JOB_LINK_PLAN);
+    return;
+  }
+  if (!existing.active) {
+    await Plan.updateOne({ name: JOB_LINK_PLAN.name }, { $set: { active: true } });
+  }
 }
 
 async function ensurePremiumPlan() {
@@ -104,6 +107,7 @@ exports.getJobLinkUnlimitedPlan = async (req, res) => {
     if (!plan) return res.status(404).json({ message: 'Plan not found' });
     res.json(plan);
   } catch (err) {
+    console.error('getJobLinkUnlimitedPlan error:', err);
     res.status(500).json({ message: 'Failed to load plan' });
   }
 };

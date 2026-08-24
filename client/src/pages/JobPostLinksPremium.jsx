@@ -13,6 +13,12 @@ const FEATURES = [
   'One time payment',
 ];
 
+const DEFAULT_PLAN = {
+  name: 'JobLinkUnlimited',
+  price: 499,
+  features: FEATURES,
+};
+
 export default function JobPostLinksPremium() {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -27,29 +33,34 @@ export default function JobPostLinksPremium() {
       user ? api.get('/job-links/apply-eligibility') : Promise.resolve(null),
       user ? api.get('/payments/placement/my-purchases') : Promise.resolve(null),
     ]).then(([planRes, eligRes, purchasesRes]) => {
-      if (planRes.status === 'fulfilled') setPlan(planRes.value.data);
+      if (planRes.status === 'fulfilled') {
+        setPlan(planRes.value.data);
+      } else {
+        console.error('Failed to load job-link plan:', planRes.reason);
+        setPlan(DEFAULT_PLAN);
+        toast.error('Could not load plan price. Using default ₹499.');
+      }
+
       if (eligRes?.status === 'fulfilled' && eligRes.value?.data?.data?.isPremium) {
         setHasAccess(true);
       }
-      if (purchasesRes?.status === 'fulfilled') {
+
+      if (user && purchasesRes?.status === 'fulfilled' && purchasesRes.value?.data) {
         const bought = (purchasesRes.value.data || []).some((p) => p.pack === 'placement_joblinkunlimited');
         if (bought) setHasAccess(true);
       }
     }).finally(() => setLoading(false));
   }, [user]);
 
-  const priceAmount = plan ? Number(plan.price).toLocaleString('en-IN') : '499';
+  const activePlan = plan || DEFAULT_PLAN;
+  const priceAmount = Number(activePlan.price).toLocaleString('en-IN');
 
   const handlePay = () => {
     if (!user) {
       navigate('/login', { state: { from: '/job-post-links-premium' } });
       return;
     }
-    if (!plan) {
-      toast.error('Could not load plan. Please try again.');
-      return;
-    }
-    setPayModal({ ...plan, features: FEATURES });
+    setPayModal({ ...activePlan, features: FEATURES });
   };
 
   return (
@@ -121,7 +132,7 @@ export default function JobPostLinksPremium() {
               <button
                 type="button"
                 onClick={handlePay}
-                disabled={loading || !plan}
+                disabled={loading}
                 className="w-full flex items-center justify-center gap-2 bg-orange-500 hover:bg-orange-600 active:bg-orange-600 disabled:opacity-60 disabled:cursor-not-allowed text-white font-bold py-3.5 rounded-2xl transition-colors text-[15px] shadow-[0_8px_20px_-4px_rgba(249,115,22,0.45)]"
               >
                 {loading ? (
