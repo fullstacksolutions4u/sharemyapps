@@ -33,11 +33,14 @@ async function fetchJobLinkPlan() {
 export default function JobPostLinksPremium() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const userId = user?._id ?? user?.id ?? null;
   const [plan, setPlan] = useState(DEFAULT_PLAN);
-  const [accessChecking, setAccessChecking] = useState(!!user);
+  const [accessCheckedFor, setAccessCheckedFor] = useState(null);
   const [hasAccess, setHasAccess] = useState(false);
   const [payModal, setPayModal] = useState(null);
   const [payLoading, setPayLoading] = useState(false);
+
+  const accessChecking = Boolean(userId && accessCheckedFor !== userId);
 
   useEffect(() => {
     fetchJobLinkPlan()
@@ -48,16 +51,14 @@ export default function JobPostLinksPremium() {
   }, []);
 
   useEffect(() => {
-    if (!user) {
-      setAccessChecking(false);
-      return;
-    }
+    if (!userId) return;
 
-    setAccessChecking(true);
+    let cancelled = false;
     Promise.allSettled([
       api.get('/job-links/apply-eligibility'),
       api.get('/payments/placement/my-purchases'),
     ]).then(([eligRes, purchasesRes]) => {
+      if (cancelled) return;
       if (eligRes.status === 'fulfilled' && eligRes.value?.data?.data?.isPremium) {
         setHasAccess(true);
       }
@@ -65,8 +66,12 @@ export default function JobPostLinksPremium() {
         const bought = (purchasesRes.value.data || []).some((p) => p.pack === 'placement_joblinkunlimited');
         if (bought) setHasAccess(true);
       }
-    }).finally(() => setAccessChecking(false));
-  }, [user]);
+    }).finally(() => {
+      if (!cancelled) setAccessCheckedFor(userId);
+    });
+
+    return () => { cancelled = true; };
+  }, [userId]);
 
   const priceAmount = Number(plan.price ?? DEFAULT_PLAN.price).toLocaleString('en-IN');
 
