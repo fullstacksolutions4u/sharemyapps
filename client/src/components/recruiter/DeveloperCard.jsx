@@ -106,17 +106,14 @@ export default function DeveloperCard({ dev, stagger, hideContact = false }) {
             )}
             <MatchBadge jdMatch={jdMatch} />
           </div>
-          <span className="inline-block mt-1 text-[10px] font-semibold px-2 py-0.5 rounded-md bg-bg border border-border text-muted">
-            {dev.projectCount} project{dev.projectCount !== 1 ? 's' : ''}
-          </span>
+          {dev.expectedSalary && (
+            <span className="inline-block mt-1 text-[10px] font-semibold px-2 py-0.5 rounded-md bg-bg border border-border text-muted">
+              Expected CTC: {(Number(dev.expectedSalary) / 100000).toFixed(1).replace(/\.0$/, '')} LPA
+            </span>
+          )}
         </div>
-        {!hideContact && (dev.expectedSalary || dev.joiningAvailability || dev.yearsOfExperience) && (
+        {!hideContact && (dev.joiningAvailability || dev.yearsOfExperience) && (
           <div className="flex flex-col items-end gap-0.5 shrink-0 self-end mb-1 mr-1">
-            {dev.expectedSalary && (
-              <span className="text-[10px] text-muted/70 leading-tight">
-                <span className="font-medium">Expected</span> {(Number(dev.expectedSalary) / 100000).toFixed(1).replace(/\.0$/, '')} LPA
-              </span>
-            )}
             {dev.joiningAvailability && (
               <span className="text-[10px] text-muted/70 leading-tight">
                 <span className="font-medium">Joining</span> {dev.joiningAvailability}

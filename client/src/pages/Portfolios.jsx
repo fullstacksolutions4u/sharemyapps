@@ -107,7 +107,9 @@ function DeveloperCard({ dev, idx }) {
               {badge.label}
             </span>
           )}
-          <span className="text-[10px] text-muted">{dev.projects.length} project{dev.projects.length !== 1 ? 's' : ''}</span>
+          {dev.expectedSalary && (
+            <span className="text-[10px] text-muted">Expected CTC: {(Number(dev.expectedSalary) / 100000).toFixed(1).replace(/\.0$/, '')} LPA</span>
+          )}
           <span className="text-[10px] text-yellow-600 font-bold flex items-center gap-1">
             <span className="text-sm">🏅</span> {dev.points || 0} pts
           </span>

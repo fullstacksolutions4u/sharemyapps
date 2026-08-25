@@ -96,9 +96,11 @@ function DeveloperCard({ dev, idx }) {
         <div>
           <h3 className="font-bold text-base text-text leading-tight">{dev.name}</h3>
           <div className="flex items-center gap-2 mt-1 flex-wrap">
-            <p className="text-xs text-muted">
-              {dev.projects.length} project{dev.projects.length !== 1 ? 's' : ''}
-            </p>
+            {dev.expectedSalary && (
+              <p className="text-xs text-muted">
+                Expected CTC: {(Number(dev.expectedSalary) / 100000).toFixed(1).replace(/\.0$/, '')} LPA
+              </p>
+            )}
             {dev.freelanceRate ? (
               <span className="inline-flex items-center gap-0.5 text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">
                 <IndianRupee size={10} />{dev.freelanceRate}/hr
