@@ -94,6 +94,31 @@ function ApplyModal({ user, onClose, onSubmitted }) {
   );
 }
 
+const floatBadges = [
+  // left side
+  { name: 'HTML5', icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/html5/html5-original.svg', top: '10%', left: '4%', delay: 0 },
+  { name: 'CSS3', icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/css3/css3-original.svg', top: '25%', left: '2%', delay: 1.5 },
+  { name: 'JavaScript', icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/javascript/javascript-original.svg', top: '40%', left: '5%', delay: 3 },
+  { name: 'Node.js', icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/nodejs/nodejs-original.svg', top: '55%', left: '1%', delay: 4.5 },
+  { name: 'React', icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/react/react-original.svg', top: '70%', left: '6%', delay: 0.8 },
+  { name: 'Express', icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/express/express-original.svg', top: '85%', left: '3%', delay: 2.3 },
+  { name: 'VectorDB', emoji: '📦', top: '48%', left: '12%', delay: 3.8 },
+
+  // right side
+  { name: 'MongoDB', icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/mongodb/mongodb-original.svg', top: '12%', right: '4%', delay: 1.1 },
+  { name: 'TypeScript', icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/typescript/typescript-original.svg', top: '26%', right: '2%', delay: 2.6 },
+  { name: 'PostgreSQL', icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/postgresql/postgresql-original.svg', top: '42%', right: '5%', delay: 4.1 },
+  { name: 'Python', icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original.svg', top: '58%', right: '1%', delay: 0.3 },
+  { name: 'FastAPI', icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/fastapi/fastapi-original.svg', top: '72%', right: '6%', delay: 1.8 },
+  { name: 'DSA', emoji: '📊', top: '86%', right: '3%', delay: 3.3 },
+
+  // top/bottom
+  { name: 'Agentic AI', emoji: '🤖', top: '4%', left: '15%', delay: 0.5 },
+  { name: 'MCP', emoji: '🔌', top: '4%', right: '15%', delay: 2 },
+  { name: 'LangChain', emoji: '🔗', top: '93%', left: '20%', delay: 1.2 },
+  { name: 'LangGraph', emoji: '🕸️', top: '93%', right: '20%', delay: 2.7 },
+];
+
 export default function MentorshipProgram() {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -224,7 +249,7 @@ export default function MentorshipProgram() {
         height: 'calc(100vh - 64px)',
         overflow: 'hidden',
         boxSizing: 'border-box',
-        background: '#e9e6df',
+        background: 'linear-gradient(135deg, #f3f2ee 0%, #e2ece8 50%, #cce0da 100%)',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
@@ -232,6 +257,32 @@ export default function MentorshipProgram() {
         padding: '60px 24px 24px',
         fontFamily: "'Manrope', system-ui, sans-serif",
       }}>
+        {/* Floating tech badges container */}
+        <div className="absolute inset-0 max-w-[1250px] mx-auto pointer-events-none hidden lg:block" style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}>
+          {floatBadges.map((badge, idx) => (
+            <div
+              key={idx}
+              className="absolute pointer-events-auto"
+              style={{
+                top: badge.top,
+                left: badge.left,
+                right: badge.right,
+                bottom: badge.bottom,
+                position: 'absolute',
+              }}
+            >
+              <div className="flex items-center gap-1.5 px-3 py-1.5 bg-white/90 backdrop-blur-xs border border-border/80 rounded-2xl shadow-xs hover:scale-110 hover:-translate-y-0.5 hover:shadow-md transition-all duration-200 cursor-default">
+                {badge.icon ? (
+                  <img src={badge.icon} alt={badge.name} className="w-4 h-4 object-contain" style={{ width: '16px', height: '16px' }} />
+                ) : (
+                  <span className="text-xs">{badge.emoji}</span>
+                )}
+                <span className="text-[11px] font-bold text-text/80">{badge.name}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+
         <div style={{
           width: '100%',
           maxWidth: '680px',
@@ -252,7 +303,7 @@ export default function MentorshipProgram() {
               Mentorship Program with Placement
             </h1>
             <p style={{ margin: '8px 0 0', fontFamily: "'Manrope', sans-serif", fontSize: '15px', fontWeight: 700, letterSpacing: '.04em', color: '#7fd1c7' }}>
-              MERN Full Stack AI Engineer
+              Full Stack AI Engineer
             </p>
           </div>
 
