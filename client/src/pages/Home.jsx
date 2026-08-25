@@ -256,6 +256,7 @@ export default function Home() {
   const [networkLoading, setNetworkLoading] = useState(true);
   const [showcaseProjects, setShowcaseProjects] = useState([]);
   const [showcaseDevs, setShowcaseDevs] = useState([]);
+  const [showcaseMentors, setShowcaseMentors] = useState([]);
 
   useEffect(() => {
     api.get('/users/recent?limit=100')
@@ -265,8 +266,11 @@ export default function Home() {
     api.get('/projects/showcase?skip=99&limit=4')
       .then(res => setShowcaseProjects(res.data.slice(0, 4)))
       .catch(() => {});
-    api.get('/users/showcase-devs?skip=0&limit=4')
-      .then(res => setShowcaseDevs(res.data.slice(0, 4)))
+    api.get('/users/showcase-devs?skip=0&limit=12')
+      .then(res => setShowcaseDevs(res.data))
+      .catch(() => {});
+    api.get('/users/mentors')
+      .then(res => setShowcaseMentors(res.data.slice(0, 12)))
       .catch(() => {});
   }, []);
 
@@ -279,6 +283,15 @@ export default function Home() {
 
   return (
     <div className="min-h-screen">
+      <style>{`
+        @keyframes marquee-half {
+          0% { transform: translateX(0); }
+          100% { transform: translateX(-50%); }
+        }
+        .animate-marquee-half {
+          animation: marquee-half 40s linear infinite;
+        }
+      `}</style>
       {/* Hero */}
       <div
         className="relative overflow-hidden"
@@ -363,6 +376,48 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Showcase: developers #100–103 */}
+      {showcaseDevs.length > 0 && (
+        <section className="max-w-[1500px] mx-auto px-3 sm:px-4 pb-16">
+          <div className="flex items-center justify-between mb-8">
+            <h2 className="text-2xl font-bold text-text tracking-tight">Registered Developers</h2>
+            <Link to="/portfolios" className="text-sm text-accent hover:text-accent-hover flex items-center gap-1 font-medium">
+              View all <ArrowRight size={14} />
+            </Link>
+          </div>
+          <div className="relative w-full overflow-hidden group py-2" style={{ maskImage: 'linear-gradient(to right, transparent, black 2%, black 98%, transparent)', WebkitMaskImage: 'linear-gradient(to right, transparent, black 2%, black 98%, transparent)' }}>
+            <div className="flex animate-marquee-half gap-5 pr-5 w-max group-hover:[animation-play-state:paused]">
+              {[...showcaseDevs, ...showcaseDevs].map((dev, idx) => (
+                <div key={`${dev._id}-${idx}`} className="w-[300px] sm:w-[320px] flex-shrink-0">
+                  <DeveloperCard dev={dev} stagger={{ ready: true, delay: (idx % showcaseDevs.length) * 50 }} hideContact />
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Showcase: mentors */}
+      {showcaseMentors.length > 0 && (
+        <section className="max-w-[1500px] mx-auto px-3 sm:px-4 pb-16">
+          <div className="flex items-center justify-between mb-8">
+            <h2 className="text-2xl font-bold text-text tracking-tight">Registered Mentors</h2>
+            <Link to="/mentors" className="text-sm text-accent hover:text-accent-hover flex items-center gap-1 font-medium">
+              View all <ArrowRight size={14} />
+            </Link>
+          </div>
+          <div className="relative w-full overflow-hidden group py-2" style={{ maskImage: 'linear-gradient(to right, transparent, black 2%, black 98%, transparent)', WebkitMaskImage: 'linear-gradient(to right, transparent, black 2%, black 98%, transparent)' }}>
+            <div className="flex animate-marquee-half gap-5 pr-5 w-max group-hover:[animation-play-state:paused]" style={{ animationDirection: 'reverse' }}>
+              {[...showcaseMentors, ...showcaseMentors].map((dev, idx) => (
+                <div key={`${dev._id}-${idx}`} className="w-[300px] sm:w-[320px] flex-shrink-0">
+                  <DeveloperCard dev={dev} stagger={{ ready: true, delay: (idx % showcaseMentors.length) * 50 }} hideContact />
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* Showcase: projects #100–103 */}
       {showcaseProjects.length > 0 && (
         <section className="max-w-[1500px] mx-auto px-3 sm:px-4 pb-16">
@@ -374,23 +429,6 @@ export default function Home() {
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
             {showcaseProjects.map(p => <ProjectCard key={p._id} project={p} />)}
-          </div>
-        </section>
-      )}
-
-      {/* Showcase: developers #100–103 */}
-      {showcaseDevs.length > 0 && (
-        <section className="max-w-[1500px] mx-auto px-3 sm:px-4 pb-16">
-          <div className="flex items-center justify-between mb-8">
-            <h2 className="text-2xl font-bold text-text tracking-tight">Registered Developers</h2>
-            <Link to="/portfolios" className="text-sm text-accent hover:text-accent-hover flex items-center gap-1 font-medium">
-              View all <ArrowRight size={14} />
-            </Link>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-            {showcaseDevs.map((dev, idx) => (
-              <DeveloperCard key={dev._id} dev={dev} stagger={{ ready: true, delay: idx * 70 }} hideContact />
-            ))}
           </div>
         </section>
       )}

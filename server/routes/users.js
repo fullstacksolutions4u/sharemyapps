@@ -535,7 +535,7 @@ router.get('/candidates', protect, async (req, res) => {
 });
 
 // GET /api/users/mentors — developers who opted in for mentorship with tech filled
-router.get('/mentors', protect, async (req, res) => {
+router.get('/mentors', optionalAuth, async (req, res) => {
   try {
     const search = req.query.search?.trim();
 
