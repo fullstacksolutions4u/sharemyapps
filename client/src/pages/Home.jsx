@@ -386,16 +386,16 @@ export default function Home() {
             </Link>
           </div>
           <div className="relative w-full overflow-hidden group py-2 flex" style={{ maskImage: 'linear-gradient(to right, transparent, black 2%, black 98%, transparent)', WebkitMaskImage: 'linear-gradient(to right, transparent, black 2%, black 98%, transparent)' }}>
-            <div className="flex animate-marquee shrink-0 gap-5 pr-5 min-w-full group-hover:[animation-play-state:paused]">
+            <div className="flex animate-marquee shrink-0 gap-5 pr-5 min-w-full group-hover:[animation-play-state:paused]" style={{ display: 'flex', animationDuration: '60s' }}>
               {showcaseDevs.map((dev, idx) => (
-                <div key={dev._id} className="w-[300px] sm:w-[320px] flex-shrink-0">
+                <div key={dev._id} className="w-[300px] sm:w-[320px] flex-shrink-0 flex flex-col">
                   <DeveloperCard dev={dev} stagger={{ ready: true, delay: (idx % showcaseDevs.length) * 50 }} hideContact />
                 </div>
               ))}
             </div>
-            <div className="flex animate-marquee shrink-0 gap-5 pr-5 min-w-full group-hover:[animation-play-state:paused]" aria-hidden="true">
+            <div className="flex animate-marquee shrink-0 gap-5 pr-5 min-w-full group-hover:[animation-play-state:paused]" style={{ display: 'flex', animationDuration: '60s' }} aria-hidden="true">
               {showcaseDevs.map((dev, idx) => (
-                <div key={`dup-${dev._id}`} className="w-[300px] sm:w-[320px] flex-shrink-0">
+                <div key={`dup-${dev._id}`} className="w-[300px] sm:w-[320px] flex-shrink-0 flex flex-col">
                   <DeveloperCard dev={dev} stagger={{ ready: true, delay: (idx % showcaseDevs.length) * 50 }} hideContact />
                 </div>
               ))}
@@ -414,16 +414,16 @@ export default function Home() {
             </Link>
           </div>
           <div className="relative w-full overflow-hidden group py-2 flex" style={{ maskImage: 'linear-gradient(to right, transparent, black 2%, black 98%, transparent)', WebkitMaskImage: 'linear-gradient(to right, transparent, black 2%, black 98%, transparent)' }}>
-            <div className="flex animate-marquee shrink-0 gap-5 pr-5 min-w-full group-hover:[animation-play-state:paused]" style={{ animationDirection: 'reverse' }}>
+            <div className="flex animate-marquee shrink-0 gap-5 pr-5 min-w-full group-hover:[animation-play-state:paused]" style={{ display: 'flex', animationDirection: 'reverse', animationDuration: '60s' }}>
               {showcaseMentors.map((dev, idx) => (
-                <div key={dev._id} className="w-[300px] sm:w-[320px] flex-shrink-0">
+                <div key={dev._id} className="w-[300px] sm:w-[320px] flex-shrink-0 flex flex-col">
                   <DeveloperCard dev={dev} stagger={{ ready: true, delay: (idx % showcaseMentors.length) * 50 }} hideContact />
                 </div>
               ))}
             </div>
-            <div className="flex animate-marquee shrink-0 gap-5 pr-5 min-w-full group-hover:[animation-play-state:paused]" style={{ animationDirection: 'reverse' }} aria-hidden="true">
+            <div className="flex animate-marquee shrink-0 gap-5 pr-5 min-w-full group-hover:[animation-play-state:paused]" style={{ display: 'flex', animationDirection: 'reverse', animationDuration: '60s' }} aria-hidden="true">
               {showcaseMentors.map((dev, idx) => (
-                <div key={`dup-${dev._id}`} className="w-[300px] sm:w-[320px] flex-shrink-0">
+                <div key={`dup-${dev._id}`} className="w-[300px] sm:w-[320px] flex-shrink-0 flex flex-col">
                   <DeveloperCard dev={dev} stagger={{ ready: true, delay: (idx % showcaseMentors.length) * 50 }} hideContact />
                 </div>
               ))}

@@ -84,7 +84,7 @@ export default function DeveloperCard({ dev, stagger, hideContact = false }) {
   const extraCount = skills.length - visibleSkills.length;
 
   const cardCls = [
-    'bg-white border border-border rounded-2xl p-4 flex flex-col gap-3',
+    'bg-white border border-border rounded-2xl p-4 flex flex-col gap-3 h-full',
     'hover:shadow-md transition-all duration-200',
     stagger ? (stagger.ready ? 'animate-fade-slide-up' : 'opacity-0') : '',
   ].join(' ');
