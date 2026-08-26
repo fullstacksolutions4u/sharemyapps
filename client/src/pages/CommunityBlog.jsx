@@ -434,7 +434,7 @@ export default function CommunityBlog() {
     <div className="min-h-screen bg-[#F5F9FF] pb-16">
       
       {/* Dynamic Buy-Me-a-Coffee Style Hero Template */}
-      <div className="relative bg-[#F5F9FF] pt-6 pb-32 px-4 sm:px-6 lg:px-8">
+      <div className="relative bg-[#F5F9FF] pt-6 pb-10 px-4 sm:px-6 lg:px-8">
         
         {/* Left Floating Cards Group */}
         <div className={`hidden xl:block absolute left-4 top-12 w-80 space-y-6 select-none opacity-85 transition-all duration-300 ${isLeftExpanded ? 'z-40' : 'z-10'}`}>
@@ -560,7 +560,7 @@ export default function CommunityBlog() {
 
         {/* Remaining Cards Grid (5th card onwards) - Desktop 3-col grid */}
         {experiencePosts.length > 4 && (
-          <div className="hidden xl:block mt-10 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto relative z-20">
+          <div className="hidden xl:block mt-4 px-4 sm:px-6 lg:px-8 max-w-8xl mx-auto relative z-20">
             <div className="grid grid-cols-3 gap-12">
               {experiencePosts.slice(4).map((card, idx) => {
                 const gridPos = idx % 3 === 0 ? 'grid-left' : idx % 3 === 1 ? 'grid-center' : 'grid-right';
