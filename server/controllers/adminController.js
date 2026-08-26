@@ -506,15 +506,15 @@ exports.getUserGrowth = async (req, res) => {
     if (mode === 'monthly') {
       const months = parseInt(req.query.months) || 12;
       const since = new Date();
-      since.setMonth(since.getMonth() - months + 1);
       since.setDate(1);
       since.setHours(0, 0, 0, 0);
+      since.setMonth(since.getMonth() - months + 1);
 
       const rows = await User.aggregate([
         { $match: { createdAt: { $gte: since } } },
         {
           $group: {
-            _id: { $dateToString: { format: '%Y-%m', date: '$createdAt' } },
+            _id: { $dateToString: { format: '%Y-%m', date: '$createdAt', timezone: 'Asia/Kolkata' } },
             count: { $sum: 1 },
           },
         },
@@ -526,7 +526,9 @@ exports.getUserGrowth = async (req, res) => {
       for (let i = 0; i < months; i++) {
         const d = new Date(since);
         d.setMonth(since.getMonth() + i);
-        const key = d.toISOString().slice(0, 7);
+        const year = d.getFullYear();
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const key = `${year}-${month}`;
         result.push({ date: key, count: map[key] || 0 });
       }
 
@@ -542,7 +544,7 @@ exports.getUserGrowth = async (req, res) => {
       { $match: { createdAt: { $gte: since } } },
       {
         $group: {
-          _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } },
+          _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt', timezone: 'Asia/Kolkata' } },
           count: { $sum: 1 },
         },
       },
@@ -554,7 +556,10 @@ exports.getUserGrowth = async (req, res) => {
     for (let i = 0; i < days; i++) {
       const d = new Date(since);
       d.setDate(since.getDate() + i);
-      const key = d.toISOString().slice(0, 10);
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      const key = `${year}-${month}-${day}`;
       result.push({ date: key, count: map[key] || 0 });
     }
 
