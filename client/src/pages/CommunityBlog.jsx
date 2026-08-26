@@ -30,11 +30,11 @@ export default function CommunityBlog() {
   // Comment input state mapped by post ID
   const [commentInputs, setCommentInputs] = useState({});
 
-  // Fetch Community Posts (Limit to 6 updates)
+  // Fetch All Community Posts
   const { data, isLoading } = useQuery({
     queryKey: ['community-posts'],
     queryFn: async () => {
-      const res = await api.get('/community-posts?page=1&limit=6');
+      const res = await api.get('/community-posts?limit=100');
       return res.data;
     },
     staleTime: 30 * 1000
@@ -177,7 +177,9 @@ export default function CommunityBlog() {
     }
   });
 
-  const populatedCards = posts.map((p, idx) => {
+  const populatedCards = [...posts]
+    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+    .map((p, idx) => {
     const initials = p.author?.name === 'Community Member' ? 'CM' : (p.author?.name?.charAt(0).toUpperCase() || '?');
     
     const noteColors = [
@@ -422,6 +424,7 @@ export default function CommunityBlog() {
           {populatedCards.slice(2, 4).map((card, idx) => renderCard(card, idx))}
         </div>
 
+
         {/* Central Hero Block */}
         <div className="max-w-3xl mx-auto text-center relative z-10">
           <h1 className="text-3xl sm:text-4xl font-black text-gray-900 tracking-tight leading-tight whitespace-nowrap">
@@ -429,57 +432,62 @@ export default function CommunityBlog() {
           </h1>
 
           {/* Quick status field & button */}
-          <div className="mt-8 max-w-lg mx-auto bg-[#fafbfc] border border-gray-100 p-4.5 rounded-2xl shadow-xs text-left">
-            <form onSubmit={handleQuickStatusSubmit} className="space-y-2.5">
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  placeholder="What's your job hunting status today?"
-                  value={quickStatusText}
-                  onChange={(e) => setQuickStatusText(e.target.value)}
-                  className="flex-1 bg-white border border-gray-200 rounded-xl px-4 py-2.5 text-xs outline-hidden focus:border-gray-400 focus:ring-1 focus:ring-gray-300/10 font-medium placeholder-gray-400"
-                />
-                <button
-                  type="submit"
-                  disabled={createPostMutation.isPending || !quickStatusText.trim()}
-                  className="bg-gray-900 text-white px-5 py-2.5 rounded-xl hover:bg-gray-800 text-xs font-bold transition-colors disabled:opacity-50 cursor-pointer"
-                >
-                  Share
-                </button>
-              </div>
-              <div className="flex items-center gap-1.5 px-1">
-                <input
-                  type="checkbox"
-                  id="quick-anon"
-                  checked={quickAnonymous}
-                  onChange={(e) => setQuickAnonymous(e.target.checked)}
-                  className="w-3.5 h-3.5 text-gray-900 border-gray-300 rounded focus:ring-gray-900 accent-gray-900 cursor-pointer"
-                />
-                <label htmlFor="quick-anon" className="text-[10px] text-gray-500 font-bold select-none cursor-pointer">
-                  Post anonymously as Community Member
-                </label>
-              </div>
-            </form>
-
-            <div className="mt-4 pt-3.5 border-t border-gray-100/80 flex flex-col sm:flex-row items-center justify-center gap-3">
+          <form onSubmit={handleQuickStatusSubmit} className="mt-2 max-w-lg mx-auto space-y-2.5 text-center">
+            <div className="flex gap-2">
+              <input
+                type="text"
+                placeholder="What's on your mind?"
+                value={quickStatusText}
+                onChange={(e) => setQuickStatusText(e.target.value)}
+                className="flex-1 bg-white border border-gray-200 rounded-xl px-4 py-2.5 text-xs outline-hidden focus:border-gray-400 focus:ring-1 focus:ring-gray-300/10 font-medium placeholder-gray-400"
+              />
               <button
-                onClick={() => {
-                  if (!user) {
-                    toast.error('Please login to share experiences');
-                    return;
-                  }
-                  setNewContent('');
-                  setNewCategory('interview');
-                  setNewAnonymous(false);
-                  setEditingPostId(null);
-                  setIsModalOpen(true);
-                }}
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 bg-[#FFD93D] hover:bg-[#F4CE26] text-gray-900 font-extrabold text-xs px-4 py-2 rounded-xl transition-all shadow-xs cursor-pointer"
+                type="submit"
+                disabled={createPostMutation.isPending || !quickStatusText.trim()}
+                className="bg-gray-900 text-white px-5 py-2.5 rounded-xl hover:bg-gray-800 text-xs font-bold transition-colors disabled:opacity-50 cursor-pointer"
               >
-                <Plus size={13} /> Add Job Hunting Experience
+                Share
               </button>
             </div>
+            <div className="flex items-center gap-1.5 px-1">
+              <input
+                type="checkbox"
+                id="quick-anon"
+                checked={quickAnonymous}
+                onChange={(e) => setQuickAnonymous(e.target.checked)}
+                className="w-3.5 h-3.5 text-gray-900 border-gray-300 rounded focus:ring-gray-900 accent-gray-900 cursor-pointer"
+              />
+              <label htmlFor="quick-anon" className="text-[10px] text-gray-500 font-bold select-none cursor-pointer">
+                Post anonymously as Community Member
+              </label>
             </div>
+          </form>
+
+          <div className="mt-4 flex flex-col sm:flex-row items-center justify-center gap-3">
+            <button
+              onClick={() => {
+                if (!user) {
+                  toast.error('Please login to share experiences');
+                  return;
+                }
+                setNewContent('');
+                setNewCategory('interview');
+                setNewAnonymous(false);
+                setEditingPostId(null);
+                setIsModalOpen(true);
+              }}
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 bg-[#FFD93D] hover:bg-[#F4CE26] text-gray-900 font-extrabold text-xs px-4 py-2 rounded-xl transition-all shadow-xs cursor-pointer"
+            >
+              <Plus size={13} /> Add Job Hunting Experience
+            </button>
+          </div>
+
+          {/* 5th Card inline below the button */}
+          {populatedCards.length > 4 && (
+            <div className="mt-6 max-w-xs mx-auto hidden xl:block">
+              {renderCard(populatedCards[4], 4)}
+            </div>
+          )}
 
             {/* Mobile/Tablet Card Grid (xl:hidden) */}
             <div className="mt-12 grid grid-cols-1 sm:grid-cols-2 gap-6 xl:hidden text-left max-w-2xl mx-auto">
@@ -510,10 +518,10 @@ export default function CommunityBlog() {
         </div>
 
         {/* Remaining Cards Grid (5th card onwards) - Desktop 3-col grid */}
-        {populatedCards.length > 4 && (
+        {populatedCards.length > 5 && (
           <div className="hidden xl:block mt-10 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto">
             <div className="grid grid-cols-3 gap-6">
-              {populatedCards.slice(4).map((card, idx) => renderCard(card, idx))}
+              {populatedCards.slice(5).map((card, idx) => renderCard(card, idx))}
             </div>
           </div>
         )}
@@ -523,59 +531,28 @@ export default function CommunityBlog() {
       {/* New Post Dialog Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/60 backdrop-blur-xs">
-          <div className="relative w-full max-w-lg bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-            {/* Modal Header */}
-            <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
-              <h3 className="font-bold text-base text-gray-900"></h3>
-              <button
-                onClick={() => setIsModalOpen(false)}
-                className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-all"
-              >
-                <X size={16} />
-              </button>
-            </div>
+          <div className="relative w-full max-w-lg rounded-2xl shadow-xl overflow-hidden animate-in fade-in zoom-in-95 duration-200" style={{background: 'linear-gradient(135deg, #EFF6FF 0%, #BFDBFE 40%, #93C5FD 75%, #6366F1 100%)'}}>
+            {/* Close button - absolute top right */}
+            <button
+              onClick={() => setIsModalOpen(false)}
+              className="absolute top-3 right-3 p-1.5 text-blue-700/60 hover:text-blue-900 hover:bg-white/30 rounded-lg transition-all z-10"
+            >
+              <X size={16} />
+            </button>
 
             {/* Modal Form */}
-            <form onSubmit={handleCreatePost} className="p-5 space-y-4">
-              {/* Category selector */}
-              <div>
-                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">Select Category</label>
-                <div className="grid grid-cols-2 gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setNewCategory('interview')}
-                    className={`py-2 text-center text-xs font-bold border rounded-xl transition-all ${
-                      newCategory === 'interview'
-                        ? 'border-indigo-400 bg-indigo-50 text-indigo-700'
-                        : 'border-gray-200 bg-white text-gray-500 hover:bg-gray-50'
-                    }`}
-                  >
-                    Interview Exp
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setNewCategory('general')}
-                    className={`py-2 text-center text-xs font-bold border rounded-xl transition-all ${
-                      newCategory === 'general'
-                        ? 'border-emerald-400 bg-emerald-50 text-emerald-700'
-                        : 'border-gray-200 bg-white text-gray-500 hover:bg-gray-50'
-                    }`}
-                  >
-                    General
-                  </button>
-                </div>
-              </div>
+            <form onSubmit={handleCreatePost} className="px-5 pb-5 pt-5 space-y-4">
 
               {/* Text Area Content */}
               <div>
-                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">What's on your mind?</label>
+                <label className="block text-xs font-bold text-blue-900/80 uppercase tracking-wider mb-1.5 text-center">What's on your mind?</label>
                 <textarea
                   required
                   placeholder="Share a status update, interview question, or daily job hunting experience..."
                   value={newContent}
                   onChange={(e) => setNewContent(e.target.value)}
                   rows={6}
-                  className="w-full border border-gray-200 rounded-xl p-3.5 text-xs outline-hidden focus:border-gray-400 focus:ring-1 focus:ring-gray-300/10 font-medium resize-none placeholder-gray-400"
+                  className="w-full border border-blue-200/60 bg-white/50 rounded-xl p-3.5 text-xs outline-hidden focus:border-blue-400 focus:ring-1 focus:ring-blue-300/30 font-medium resize-none placeholder-blue-400/70 text-blue-950"
                 />
               </div>
 
@@ -586,26 +563,26 @@ export default function CommunityBlog() {
                   id="modal-anon"
                   checked={newAnonymous}
                   onChange={(e) => setNewAnonymous(e.target.checked)}
-                  className="w-4 h-4 text-gray-900 border-gray-300 rounded focus:ring-gray-900 accent-gray-900 cursor-pointer"
+                  className="w-4 h-4 text-blue-700 border-blue-300 rounded focus:ring-blue-600 accent-blue-600 cursor-pointer"
                 />
-                <label htmlFor="modal-anon" className="text-xs text-gray-500 font-bold select-none cursor-pointer">
+                <label htmlFor="modal-anon" className="text-xs text-blue-900/70 font-bold select-none cursor-pointer">
                   Post anonymously as Community Member
                 </label>
               </div>
 
               {/* Submit CTA */}
-              <div className="flex justify-end gap-2 pt-2 border-t border-gray-100">
+              <div className="flex justify-end gap-2 pt-2 border-t border-blue-200/50">
                 <button
                   type="button"
                   onClick={() => { setIsModalOpen(false); setEditingPostId(null); }}
-                  className="px-4 py-2 border border-gray-200 rounded-xl text-xs font-bold text-gray-600 hover:bg-gray-50 transition-all"
+                  className="px-4 py-2 border border-blue-200 bg-white/40 rounded-xl text-xs font-bold text-blue-800 hover:bg-white/70 transition-all"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={createPostMutation.isPending || editPostMutation.isPending || !newContent.trim()}
-                  className="px-5 py-2 bg-[#FFD93D] hover:bg-[#F4CE26] disabled:opacity-50 text-gray-900 font-extrabold text-xs rounded-xl transition-all shadow-xs cursor-pointer"
+                  className="px-5 py-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-extrabold text-xs rounded-xl transition-all shadow-xs cursor-pointer"
                 >
                   {createPostMutation.isPending || editPostMutation.isPending ? 'Saving...' : editingPostId ? 'Save Changes' : 'Share Update'}
                 </button>
@@ -613,6 +590,7 @@ export default function CommunityBlog() {
             </form>
           </div>
         </div>
+
       )}
       
     </div>

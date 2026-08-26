@@ -26,7 +26,7 @@ const sanitizePost = (post, user) => {
 router.get('/', optionalAuth, async (req, res) => {
   try {
     const page = Math.max(1, parseInt(req.query.page) || 1);
-    const limit = Math.min(Math.max(1, parseInt(req.query.limit) || 10), 50);
+    const limit = Math.min(Math.max(1, parseInt(req.query.limit) || 10), 1000);
     const skip = (page - 1) * limit;
 
     const query = {};
