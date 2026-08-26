@@ -45,7 +45,6 @@ export default function AdminOverview({ stats, onNavigate }) {
 
   useEffect(() => {
     let cancelled = false;
-    setGrowthLoading(true);
     const url = growthDays === 'monthly' ? '/admin/user-growth?mode=monthly' : `/admin/user-growth?days=${growthDays}`;
     api.get(url)
       .then(res => { if (!cancelled) { setGrowth(res.data); setGrowthLoading(false); } })
@@ -69,12 +68,9 @@ export default function AdminOverview({ stats, onNavigate }) {
   const totalGrowthUsers = growth.reduce((s, d) => s + d.count, 0);
 
   const chartData = growth.map(d => {
-    let label = '';
-    if (d.date.length === 7) {
-      label = new Date(d.date + '-02T00:00:00').toLocaleDateString('en-IN', { month: 'short', year: '2-digit' });
-    } else {
-      label = new Date(d.date + 'T00:00:00').toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
-    }
+    const label = d.date.length === 7
+      ? new Date(d.date + '-02T00:00:00').toLocaleDateString('en-IN', { month: 'short', year: '2-digit' })
+      : new Date(d.date + 'T00:00:00').toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
     return { ...d, label };
   });
 
@@ -135,7 +131,10 @@ export default function AdminOverview({ stats, onNavigate }) {
               {[7, 14, 30, 'monthly'].map(d => (
                 <button
                   key={d}
-                  onClick={() => setGrowthDays(d)}
+                  onClick={() => {
+                    setGrowthLoading(true);
+                    setGrowthDays(d);
+                  }}
                   className={`text-xs px-2.5 py-1 rounded-lg transition-colors ${
                     growthDays === d
                       ? 'bg-indigo-600 text-white font-semibold'
