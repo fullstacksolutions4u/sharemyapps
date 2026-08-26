@@ -121,7 +121,8 @@ export default function DeveloperCard({ dev, stagger, hideContact = false }) {
             )}
             {dev.yearsOfExperience && (
               <span className="text-[10px] text-muted/70 leading-tight">
-                <span className="font-medium">Exp</span> {dev.yearsOfExperience} yrs
+                <span className="font-medium">Exp</span> {dev.yearsOfExperience}
+                {(dev.yearsOfExperience.toLowerCase().includes('fresher') || dev.yearsOfExperience.toLowerCase().includes('yr') || dev.yearsOfExperience.toLowerCase().includes('year')) ? '' : ' yrs'}
               </span>
             )}
           </div>

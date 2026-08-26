@@ -134,9 +134,11 @@ function DeveloperCard({ dev, idx }) {
             </span>
             {dev.yearsOfExperience && (
               <span className="shrink-0 text-[11px]">
-                Exp: <strong>{dev.yearsOfExperience.toLowerCase().includes('year') || dev.yearsOfExperience.toLowerCase().includes('yr') 
-                  ? dev.yearsOfExperience 
-                  : `${dev.yearsOfExperience} Year${Number(dev.yearsOfExperience) === 1 ? '' : 's'}`}</strong>
+                Exp: <strong>{dev.yearsOfExperience.toLowerCase().includes('fresher')
+                  ? dev.yearsOfExperience
+                  : (dev.yearsOfExperience.toLowerCase().includes('year') || dev.yearsOfExperience.toLowerCase().includes('yr') 
+                      ? dev.yearsOfExperience 
+                      : `${dev.yearsOfExperience} Year${Number(dev.yearsOfExperience) === 1 ? '' : 's'}`)}</strong>
               </span>
             )}
           </div>
