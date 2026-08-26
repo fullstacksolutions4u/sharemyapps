@@ -43,11 +43,11 @@ export default function AdminOverview({ stats, onNavigate }) {
   const [growthLoading, setGrowthLoading] = useState(true);
   const [payments, setPayments] = useState(null);
 
-
-
   useEffect(() => {
     let cancelled = false;
-    api.get(`/admin/user-growth?days=${growthDays}`)
+    setGrowthLoading(true);
+    const url = growthDays === 'monthly' ? '/admin/user-growth?mode=monthly' : `/admin/user-growth?days=${growthDays}`;
+    api.get(url)
       .then(res => { if (!cancelled) { setGrowth(res.data); setGrowthLoading(false); } })
       .catch(() => { if (!cancelled) setGrowthLoading(false); });
     return () => { cancelled = true; };
@@ -68,10 +68,15 @@ export default function AdminOverview({ stats, onNavigate }) {
 
   const totalGrowthUsers = growth.reduce((s, d) => s + d.count, 0);
 
-  const chartData = growth.map(d => ({
-    ...d,
-    label: new Date(d.date + 'T00:00:00').toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }),
-  }));
+  const chartData = growth.map(d => {
+    let label = '';
+    if (d.date.length === 7) {
+      label = new Date(d.date + '-02T00:00:00').toLocaleDateString('en-IN', { month: 'short', year: '2-digit' });
+    } else {
+      label = new Date(d.date + 'T00:00:00').toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
+    }
+    return { ...d, label };
+  });
 
   return (
     <div className="space-y-6">
@@ -117,17 +122,17 @@ export default function AdminOverview({ stats, onNavigate }) {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-6 items-start">
-        {/* Daily User Registrations */}
+        {/* Daily/Monthly User Registrations */}
         <div className="bg-white border border-border rounded-xl p-5">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <p className="text-sm font-semibold text-text">Daily Registrations</p>
+              <p className="text-sm font-semibold text-text">{growthDays === 'monthly' ? 'Monthly' : 'Daily'} Registrations</p>
               <p className="text-xs text-muted mt-0.5">
-                {totalGrowthUsers} new user{totalGrowthUsers !== 1 ? 's' : ''} in last {growthDays} days
+                {totalGrowthUsers} new user{totalGrowthUsers !== 1 ? 's' : ''} in last {growthDays === 'monthly' ? '12 months' : `${growthDays} days`}
               </p>
             </div>
             <div className="flex gap-1">
-              {[7, 14, 30].map(d => (
+              {[7, 14, 30, 'monthly'].map(d => (
                 <button
                   key={d}
                   onClick={() => setGrowthDays(d)}
@@ -137,7 +142,7 @@ export default function AdminOverview({ stats, onNavigate }) {
                       : 'text-muted hover:text-text border border-border'
                   }`}
                 >
-                  {d}d
+                  {d === 'monthly' ? 'Monthly' : `${d}d`}
                 </button>
               ))}
             </div>
@@ -149,14 +154,14 @@ export default function AdminOverview({ stats, onNavigate }) {
             </div>
           ) : (
             <ResponsiveContainer width="100%" height={220}>
-              <BarChart data={chartData} margin={{ top: 24, right: 4, left: -20, bottom: 0 }} barSize={growthDays === 7 ? 32 : growthDays === 14 ? 20 : 12}>
+              <BarChart data={chartData} margin={{ top: 24, right: 4, left: -20, bottom: 0 }} barSize={growthDays === 7 ? 32 : (growthDays === 14 || growthDays === 'monthly') ? 20 : 12}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#F3F0EB" vertical={false} />
                 <XAxis
                   dataKey="label"
                   tick={{ fontSize: 10, fill: '#aaa' }}
                   axisLine={false}
                   tickLine={false}
-                  interval={growthDays === 7 ? 0 : growthDays === 14 ? 1 : 4}
+                  interval={growthDays === 7 || growthDays === 'monthly' ? 0 : growthDays === 14 ? 1 : 4}
                 />
                 <YAxis
                   tick={{ fontSize: 10, fill: '#aaa' }}

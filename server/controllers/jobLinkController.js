@@ -3,7 +3,7 @@ const { normalizeJobLocation } = require('../utils/indiaLocation');
 const JobLinkFeedback = require('../models/JobLinkFeedback');
 const CompanyContact = require('../models/CompanyContact');
 const OpenAI = require('openai');
-const { sendJobLinkRejectedEmail, sendJobLinkUnlockedEmail } = require('../utils/email');
+const { sendJobLinkRejectedEmail } = require('../utils/email');
 const { getCurrentWeekStartMonday6AM } = require('../utils/weekBoundary');
 const { hasJobLinkUnlimitedApply } = require('../utils/jobLinkAccess');
 const {
@@ -298,38 +298,7 @@ exports.updateJobLink = async (req, res) => {
 
     await link.save();
 
-    const unlockedNow =
-      (status === 'approved' || status === 'access_granted') &&
-      prevStatus !== status &&
-      link.createdBy;
 
-    if (unlockedNow) {
-      const User = require('../models/User');
-      const user = await User.findById(link.createdBy);
-      if (user && user.email) {
-        const weekStartAt = weekStart();
-        const alreadySentThisWeek =
-          user.jobLinkUnlockEmailSentAt &&
-          user.jobLinkUnlockEmailSentAt >= weekStartAt;
-
-        if (!alreadySentThisWeek) {
-          try {
-            await sendJobLinkUnlockedEmail({
-              to: user.email,
-              name: user.name,
-              linkUrl: link.url,
-              title: link.title,
-              company: link.company,
-              unlockType: status,
-            });
-            user.jobLinkUnlockEmailSentAt = new Date();
-            await user.save();
-          } catch (err) {
-            console.error('Error sending job link unlock email:', err);
-          }
-        }
-      }
-    }
 
     if (status === 'rejected' && prevStatus !== 'rejected' && link.createdBy) {
       const User = require('../models/User');

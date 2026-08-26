@@ -501,6 +501,38 @@ exports.getStats = async (req, res) => {
 
 exports.getUserGrowth = async (req, res) => {
   try {
+    const mode = req.query.mode || 'daily';
+
+    if (mode === 'monthly') {
+      const months = parseInt(req.query.months) || 12;
+      const since = new Date();
+      since.setMonth(since.getMonth() - months + 1);
+      since.setDate(1);
+      since.setHours(0, 0, 0, 0);
+
+      const rows = await User.aggregate([
+        { $match: { createdAt: { $gte: since } } },
+        {
+          $group: {
+            _id: { $dateToString: { format: '%Y-%m', date: '$createdAt' } },
+            count: { $sum: 1 },
+          },
+        },
+        { $sort: { _id: 1 } },
+      ]);
+
+      const map = Object.fromEntries(rows.map(r => [r._id, r.count]));
+      const result = [];
+      for (let i = 0; i < months; i++) {
+        const d = new Date(since);
+        d.setMonth(since.getMonth() + i);
+        const key = d.toISOString().slice(0, 7);
+        result.push({ date: key, count: map[key] || 0 });
+      }
+
+      return res.json(result);
+    }
+
     const days = parseInt(req.query.days) || 30;
     const since = new Date();
     since.setDate(since.getDate() - days + 1);

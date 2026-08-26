@@ -510,6 +510,19 @@ export default function AdminJobLinksSection() {
           </button>
 
           <button
+            onClick={() => { setActiveTab('pending'); setCurrentPage(1); }}
+            className={`px-4 py-3 font-medium text-sm transition-colors border-b-2 relative ${activeTab === 'pending' ? 'border-accent text-accent' : 'border-transparent text-muted hover:text-text'}`}
+          >
+            Pending Links ({pendingLinks.length})
+            {pendingLinks.length > 0 && (
+              <span className="absolute top-2.5 right-1 flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+              </span>
+            )}
+          </button>
+
+          <button
             onClick={() => { setActiveTab('companies'); setCurrentPage(1); }}
             className={`px-4 py-3 font-medium text-sm transition-colors border-b-2 ${activeTab === 'companies' ? 'border-accent text-accent' : 'border-transparent text-muted hover:text-text'}`}
           >
@@ -893,6 +906,8 @@ export default function AdminJobLinksSection() {
                   </div>
                 </div>
 
+
+
                 {/* Form Content Area */}
                 <div className="w-full mt-1">
                   {/* Form for adding details if Pending or Editing */}
@@ -1104,7 +1119,7 @@ export default function AdminJobLinksSection() {
               </div>
 
               {/* Right Column for Actions */}
-              <div className="flex flex-col justify-start items-stretch gap-2 shrink-0">
+              <div className="flex flex-col justify-center items-stretch gap-2 shrink-0">
                 <a href={editForms[link._id]?.url !== undefined ? editForms[link._id].url : link.url} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-1.5 px-3.5 py-1.5 bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 rounded-lg text-[12px] font-semibold transition shadow-sm w-full" title="Open Job Link">
                   <ExternalLink size={14} className="text-gray-400" /> Open Link
                 </a>
@@ -1115,13 +1130,6 @@ export default function AdminJobLinksSection() {
                       className="flex items-center justify-center gap-1.5 px-3.5 py-1.5 bg-white border border-[#10b981] text-[#10b981] hover:bg-[#10b981] hover:text-white rounded-lg text-[12px] font-bold transition shadow-sm"
                     >
                       <Check size={14} /> Approve
-                    </button>
-                    <button
-                      onClick={() => handleUpdate(link._id, 'access_granted')}
-                      title="Unlock applies for this user without listing the link publicly (use for duplicates)"
-                      className="flex items-center justify-center gap-1.5 px-3.5 py-1.5 bg-white border border-blue-500 text-blue-600 hover:bg-blue-500 hover:text-white rounded-lg text-[12px] font-bold transition shadow-sm"
-                    >
-                      <Unlock size={14} /> Allow Access
                     </button>
                     <button
                       onClick={() => { setLinkToReject(link); setRejectModalOpen(true); }}
