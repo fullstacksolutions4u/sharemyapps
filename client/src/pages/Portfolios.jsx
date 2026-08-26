@@ -107,9 +107,6 @@ function DeveloperCard({ dev, idx }) {
               {badge.label}
             </span>
           )}
-          {dev.expectedSalary && (
-            <span className="text-[10px] text-muted">Expected CTC: {(Number(dev.expectedSalary) / 100000).toFixed(1).replace(/\.0$/, '')} LPA</span>
-          )}
           <span className="text-[10px] text-yellow-600 font-bold flex items-center gap-1">
             <span className="text-sm">🏅</span> {dev.points || 0} pts
           </span>
@@ -120,13 +117,29 @@ function DeveloperCard({ dev, idx }) {
       <div className="px-5 pb-5 flex flex-col gap-3 flex-1">
 
         {/* Name + location */}
-        <div>
-          <h3 className="font-bold text-base text-text leading-tight">{dev.name}</h3>
-          {(dev.place || dev.district || dev.state) && (
-            <p className="text-xs text-muted mt-0.5">
-              {[dev.place || dev.district, dev.state].filter(Boolean).join(', ')}
-            </p>
-          )}
+        <div className="flex flex-col gap-1">
+          {/* Row 1: Name and CTC */}
+          <div className="flex items-baseline justify-between gap-2">
+            <h3 className="font-bold text-base text-text leading-tight truncate">{dev.name}</h3>
+            {dev.expectedSalary && (
+              <span className="text-[11px] text-muted shrink-0">
+                CTC: <strong>{(Number(dev.expectedSalary) / 100000).toFixed(1).replace(/\.0$/, '')} LPA</strong>
+              </span>
+            )}
+          </div>
+          {/* Row 2: Place and Experience */}
+          <div className="flex items-baseline justify-between gap-2 text-xs text-muted">
+            <span className="truncate">
+              {[dev.place || dev.district, dev.state].filter(Boolean).join(', ') || '\u00A0'}
+            </span>
+            {dev.yearsOfExperience && (
+              <span className="shrink-0 text-[11px]">
+                Exp: <strong>{dev.yearsOfExperience.toLowerCase().includes('year') || dev.yearsOfExperience.toLowerCase().includes('yr') 
+                  ? dev.yearsOfExperience 
+                  : `${dev.yearsOfExperience} Year${Number(dev.yearsOfExperience) === 1 ? '' : 's'}`}</strong>
+              </span>
+            )}
+          </div>
         </div>
 
         {/* Contact */}
@@ -168,37 +181,44 @@ function DeveloperCard({ dev, idx }) {
           </div>
         )}
 
-        {/* Projects */}
-        {dev.projects.length > 0 && (
+        {/* Projects & Freelance rate row */}
+        {(dev.projects.length > 0 || (dev.freelanceAvailable && dev.freelanceRate)) && (
           <div>
-            <p className="flex items-center gap-1 text-[10px] font-semibold text-muted uppercase tracking-widest mb-2">
-              <Layers size={10} /> Projects
-            </p>
-            <div className="grid grid-cols-2 gap-1.5">
-              {dev.projects.slice(0, 2).map((p, pi) => {
-                const TypeIcon = p.appType === 'mobile' ? Smartphone : Monitor;
-                return (
-                  <Link key={p._id} to={`/project/${p._id}`} title={p.title}
-                    className={`inline-flex items-center gap-1 text-[11px] border px-2.5 py-1 rounded-full transition-colors font-medium min-w-0 ${PROJECT_CHIP_COLORS[pi % PROJECT_CHIP_COLORS.length]}`}>
-                    <TypeIcon size={9} className="shrink-0" />
-                    <span className="truncate">{p.title}</span>
-                  </Link>
-                );
-              })}
-              {dev.projects.length > 2 && (
-                <Link to={`/portfolio/${dev._id}`}
-                  className="col-span-2 flex items-center text-[11px] font-medium px-1">
-                  <span className="text-accent hover:underline">+{dev.projects.length - 2} more</span>
-                </Link>
+            <div className="flex items-baseline justify-between mb-2 gap-2">
+              {dev.projects.length > 0 ? (
+                <p className="flex items-center gap-1 text-[10px] font-semibold text-muted uppercase tracking-widest">
+                  <Layers size={10} /> Projects
+                </p>
+              ) : (
+                <div />
+              )}
+              {dev.freelanceAvailable && dev.freelanceRate && (
+                <span className="text-[11px] text-[#FFAB91] font-semibold shrink-0">
+                  Freelance: <strong>₹{dev.freelanceRate}/hr</strong>
+                </span>
               )}
             </div>
-          </div>
-        )}
 
-        {/* Freelance rate */}
-        {dev.freelanceAvailable && dev.freelanceRate && (
-          <div className="flex items-center justify-end">
-            <span className="text-[11px] text-[#FFAB91] font-semibold">Freelance: <strong>₹{dev.freelanceRate}/hr</strong></span>
+            {dev.projects.length > 0 && (
+              <div className="grid grid-cols-2 gap-1.5">
+                {dev.projects.slice(0, 2).map((p, pi) => {
+                  const TypeIcon = p.appType === 'mobile' ? Smartphone : Monitor;
+                  return (
+                    <Link key={p._id} to={`/project/${p._id}`} title={p.title}
+                      className={`inline-flex items-center gap-1 text-[11px] border px-2.5 py-1 rounded-full transition-colors font-medium min-w-0 ${PROJECT_CHIP_COLORS[pi % PROJECT_CHIP_COLORS.length]}`}>
+                      <TypeIcon size={9} className="shrink-0" />
+                      <span className="truncate">{p.title}</span>
+                    </Link>
+                  );
+                })}
+                {dev.projects.length > 2 && (
+                  <Link to={`/portfolio/${dev._id}`}
+                    className="col-span-2 flex items-center text-[11px] font-medium px-1">
+                    <span className="text-accent hover:underline">+{dev.projects.length - 2} more</span>
+                  </Link>
+                )}
+              </div>
+            )}
           </div>
         )}
 
