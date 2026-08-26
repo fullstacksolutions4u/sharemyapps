@@ -241,14 +241,13 @@ router.get('/showcase-devs', optionalAuth, async (req, res) => {
     const skip = Math.max(parseInt(req.query.skip) || 0, 0);
     const limit = Math.min(parseInt(req.query.limit) || 3, 10);
 
-    // Only developers who have a profile photo
+    // Find all developers (both with and without avatars)
     const allDevs = await User.find(
       {
         role: { $ne: 'admin' },
         isDeleted: { $ne: true },
         hidden: { $ne: true },
         userType: 'developer',
-        avatar: { $exists: true, $ne: '' },
       },
       { password: 0, googleId: 0, adminNote: 0 }
     ).sort({ createdAt: -1 }).lean();
@@ -267,14 +266,27 @@ router.get('/showcase-devs', optionalAuth, async (req, res) => {
       projectMap[key].push(p.title);
     }
 
-    // Filter to only devs with at least 1 approved project, then apply skip/limit
+    // Sort to prioritize devs with projects and photos first, then apply skip/limit
     const result = allDevs
       .map(d => ({
         ...d,
         projectNames: projectMap[d._id.toString()] || [],
         projectCount: (projectMap[d._id.toString()] || []).length,
       }))
-      .filter(d => d.projectCount > 0)
+      .sort((a, b) => {
+        // 1. Projects count first
+        if (a.projectCount !== b.projectCount) {
+          return b.projectCount - a.projectCount;
+        }
+        // 2. Avatar first
+        const aHasAv = a.avatar && a.avatar.trim() ? 1 : 0;
+        const bHasAv = b.avatar && b.avatar.trim() ? 1 : 0;
+        if (aHasAv !== bHasAv) {
+          return bHasAv - aHasAv;
+        }
+        // 3. Newest first
+        return new Date(b.createdAt) - new Date(a.createdAt);
+      })
       .slice(skip, skip + limit);
 
     const reqUser = req.user;
