@@ -26,8 +26,18 @@ export default function AdminMentorshipApplicationsSection() {
   const setStatus = async (id, status) => {
     setUpdating(id);
     try {
+      const oldApp = applications.find(a => a._id === id);
+      const wasPending = oldApp?.status === 'pending';
       const res = await api.put(`/admin/mentorship-applications/${id}`, { status });
       setApplications(prev => prev.map(a => a._id === id ? res.data.application : a));
+      
+      const isPendingNow = res.data.application?.status === 'pending';
+      if (wasPending && !isPendingNow) {
+        window.dispatchEvent(new CustomEvent('decrementPendingApplicants'));
+      } else if (!wasPending && isPendingNow) {
+        window.dispatchEvent(new CustomEvent('incrementPendingApplicants'));
+      }
+
       toast.success(status === 'approved' ? 'Application approved — payment unlocked for user.' : `Application marked ${status}.`);
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to update application');
@@ -40,8 +50,15 @@ export default function AdminMentorshipApplicationsSection() {
     if (!window.confirm('Are you sure you want to delete this application?')) return;
     setUpdating(id);
     try {
+      const oldApp = applications.find(a => a._id === id);
+      const wasPending = oldApp?.status === 'pending';
       await api.delete(`/admin/mentorship-applications/${id}`);
       setApplications(prev => prev.filter(a => a._id !== id));
+
+      if (wasPending) {
+        window.dispatchEvent(new CustomEvent('decrementPendingApplicants'));
+      }
+
       toast.success('Application deleted successfully');
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to delete application');

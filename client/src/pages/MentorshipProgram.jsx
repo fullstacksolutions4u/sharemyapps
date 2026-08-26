@@ -299,7 +299,27 @@ export default function MentorshipProgram() {
             padding: '28px 32px',
             textAlign: 'center',
           }}>
-            <h1 style={{ margin: 0, fontFamily: "'Spectral', serif", fontSize: '26px', fontWeight: 600, color: '#f5efe2' }}>
+            <div style={{
+              position: 'absolute',
+              top: '18px',
+              right: '20px',
+              background: 'rgba(255, 255, 255, 0.12)',
+              border: '1px solid rgba(255, 255, 255, 0.2)',
+              borderRadius: '20px',
+              padding: '6px 14px',
+              color: '#f5efe2',
+              fontSize: '13px',
+              fontWeight: 700,
+              fontFamily: "'Manrope', sans-serif",
+              letterSpacing: '0.02em',
+              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+            }}>
+              Fee: {priceDisplay}
+            </div>
+            <h1 
+              className="text-[22px] md:text-[23px] whitespace-nowrap max-md:whitespace-normal max-md:text-[18px]"
+              style={{ margin: '0 auto', fontFamily: "'Spectral', serif", fontWeight: 600, color: '#f5efe2' }}
+            >
               Mentorship Program with Placement
             </h1>
             <p style={{ margin: '8px 0 0', fontFamily: "'Manrope', sans-serif", fontSize: '15px', fontWeight: 700, letterSpacing: '.04em', color: '#7fd1c7' }}>

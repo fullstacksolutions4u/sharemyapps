@@ -457,7 +457,19 @@ exports.deleteProject = async (req, res) => {
 
 exports.getStats = async (req, res) => {
   try {
-    const [total, pending, approved, rejected, users, developers, clients, forSale, pendingVacancies] = await Promise.all([
+    const [
+      total,
+      pending,
+      approved,
+      rejected,
+      users,
+      developers,
+      clients,
+      forSale,
+      pendingVacancies,
+      pendingOffers,
+      pendingMentorships
+    ] = await Promise.all([
       Project.countDocuments(),
       Project.countDocuments({ status: 'pending' }),
       Project.countDocuments({ status: 'approved' }),
@@ -467,8 +479,21 @@ exports.getStats = async (req, res) => {
       User.countDocuments({ userType: 'client' }),
       Project.countDocuments({ forSale: true, status: 'approved' }),
       require('../models/Vacancy').countDocuments({ status: 'pending', isViewed: { $ne: true } }),
+      FreeOffer.countDocuments({ status: 'pending' }),
+      require('../models/MentorshipApplication').countDocuments({ status: 'pending' }),
     ]);
-    res.json({ total, pending, approved, rejected, users, developers, clients, forSale, pendingVacancies });
+    res.json({
+      total,
+      pending,
+      approved,
+      rejected,
+      users,
+      developers,
+      clients,
+      forSale,
+      pendingVacancies,
+      pendingApplicants: pendingOffers + pendingMentorships
+    });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

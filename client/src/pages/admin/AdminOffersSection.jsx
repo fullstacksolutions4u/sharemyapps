@@ -665,21 +665,34 @@ export default function AdminOffersSection() {
     e.stopPropagation();
     if (!window.confirm('Delete this application? This cannot be undone.')) return;
     try {
+      const offer = offers.find(o => o._id === offerId);
+      const wasPending = offer?.status === 'pending';
       await api.delete(`/admin/offers/${offerId}`);
       setOffers(prev => prev.filter(o => o._id !== offerId));
       setTotal(prev => prev - 1);
+      if (wasPending) {
+        window.dispatchEvent(new CustomEvent('decrementPendingApplicants'));
+      }
     } catch { /* ignore */ }
   }
 
   async function handleStatusChange(e, offerId) {
     const value = e.target.value;
     try {
+      const offer = offers.find(o => o._id === offerId);
+      const wasPending = offer?.status === 'pending';
       if (value === 'active') {
         const res = await api.patch(`/admin/offers/${offerId}/activate`);
         setOffers(prev => prev.map(o => o._id === offerId ? { ...o, status: res.data.status, enrolled: res.data.enrolled, enrolledAt: res.data.enrolledAt } : o));
+        if (wasPending && res.data.status !== 'pending') {
+          window.dispatchEvent(new CustomEvent('decrementPendingApplicants'));
+        }
       } else {
         const res = await api.patch(`/admin/offers/${offerId}`, { status: value });
         setOffers(prev => prev.map(o => o._id === offerId ? { ...o, status: res.data.status, enrolled: false } : o));
+        if (wasPending && res.data.status !== 'pending') {
+          window.dispatchEvent(new CustomEvent('decrementPendingApplicants'));
+        }
       }
     } catch { /* ignore */ }
   }

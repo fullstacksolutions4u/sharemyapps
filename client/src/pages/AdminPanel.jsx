@@ -68,8 +68,22 @@ const { user, setUser, logout } = useAuth();
     const handleDecrement = () => {
       setStats(prev => prev ? { ...prev, pendingVacancies: Math.max(0, prev.pendingVacancies - 1) } : null);
     };
+    const handleDecrementApplicants = () => {
+      setStats(prev => prev ? { ...prev, pendingApplicants: Math.max(0, prev.pendingApplicants - 1) } : null);
+    };
+    const handleIncrementApplicants = () => {
+      setStats(prev => prev ? { ...prev, pendingApplicants: (prev.pendingApplicants || 0) + 1 } : null);
+    };
+
     window.addEventListener('decrementPendingVacancies', handleDecrement);
-    return () => window.removeEventListener('decrementPendingVacancies', handleDecrement);
+    window.addEventListener('decrementPendingApplicants', handleDecrementApplicants);
+    window.addEventListener('incrementPendingApplicants', handleIncrementApplicants);
+
+    return () => {
+      window.removeEventListener('decrementPendingVacancies', handleDecrement);
+      window.removeEventListener('decrementPendingApplicants', handleDecrementApplicants);
+      window.removeEventListener('incrementPendingApplicants', handleIncrementApplicants);
+    };
   }, []);
 
   const navigate = (key) => { setSection(key); setMobileOpen(false); };
@@ -106,6 +120,9 @@ const { user, setUser, logout } = useAuth();
               )}
               {key === 'opportunities' && stats?.pendingVacancies > 0 && (
                 <span className="ml-auto bg-red-500 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full leading-none shrink-0">{stats.pendingVacancies}</span>
+              )}
+              {key === 'applicants' && stats?.pendingApplicants > 0 && (
+                <span className="ml-auto bg-accent text-white text-xs w-5 h-5 flex items-center justify-center rounded-full leading-none shrink-0">{stats.pendingApplicants}</span>
               )}
             </button>
           ))}
