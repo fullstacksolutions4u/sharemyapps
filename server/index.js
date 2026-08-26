@@ -32,6 +32,7 @@ const feedRoutes = require('./routes/feed');
 const jobLinkRoutes = require('./routes/jobLinks');
 const showcaseRoutes = require('./routes/showcase');
 const interviewModuleRoutes = require('./routes/interviewModules');
+const communityPostRoutes = require('./routes/communityPosts');
 const { startJobAlertScheduler } = require('./jobs/jobAlertScheduler');
 const { task: thumbnailTask } = require('./cron/thumbnails');
 
@@ -83,6 +84,7 @@ app.use('/api/feed', generalLimiter, feedRoutes);
 app.use('/api/job-links', generalLimiter, jobLinkRoutes);
 app.use('/api/showcase', generalLimiter, showcaseRoutes);
 app.use('/api/interview-modules', generalLimiter, interviewModuleRoutes);
+app.use('/api/community-posts', generalLimiter, communityPostRoutes);
 
 // Developer: interview feedback (auth required)
 app.use('/api/interview-feedback', generalLimiter, require('./middleware/auth').protect, require('./routes/interviewFeedback'));

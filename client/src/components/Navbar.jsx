@@ -1,7 +1,7 @@
 import { useRef, useState, useEffect } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link, useNavigate } from 'react-router-dom';
-import { Menu, X, ChevronDown, LogOut, Plus, ShieldCheck, Bell, CheckCircle, XCircle, Clock, MessageSquare, AlertCircle, Heart, Star, MessageCircle, Briefcase, LayoutDashboard, Trophy, GraduationCap, Crown, ChevronRight } from 'lucide-react';
+import { Menu, X, ChevronDown, LogOut, Plus, ShieldCheck, Bell, CheckCircle, XCircle, Clock, MessageSquare, AlertCircle, Heart, Star, MessageCircle, Briefcase, LayoutDashboard, GraduationCap, Crown, ChevronRight } from 'lucide-react';
 import { progressAPI } from '../api/tick2test';
 
 const GeminiIcon = ({ size = 14 }) => (
@@ -32,30 +32,7 @@ const typeIcon = {
   job_alert:     <Briefcase size={14} className="text-emerald-500 shrink-0" />,
 };
 
-function CoinsRankBadge() {
-  const { user } = useAuth();
-  const { data } = useQuery({
-    queryKey: ['leaderboard'],
-    queryFn: async () => {
-      const res = await progressAPI.getLeaderboard();
-      console.log('[Navbar] leaderboard fetch →', res.data);
-      return res.data;
-    },
-    staleTime: 0,
-    refetchOnWindowFocus: true,
-    refetchInterval: 60 * 1000,
-    enabled: !!user,
-  });
 
-  if (!user || !data || !data.userRank) return null;
-
-  return (
-    <Link to="/quiz-zone" className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold" style={{ backgroundColor: '#FFF8E8', border: '1px solid #D4AF37' }}>
-      <Trophy size={11} className="text-amber-500" />
-      <span className="text-amber-600">#{data.userRank}</span>
-    </Link>
-  );
-}
 
 function ServicesMenu() {
   const [open, setOpen] = useState(false);
@@ -107,6 +84,19 @@ function UserDropdown({ user, onLogout }) {
   const [open, setOpen] = useState(false);
   const [section, setSection] = useState(null); // null | 'notifications' | 'messages'
   const ref = useRef();
+
+  const { data: leaderboardData } = useQuery({
+    queryKey: ['leaderboard'],
+    queryFn: async () => {
+      const res = await progressAPI.getLeaderboard();
+      return res.data;
+    },
+    staleTime: 0,
+    refetchOnWindowFocus: true,
+    refetchInterval: 60 * 1000,
+    enabled: !!user,
+  });
+  const userRank = leaderboardData?.userRank;
 
   /* ── notifications ── */
   const devLinks = [authUser?.linkedinUrl, authUser?.githubUrl, authUser?.leetcodeUrl, authUser?.portfolioUrl];
@@ -174,14 +164,23 @@ function UserDropdown({ user, onLogout }) {
       {/* Trigger button */}
       <button
         onClick={() => { setOpen(v => !v); if (open) setSection(null); }}
-        className="relative flex items-center gap-2 text-sm text-text hover:text-accent transition-colors"
+        className="relative flex items-center gap-2.5 text-sm text-text hover:text-accent transition-colors text-left font-medium"
       >
         {user.avatar
-          ? <img src={optimizeImage(user.avatar, 150)} alt={user.name} className="w-7 h-7 rounded-full object-cover" />
-          : <span className="w-7 h-7 rounded-full bg-accent text-white text-xs flex items-center justify-center font-medium">{user.name[0].toUpperCase()}</span>
+          ? <img src={optimizeImage(user.avatar, 150)} alt={user.name} className="w-8 h-8 rounded-full object-cover" />
+          : <span className="w-8 h-8 rounded-full bg-accent text-white text-xs flex items-center justify-center font-medium">{user.name[0].toUpperCase()}</span>
         }
-        <span className="font-bold">{user.name.split(' ')[0]}</span>
-        <ChevronDown size={14} className={`transition-transform ${open ? 'rotate-180' : ''}`} />
+        <div className="flex flex-col items-start leading-tight">
+          <div className="flex items-center gap-0.5">
+            <span className="font-bold text-gray-800 hover:text-accent">{user.name.split(' ')[0]}</span>
+            <ChevronDown size={13} className={`transition-transform ${open ? 'rotate-180' : ''}`} />
+          </div>
+          {userRank && (
+            <span className="text-[10px] text-amber-600 font-bold flex items-center gap-0.5 mt-0.5">
+              🏆 #{userRank}
+            </span>
+          )}
+        </div>
 
         {/* combined unread badge on username */}
         {totalUnread > 0 && (
@@ -419,6 +418,7 @@ export default function Navbar() {
           {!isRecruiter && !isClient && !isMentee && !isMentor && (
             <>
               <Link to="/opportunities" className="relative text-base font-bold text-muted hover:text-text transition-colors after:absolute after:left-0 after:-bottom-0.5 after:h-[1.5px] after:w-0 after:bg-accent after:transition-[width] after:duration-300 hover:after:w-full">Opportunities</Link>
+              <Link to="/community-blog" className="relative text-base font-bold text-muted hover:text-text transition-colors after:absolute after:left-0 after:-bottom-0.5 after:h-[1.5px] after:w-0 after:bg-accent after:transition-[width] after:duration-300 hover:after:w-full">Community Blog</Link>
               <Link to="/quiz-zone" className="relative text-base font-bold text-muted hover:text-text transition-colors after:absolute after:left-0 after:-bottom-0.5 after:h-[1.5px] after:w-0 after:bg-accent after:transition-[width] after:duration-300 hover:after:w-full">Quiz Zone</Link>
               <ServicesMenu />
             </>
@@ -426,7 +426,6 @@ export default function Navbar() {
 
           {user ? (
             <div className="flex items-center gap-3">
-              <CoinsRankBadge />
               <UserDropdown user={user} onLogout={handleLogout} />
             </div>
           ) : (
@@ -479,6 +478,7 @@ export default function Navbar() {
           {!isRecruiter && !isClient && !isMentee && !isMentor && (
             <>
               <Link to="/opportunities" onClick={() => setMenuOpen(false)} className="block text-sm text-muted hover:text-text">Opportunities</Link>
+              <Link to="/community-blog" onClick={() => setMenuOpen(false)} className="block text-sm text-muted hover:text-text">Community Blog</Link>
               <Link to="/quiz-zone" onClick={() => setMenuOpen(false)} className="block text-sm text-muted hover:text-text">Quiz Zone</Link>
               <Link to="/placement-services" onClick={() => setMenuOpen(false)} className="block text-sm text-muted hover:text-text">Job Assistance Services</Link>
               <Link to="/mentorship-program" onClick={() => setMenuOpen(false)} className="block text-sm text-muted hover:text-text">Mentorship Program</Link>

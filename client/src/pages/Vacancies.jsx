@@ -676,13 +676,24 @@ export default function Vacancies() {
                 )).sort()}
               />
 
-              <FilterDropdown
-                icon={MapPin}
-                placeholder="All States"
-                value={filterLocation}
-                onChange={(val) => { setFilterLocation(val); setCurrentPage(1); }}
-                options={INDIA_STATES}
-              />
+              <div className="relative">
+                <FilterDropdown
+                  icon={MapPin}
+                  placeholder="All States"
+                  value={filterLocation}
+                  onChange={(val) => { setFilterLocation(val); setCurrentPage(1); }}
+                  options={INDIA_STATES}
+                />
+                {(filterDesignation || filterLocation || filterExperience) && (
+                  <button
+                    onClick={() => { setFilterDesignation(''); setFilterLocation(''); setFilterExperience(''); setCurrentPage(1); }}
+                    className="absolute top-full left-1/2 -translate-x-1/2 mt-1.5 flex items-center gap-1 text-[11px] font-bold text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100/80 border border-red-100 hover:border-red-200 px-2 py-1 rounded-lg transition-all cursor-pointer whitespace-nowrap z-30"
+                  >
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                    Clear all
+                  </button>
+                )}
+              </div>
 
               <FilterDropdown
                 icon={Clock}
@@ -691,16 +702,6 @@ export default function Vacancies() {
                 onChange={(val) => { setFilterExperience(val); setCurrentPage(1); }}
                 options={EXPERIENCE_OPTIONS}
               />
-
-              {(filterDesignation || filterLocation || filterExperience) && (
-                <button
-                  onClick={() => { setFilterDesignation(''); setFilterLocation(''); setFilterExperience(''); setCurrentPage(1); }}
-                  className="flex items-center gap-1.5 text-[12px] font-semibold text-red-400 hover:text-red-600 bg-red-50 hover:bg-red-100 border border-red-100 hover:border-red-200 px-3 py-2 rounded-xl transition-all"
-                >
-                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M18 6L6 18M6 6l12 12"/></svg>
-                  Clear all
-                </button>
-              )}
 
               {activeTab === 'job-links' && (
                 <div className="flex items-center gap-2.5 flex-wrap shrink-0">

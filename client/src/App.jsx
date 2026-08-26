@@ -40,6 +40,7 @@ const LearningTracker    = lazy(() => import('./pages/LearningTracker'));
 const Profile            = lazy(() => import('./pages/Profile'));
 const CurationShowcase   = lazy(() => import('./pages/CurationShowcase'));
 const DeveloperInterviewFeedback = lazy(() => import('./pages/DeveloperInterviewFeedback'));
+const CommunityBlog      = lazy(() => import('./pages/CommunityBlog'));
 const Overview           = lazy(() => import('./pages/Overview'));
 const ProjectsSection    = lazy(() => import('./pages/Dashboard').then(m => ({ default: m.ProjectsSection })));
 const SharedProfiles     = lazy(() => import('./pages/SharedProfiles'));
@@ -148,6 +149,7 @@ function AppRoutes() {
             <Route path="/client-profile" element={<ProtectedRoute><ClientProfile /></ProtectedRoute>} />
             <Route path="/chat-admin" element={<ProtectedRoute><ChatAdmin /></ProtectedRoute>} />
             <Route path="/opportunities" element={<Vacancies />} />
+            <Route path="/community-blog" element={<CommunityBlog />} />
             <Route path="/vacancies" element={<Vacancies />} />
             <Route path="/portfolios" element={<Portfolios />} />
             <Route path="/developers" element={<Navigate to="/portfolios" replace />} />
