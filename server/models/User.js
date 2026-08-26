@@ -37,6 +37,7 @@ const userSchema = new mongoose.Schema({
   badge: { type: String, enum: ['new_member', 'active', 'top', 'champion'], default: 'new_member' },
   regNumber: { type: Number, unique: true, sparse: true },
   hidden: { type: Boolean, default: false },
+  isBlocked: { type: Boolean, default: false },
   isDeleted: { type: Boolean, default: false },
   deletedAt: { type: Date, default: null },
   joiningAvailability: { type: String, trim: true, default: '' },

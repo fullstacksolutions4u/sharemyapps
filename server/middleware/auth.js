@@ -9,7 +9,10 @@ const optionalAuth = async (req, res, next) => {
   if (!token) return next();
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = await User.findById(decoded.id).select('-password -adminNote');
+    const user = await User.findById(decoded.id).select('-password -adminNote');
+    if (user && !user.isBlocked) {
+      req.user = user;
+    }
   } catch { /* invalid token — treat as guest */ }
   next();
 };
@@ -25,6 +28,7 @@ const protect = async (req, res, next) => {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     req.user = await User.findById(decoded.id).select('-password -adminNote');
     if (!req.user) return res.status(401).json({ message: 'User not found' });
+    if (req.user.isBlocked) return res.status(403).json({ message: 'Your account has been suspended.' });
     next();
   } catch {
     res.status(401).json({ message: 'Invalid token' });

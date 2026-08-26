@@ -56,6 +56,7 @@ function UserEditPage({ user: initial, onBack, onSaved, allDesignations = [] }) 
     requirements:        initial.requirements        || '',
     badge:               initial.badge               || 'new_member',
     hidden:              initial.hidden              || false,
+    isBlocked:           initial.isBlocked           || false,
     userType:            initial.userType            || 'developer',
     joiningAvailability: initial.joiningAvailability || '',
     currentSalary:       initial.currentSalary       ?? '',
@@ -542,6 +543,17 @@ function UserEditPage({ user: initial, onBack, onSaved, allDesignations = [] }) 
                     <div onClick={() => setForm(f => ({ ...f, hidden: !f.hidden }))}
                       className={`ml-4 w-10 h-6 rounded-full transition-colors relative shrink-0 ${form.hidden ? 'bg-red-400' : 'bg-[#00A693]'}`}>
                       <span className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-transform ${form.hidden ? 'translate-x-1' : 'translate-x-5'}`} />
+                    </div>
+                  </label>
+
+                  <label className="flex items-center justify-between p-3 bg-white border border-[#E5E1DA] rounded-xl cursor-pointer mt-4">
+                    <div>
+                      <p className="text-sm font-medium text-[#1A1A1A]">{form.isBlocked ? 'Blocked Account' : 'Active Account'}</p>
+                      <p className="text-xs text-[#9CA3AF] mt-0.5">{form.isBlocked ? 'User is blocked and cannot log in' : 'User can log in and access the platform'}</p>
+                    </div>
+                    <div onClick={() => setForm(f => ({ ...f, isBlocked: !f.isBlocked }))}
+                      className={`ml-4 w-10 h-6 rounded-full transition-colors relative shrink-0 ${form.isBlocked ? 'bg-red-500' : 'bg-[#E5E1DA]'}`}>
+                      <span className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-transform ${form.isBlocked ? 'translate-x-5' : 'translate-x-1'}`} />
                     </div>
                   </label>
                 </div>

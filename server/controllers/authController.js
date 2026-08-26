@@ -79,6 +79,9 @@ exports.login = async (req, res) => {
     if (user.isDeleted)
       return res.status(403).json({ message: 'This account has been deleted' });
 
+    if (user.isBlocked)
+      return res.status(403).json({ message: 'Your account has been suspended by an administrator.' });
+
     const match = await user.comparePassword(password);
     if (!match) return res.status(401).json({ message: 'Invalid credentials' });
 
@@ -366,6 +369,10 @@ exports.googleCallback = async (req, res) => {
 
     // Always fetch fresh from DB — Passport may return a stale user object
     const user = await User.findById(req.user._id);
+
+    if (user && user.isBlocked) {
+      return res.redirect(`${process.env.CLIENT_URL}/login?error=blocked`);
+    }
 
     let dest = '/select-role';
     let fromOnboarding = false;

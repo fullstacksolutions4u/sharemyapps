@@ -46,6 +46,8 @@ export default function Login() {
 
   if (params.get('error') === 'oauth') {
     toast.error('Google sign-in failed. Try again.');
+  } else if (params.get('error') === 'blocked') {
+    toast.error('Your account has been suspended by an administrator.');
   }
 
   const handleSignIn = async (e) => {

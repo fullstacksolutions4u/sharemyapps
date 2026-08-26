@@ -894,7 +894,7 @@ export default function AdminJobLinksSection() {
               <div className="flex flex-col gap-4 flex-1 min-w-0">
                 
                 {/* Header Row: Single Line Row */}
-                <div className="flex flex-row items-center gap-3 sm:gap-4 w-full overflow-hidden">
+                <div className="flex flex-row items-center justify-between gap-3 sm:gap-4 w-full overflow-hidden">
                   
                   {/* 3. Link Badges */}
                   <div className="flex items-center gap-2 min-w-0 flex-1">
@@ -904,6 +904,17 @@ export default function AdminJobLinksSection() {
                       </span>
                     )}
                   </div>
+
+                  {/* Contributor / Submitter Info */}
+                  {link.createdBy && (
+                    <div className="flex items-center gap-1.5 text-xs text-gray-500 font-semibold shrink-0">
+                      <span className="text-gray-400">Added by:</span>
+                      <span className="text-gray-800 font-bold">{link.createdBy.name}</span>
+                      {link.createdBy.email && (
+                        <span className="text-[10px] text-gray-400 font-medium">({link.createdBy.email})</span>
+                      )}
+                    </div>
+                  )}
                 </div>
 
 
@@ -1120,7 +1131,7 @@ export default function AdminJobLinksSection() {
 
               {/* Right Column for Actions */}
               <div className="flex flex-col justify-center items-stretch gap-2 shrink-0">
-                <a href={editForms[link._id]?.url !== undefined ? editForms[link._id].url : link.url} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-1.5 px-3.5 py-1.5 bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 rounded-lg text-[12px] font-semibold transition shadow-sm w-full" title="Open Job Link">
+                <a href={editForms[link._id]?.url !== undefined ? editForms[link._id].url : link.url} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-1.5 px-3.5 py-1.5 bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 rounded-lg text-[12px] font-semibold transition shadow-sm w-full" title={editForms[link._id]?.url !== undefined ? editForms[link._id].url : link.url}>
                   <ExternalLink size={14} className="text-gray-400" /> Open Link
                 </a>
                 {activeTab === 'pending' && (

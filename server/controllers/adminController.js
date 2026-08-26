@@ -323,6 +323,7 @@ exports.adminUpdateUser = async (req, res) => {
       if (req.body[key] !== undefined) update[key] = req.body[key];
     }
     if (req.body.hidden !== undefined) update.hidden = Boolean(req.body.hidden);
+    if (req.body.isBlocked !== undefined) update.isBlocked = Boolean(req.body.isBlocked);
     if (req.body.freelanceAvailable !== undefined) update.freelanceAvailable = Boolean(req.body.freelanceAvailable);
     if (req.body.mentorshipAvailable !== undefined) update.mentorshipAvailable = Boolean(req.body.mentorshipAvailable);
 
