@@ -20,6 +20,7 @@ import AdminServicesWrapperSection from './admin/AdminServicesWrapperSection';
 import AdminAdvancedUsersFilterSection from './admin/AdminAdvancedUsersFilterSection';
 import AdminJobLinksSection from './admin/AdminJobLinksSection';
 import AdminCurationSection from './admin/AdminCurationSection';
+import AdminCommunitySection from './admin/AdminCommunitySection';
 import { optimizeImage } from '../utils/image';
 
 const NAV = [
@@ -35,6 +36,7 @@ const NAV = [
   { key: 'plans_payments',  label: 'Plans & Payments',  icon: IndianRupee },
   { key: 'communications', label: 'Communications',   icon: MessageSquare },
   { key: 'learning',       label: 'Quiz Zone',        icon: BookOpen },
+  { key: 'community',      label: 'Community Feed',   icon: MessageSquare },
 ];
 
 export default function AdminPanel() {
@@ -185,6 +187,7 @@ const { user, setUser, logout } = useAuth();
           { section === 'job_links'        && <AdminJobLinksSection /> }
           {section === 'learning'         && <AdminLearningSection />}
           {section === 'curation'         && <AdminCurationSection />}
+          {section === 'community'        && <AdminCommunitySection />}
         </div>
       </div>
     </div>
