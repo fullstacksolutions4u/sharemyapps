@@ -176,6 +176,15 @@ body {
   background: rgba(0, 0, 0, 0.2);
 }
 
+/* Hide scrollbar utility */
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-none {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
 /* Curly Sticky Note Style */
 .sticky-curly {
   --sticky-bg: #fdf7df;

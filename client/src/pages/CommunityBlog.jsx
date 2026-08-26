@@ -221,6 +221,9 @@ export default function CommunityBlog() {
     };
   });
 
+  const experiencePosts = populatedCards.filter(c => c.rawPost.category === 'interview');
+  const statusPosts = populatedCards.filter(c => c.rawPost.category === 'general');
+
   const handleCardClick = (card) => {
     if (expandedCardId === card.id) {
       setExpandedCardId(null);
@@ -229,15 +232,31 @@ export default function CommunityBlog() {
     }
   };
 
-  const renderCard = (card, idx) => {
+  const renderCard = (card, idx, isGrid = false, position = 'left') => {
+    const isExpanded = expandedCardId === card.id;
+    let expandClasses = '';
+    if (isExpanded) {
+      if (position === 'left' || position === 'grid-left') {
+        expandClasses = 'rotate-0 scale-[1.02] z-50 shadow-lg xl:w-[560px]';
+      } else if (position === 'right' || position === 'grid-right') {
+        expandClasses = 'rotate-0 scale-[1.02] z-50 shadow-lg xl:w-[560px] xl:-translate-x-[240px]';
+      } else if (position === 'center' || position === 'grid-center') {
+        expandClasses = 'rotate-0 scale-[1.02] z-50 shadow-lg xl:w-[560px] xl:-translate-x-[120px]';
+      } else {
+        expandClasses = 'rotate-0 scale-[1.02] z-50 shadow-lg';
+      }
+    }
+
     return (
       <div 
         key={card.id || idx}
         onClick={() => handleCardClick(card)}
-        className={`p-4 pt-5 rounded-2xl border border-t-[8px] shadow-xs transition-all duration-500 ease-in-out transform cursor-pointer ${
-          expandedCardId === card.id
-            ? 'rotate-0 scale-[1.02] z-30 shadow-md'
-            : `${card.rotateClass}`
+        className={`p-4 pt-5 rounded-2xl border border-t-[8px] shadow-xs transition-all duration-500 ease-in-out transform cursor-pointer relative ${
+          isExpanded
+            ? expandClasses
+            : isGrid
+              ? 'rotate-0 translate-x-0 z-10'
+              : `${card.rotateClass} z-10`
         } ${card.color.borderTop} ${card.color.bg} ${card.color.border} ${card.color.text}`}
       >
         <div className="flex items-center justify-between mb-2.5">
@@ -408,20 +427,23 @@ export default function CommunityBlog() {
     );
   };
 
+  const isLeftExpanded = experiencePosts.slice(0, 2).some(c => c.id === expandedCardId);
+  const isRightExpanded = experiencePosts.slice(2, 4).some(c => c.id === expandedCardId);
+
   return (
-    <div className="min-h-screen bg-white pb-16">
+    <div className="min-h-screen bg-[#F5F9FF] pb-16">
       
       {/* Dynamic Buy-Me-a-Coffee Style Hero Template */}
-      <div className="relative bg-white pt-6 pb-32 px-4 sm:px-6 lg:px-8">
+      <div className="relative bg-[#F5F9FF] pt-6 pb-32 px-4 sm:px-6 lg:px-8">
         
         {/* Left Floating Cards Group */}
-        <div className="hidden xl:block absolute left-4 top-12 w-80 space-y-6 select-none opacity-85">
-          {populatedCards.slice(0, 2).map((card, idx) => renderCard(card, idx))}
+        <div className={`hidden xl:block absolute left-4 top-12 w-80 space-y-6 select-none opacity-85 transition-all duration-300 ${isLeftExpanded ? 'z-40' : 'z-10'}`}>
+          {experiencePosts.slice(0, 2).map((card, idx) => renderCard(card, idx, false, 'left'))}
         </div>
 
         {/* Right Floating Cards Group */}
-        <div className="hidden xl:block absolute right-4 top-12 w-80 space-y-6 select-none opacity-85">
-          {populatedCards.slice(2, 4).map((card, idx) => renderCard(card, idx))}
+        <div className={`hidden xl:block absolute right-4 top-12 w-80 space-y-6 select-none opacity-85 transition-all duration-300 ${isRightExpanded ? 'z-40' : 'z-10'}`}>
+          {experiencePosts.slice(2, 4).map((card, idx) => renderCard(card, idx, false, 'right'))}
         </div>
 
 
@@ -449,43 +471,62 @@ export default function CommunityBlog() {
                 Share
               </button>
             </div>
-            <div className="flex items-center gap-1.5 px-1">
-              <input
-                type="checkbox"
-                id="quick-anon"
-                checked={quickAnonymous}
-                onChange={(e) => setQuickAnonymous(e.target.checked)}
-                className="w-3.5 h-3.5 text-gray-900 border-gray-300 rounded focus:ring-gray-900 accent-gray-900 cursor-pointer"
-              />
-              <label htmlFor="quick-anon" className="text-[10px] text-gray-500 font-bold select-none cursor-pointer">
-                Post anonymously as Community Member
-              </label>
+            <div className="flex items-center justify-between gap-4 px-1 mt-2">
+              <div className="flex items-center gap-1.5">
+                <input
+                  type="checkbox"
+                  id="quick-anon"
+                  checked={quickAnonymous}
+                  onChange={(e) => setQuickAnonymous(e.target.checked)}
+                  className="w-3.5 h-3.5 text-gray-900 border-gray-300 rounded focus:ring-gray-900 accent-gray-900 cursor-pointer"
+                />
+                <label htmlFor="quick-anon" className="text-[10px] text-gray-500 font-bold select-none cursor-pointer">
+                  Post anonymously as Community Member
+                </label>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => {
+                  if (!user) {
+                    toast.error('Please login to share experiences');
+                    return;
+                  }
+                  setNewContent('');
+                  setNewCategory('interview');
+                  setNewAnonymous(false);
+                  setEditingPostId(null);
+                  setIsModalOpen(true);
+                }}
+                className="inline-flex items-center justify-center gap-1.5 bg-[#FFD93D] hover:bg-[#F4CE26] text-gray-900 font-extrabold text-[10px] px-3.5 py-1.5 rounded-xl transition-all shadow-xs cursor-pointer shrink-0"
+              >
+                <Plus size={12} /> Add Job Hunting Experience
+              </button>
             </div>
           </form>
 
-          <div className="mt-4 flex flex-col sm:flex-row items-center justify-center gap-3">
-            <button
-              onClick={() => {
-                if (!user) {
-                  toast.error('Please login to share experiences');
-                  return;
-                }
-                setNewContent('');
-                setNewCategory('interview');
-                setNewAnonymous(false);
-                setEditingPostId(null);
-                setIsModalOpen(true);
-              }}
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 bg-[#FFD93D] hover:bg-[#F4CE26] text-gray-900 font-extrabold text-xs px-4 py-2 rounded-xl transition-all shadow-xs cursor-pointer"
-            >
-              <Plus size={13} /> Add Job Hunting Experience
-            </button>
-          </div>
-
-          {/* 5th Card inline below the button */}
-          {populatedCards.length > 4 && (
-            <div className="mt-6 max-w-xs mx-auto hidden xl:block">
-              {renderCard(populatedCards[4], 4)}
+          {/* Simple Status Updates List */}
+          {statusPosts.length > 0 && (
+            <div className="mt-6 max-w-lg mx-auto text-left space-y-4 px-4">
+              <div className="space-y-3.5 h-[220px] overflow-y-auto scrollbar-none">
+                {statusPosts.map((card, idx) => (
+                  <div key={card.id || idx} className="border-b border-blue-100/60 pb-3 last:border-0 last:pb-0">
+                    {/* Line 1: User name + Date & Time */}
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-xs font-bold text-blue-950">{card.authorName}</span>
+                      {card.createdAt && (
+                        <span className="text-[9.5px] text-blue-400/80 font-semibold">
+                          {new Date(card.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })} • {new Date(card.createdAt).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true })}
+                        </span>
+                      )}
+                    </div>
+                    {/* Line 2: Status text */}
+                    <p className="text-[11px] text-blue-900/80 font-medium mt-0.5 leading-relaxed">
+                      {card.content}
+                    </p>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
 
@@ -506,8 +547,8 @@ export default function CommunityBlog() {
                     </div>
                   ))}
                 </div>
-              ) : populatedCards.length > 0 ? (
-                populatedCards.map((card, idx) => renderCard(card, idx))
+              ) : experiencePosts.length > 0 ? (
+                experiencePosts.map((card, idx) => renderCard(card, idx, true, 'grid'))
               ) : (
                 <div className="col-span-full text-center py-8 text-xs text-gray-400 font-medium">
                   No updates found.
@@ -518,10 +559,13 @@ export default function CommunityBlog() {
         </div>
 
         {/* Remaining Cards Grid (5th card onwards) - Desktop 3-col grid */}
-        {populatedCards.length > 5 && (
-          <div className="hidden xl:block mt-10 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto">
-            <div className="grid grid-cols-3 gap-6">
-              {populatedCards.slice(5).map((card, idx) => renderCard(card, idx))}
+        {experiencePosts.length > 4 && (
+          <div className="hidden xl:block mt-10 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto relative z-20">
+            <div className="grid grid-cols-3 gap-12">
+              {experiencePosts.slice(4).map((card, idx) => {
+                const gridPos = idx % 3 === 0 ? 'grid-left' : idx % 3 === 1 ? 'grid-center' : 'grid-right';
+                return renderCard(card, idx + 4, true, gridPos);
+              })}
             </div>
           </div>
         )}
