@@ -368,6 +368,7 @@ export default function Vacancies() {
   const [filterLocation, setFilterLocation] = useState('');
   const [filterExperience, setFilterExperience] = useState('');
   const [reportUrl, setReportUrl] = useState('');
+  const [urlError, setUrlError] = useState('');
   const [submittingLink, setSubmittingLink] = useState(false);
 
   const handleReportLinkSubmit = async (e) => {
@@ -375,10 +376,21 @@ export default function Vacancies() {
       e.preventDefault();
       e.stopPropagation();
     }
-    if (!reportUrl.trim()) return;
+    const val = reportUrl.trim();
+    if (!val) return;
+
+    // Must be a real URL starting with http/https
+    const isValidUrl = /^https?:\/\/.+\..+/i.test(val);
+    if (!isValidUrl) {
+      setUrlError('Please paste a valid job post link (e.g. https://linkedin.com/jobs/…)');
+      toast.error('Only job post links are accepted here. Paste a URL starting with https://', { duration: 4000 });
+      return;
+    }
+
+    setUrlError('');
     setSubmittingLink(true);
     try {
-      await api.post('/job-links', { url: reportUrl.trim() });
+      await api.post('/job-links', { url: val });
       toast.success('Job link submitted successfully for review!');
       setReportUrl('');
     } catch (err) {
@@ -758,30 +770,40 @@ export default function Vacancies() {
               {/* RIGHT: Report URL field + count */}
               <div className="flex items-center gap-3 flex-nowrap shrink-0">
                 {activeTab === 'job-links' && user && (
-                  <div className="relative flex items-center">
-                    <input
-                      type="url"
-                      placeholder="Paste job post URL to share with community"
-                      value={reportUrl}
-                      onChange={e => setReportUrl(e.target.value)}
-                      required
-                      onKeyDown={e => {
-                        if (e.key === 'Enter') {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          handleReportLinkSubmit(e);
-                        }
-                      }}
-                      className="h-[34px] text-[11px] sm:text-[12px] border border-border pl-2.5 pr-16 rounded-lg outline-hidden bg-white focus:border-[#5a788b] focus:ring-1 focus:ring-[#5a788b]/20 w-56 sm:w-72 transition-all font-medium placeholder-gray-400"
-                    />
-                    <button
-                      type="button"
-                      onClick={handleReportLinkSubmit}
-                      disabled={submittingLink}
-                      className="absolute right-1 h-[26px] px-3 flex items-center justify-center text-[11px] text-white bg-[#008B74] hover:bg-[#006e5c] rounded-md font-bold transition-all cursor-pointer whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      {submittingLink ? 'Adding…' : '+ Add'}
-                    </button>
+                  <div className="relative flex flex-col gap-0.5">
+                    <div className="relative flex items-center">
+                      <input
+                        type="text"
+                        placeholder="Paste job post URL to share with community"
+                        value={reportUrl}
+                        onChange={e => { setReportUrl(e.target.value); if (urlError) setUrlError(''); }}
+                        onKeyDown={e => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleReportLinkSubmit(e);
+                          }
+                        }}
+                        className={`h-[34px] text-[11px] sm:text-[12px] border pl-2.5 pr-16 rounded-lg outline-hidden bg-white focus:ring-1 w-56 sm:w-72 transition-all font-medium placeholder-gray-400 ${
+                          urlError
+                            ? 'border-red-400 focus:border-red-400 focus:ring-red-200'
+                            : 'border-border focus:border-[#5a788b] focus:ring-[#5a788b]/20'
+                        }`}
+                      />
+                      <button
+                        type="button"
+                        onClick={handleReportLinkSubmit}
+                        disabled={submittingLink}
+                        className="absolute right-1 h-[26px] px-3 flex items-center justify-center text-[11px] text-white bg-[#008B74] hover:bg-[#006e5c] rounded-md font-bold transition-all cursor-pointer whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {submittingLink ? 'Adding…' : '+ Add'}
+                      </button>
+                    </div>
+                    {urlError && (
+                      <p className="text-[10px] text-red-500 font-medium px-0.5 whitespace-nowrap">
+                        ⚠ Add job post links only (e.g. https://linkedin.com/jobs/…)
+                      </p>
+                    )}
                   </div>
                 )}
 
