@@ -710,7 +710,7 @@ export default function Vacancies() {
               {/* RIGHT: Report URL field + count */}
               <div className="flex items-center gap-3 flex-nowrap shrink-0">
                 {activeTab === 'job-links' && user && (
-                  <div className="flex items-center gap-1.5">
+                  <div className="relative flex items-center">
                     <input
                       type="url"
                       placeholder="Paste job post URL to share with community"
@@ -724,15 +724,15 @@ export default function Vacancies() {
                           handleReportLinkSubmit(e);
                         }
                       }}
-                      className="h-[34px] text-[11px] sm:text-[12px] border border-border px-2.5 rounded-lg outline-hidden bg-white focus:border-[#5a788b] focus:ring-1 focus:ring-[#5a788b]/20 w-44 sm:w-64 transition-all font-medium placeholder-gray-400"
+                      className="h-[34px] text-[11px] sm:text-[12px] border border-border pl-2.5 pr-16 rounded-lg outline-hidden bg-white focus:border-[#5a788b] focus:ring-1 focus:ring-[#5a788b]/20 w-56 sm:w-72 transition-all font-medium placeholder-gray-400"
                     />
                     <button
                       type="button"
                       onClick={handleReportLinkSubmit}
                       disabled={submittingLink}
-                      className="h-[34px] w-[80px] flex items-center justify-center gap-1 text-[11px] sm:text-[12px] text-white bg-[#5a788b] hover:bg-[#4a6373] rounded-lg font-bold transition-all cursor-pointer whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed border border-transparent shadow-xs shrink-0"
+                      className="absolute right-1 h-[26px] px-3 flex items-center justify-center text-[11px] text-white bg-[#5a788b] hover:bg-[#4a6373] rounded-md font-bold transition-all cursor-pointer whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      {submittingLink ? 'Adding…' : 'Add'}
+                      {submittingLink ? 'Adding…' : '+ Add'}
                     </button>
                   </div>
                 )}
