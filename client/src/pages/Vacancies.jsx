@@ -730,7 +730,7 @@ export default function Vacancies() {
                       type="button"
                       onClick={handleReportLinkSubmit}
                       disabled={submittingLink}
-                      className="absolute right-1 h-[26px] px-3 flex items-center justify-center text-[11px] text-white bg-[#5a788b] hover:bg-[#4a6373] rounded-md font-bold transition-all cursor-pointer whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="absolute right-1 h-[26px] px-3 flex items-center justify-center text-[11px] text-white bg-[#008B74] hover:bg-[#006e5c] rounded-md font-bold transition-all cursor-pointer whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {submittingLink ? 'Adding…' : '+ Add'}
                     </button>
