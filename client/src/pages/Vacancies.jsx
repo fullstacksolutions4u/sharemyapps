@@ -9,7 +9,7 @@ import toast from 'react-hot-toast';
 import { normalizeJobDesignation } from '../utils/jobDesignation';
 
 const JOB_LINK_APPLY_INSTRUCTION =
-  'Get 2 free applies weekly. Upgrade for unlimited lifetime applies ₹499/-';
+  'Get 4 free applies weekly. Upgrade for unlimited lifetime applies ₹499/-';
 
 const getStatusConfig = (status) => {
   const s = (status || '').toLowerCase();
@@ -766,6 +766,14 @@ export default function Vacancies() {
                   </button>
                 )}
               </div>
+
+              {activeTab === 'job-links' && (
+                <div className="flex items-center flex-1 justify-center px-4 overflow-hidden min-w-[200px]">
+                  <p className="text-[11px] xl:text-[12px] font-medium text-amber-700 bg-amber-50 border border-amber-100 rounded-lg px-3 py-1.5 whitespace-nowrap truncate text-center w-full max-w-xl">
+                    {JOB_LINK_APPLY_INSTRUCTION}
+                  </p>
+                </div>
+              )}
 
               {/* RIGHT: Report URL field + count */}
               <div className="flex items-center gap-3 flex-nowrap shrink-0">
