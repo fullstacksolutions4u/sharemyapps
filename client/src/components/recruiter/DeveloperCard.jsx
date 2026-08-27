@@ -70,7 +70,7 @@ function MatchBadge({ jdMatch }) {
   );
 }
 
-export default function DeveloperCard({ dev, stagger, hideContact = false }) {
+export default function DeveloperCard({ dev, stagger, hideContact = false, hideGithub = false }) {
   const role = dev.designations?.[0] || dev.resumeData?.experience?.[0]?.role || null;
   const jdMatch = dev.jdMatch || null;
   const matchedSet = new Set((jdMatch?.matchedSkills || []).map(s => s.toLowerCase()));
@@ -222,7 +222,7 @@ export default function DeveloperCard({ dev, stagger, hideContact = false }) {
             <Link2 size={9} className="mr-1" /> LinkedIn
           </a>
         ))}
-        {dev.githubUrl && (hideContact ? (
+        {dev.githubUrl && !hideGithub && (hideContact ? (
           <span className="inline-flex items-center justify-center text-[10px] font-semibold px-2 py-1 rounded-lg bg-gray-900 text-white border border-gray-900 text-center">
             GitHub
           </span>
