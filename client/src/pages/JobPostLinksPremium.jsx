@@ -15,7 +15,7 @@ const FEATURES = [
 
 const DEFAULT_PLAN = {
   name: 'JobLinkUnlimited',
-  price: 499,
+  price: 199,
   features: FEATURES,
 };
 

@@ -370,6 +370,21 @@ export default function Vacancies() {
   const [reportUrl, setReportUrl] = useState('');
   const [urlError, setUrlError] = useState('');
   const [submittingLink, setSubmittingLink] = useState(false);
+  const [jobLinkPrice, setJobLinkPrice] = useState(199);
+
+  useEffect(() => {
+    api.get('/plans/job-link-unlimited')
+      .then(res => {
+        if (res.data?.price != null) setJobLinkPrice(res.data.price);
+      })
+      .catch(() => {
+        api.get('/plans').then(res => {
+          const list = Array.isArray(res.data) ? res.data : [];
+          const plan = list.find(p => p.name === 'JobLinkUnlimited');
+          if (plan?.price != null) setJobLinkPrice(plan.price);
+        }).catch(() => {});
+      });
+  }, []);
 
   const handleReportLinkSubmit = async (e) => {
     if (e && typeof e.preventDefault === 'function') {
@@ -707,7 +722,7 @@ export default function Vacancies() {
               <span>Unlimited Job Post Applies with Premium</span>
               <span className="inline-flex items-center gap-0.5">
                 <IndianRupee size={11} className="text-gray-700" />
-                499/-
+                {jobLinkPrice}/-
               </span>
             </Link>
           ) : (
@@ -770,7 +785,7 @@ export default function Vacancies() {
               {activeTab === 'job-links' && (
                 <div className="flex items-center flex-1 justify-center px-4 overflow-hidden min-w-[200px]">
                   <p className="text-[11px] xl:text-[12px] font-medium text-amber-700 bg-amber-50 border border-amber-100 rounded-lg px-3 py-1.5 whitespace-nowrap truncate text-center w-full max-w-xl">
-                    {JOB_LINK_APPLY_INSTRUCTION}
+                    {`Get 5 free applies weekly. Upgrade for unlimited lifetime applies ₹${jobLinkPrice}/-`}
                   </p>
                 </div>
               )}
@@ -959,7 +974,7 @@ export default function Vacancies() {
                                 </li>
                                 <li className="flex gap-1.5">
                                   <span className="text-amber-600 shrink-0">•</span>
-                                  <span>Upgrade to Premium for <strong className="font-semibold text-[#1A1A1A]">₹499/-</strong>.</span>
+                                  <span>Upgrade to Premium for <strong className="font-semibold text-[#1A1A1A]">₹{jobLinkPrice}/-</strong>.</span>
                                 </li>
                                 <li className="flex gap-1.5">
                                   <span className="text-amber-600 shrink-0">•</span>

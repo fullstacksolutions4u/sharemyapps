@@ -22,7 +22,7 @@ const SEED_PLANS = [
 
 const JOB_LINK_PLAN = {
   name: 'JobLinkUnlimited',
-  price: 499,
+  price: 199,
   order: 2,
   variant: 'accent',
   badge: '',

@@ -100,7 +100,7 @@ function findDuplicateAgainstList({ url, title, company, excludeId, approvedLink
 }
 
 const APPLY_INSTRUCTION =
-  'Get 5 free applies weekly. Upgrade to Premium for ₹499/- for unlimited lifetime applies.';
+  'Get 5 free applies weekly. Upgrade to Premium for ₹199/- for unlimited lifetime applies.';
 
 /**
  * Apply Now rules for Job Post Links:
@@ -114,13 +114,15 @@ async function getJobLinkApplyEligibility(userId) {
 
   const User = require('../models/User');
   const FreeOffer = require('../models/FreeOffer');
-  const [clickedDocs, weeklyApplyDocs, userDoc, freeOfferDoc] = await Promise.all([
+  const Plan = require('../models/Plan');
+  const [clickedDocs, weeklyApplyDocs, userDoc, freeOfferDoc, planDoc] = await Promise.all([
     JobLink.find({ clicks: userId }).select('_id').lean(),
     JobLink.find({
       clickEvents: { $elemMatch: { user: userId, at: { $gte: since } } },
     }).select('_id').lean(),
     User.findById(userId).select('premiumServices freePremiumGrant').lean(),
     FreeOffer.findOne({ user: userId }).select('_id').lean(),
+    Plan.findOne({ name: 'JobLinkUnlimited' }).select('price').lean(),
   ]);
 
   const hasPremiumServices = hasJobLinkUnlimitedApply(userDoc?.premiumServices);
@@ -131,6 +133,8 @@ async function getJobLinkApplyEligibility(userId) {
   const weeklyApplyCount = weeklyApplyDocs.length;
   const canApplyMore = isPremium || weeklyApplyCount < FREE_APPLY_LIMIT;
 
+  const dynamicApplyInstruction = `Get 5 free applies weekly. Upgrade to Premium for ₹${planDoc?.price ?? 199}/- for unlimited lifetime applies.`;
+
   return {
     canApplyMore,
     isPremium,
@@ -138,8 +142,8 @@ async function getJobLinkApplyEligibility(userId) {
     applyCount: weeklyApplyCount,
     freeApplyLimit: FREE_APPLY_LIMIT,
     clickedIds,
-    message: canApplyMore ? null : APPLY_INSTRUCTION,
-    instruction: APPLY_INSTRUCTION,
+    message: canApplyMore ? null : dynamicApplyInstruction,
+    instruction: dynamicApplyInstruction,
   };
 }
 
