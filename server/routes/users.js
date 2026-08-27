@@ -24,7 +24,7 @@ router.get('/applications', protect, async (req, res) => {
     const userId = req.user._id;
     // Find all vacancies where the user is in the everApplied array
     const vacancies = await Vacancy.find({ everApplied: userId })
-      .select('title company location type salaryRange status applicantStatus applicantStatusHistory createdAt')
+      .select('title company location type salaryRange status applicantStatus applicantStatusHistory applicantPositions createdAt')
       .sort({ createdAt: -1 })
       .lean();
 
@@ -44,6 +44,7 @@ router.get('/applications', protect, async (req, res) => {
       salaryRange: v.salaryRange,
       jobStatus: v.status, // The status of the job itself (active/closed)
       applicantStatus: v.applicantStatus && v.applicantStatus[userId.toString()] ? v.applicantStatus[userId.toString()] : 'pending',
+      appliedPosition: v.applicantPositions && v.applicantPositions[userId.toString()] ? v.applicantPositions[userId.toString()] : null,
       statusHistory: v.applicantStatusHistory && v.applicantStatusHistory[userId.toString()] ? v.applicantStatusHistory[userId.toString()] : [],
       appliedAt: v.createdAt,
       sessions: sessions

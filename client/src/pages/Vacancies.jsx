@@ -309,6 +309,8 @@ export default function Vacancies() {
   const navigate = useNavigate();
   const [busy, setBusy] = useState(null);
   const [expanded, setExpanded] = useState({});
+  const [positionModal, setPositionModal] = useState({ isOpen: false, vacancy: null });
+  const [selectedPosition, setSelectedPosition] = useState('');
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
   const initialTab = queryParams.get('tab') || 'job-links';
@@ -502,7 +504,7 @@ export default function Vacancies() {
     return cleaned === 'drive.google.com';
   };
 
-  const handleInterest = async (item) => {
+  const handleInterest = async (item, position) => {
     if (!user) { toast.error('Please sign in to show interest'); return; }
 
     const cv = (user.cvUrl || '').trim();
@@ -548,7 +550,7 @@ export default function Vacancies() {
       const isWithdraw = item.interested;
       const res = isWithdraw
         ? await api.delete(`${route}/${item._id}/interest`)
-        : await api.post(`${route}/${item._id}/interest`);
+        : await api.post(`${route}/${item._id}/interest`, { position });
       queryClient.setQueryData([queryKey], prev =>
         prev.map(v => v._id === item._id
           ? { ...v, interested: res.data.interested ?? !isWithdraw, interestCount: res.data.interestCount ?? (v.interestCount + (isWithdraw ? -1 : 1)) }
@@ -933,6 +935,15 @@ export default function Vacancies() {
                         <div>
                           <h2 className="text-[17px] font-semibold text-gray-900">{v.title}</h2>
                           <p className="text-[14px] text-[#4f6e87] mt-0.5">{subLabel || v.company || 'Company Name'}</p>
+                          {v.positions && v.positions.length > 0 && (
+                            <div className="flex flex-wrap gap-1.5 mt-2">
+                              {v.positions.map((pos, pIdx) => (
+                                <span key={pIdx} className="text-[10px] px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 font-semibold border border-emerald-200 uppercase tracking-wide">
+                                  {pos}
+                                </span>
+                              ))}
+                            </div>
+                          )}
                         </div>
                       </div>
 
@@ -1016,7 +1027,14 @@ export default function Vacancies() {
                           const config = getStatusConfig(v.applicationStatus);
                           return (
                             <button
-                              onClick={() => handleInterest(v)}
+                              onClick={() => {
+                                if (activeTab === 'vacancies' && !v.interested && v.positions && v.positions.length > 0) {
+                                  setSelectedPosition(v.positions[0]);
+                                  setPositionModal({ isOpen: true, vacancy: v });
+                                } else {
+                                  handleInterest(v);
+                                }
+                              }}
                               disabled={busy === v._id || !config.canWithdraw}
                               className={`group flex items-center gap-2 text-[13.5px] font-semibold px-5 py-2.5 rounded-xl transition-all ${
                                 !config.canWithdraw ? 'disabled:opacity-100 disabled:cursor-default cursor-default' : 'disabled:opacity-60 disabled:cursor-not-allowed'
@@ -1087,6 +1105,72 @@ export default function Vacancies() {
         );
       })()}
       </div>
+
+      {/* Position Selection Modal */}
+      {positionModal.isOpen && positionModal.vacancy && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200">
+          <div className="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl relative animate-in fade-in zoom-in-95 duration-200 border border-border">
+            <button
+              onClick={() => setPositionModal({ isOpen: false, vacancy: null })}
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"
+            >
+              <XCircle size={20} />
+            </button>
+            <div className="mb-4">
+              <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center mb-3">
+                <Briefcase size={18} className="text-emerald-600" />
+              </div>
+              <h3 className="text-lg font-bold text-gray-900">Select Position</h3>
+              <p className="text-xs text-gray-500 mt-1">
+                Please select the position you want to apply for under <strong className="text-gray-700">{positionModal.vacancy.title}</strong> at <strong className="text-gray-700">{positionModal.vacancy.company}</strong>.
+              </p>
+            </div>
+
+            <div className="space-y-2.5 max-h-60 overflow-y-auto pr-1 py-1 custom-scrollbar">
+              {positionModal.vacancy.positions.map((pos) => {
+                const isSelected = selectedPosition === pos;
+                return (
+                  <button
+                    key={pos}
+                    onClick={() => setSelectedPosition(pos)}
+                    className={`w-full text-left px-4 py-3 rounded-xl border text-sm font-semibold transition-all flex items-center justify-between ${
+                      isSelected
+                        ? 'border-emerald-500 bg-emerald-50/50 text-emerald-900 shadow-xs'
+                        : 'border-border bg-white text-gray-700 hover:border-gray-300 hover:bg-gray-50/50'
+                    }`}
+                  >
+                    <span>{pos}</span>
+                    <div className={`w-4 h-4 rounded-full border flex items-center justify-center shrink-0 ${
+                      isSelected ? 'border-emerald-500 bg-emerald-500 text-white' : 'border-gray-300 bg-white'
+                    }`}>
+                      {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+
+            <div className="flex gap-3 mt-6">
+              <button
+                onClick={() => setPositionModal({ isOpen: false, vacancy: null })}
+                className="flex-1 py-2.5 text-xs font-bold text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-xl transition-colors border border-transparent"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  handleInterest(positionModal.vacancy, selectedPosition);
+                  setPositionModal({ isOpen: false, vacancy: null });
+                }}
+                disabled={busy === positionModal.vacancy._id || !selectedPosition}
+                className="flex-1 py-2.5 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl transition-all border-b-[3px] border-emerald-800 active:border-b-0 active:translate-y-[3px] disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Apply Now
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

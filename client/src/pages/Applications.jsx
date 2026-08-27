@@ -298,6 +298,11 @@ export default function Applications() {
                 <div>
                   <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
                     <h3 className="text-base sm:text-lg font-medium text-[#1A1A1A]">{app.title}</h3>
+                    {app.appliedPosition && (
+                      <span className="px-2 py-0.5 bg-blue-50 border border-blue-200 text-blue-700 text-xs rounded-full font-semibold uppercase tracking-wider whitespace-nowrap">
+                        Position: {app.appliedPosition}
+                      </span>
+                    )}
                     {app.location && (
                       <span className="flex items-center gap-1 text-sm text-[#6B7280]">
                         {app.location?.toLowerCase() === 'remote' ? <Home size={14} /> : <MapPin size={14} />} {app.location}

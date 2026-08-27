@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from '../api/axios';
 import { formatDistanceToNow } from 'date-fns';
-import { Trophy, MessageCircle, Heart, Star, TrendingUp, UserPlus, Crown, Sparkles, MapPin, Laptop, ExternalLink, Clock, Calendar } from 'lucide-react';
+import { Trophy, MessageCircle, Heart, Star, TrendingUp, UserPlus, Crown, Sparkles, MapPin, Laptop, ExternalLink, Clock, Calendar, Briefcase } from 'lucide-react';
 import _Lottie from 'lottie-react';
 import feedAnimation from '../assets/feed.json';
 import easyApplyBanner from '../assets/easyapply.png';
@@ -653,6 +653,29 @@ function ActivityCard({ activity, index = 0 }) {
   
   if (type === 'PROJECT_APPROVED' && project) {
     return <FeedProjectCard activity={activity} index={index} />;
+  }
+  else if (type === 'COMMUNITY_POST_CREATED' && activity.communityPost) {
+    const post = activity.communityPost;
+    const isAnonymous = post.anonymous;
+    const categoryIcons = {
+      'general': <TrendingUp size={16} />,
+      'job-hunt': <Briefcase size={16} />,
+      'interview': <MessageCircle size={16} />
+    };
+    innerContent = (
+      <div className="mt-3 flex items-start gap-3">
+        <div className="bg-[#00A693]/10 text-[#00A693] p-1.5 rounded-full shrink-0">
+          {categoryIcons[post.category] || <TrendingUp size={16} />}
+        </div>
+        <p className="text-sm text-black font-medium leading-relaxed">
+          {isAnonymous ? (
+            <>Community member update the status on <Link to="/community-blog" className="text-[#00A693] hover:underline font-bold transition">community blog page</Link>.</>
+          ) : (
+            <><span className="font-bold">{user.name}</span> added a new posts at <Link to="/community-blog" className="text-[#00A693] hover:underline font-bold transition">community blog page</Link>. read and share your opiinnon ....</>
+          )}
+        </p>
+      </div>
+    );
   }
   else if (type === 'MODULE_STARTED' && module) {
     innerContent = (

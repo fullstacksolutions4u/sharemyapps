@@ -22,9 +22,11 @@ exports.getVacancies = async (req, res) => {
       interestCount: v.interests.length,
       interested: userId ? v.interests.some(id => id.toString() === userId) : false,
       applicationStatus: userId && v.applicantStatus && v.applicantStatus[userId] ? v.applicantStatus[userId] : null,
+      appliedPosition: userId && v.applicantPositions && v.applicantPositions[userId] ? v.applicantPositions[userId] : null,
       interests: undefined,
       applicantStatus: undefined,
       applicantStatusHistory: undefined,
+      applicantPositions: undefined,
     }));
     res.json(result);
   } catch (err) { res.status(500).json({ message: err.message }); }
@@ -45,6 +47,13 @@ exports.showInterest = async (req, res) => {
       if (!vacancy.applicantStatusHistory) vacancy.applicantStatusHistory = new Map();
       vacancy.applicantStatusHistory.set(userId.toString(), [{ status: 'applied', date: new Date() }]);
     }
+
+    const { position } = req.body;
+    if (position) {
+      if (!vacancy.applicantPositions) vacancy.applicantPositions = new Map();
+      vacancy.applicantPositions.set(userId.toString(), position);
+    }
+
     await vacancy.save();
     res.json({ interested: true, interestCount: vacancy.interests.length });
 
@@ -53,6 +62,7 @@ exports.showInterest = async (req, res) => {
         to: req.user.email,
         name: req.user.name,
         vacancy,
+        selectedPosition: position || null,
       }).catch(() => {});
     }
   } catch (err) { res.status(500).json({ message: err.message }); }
@@ -96,7 +106,7 @@ exports.getAllVacanciesAdmin = async (req, res) => {
   try {
     const vacancies = await Vacancy.find()
       .sort({ createdAt: -1 })
-      .populate('interests', 'name email phone regNumber userType avatar cvUrl linkedinUrl githubUrl leetcodeUrl portfolioUrl designations joiningAvailability currentSalary expectedSalary premiumServices freePremiumGrant')
+      .populate('interests', 'name email phone regNumber userType avatar cvUrl premiumServices freePremiumGrant')
       .populate('createdBy', 'name email phone companyName userType')
       .lean();
     res.json(vacancies);
@@ -105,13 +115,14 @@ exports.getAllVacanciesAdmin = async (req, res) => {
 
 exports.createVacancy = async (req, res) => {
   try {
-    const { title, company, description, skills, location, type, industry, jobType, experience, salaryRange, listOnOpportunities } = req.body;
+    const { title, company, description, skills, location, type, industry, jobType, experience, salaryRange, listOnOpportunities, positions } = req.body;
     const vacancy = await Vacancy.create({
       title, company, description,
       skills: parseSkills(skills),
       location, type, industry, jobType, experience, salaryRange,
       listOnOpportunities: listOnOpportunities !== false,
       createdBy: req.user._id,
+      positions: parseSkills(positions),
     });
     res.status(201).json(vacancy);
   } catch (err) { res.status(400).json({ message: err.message }); }
@@ -119,10 +130,10 @@ exports.createVacancy = async (req, res) => {
 
 exports.updateVacancy = async (req, res) => {
   try {
-    const { title, company, description, skills, location, type, industry, jobType, experience, salaryRange, status } = req.body;
+    const { title, company, description, skills, location, type, industry, jobType, experience, salaryRange, status, positions } = req.body;
     const vacancy = await Vacancy.findByIdAndUpdate(
       req.params.id,
-      { title, company, description, skills: parseSkills(skills), location, type, industry, jobType, experience, salaryRange, status },
+      { title, company, description, skills: parseSkills(skills), location, type, industry, jobType, experience, salaryRange, status, positions: parseSkills(positions) },
       { new: true, runValidators: true }
     ).populate('interests', 'name email phone regNumber userType avatar cvUrl');
     if (!vacancy) return res.status(404).json({ message: 'Vacancy not found' });

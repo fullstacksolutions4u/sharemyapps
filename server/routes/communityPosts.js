@@ -82,6 +82,13 @@ router.post('/', protect, async (req, res) => {
       comments: []
     });
 
+    const Activity = require('../models/Activity');
+    await Activity.create({
+      user: req.user._id,
+      type: 'COMMUNITY_POST_CREATED',
+      communityPost: newPost._id
+    });
+
     const populatedPost = await CommunityPost.findById(newPost._id)
       .populate('author', 'name avatar badge premiumServices')
       .lean();
@@ -244,6 +251,10 @@ router.delete('/:id', protect, async (req, res) => {
     }
 
     await post.deleteOne();
+
+    const Activity = require('../models/Activity');
+    await Activity.deleteMany({ communityPost: post._id });
+
     res.json({ success: true, message: 'Post deleted successfully' });
   } catch (err) {
     res.status(500).json({ message: 'Failed to delete community post' });

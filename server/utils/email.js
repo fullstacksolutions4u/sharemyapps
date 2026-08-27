@@ -505,13 +505,14 @@ exports.sendMarketingCampaignEmail = async ({ to, name }) => {
   });
 };
 
-exports.sendJobApplicationEmail = async ({ to, name, vacancy }) => {
+exports.sendJobApplicationEmail = async ({ to, name, vacancy, selectedPosition }) => {
   const vacanciesUrl = `${BASE_URL}/opportunities`;
+  const positionText = selectedPosition ? `${vacancy.title} (${selectedPosition})` : vacancy.title;
 
   await sendEmailWithFallback({
     sender: FROM,
     to: [{ email: to, name }],
-    subject: `Application submitted – ${vacancy.title}`,
+    subject: `Application submitted – ${positionText}`,
     htmlContent: `
       <div style="font-family:Inter,Arial,sans-serif;max-width:560px;margin:0 auto;background:#fff;border-radius:12px;overflow:hidden;border:1px solid #E5E1DA;">
         <div style="background:#00A693;padding:12px 32px;text-align:center;">
@@ -521,7 +522,7 @@ exports.sendJobApplicationEmail = async ({ to, name, vacancy }) => {
           <h2 style="margin:0 0 8px;font-size:18px;color:#1A1A1A;">Application Received!</h2>
           <p style="color:#374151;margin:0 0 16px;">Hi ${name},</p>
           <p style="color:#374151;margin:0 0 16px;">
-            You've successfully applied for the <strong>${vacancy.title}</strong> position. An executive will contact you if your resume is shortlisted.
+            You've successfully applied for the <strong>${positionText}</strong> position. An executive will contact you if your resume is shortlisted.
           </p>
           <p style="color:#6B7280;font-size:13px;margin:0 0 20px;line-height:1.7;">
             Job post links and our client vacancies are actively listed in the Opportunities section. Explore these opportunities and make sure your profile is always up to date with your latest resume and projects to increase your chances of getting noticed.

@@ -25,7 +25,7 @@ const STATUS_SELECT_STYLES = {
   rejected: 'border-red-200 text-red-700 bg-red-50/50 focus:border-red-400 focus:ring-2 focus:ring-red-100',
 };
 
-const EMPTY_FORM = { title: '', company: '', description: '', skills: '', location: '', type: 'remote', industry: '', jobType: '', experience: '', salaryRange: '', status: 'active' };
+const EMPTY_FORM = { title: '', company: '', description: '', skills: '', location: '', type: 'remote', industry: '', jobType: '', experience: '', salaryRange: '', status: 'active', positions: '' };
 const EXPERIENCE_OPTIONS = ['Fresher', '0-1 years', '0-2 years', '1-3 years', '3-5 years', '5-8 years', '8+ years'];
 const inp = 'w-full px-3.5 py-2.5 border border-[#E5E1DA] rounded-xl text-sm text-[#1A1A1A] bg-white placeholder-[#9CA3AF] focus:outline-none focus:border-[#00A693] focus:ring-2 focus:ring-[#00A693]/10 transition';
 
@@ -35,6 +35,10 @@ function VacancyFormFields({ form, onChange }) {
       <div className="sm:col-span-2">
         <label className="block text-xs font-medium text-[#6B7280] mb-1.5">Title *</label>
         <input name="title" value={form.title} onChange={onChange} placeholder="e.g. Full-Stack Developer" className={inp} />
+      </div>
+      <div className="sm:col-span-2">
+        <label className="block text-xs font-medium text-[#6B7280] mb-1.5">Positions / Designations <span className="font-normal text-[#9CA3AF]">(comma-separated, optional)</span></label>
+        <input name="positions" value={form.positions || ''} onChange={onChange} placeholder="e.g. Frontend Engineer, Backend Engineer, UI Designer" className={inp} />
       </div>
       <div>
         <label className="block text-xs font-medium text-[#6B7280] mb-1.5">Company</label>
@@ -247,7 +251,7 @@ const AdminVacanciesSection = forwardRef(function AdminVacanciesSection({ hideTi
 
   const startEdit = (v) => {
     setEditId(v._id);
-    setForm({ title: v.title, company: v.company || '', description: v.description, skills: v.skills?.join(', ') || '', location: v.location || '', type: v.type || 'remote', industry: v.industry || '', jobType: v.jobType || '', experience: v.experience || '', salaryRange: v.salaryRange || '', status: v.status || 'active' });
+    setForm({ title: v.title, company: v.company || '', description: v.description, skills: v.skills?.join(', ') || '', location: v.location || '', type: v.type || 'remote', industry: v.industry || '', jobType: v.jobType || '', experience: v.experience || '', salaryRange: v.salaryRange || '', status: v.status || 'active', positions: v.positions?.join(', ') || '' });
     setShowAdd(false);
   };
 
@@ -477,7 +481,14 @@ const AdminVacanciesSection = forwardRef(function AdminVacanciesSection({ hideTi
                                       </span>
                                     )}
                                   </p>
-                                  <p className="text-xs text-[#6B7280] truncate">{u.email}</p>
+                                  <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+                                    <span className="text-xs text-[#6B7280] truncate">{u.email}</span>
+                                    {v.applicantPositions?.[u._id] && (
+                                      <span className="px-2 py-0.5 bg-blue-50 border border-blue-200 text-blue-700 text-[10px] font-semibold rounded-full uppercase tracking-wider whitespace-nowrap shrink-0">
+                                        {v.applicantPositions[u._id]}
+                                      </span>
+                                    )}
+                                  </div>
                                 </div>
                                 <div className="flex items-center gap-2 shrink-0">
                                   <select
@@ -640,6 +651,12 @@ const AdminVacanciesSection = forwardRef(function AdminVacanciesSection({ hideTi
                 <div><span className="font-semibold text-muted">Salary Range:</span> <p className="font-medium">{viewModal.vacancy.salaryRange || 'Not specified'}</p></div>
                 <div><span className="font-semibold text-muted">Work Mode:</span> <p className="font-medium capitalize">{viewModal.vacancy.type}</p></div>
                 <div><span className="font-semibold text-muted">Status:</span> <p className="font-medium capitalize">{viewModal.vacancy.status}</p></div>
+                {viewModal.vacancy.positions && viewModal.vacancy.positions.length > 0 && (
+                  <div className="col-span-2">
+                    <span className="font-semibold text-muted">Positions:</span>
+                    <p className="font-medium">{viewModal.vacancy.positions.join(', ')}</p>
+                  </div>
+                )}
                 <div>
                   <span className="font-semibold text-muted">Posted By:</span> 
                   <div className="flex items-center gap-2 mt-1">

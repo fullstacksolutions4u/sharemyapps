@@ -17,7 +17,9 @@ const vacancySchema = new mongoose.Schema({
   createdBy:   { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
   interests:   [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
   everApplied: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+  positions:   [{ type: String, trim: true }],
   applicantStatus: { type: Map, of: String, default: {} },
+  applicantPositions: { type: Map, of: String, default: {} },
   applicantStatusHistory: {
     type: Map,
     of: [{

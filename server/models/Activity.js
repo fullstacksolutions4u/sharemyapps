@@ -12,12 +12,14 @@ const activitySchema = new mongoose.Schema({
       'MODULE_STARTED',
       'MODULE_COMPLETED',
       'USER_JOINED',
-      'LEADERBOARD_TOP'
+      'LEADERBOARD_TOP',
+      'COMMUNITY_POST_CREATED'
     ],
     required: true
   },
   project: { type: mongoose.Schema.Types.ObjectId, ref: 'Project' },
   module: { type: mongoose.Schema.Types.ObjectId, ref: 'LearningModule' },
+  communityPost: { type: mongoose.Schema.Types.ObjectId, ref: 'CommunityPost' },
   meta: { type: mongoose.Schema.Types.Mixed, default: {} },
   likes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
   comments: [{

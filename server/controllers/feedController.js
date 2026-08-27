@@ -27,8 +27,41 @@ exports.getFeed = async (req, res) => {
         populate: { path: 'owner', select: 'name profileImage avatar designations linkedinUrl' }
       })
       .populate('module', 'title _id')
+      .populate({
+        path: 'communityPost',
+        populate: { path: 'author', select: 'name avatar badge premiumServices' }
+      })
       .populate('comments.user', 'name profileImage avatar')
       .lean();
+
+    // Sanitize and filter activities
+    activities = activities.map(activity => {
+      if (activity.type === 'COMMUNITY_POST_CREATED') {
+        if (!activity.communityPost) return null; // Post is deleted/missing
+        
+        if (activity.communityPost.anonymous) {
+          // Anonymize activity user (card creator)
+          activity.user = {
+            _id: 'anonymous',
+            name: 'Community Member',
+            avatar: '',
+            profileImage: '',
+            designations: [],
+            userType: 'developer',
+            linkedinUrl: ''
+          };
+          // Anonymize post author
+          activity.communityPost.author = {
+            _id: 'anonymous',
+            name: 'Community Member',
+            avatar: '',
+            badge: '',
+            premiumServices: []
+          };
+        }
+      }
+      return activity;
+    }).filter(Boolean);
 
     // To ensure the feed isn't empty when first launching, if we have 0 activities, 
     // dynamically pull the latest 40 approved projects and format them as activities
