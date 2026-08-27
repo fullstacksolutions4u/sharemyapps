@@ -665,89 +665,87 @@ export default function Vacancies() {
       {!TAB_CONFIG[activeTab].loading && (TAB_CONFIG[activeTab].data.length > 0 || activeTab === 'job-links') && (
         <div className="border-b border-border/40">
           <div className="max-w-[1550px] mx-auto px-2 sm:px-3 py-3">
-            <div className="flex flex-wrap gap-3 items-center justify-between">
-              <div className="flex flex-wrap gap-3 items-center justify-center sm:justify-start flex-1 min-w-0">
-              
-              <FilterDropdown
-                icon={Briefcase}
-                placeholder="Designation"
-                value={filterDesignation}
-                onChange={(val) => { setFilterDesignation(val); setCurrentPage(1); }}
-                options={Array.from(new Set(
-                  TAB_CONFIG[activeTab].data.map(d => normalizeJobDesignation(d.title)).filter(Boolean)
-                )).sort()}
-              />
+            <div className="flex items-center gap-3 justify-between flex-nowrap overflow-x-auto">
 
-              <div className="relative">
+              {/* LEFT: Filters */}
+              <div className="flex items-center gap-3 flex-nowrap shrink-0 relative">
                 <FilterDropdown
-                  icon={MapPin}
-                  placeholder="All States"
-                  value={filterLocation}
-                  onChange={(val) => { setFilterLocation(val); setCurrentPage(1); }}
-                  options={INDIA_STATES}
+                  icon={Briefcase}
+                  placeholder="Designation"
+                  value={filterDesignation}
+                  onChange={(val) => { setFilterDesignation(val); setCurrentPage(1); }}
+                  options={Array.from(new Set(
+                    TAB_CONFIG[activeTab].data.map(d => normalizeJobDesignation(d.title)).filter(Boolean)
+                  )).sort()}
                 />
-                {(filterDesignation || filterLocation || filterExperience) && (
-                  <button
-                    onClick={() => { setFilterDesignation(''); setFilterLocation(''); setFilterExperience(''); setCurrentPage(1); }}
-                    className="absolute top-full left-1/2 -translate-x-1/2 mt-1.5 flex items-center gap-1 text-[11px] font-bold text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100/80 border border-red-100 hover:border-red-200 px-2 py-1 rounded-lg transition-all cursor-pointer whitespace-nowrap z-30"
-                  >
-                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M18 6L6 18M6 6l12 12"/></svg>
-                    Clear all
-                  </button>
+
+                <div className="relative">
+                  <FilterDropdown
+                    icon={MapPin}
+                    placeholder="All States"
+                    value={filterLocation}
+                    onChange={(val) => { setFilterLocation(val); setCurrentPage(1); }}
+                    options={INDIA_STATES}
+                  />
+                  {(filterDesignation || filterLocation || filterExperience) && (
+                    <button
+                      onClick={() => { setFilterDesignation(''); setFilterLocation(''); setFilterExperience(''); setCurrentPage(1); }}
+                      className="absolute top-full left-1/2 -translate-x-1/2 mt-1.5 flex items-center gap-1 text-[11px] font-bold text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100/80 border border-red-100 hover:border-red-200 px-2 py-1 rounded-lg transition-all cursor-pointer whitespace-nowrap z-30"
+                    >
+                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                      Clear all
+                    </button>
+                  )}
+                </div>
+
+                <FilterDropdown
+                  icon={Clock}
+                  placeholder="Experience"
+                  value={filterExperience}
+                  onChange={(val) => { setFilterExperience(val); setCurrentPage(1); }}
+                  options={EXPERIENCE_OPTIONS}
+                />
+              </div>
+
+              {/* RIGHT: Report URL field + count */}
+              <div className="flex items-center gap-3 flex-nowrap shrink-0">
+                {activeTab === 'job-links' && user && (
+                  <div className="flex items-center gap-1.5">
+                    <input
+                      type="url"
+                      placeholder="Paste job post URL to share with community"
+                      value={reportUrl}
+                      onChange={e => setReportUrl(e.target.value)}
+                      required
+                      onKeyDown={e => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          handleReportLinkSubmit(e);
+                        }
+                      }}
+                      className="h-[34px] text-[11px] sm:text-[12px] border border-border px-2.5 rounded-lg outline-hidden bg-white focus:border-[#5a788b] focus:ring-1 focus:ring-[#5a788b]/20 w-44 sm:w-64 transition-all font-medium placeholder-gray-400"
+                    />
+                    <button
+                      type="button"
+                      onClick={handleReportLinkSubmit}
+                      disabled={submittingLink}
+                      className="h-[34px] w-[80px] flex items-center justify-center gap-1 text-[11px] sm:text-[12px] text-white bg-[#5a788b] hover:bg-[#4a6373] rounded-lg font-bold transition-all cursor-pointer whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed border border-transparent shadow-xs shrink-0"
+                    >
+                      {submittingLink ? 'Adding…' : 'Add'}
+                    </button>
+                  </div>
+                )}
+
+                {activeTab === 'job-links' && !TAB_CONFIG[activeTab].loading && (
+                  <p className="text-[13px] text-gray-500 shrink-0 whitespace-nowrap">
+                    <span className="font-semibold text-gray-800">{jobLinksRangeStart}–{jobLinksRangeEnd}</span> of{' '}
+                    <span className="font-semibold text-gray-800">{jobLinksTotal}</span> active job posts
+                  </p>
                 )}
               </div>
 
-              </div>
-
-              <FilterDropdown
-                icon={Clock}
-                placeholder="Experience"
-                value={filterExperience}
-                onChange={(val) => { setFilterExperience(val); setCurrentPage(1); }}
-                options={EXPERIENCE_OPTIONS}
-              />
-
-              </div>
-
-              {/* RIGHT SIDE: Report link field + count */}
-              <div className="flex items-center gap-3 shrink-0 flex-wrap">
-
-              {activeTab === 'job-links' && user && (
-                <div className="flex items-center gap-1.5">
-                  <input
-                    type="url"
-                    placeholder="Paste job post URL to share with community"
-                    value={reportUrl}
-                    onChange={e => setReportUrl(e.target.value)}
-                    required
-                    onKeyDown={e => {
-                      if (e.key === 'Enter') {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        handleReportLinkSubmit(e);
-                      }
-                    }}
-                    className="h-[34px] text-[11px] sm:text-[12px] border border-border px-2.5 rounded-lg outline-hidden bg-white focus:border-[#5a788b] focus:ring-1 focus:ring-[#5a788b]/20 w-44 sm:w-64 transition-all font-medium placeholder-gray-400"
-                  />
-                  <button
-                    type="button"
-                    onClick={handleReportLinkSubmit}
-                    disabled={submittingLink}
-                    className="h-[34px] w-[80px] flex items-center justify-center gap-1 text-[11px] sm:text-[12px] text-white bg-[#5a788b] hover:bg-[#4a6373] rounded-lg font-bold transition-all cursor-pointer whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed border border-transparent shadow-xs shrink-0"
-                  >
-                    {submittingLink ? 'Adding…' : 'Add'}
-                  </button>
-                </div>
-              )}
-
-              {activeTab === 'job-links' && !TAB_CONFIG[activeTab].loading && (
-                <p className="text-[13px] text-gray-500 shrink-0 whitespace-nowrap">
-                  <span className="font-semibold text-gray-800">{jobLinksRangeStart}–{jobLinksRangeEnd}</span> of{' '}
-                  <span className="font-semibold text-gray-800">{jobLinksTotal}</span> active job posts
-                </p>
-              )}
-
-              </div>
+            </div>
           </div>
         </div>
       )}
