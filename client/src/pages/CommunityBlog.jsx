@@ -20,6 +20,9 @@ export default function CommunityBlog() {
   // Detailed post modal state
   const [expandedCardId, setExpandedCardId] = useState(null);
 
+  // Expanded status ID for comments section
+  const [expandedStatusId, setExpandedStatusId] = useState(null);
+
   // New Post Form State (Detailed experience modal)
   const [newContent, setNewContent] = useState('');
   const [newCategory, setNewCategory] = useState('general');
@@ -524,6 +527,113 @@ export default function CommunityBlog() {
                     <p className="text-[11px] text-blue-900/80 font-medium mt-0.5 leading-relaxed">
                       {card.content}
                     </p>
+
+                    {/* Tiny Like & Comment buttons */}
+                    <div className="flex items-center gap-4 mt-1.5 text-[9.5px] text-blue-500/80 font-bold select-none">
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (!user) {
+                            toast.error('Please login to like posts');
+                            return;
+                          }
+                          toggleLikeMutation.mutate(card.id);
+                        }}
+                        className="flex items-center gap-1 hover:opacity-80 transition-opacity cursor-pointer text-rose-500"
+                      >
+                        <Heart size={10} className={`${user && card.rawPost?.likes?.includes(user._id) ? 'fill-rose-500' : ''}`} />
+                        <span>{card.likes || 0}</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setExpandedStatusId(expandedStatusId === card.id ? null : card.id);
+                        }}
+                        className="flex items-center gap-1 hover:opacity-80 transition-opacity cursor-pointer text-blue-500/80"
+                      >
+                        <MessageSquare size={10} />
+                        <span>{card.commentsCount || 0}</span>
+                      </button>
+                    </div>
+
+                    {/* Expandable comments under status */}
+                    {expandedStatusId === card.id && (
+                      <div className="mt-2 pt-2 border-t border-blue-100/30 space-y-2 animate-in fade-in duration-200">
+                        {/* Comments list */}
+                        <div className="space-y-1.5 max-h-32 overflow-y-auto pr-1">
+                          {card.rawPost?.comments?.length > 0 ? (
+                            card.rawPost.comments.map(comment => {
+                              const isCommentAuthor = user && comment.author?._id?.toString() === user._id.toString();
+                              const isPostAuthor = user && card.rawPost?.author?._id?.toString() === user._id.toString();
+                              const isAdmin = user && user.role === 'admin';
+                              const showCommentDelete = isCommentAuthor || isPostAuthor || isAdmin;
+
+                              return (
+                                <div key={comment._id} className="flex items-start justify-between gap-1.5 bg-blue-50/40 p-1.5 rounded-lg border border-blue-100/10">
+                                  <div className="flex gap-1.5 min-w-0">
+                                    <div className="w-4 h-4 rounded bg-blue-200/40 flex items-center justify-center font-bold text-[8px] text-blue-700 shrink-0">
+                                      {comment.author?.name?.charAt(0).toUpperCase()}
+                                    </div>
+                                    <div className="min-w-0">
+                                      <h6 className="text-[8.5px] font-bold leading-none text-blue-950">{comment.author?.name}</h6>
+                                      <p className="text-[9.5px] mt-0.5 leading-relaxed text-blue-900">{comment.content}</p>
+                                    </div>
+                                  </div>
+                                  {showCommentDelete && (
+                                    <button
+                                      type="button"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        if (window.confirm('Delete this comment?')) {
+                                          deleteCommentMutation.mutate({ postId: card.id, commentId: comment._id });
+                                        }
+                                      }}
+                                      className="text-red-500 opacity-60 hover:opacity-100 p-0.5 cursor-pointer shrink-0"
+                                    >
+                                      <Trash2 size={8} />
+                                    </button>
+                                  )}
+                                </div>
+                              );
+                            })
+                          ) : (
+                            <p className="text-[9px] opacity-60 italic text-center py-1">No comments yet.</p>
+                          )}
+                        </div>
+
+                        {/* Comment input form */}
+                        {user ? (
+                          <form
+                            onSubmit={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              handleAddComment(e, card.id);
+                            }}
+                            onClick={(e) => e.stopPropagation()}
+                            className="flex gap-1.5"
+                          >
+                            <input
+                              type="text"
+                              placeholder="Write a comment..."
+                              value={commentInputs[card.id] || ''}
+                              onChange={(e) => setCommentInputs(prev => ({ ...prev, [card.id]: e.target.value }))}
+                              className="flex-1 bg-white/60 border border-blue-100/40 rounded-lg px-2.5 py-1 text-[9.5px] outline-hidden focus:border-blue-300 placeholder-blue-300 text-blue-950 font-medium"
+                            />
+                            <button
+                              type="submit"
+                              disabled={addCommentMutation.isPending}
+                              className="bg-blue-600 text-white px-2 py-1 rounded-lg text-[9px] font-bold hover:bg-blue-700 disabled:opacity-50 cursor-pointer"
+                            >
+                              <Send size={8} />
+                            </button>
+                          </form>
+                        ) : (
+                          <p className="text-[9px] opacity-65 italic text-center">Login to comment</p>
+                        )}
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
