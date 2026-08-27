@@ -697,6 +697,8 @@ export default function Vacancies() {
                 )}
               </div>
 
+              </div>
+
               <FilterDropdown
                 icon={Clock}
                 placeholder="Experience"
@@ -705,44 +707,38 @@ export default function Vacancies() {
                 options={EXPERIENCE_OPTIONS}
               />
 
-              {activeTab === 'job-links' && (
-                <div className="flex items-center gap-2.5 flex-wrap shrink-0">
-                  {!isPremium && (
-                    <p className="text-[11px] sm:text-[12px] text-amber-700 bg-amber-50 border border-amber-100 rounded-lg px-2.5 py-1.5 leading-snug whitespace-nowrap">
-                      {JOB_LINK_APPLY_INSTRUCTION}
-                    </p>
-                  )}
-                  {user && (
-                    <div className="flex items-center gap-1.5">
-                      <input
-                        type="url"
-                        placeholder="report job posts link with community"
-                        value={reportUrl}
-                        onChange={e => setReportUrl(e.target.value)}
-                        required
-                        onKeyDown={e => {
-                          if (e.key === 'Enter') {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            handleReportLinkSubmit(e);
-                          }
-                        }}
-                        className="h-[34px] text-[11px] sm:text-[12px] border border-border px-2.5 rounded-lg outline-hidden bg-white focus:border-[#5a788b] focus:ring-1 focus:ring-[#5a788b]/20 w-44 sm:w-60 transition-all font-medium placeholder-gray-400"
-                      />
-                      <button
-                        type="button"
-                        onClick={handleReportLinkSubmit}
-                        disabled={submittingLink}
-                        className="h-[34px] w-[80px] flex items-center justify-center gap-1 text-[11px] sm:text-[12px] text-white bg-[#5a788b] hover:bg-[#4a6373] rounded-lg font-bold transition-all cursor-pointer whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed border border-transparent shadow-xs shrink-0"
-                      >
-                        {submittingLink ? 'Adding…' : 'Add'}
-                      </button>
-                    </div>
-                  )}
+              </div>
+
+              {/* RIGHT SIDE: Report link field + count */}
+              <div className="flex items-center gap-3 shrink-0 flex-wrap">
+
+              {activeTab === 'job-links' && user && (
+                <div className="flex items-center gap-1.5">
+                  <input
+                    type="url"
+                    placeholder="Paste job post URL to share with community"
+                    value={reportUrl}
+                    onChange={e => setReportUrl(e.target.value)}
+                    required
+                    onKeyDown={e => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        handleReportLinkSubmit(e);
+                      }
+                    }}
+                    className="h-[34px] text-[11px] sm:text-[12px] border border-border px-2.5 rounded-lg outline-hidden bg-white focus:border-[#5a788b] focus:ring-1 focus:ring-[#5a788b]/20 w-44 sm:w-64 transition-all font-medium placeholder-gray-400"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleReportLinkSubmit}
+                    disabled={submittingLink}
+                    className="h-[34px] w-[80px] flex items-center justify-center gap-1 text-[11px] sm:text-[12px] text-white bg-[#5a788b] hover:bg-[#4a6373] rounded-lg font-bold transition-all cursor-pointer whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed border border-transparent shadow-xs shrink-0"
+                  >
+                    {submittingLink ? 'Adding…' : 'Add'}
+                  </button>
                 </div>
               )}
-
-              </div>
 
               {activeTab === 'job-links' && !TAB_CONFIG[activeTab].loading && (
                 <p className="text-[13px] text-gray-500 shrink-0 whitespace-nowrap">
@@ -750,7 +746,8 @@ export default function Vacancies() {
                   <span className="font-semibold text-gray-800">{jobLinksTotal}</span> active job posts
                 </p>
               )}
-            </div>
+
+              </div>
           </div>
         </div>
       )}
