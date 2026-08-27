@@ -9,7 +9,7 @@ import toast from 'react-hot-toast';
 import { normalizeJobDesignation } from '../utils/jobDesignation';
 
 const JOB_LINK_APPLY_INSTRUCTION =
-  'Get 4 free applies weekly. Upgrade for unlimited lifetime applies ₹499/-';
+  'Get 5 free applies weekly. Upgrade for unlimited lifetime applies ₹499/-';
 
 const getStatusConfig = (status) => {
   const s = (status || '').toLowerCase();
