@@ -671,7 +671,7 @@ function ActivityCard({ activity, index = 0 }) {
           {isAnonymous ? (
             <>Community member update the status on <Link to="/community-blog" className="text-[#00A693] hover:underline font-bold transition">community blog page</Link>.</>
           ) : (
-            <><span className="font-bold">{user.name}</span> added a new posts at <Link to="/community-blog" className="text-[#00A693] hover:underline font-bold transition">community blog page</Link>. read and share your opiinnon ....</>
+            <><span className="font-bold">{user.name}</span> added a new posts at <Link to="/community-blog" className="text-[#00A693] hover:underline font-bold transition">community blog page</Link>. read and share your opinion ....</>
           )}
         </p>
       </div>
