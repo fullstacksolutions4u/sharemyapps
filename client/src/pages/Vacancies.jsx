@@ -1,4 +1,5 @@
-import { useState, useEffect, useRef, useMemo } from 'react';
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { MapPin, Briefcase, CheckCircle, XCircle, ArrowRight, Laptop, Crown, Banknote, IndianRupee, ExternalLink, Building, Clock, Calendar } from 'lucide-react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -74,20 +75,52 @@ const parsePostedDate = (dateStr, createdAt) => {
 
 function FilterDropdown({ icon: Icon, placeholder, value, onChange, options }) {
   const [open, setOpen] = useState(false);
-  const ref = useRef(null);
+  const [menuStyle, setMenuStyle] = useState({});
+  const btnRef = useRef(null);
+  const menuRef = useRef(null);
 
+  // Close when clicking outside
   useEffect(() => {
-    const handler = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
+    const handler = (e) => {
+      if (
+        btnRef.current && !btnRef.current.contains(e.target) &&
+        menuRef.current && !menuRef.current.contains(e.target)
+      ) setOpen(false);
+    };
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
   }, []);
+
+  // Reposition menu on open / scroll / resize
+  const updatePosition = useCallback(() => {
+    if (!btnRef.current) return;
+    const rect = btnRef.current.getBoundingClientRect();
+    setMenuStyle({
+      position: 'fixed',
+      top: rect.bottom + 8,
+      left: rect.left,
+      zIndex: 9999,
+    });
+  }, []);
+
+  useEffect(() => {
+    if (!open) return;
+    updatePosition();
+    window.addEventListener('scroll', updatePosition, true);
+    window.addEventListener('resize', updatePosition);
+    return () => {
+      window.removeEventListener('scroll', updatePosition, true);
+      window.removeEventListener('resize', updatePosition);
+    };
+  }, [open, updatePosition]);
 
   const active = !!value;
   const label = value || placeholder;
 
   return (
-    <div ref={ref} className="relative">
+    <div className="relative">
       <button
+        ref={btnRef}
         onClick={() => setOpen(o => !o)}
         className={`flex items-center gap-2 pl-3.5 pr-3 py-2 rounded-xl border text-[13px] font-medium transition-all duration-200 select-none ${
           active && (value === 'Out of India' || value === 'Remote Jobs')
@@ -112,8 +145,12 @@ function FilterDropdown({ icon: Icon, placeholder, value, onChange, options }) {
         }`} />}
       </button>
 
-      {open && (
-        <div className="absolute top-full mt-2 left-0 z-50 bg-white border border-border rounded-2xl shadow-xl overflow-hidden min-w-[200px] max-h-72 flex flex-col">
+      {open && createPortal(
+        <div
+          ref={menuRef}
+          style={menuStyle}
+          className="bg-white border border-border rounded-2xl shadow-xl overflow-hidden min-w-[200px] max-h-72 flex flex-col"
+        >
           <div className="overflow-y-auto custom-scrollbar">
             <button
               onClick={() => { onChange(''); setOpen(false); }}
@@ -150,7 +187,8 @@ function FilterDropdown({ icon: Icon, placeholder, value, onChange, options }) {
               );
             })}
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );
@@ -250,7 +288,14 @@ function filterOpportunityItems(data, activeTab, filterDesignation, filterLocati
 
     if (filterLocation) {
       const loc = (d.location || '').toLowerCase();
+      const stateField = (d.state || '').toLowerCase();
       if (filterLocation === 'Out of India') {
+        // Prefer the explicit state field stored by the server
+        if (stateField) {
+          if (stateField === 'out of india') return true; // is Out of India
+          // has an Indian state → not Out of India
+          return false;
+        }
         const states = INDIA_STATES.filter((s) => s !== 'Out of India' && s !== 'Remote Jobs').map((s) => s.toLowerCase());
         const cities = ['kochi', 'mohali', 'bengaluru', 'bangalore', 'chennai', 'gurugram', 'gurgaon', 'indore', 'coimbatore', 'pune', 'trivandrum', 'thiruvananthapuram', 'mumbai', 'ahmedabad', 'noida', 'delhi', 'new delhi', 'hyderabad', 'kolkata', 'chandigarh', 'kozhikode', 'calicut', 'madurai', 'mysore', 'bhubaneswar', 'nagpur', 'lucknow', 'jaipur', 'surat', 'kanpur', 'patna', 'bhopal', 'vadodara', 'ludhiana', 'agra', 'nashik', 'faridabad', 'meerut', 'rajkot', 'varanasi', 'srinagar', 'aurangabad', 'dhanbad', 'amritsar', 'allahabad', 'ranchi', 'howrah', 'jabalpur', 'gwalior', 'vijayawada', 'jodhpur', 'raipur', 'kota', 'guwahati', 'solapur', 'hubli', 'dharwad', 'bareilly', 'moradabad', 'mysuru', 'tiruchirappalli', 'jalandhar', 'salem', 'warangal', 'guntur', 'bhiwandi', 'saharanpur', 'gorakhpur', 'bikaner', 'amravati', 'jamshedpur', 'bhilai', 'cuttack', 'firozabad', 'bhavnagar', 'dehradun', 'durgapur', 'asansol', 'rourkela', 'nanded', 'kolhapur', 'ajmer', 'gulbarga', 'jamnagar', 'ujjain', 'loni', 'siliguri', 'jhansi', 'ulhasnagar', 'jammu', 'sangli', 'mangalore', 'erode', 'belgaum', 'kurnool', 'tirunelveli', 'malegaon', 'gaya', 'udaipur', 'kakinada', 'davangere', 'akola', 'tumkur', 'bhagalpur', 'bellary', 'latur', 'dhule', 'rohtak', 'korba', 'bhilwara', 'brahmapur', 'muzaffarpur', 'ahmednagar', 'mathura', 'kollam', 'kadapa', 'bilaspur', 'shahjahanpur', 'satara', 'bijapur', 'rampur', 'shivamogga', 'chandrapur', 'junagadh', 'thrissur', 'alwar', 'bardhaman', 'nizamabad', 'parbhani', 'tumakuru', 'khammam', 'panipat', 'darbhanga', 'aizawl', 'dewas', 'ichalkaranji', 'karnal', 'bathinda', 'jalna', 'eluru', 'barasat', 'purnia', 'satna', 'mau', 'sonipat', 'farrukhabad', 'sagar', 'durg', 'imphal', 'ratlam', 'hapur', 'anantapur', 'arrah', 'karimnagar', 'etawah', 'bharatpur', 'begusarai', 'gandhidham', 'puducherry', 'sikar', 'thoothukudi', 'rewa', 'mirzapur', 'raichur', 'pali', 'ramagundam', 'silchar', 'haridwar', 'vijayanagaram', 'tenali', 'nagercoil', 'sri ganganagar', 'thanjavur', 'bulandshahr', 'katni', 'sambhal', 'singrauli', 'nadiad', 'secunderabad', 'yamunanagar', 'bidar', 'munger', 'panchkula', 'burhanpur', 'kharagpur', 'dindigul', 'gandhinagar', 'hosapete', 'malda', 'ongole', 'deoghar', 'chapra', 'haldia', 'khandwa', 'nandyal', 'morena', 'amroha', 'anand', 'bhind', 'bhiwani', 'berhampore', 'ambala', 'morbi', 'fatehpur', 'raebareli', 'chittoor', 'bhusawal', 'orai', 'bahraich', 'phagwara', 'machilipatnam', 'midnapore', 'bhadrak', 'navsari', 'guntakal', 'hindupur', 'krishnanagar', 'dibrugarh', 'hazaribagh', 'palakkad', 'kannur', 'alappuzha', 'kottayam', 'kasaragod', 'pathanamthitta', 'malappuram', 'wayanad', 'idukki', 'ernakulam'];
         const isInIndia = loc.includes('india') || states.some((state) => loc.includes(state)) || cities.some((city) => loc.includes(city));
@@ -259,8 +304,11 @@ function filterOpportunityItems(data, activeTab, filterDesignation, filterLocati
       } else if (filterLocation === 'Remote Jobs') {
         const isRemote = (d.workMode && d.workMode.toLowerCase() === 'remote') || loc.includes('remote');
         if (!isRemote) return false;
-      } else if (!d.location || !loc.includes(filterLocation.toLowerCase())) {
-        return false;
+      } else {
+        // State filter: check the explicit state field first (exact match), then fall back to substring in location
+        const stateMatch = stateField && stateField === filterLocation.toLowerCase();
+        const locMatch = loc && loc.includes(filterLocation.toLowerCase());
+        if (!stateMatch && !locMatch) return false;
       }
     }
 
@@ -665,7 +713,8 @@ export default function Vacancies() {
       {!TAB_CONFIG[activeTab].loading && (TAB_CONFIG[activeTab].data.length > 0 || activeTab === 'job-links') && (
         <div className="border-b border-border/40">
           <div className="max-w-[1550px] mx-auto px-2 sm:px-3 py-3">
-            <div className="flex items-center gap-3 justify-between flex-nowrap overflow-x-auto">
+            <div className="overflow-x-auto">
+            <div className="flex items-center gap-3 justify-between flex-nowrap min-w-max">
 
               {/* LEFT: Filters */}
               <div className="flex items-center gap-3 flex-nowrap shrink-0 relative">
@@ -745,6 +794,7 @@ export default function Vacancies() {
                 )}
               </div>
 
+            </div>
             </div>
           </div>
         </div>
