@@ -291,6 +291,63 @@ function buildCommunityCards(posts) {
     }));
 }
 
+const MOCK_STATUS_POSTS = [
+  {
+    _id: 'mock-1',
+    author: { name: 'Aarav Mehta', avatar: null },
+    content: 'Just finished the technical interview at Microsoft. Focus heavily on DSA and system design.',
+    category: 'interview',
+    likes: ['user-1'],
+    comments: [],
+    createdAt: new Date().toISOString()
+  },
+  {
+    _id: 'mock-2',
+    author: { name: 'Priya Sharma', avatar: null },
+    content: 'Joined a startup as Lead React Developer! ShareMyApps helped me connect with founders.',
+    category: 'general',
+    likes: ['user-2'],
+    comments: [],
+    createdAt: new Date().toISOString()
+  },
+  {
+    _id: 'mock-3',
+    author: { name: 'Karan Singh', avatar: null },
+    content: 'Active job hunter in Pune, 4+ years of fullstack experience. Let me know if any teams are hiring!',
+    category: 'job-hunt',
+    likes: [],
+    comments: [],
+    createdAt: new Date().toISOString()
+  },
+  {
+    _id: 'mock-4',
+    author: { name: 'Neha Gupta', avatar: null },
+    content: 'Struggling with Amazon online assessment? Practicing medium Leetcode recursion questions helps.',
+    category: 'interview',
+    likes: ['user-3', 'user-4'],
+    comments: [],
+    createdAt: new Date().toISOString()
+  },
+  {
+    _id: 'mock-5',
+    author: { name: 'Vikram Malhotra', avatar: null },
+    content: 'Figma to React conversion is so smooth with Tailwind CSS. Spent the day rebuilding dashboards.',
+    category: 'general',
+    likes: [],
+    comments: [],
+    createdAt: new Date().toISOString()
+  },
+  {
+    _id: 'mock-6',
+    author: { name: 'Simran Kaur', avatar: null },
+    content: 'Got a referral for a Senior Frontend Developer role at Flipkart. Fingers crossed!',
+    category: 'job-hunt',
+    likes: ['user-5'],
+    comments: [],
+    createdAt: new Date().toISOString()
+  }
+];
+
 function CommunityBlogPreview() {
   const { user } = useAuth();
   const [posts, setPosts] = useState([]);
@@ -377,9 +434,10 @@ function CommunityBlogPreview() {
     } catch { toast.error('Failed to delete'); }
   };
 
-  const allCards = buildCommunityCards(posts);
-  const experiencePosts = allCards.filter(c => c.rawPost.category === 'interview');
-  const statusPosts = allCards.filter(c => c.rawPost.category === 'general');
+  const allPosts = posts.length > 0 ? posts : MOCK_STATUS_POSTS;
+  const allCards = buildCommunityCards(allPosts);
+  const experiencePosts = allCards.filter(c => c.rawPost.category === 'interview' || c.rawPost.category === 'job-hunt');
+  const statusPosts = allCards;
 
   const isLeftExpanded = experiencePosts.slice(0, 3).some(c => c.id === expandedCardId);
   const isRightExpanded = experiencePosts.slice(3, 6).some(c => c.id === expandedCardId);
