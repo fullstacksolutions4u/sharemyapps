@@ -271,6 +271,29 @@ const STATUS_COLORS = [
 
 const ROTATE_CLASSES = ['-rotate-3', 'rotate-6 translate-x-4', '-rotate-2 -translate-x-2', 'rotate-3', '-rotate-6 -translate-x-4', 'rotate-2 translate-x-2'];
 
+const linkify = (text, customClass = "") => {
+  if (!text) return "";
+  const urlRegex = /(https?:\/\/[^\s]+)/g;
+  const parts = text.split(urlRegex);
+  return parts.map((part, i) => {
+    if (part.match(urlRegex)) {
+      return (
+        <a
+          key={i}
+          href={part}
+          target="_blank"
+          rel="noopener noreferrer"
+          className={`underline hover:opacity-80 transition-opacity cursor-pointer ${customClass}`}
+          onClick={e => e.stopPropagation()}
+        >
+          {part}
+        </a>
+      );
+    }
+    return part;
+  });
+};
+
 function buildCommunityCards(posts) {
   return [...posts]
     .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
@@ -489,7 +512,7 @@ function CommunityBlogPreview() {
           )}
         </div>
 
-        <p className={`text-[11px] leading-relaxed font-medium opacity-90 whitespace-pre-wrap flex-1 mt-2 mb-2 ${isExpanded ? '' : 'line-clamp-3'}`}>{card.content}</p>
+        <p className={`text-[11px] leading-relaxed font-medium opacity-90 whitespace-pre-wrap flex-1 mt-2 mb-2 ${isExpanded ? '' : 'line-clamp-3'}`}>{linkify(card.content)}</p>
 
         <div className={`flex items-center justify-between mt-3 pt-2.5 border-t border-black/5 text-[9.5px] ${card.color.secondary} font-bold`}>
           <div className="flex items-center gap-3">
@@ -635,7 +658,7 @@ function CommunityBlogPreview() {
                             </span>
                           )}
                         </div>
-                        <p className={`text-[11px] font-medium leading-relaxed ${sc.content}`}>{card.content}</p>
+                        <p className={`text-[11px] font-medium leading-relaxed ${sc.content}`}>{linkify(card.content)}</p>
                         <div className="flex items-center gap-3 mt-1.5">
                           <button type="button" onClick={() => handleLike(card.id)} className="flex items-center gap-1 text-rose-500 hover:opacity-70 transition-opacity cursor-pointer">
                             <Heart size={9} className={user && card.rawPost?.likes?.includes(user._id) ? 'fill-rose-500' : ''} />
