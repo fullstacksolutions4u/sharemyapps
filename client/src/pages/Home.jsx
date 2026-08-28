@@ -475,7 +475,7 @@ function CommunityBlogPreview() {
     }
   };
 
-  const allPosts = posts.length > 0 ? posts : MOCK_STATUS_POSTS;
+  const allPosts = (loading || posts.length > 0) ? posts : MOCK_STATUS_POSTS;
   const allCards = buildCommunityCards(allPosts);
   const experiencePosts = allCards.filter(c => c.rawPost.category === 'interview' || c.rawPost.category === 'job-hunt');
   const statusPosts = allCards.filter(c => c.rawPost.category === 'general');
