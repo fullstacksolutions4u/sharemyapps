@@ -188,8 +188,18 @@ exports.getAllUsers = async (req, res) => {
       query._id = { $in: Array.from(contactedUserIds) };
     }
 
+    const limit = req.query.limit === 'all' ? 0 : (parseInt(req.query.limit) || 300);
+    let userQuery = User.find(query)
+      .select('_id name email avatar role userType onboardingComplete phone linkedinUrl githubUrl leetcodeUrl portfolioUrl cvUrl cvWasPlaceholder badge regNumber hidden isBlocked isDeleted createdAt points adminNote designations resumeData.summary')
+      .sort({ createdAt: -1 })
+      .lean();
+
+    if (limit > 0) {
+      userQuery = userQuery.limit(limit);
+    }
+
     const [users, stats] = await Promise.all([
-      User.find(query).select('-password').sort({ createdAt: -1 }),
+      userQuery,
       Project.aggregate([
         { $match: { status: 'approved' } },
         {
@@ -235,7 +245,7 @@ exports.getAllUsers = async (req, res) => {
       const avgRating    = s.avgRating    || 0;
       const ratingCount  = s.ratingCount  || 0;
       return {
-        ...u.toObject(),
+        ...u,
         projectCount,
         totalLikes,
         avgRating,
