@@ -188,7 +188,7 @@ exports.getAllUsers = async (req, res) => {
       query._id = { $in: Array.from(contactedUserIds) };
     }
 
-    const limit = req.query.limit === 'all' ? 0 : (parseInt(req.query.limit) || 300);
+    const limit = req.query.limit ? parseInt(req.query.limit) : 0;
     let userQuery = User.find(query)
       .select('_id name email avatar role userType onboardingComplete phone linkedinUrl githubUrl leetcodeUrl portfolioUrl cvUrl cvWasPlaceholder badge regNumber hidden isBlocked isDeleted createdAt points adminNote designations resumeData.summary')
       .sort({ createdAt: -1 })
