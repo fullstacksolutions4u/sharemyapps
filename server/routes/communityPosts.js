@@ -45,7 +45,7 @@ router.get('/', optionalAuth, async (req, res) => {
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit)
-      .populate('author', 'name avatar badge premiumServices')
+      .populate('author', 'name avatar badge premiumServices linkedinUrl')
       .populate('comments.author', 'name avatar badge premiumServices')
       .lean();
 
@@ -90,7 +90,7 @@ router.post('/', protect, async (req, res) => {
     });
 
     const populatedPost = await CommunityPost.findById(newPost._id)
-      .populate('author', 'name avatar badge premiumServices')
+      .populate('author', 'name avatar badge premiumServices linkedinUrl')
       .lean();
 
     res.status(201).json(sanitizePost(populatedPost, req.user));
@@ -146,7 +146,7 @@ router.post('/:id/comments', protect, async (req, res) => {
     await post.save();
 
     const updatedPost = await CommunityPost.findById(post._id)
-      .populate('author', 'name avatar badge premiumServices')
+      .populate('author', 'name avatar badge premiumServices linkedinUrl')
       .populate('comments.author', 'name avatar badge premiumServices')
       .lean();
 
@@ -225,7 +225,7 @@ router.put('/:id', protect, async (req, res) => {
     await post.save();
 
     const populatedPost = await CommunityPost.findById(post._id)
-      .populate('author', 'name avatar badge premiumServices')
+      .populate('author', 'name avatar badge premiumServices linkedinUrl')
       .lean();
 
     res.json(sanitizePost(populatedPost, req.user));

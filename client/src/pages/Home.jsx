@@ -1,6 +1,6 @@
 import { useEffect, useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, LayoutGrid, Users, MessageCircle, Brain, ShoppingBag, Briefcase, Heart, MessageSquare, Send, Plus, X, Trash2 } from 'lucide-react';
+import { ArrowRight, LayoutGrid, Users, MessageCircle, Brain, ShoppingBag, Briefcase, Heart, MessageSquare, Send, Plus, X, Trash2, ChevronUp } from 'lucide-react';
 import _Lottie from 'lottie-react';
 const Lottie = _Lottie.default ?? _Lottie;
 import spinnerData from '../assets/spinner.json';
@@ -311,6 +311,9 @@ function buildCommunityCards(posts) {
       createdAt: p.createdAt,
       rawPost: p,
       isMyPost: p.isMyPost,
+      isAnonymous: !!p.anonymous,
+      authorId: p.author?._id,
+      linkedinUrl: p.author?.linkedinUrl,
     }));
 }
 
@@ -457,6 +460,21 @@ function CommunityBlogPreview() {
     } catch { toast.error('Failed to delete'); }
   };
 
+  const handleEditPost = async (postId, newText, category, anonymous) => {
+    if (!newText || !newText.trim()) return;
+    try {
+      await api.put(`/community-posts/${postId}`, {
+        content: newText.trim(),
+        category,
+        anonymous
+      });
+      toast.success('Post updated!');
+      fetchPosts();
+    } catch {
+      toast.error('Failed to update post');
+    }
+  };
+
   const allPosts = posts.length > 0 ? posts : MOCK_STATUS_POSTS;
   const allCards = buildCommunityCards(allPosts);
   const experiencePosts = allCards.filter(c => c.rawPost.category === 'interview' || c.rawPost.category === 'job-hunt');
@@ -488,9 +506,35 @@ function CommunityBlogPreview() {
             ) : (
               <div className="w-8 h-8 rounded-full bg-white/40 border border-white/10 flex items-center justify-center font-bold text-xs">{card.initials}</div>
             )}
-            <div>
-              <p className="text-xs font-bold leading-none">{card.authorName}</p>
-              <p className={`text-[9px] font-bold mt-0.5 ${card.color.secondary}`}>{card.authorTitle}</p>
+             <div>
+              <div className="flex items-center gap-1.5 leading-none">
+                {!card.isAnonymous && card.authorId && card.authorId !== 'anonymous' ? (
+                  <Link
+                    to={`/portfolio/${card.authorId}`}
+                    className="text-xs font-bold hover:underline cursor-pointer"
+                    onClick={e => e.stopPropagation()}
+                  >
+                    {card.authorName}
+                  </Link>
+                ) : (
+                  <p className="text-xs font-bold">{card.authorName}</p>
+                )}
+                {!card.isAnonymous && card.linkedinUrl && (
+                  <a
+                    href={card.linkedinUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={e => e.stopPropagation()}
+                    className="text-blue-600 hover:text-blue-800 transition-colors cursor-pointer flex items-center"
+                    title="LinkedIn Profile"
+                  >
+                    <svg className="w-3 h-3 fill-current" viewBox="0 0 24 24">
+                      <path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.32 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.79M6.88 8.56a1.68 1.68 0 0 0 1.68-1.68c0-.93-.75-1.69-1.68-1.69a1.69 1.69 0 0 0-1.69 1.69c0 .93.76 1.68 1.69 1.68m1.39 9.94v-8.37H5.5v8.37h2.77z"/>
+                    </svg>
+                  </a>
+                )}
+              </div>
+              <p className={`text-[9px] font-bold mt-1 ${card.color.secondary}`}>{card.authorTitle}</p>
             </div>
           </div>
           <div className="flex flex-col items-end gap-0.5">
@@ -505,14 +549,40 @@ function CommunityBlogPreview() {
               </>
             )}
           </div>
-          {card.isMyPost && (
-            <button onClick={e => { e.stopPropagation(); handleDeletePost(card.id); }} className="p-1 opacity-60 hover:opacity-100 rounded hover:bg-black/5 transition-colors cursor-pointer" title="Delete">
-              <Trash2 size={11} />
-            </button>
-          )}
+          <div className="flex items-center gap-1.5 shrink-0">
+            {isExpanded && (
+              <span
+                onClick={(e) => { e.stopPropagation(); setExpandedCardId(null); }}
+                className="inline-flex items-center gap-1 text-[9.5px] font-bold hover:opacity-85 transition-opacity cursor-pointer px-2 py-0.5 rounded bg-black/5 hover:bg-black/10 border border-black/5"
+              >
+                <ChevronUp size={10} />
+                Show less
+              </span>
+            )}
+            {card.isMyPost && (
+              <button onClick={e => { e.stopPropagation(); handleDeletePost(card.id); }} className="p-1 opacity-60 hover:opacity-100 rounded hover:bg-black/5 transition-colors cursor-pointer" title="Delete">
+                <Trash2 size={11} />
+              </button>
+            )}
+          </div>
         </div>
 
-        <p className={`text-[11px] leading-relaxed font-medium opacity-90 whitespace-pre-wrap flex-1 mt-2 mb-2 ${isExpanded ? '' : 'line-clamp-3'}`}>{linkify(card.content)}</p>
+        {card.isMyPost ? (
+          <p
+            contentEditable={true}
+            suppressContentEditableWarning={true}
+            onClick={e => e.stopPropagation()}
+            onBlur={e => handleEditPost(card.id, e.target.innerText, card.rawPost.category, card.rawPost.anonymous)}
+            className={`text-[11px] leading-relaxed font-medium opacity-90 whitespace-pre-wrap flex-1 mt-2 mb-2 outline-hidden focus:bg-black/5 px-1 rounded transition-all cursor-text ${isExpanded ? '' : 'line-clamp-3'}`}
+            title="Click to edit content"
+          >
+            {card.content}
+          </p>
+        ) : (
+          <p className={`text-[11px] leading-relaxed font-medium opacity-90 whitespace-pre-wrap flex-1 mt-2 mb-2 ${isExpanded ? '' : 'line-clamp-3'}`}>
+            {linkify(card.content)}
+          </p>
+        )}
 
         <div className={`flex items-center justify-between mt-3 pt-2.5 border-t border-black/5 text-[9.5px] ${card.color.secondary} font-bold`}>
           <div className="flex items-center gap-3">
@@ -522,7 +592,7 @@ function CommunityBlogPreview() {
             </button>
             <div className="flex items-center gap-1"><MessageSquare size={10} /><span>{card.commentsCount || 0}</span></div>
           </div>
-          <span className="hover:underline">{isExpanded ? 'Show less' : 'Read more...'}</span>
+          {!isExpanded && <span className="hover:underline">Read more...</span>}
         </div>
 
         {isExpanded && (
@@ -650,15 +720,52 @@ function CommunityBlogPreview() {
                     const sc = STATUS_COLORS[idx % STATUS_COLORS.length];
                     return (
                       <div key={card.id || idx} className="px-4 py-3 hover:bg-white/20 transition-colors">
-                        <div className="flex items-baseline gap-2 mb-0.5">
-                          <span className={`text-[10.5px] font-black ${sc.name}`}>{card.authorName}</span>
+                        <div className="flex items-center gap-1.5 mb-0.5">
+                          {!card.isAnonymous && card.authorId && card.authorId !== 'anonymous' ? (
+                            <Link
+                              to={`/portfolio/${card.authorId}`}
+                              className={`text-[10.5px] font-black hover:underline cursor-pointer ${sc.name}`}
+                              onClick={e => e.stopPropagation()}
+                            >
+                              {card.authorName}
+                            </Link>
+                          ) : (
+                            <span className={`text-[10.5px] font-black ${sc.name}`}>{card.authorName}</span>
+                          )}
+                          {!card.isAnonymous && card.linkedinUrl && (
+                            <a
+                              href={card.linkedinUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              onClick={e => e.stopPropagation()}
+                              className="text-blue-600 hover:text-blue-800 transition-colors cursor-pointer flex items-center"
+                              title="LinkedIn Profile"
+                            >
+                              <svg className="w-3 h-3 fill-current" viewBox="0 0 24 24">
+                                <path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.32 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.79M6.88 8.56a1.68 1.68 0 0 0 1.68-1.68c0-.93-.75-1.69-1.68-1.69a1.69 1.69 0 0 0-1.69 1.69c0 .93.76 1.68 1.69 1.68m1.39 9.94v-8.37H5.5v8.37h2.77z"/>
+                              </svg>
+                            </a>
+                          )}
                           {card.createdAt && (
-                            <span className={`text-[9px] font-semibold ${sc.time}`}>
+                            <span className={`text-[9px] font-semibold ${sc.time} ml-0.5`}>
                               {new Date(card.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}
                             </span>
                           )}
                         </div>
-                        <p className={`text-[11px] font-medium leading-relaxed ${sc.content}`}>{linkify(card.content)}</p>
+                        {card.isMyPost ? (
+                          <p
+                            contentEditable={true}
+                            suppressContentEditableWarning={true}
+                            onClick={e => e.stopPropagation()}
+                            onBlur={e => handleEditPost(card.id, e.target.innerText, card.rawPost.category, card.rawPost.anonymous)}
+                            className={`text-[11px] font-medium leading-relaxed outline-hidden focus:bg-white/40 px-1 rounded transition-all cursor-text ${sc.content}`}
+                            title="Click to edit content"
+                          >
+                            {card.content}
+                          </p>
+                        ) : (
+                          <p className={`text-[11px] font-medium leading-relaxed ${sc.content}`}>{linkify(card.content)}</p>
+                        )}
                         <div className="flex items-center gap-3 mt-1.5">
                           <button type="button" onClick={() => handleLike(card.id)} className="flex items-center gap-1 text-rose-500 hover:opacity-70 transition-opacity cursor-pointer">
                             <Heart size={9} className={user && card.rawPost?.likes?.includes(user._id) ? 'fill-rose-500' : ''} />
