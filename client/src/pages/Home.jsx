@@ -1,6 +1,6 @@
 import { useEffect, useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, LayoutGrid, Users, MessageCircle, Brain, ShoppingBag, Hammer, Share2, CircleDollarSign, Briefcase, Heart, MessageSquare, Send, Plus, X, Pencil, Trash2 } from 'lucide-react';
+import { ArrowRight, LayoutGrid, Users, MessageCircle, Brain, ShoppingBag, Briefcase, Heart, MessageSquare, Send, Plus, X, Trash2 } from 'lucide-react';
 import _Lottie from 'lottie-react';
 const Lottie = _Lottie.default ?? _Lottie;
 import spinnerData from '../assets/spinner.json';
@@ -304,11 +304,7 @@ function CommunityBlogPreview() {
   const [expandedStatusId, setExpandedStatusId] = useState(null);
   const [commentInputs, setCommentInputs] = useState({});
   const [submitting, setSubmitting] = useState(false);
-  const [liking, setLiking] = useState(null);
   const [addingComment, setAddingComment] = useState(null);
-
-  const [scrollY, setScrollY] = useState(0);
-  const [isScrolling, setIsScrolling] = useState(false);
 
   const fetchPosts = () => {
     api.get('/community-posts?limit=100')
@@ -319,22 +315,6 @@ function CommunityBlogPreview() {
 
   useEffect(() => {
     fetchPosts();
-
-    let scrollTimeout;
-    const handleScroll = () => {
-      setScrollY(window.scrollY);
-      setIsScrolling(true);
-      clearTimeout(scrollTimeout);
-      scrollTimeout = setTimeout(() => {
-        setIsScrolling(false);
-      }, 500);
-    };
-
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => {
-      window.removeEventListener('scroll', handleScroll);
-      clearTimeout(scrollTimeout);
-    };
   }, []);
 
   const handleQuickSubmit = async (e) => {
@@ -369,12 +349,10 @@ function CommunityBlogPreview() {
 
   const handleLike = async (postId) => {
     if (!user) { toast.error('Please login to like posts'); return; }
-    setLiking(postId);
     try {
       await api.post(`/community-posts/${postId}/like`);
       fetchPosts();
     } catch { toast.error('Failed to update like'); }
-    finally { setLiking(null); }
   };
 
   const handleAddComment = async (e, postId) => {
