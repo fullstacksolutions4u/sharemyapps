@@ -1,6 +1,6 @@
 import { useEffect, useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, LayoutGrid, Users, MessageCircle, Brain, ShoppingBag, Hammer, Share2, CircleDollarSign, Briefcase } from 'lucide-react';
+import { ArrowRight, LayoutGrid, Users, MessageCircle, Brain, ShoppingBag, Hammer, Share2, CircleDollarSign, Briefcase, Heart, MessageSquare, Send, Plus, X, Pencil, Trash2 } from 'lucide-react';
 import _Lottie from 'lottie-react';
 const Lottie = _Lottie.default ?? _Lottie;
 import spinnerData from '../assets/spinner.json';
@@ -9,6 +9,7 @@ import ProjectCard from '../components/ProjectCard';
 import DeveloperCard from '../components/recruiter/DeveloperCard';
 import { useAuth } from '../context/AuthContext';
 import { optimizeImage } from '../utils/image';
+import toast from 'react-hot-toast';
 
 const AVATAR_PALETTE = ['#F87171','#FB923C','#FBBF24','#34D399','#38BDF8','#818CF8','#E879F9','#F472B6','#00A693'];
 const avatarBg = name => AVATAR_PALETTE[(name?.charCodeAt(0) ?? 0) % AVATAR_PALETTE.length];
@@ -250,6 +251,432 @@ function NetworkNode({ user, x, y }) {
   );
 }
 
+const NOTE_COLORS = [
+  { bg: 'bg-[#FEF9C3]', border: 'border-[#FEF08A]', text: 'text-amber-950', secondary: 'text-amber-700/80', borderTop: 'border-t-black/10' },
+  { bg: 'bg-[#DBEAFE]', border: 'border-[#BFDBFE]', text: 'text-blue-950', secondary: 'text-blue-700/80', borderTop: 'border-t-black/10' },
+  { bg: 'bg-[#DCFCE7]', border: 'border-[#BBF7D0]', text: 'text-emerald-950', secondary: 'text-emerald-700/80', borderTop: 'border-t-black/10' },
+  { bg: 'bg-[#FFE4E6]', border: 'border-[#FECDD3]', text: 'text-rose-950', secondary: 'text-rose-700/80', borderTop: 'border-t-black/10' },
+  { bg: 'bg-[#F3E8FF]', border: 'border-[#E9D5FF]', text: 'text-purple-950', secondary: 'text-purple-700/80', borderTop: 'border-t-black/10' },
+  { bg: 'bg-[#FFEDD5]', border: 'border-[#FED7AA]', text: 'text-orange-950', secondary: 'text-orange-700/80', borderTop: 'border-t-black/10' },
+];
+
+const STATUS_COLORS = [
+  { name: 'text-violet-700', time: 'text-violet-400/80', content: 'text-violet-900/80', border: 'border-violet-100/60', accent: 'text-violet-500/80' },
+  { name: 'text-emerald-700', time: 'text-emerald-400/80', content: 'text-emerald-900/80', border: 'border-emerald-100/60', accent: 'text-emerald-500/80' },
+  { name: 'text-rose-700',    time: 'text-rose-400/80',    content: 'text-rose-900/80',    border: 'border-rose-100/60',    accent: 'text-rose-500/80'    },
+  { name: 'text-amber-700',   time: 'text-amber-400/80',   content: 'text-amber-900/80',   border: 'border-amber-100/60',   accent: 'text-amber-500/80'   },
+  { name: 'text-sky-700',     time: 'text-sky-400/80',     content: 'text-sky-900/80',     border: 'border-sky-100/60',     accent: 'text-sky-500/80'     },
+  { name: 'text-fuchsia-700', time: 'text-fuchsia-400/80', content: 'text-fuchsia-900/80', border: 'border-fuchsia-100/60', accent: 'text-fuchsia-500/80' },
+];
+
+const ROTATE_CLASSES = ['-rotate-3', 'rotate-6 translate-x-4', '-rotate-2 -translate-x-2', 'rotate-3', '-rotate-6 -translate-x-4', 'rotate-2 translate-x-2'];
+
+function buildCommunityCards(posts) {
+  return [...posts]
+    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+    .map((p, idx) => ({
+      id: p._id,
+      authorName: p.author?.name || 'Community Member',
+      authorTitle: p.category === 'interview' ? 'Interview Exp' : 'General Update',
+      avatar: p.author?.avatar,
+      initials: p.author?.name === 'Community Member' ? 'CM' : (p.author?.name?.charAt(0).toUpperCase() || '?'),
+      color: NOTE_COLORS[idx % NOTE_COLORS.length],
+      rotateClass: ROTATE_CLASSES[idx % ROTATE_CLASSES.length],
+      content: p.content,
+      likes: p.likes?.length || 0,
+      commentsCount: p.comments?.length || 0,
+      createdAt: p.createdAt,
+      rawPost: p,
+      isMyPost: p.isMyPost,
+    }));
+}
+
+function CommunityBlogPreview() {
+  const { user } = useAuth();
+  const [posts, setPosts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [quickStatusText, setQuickStatusText] = useState('');
+  const [quickAnonymous, setQuickAnonymous] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [newContent, setNewContent] = useState('');
+  const [newAnonymous, setNewAnonymous] = useState(false);
+  const [expandedCardId, setExpandedCardId] = useState(null);
+  const [expandedStatusId, setExpandedStatusId] = useState(null);
+  const [commentInputs, setCommentInputs] = useState({});
+  const [submitting, setSubmitting] = useState(false);
+  const [liking, setLiking] = useState(null);
+  const [addingComment, setAddingComment] = useState(null);
+
+  const [scrollY, setScrollY] = useState(0);
+  const [isScrolling, setIsScrolling] = useState(false);
+
+  const fetchPosts = () => {
+    api.get('/community-posts?limit=100')
+      .then(res => setPosts(res.data?.posts || []))
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  };
+
+  useEffect(() => {
+    fetchPosts();
+
+    let scrollTimeout;
+    const handleScroll = () => {
+      setScrollY(window.scrollY);
+      setIsScrolling(true);
+      clearTimeout(scrollTimeout);
+      scrollTimeout = setTimeout(() => {
+        setIsScrolling(false);
+      }, 500);
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      clearTimeout(scrollTimeout);
+    };
+  }, []);
+
+  const handleQuickSubmit = async (e) => {
+    e.preventDefault();
+    if (!user) { toast.error('Please login to share your status'); return; }
+    if (!quickStatusText.trim()) return;
+    setSubmitting(true);
+    try {
+      await api.post('/community-posts', { content: quickStatusText, category: 'general', anonymous: quickAnonymous });
+      toast.success('Status shared!');
+      setQuickStatusText('');
+      setQuickAnonymous(false);
+      fetchPosts();
+    } catch { toast.error('Failed to share'); }
+    finally { setSubmitting(false); }
+  };
+
+  const handleDetailSubmit = async (e) => {
+    e.preventDefault();
+    if (!newContent.trim()) return;
+    setSubmitting(true);
+    try {
+      await api.post('/community-posts', { content: newContent, category: 'interview', anonymous: newAnonymous });
+      toast.success('Experience shared!');
+      setNewContent('');
+      setNewAnonymous(false);
+      setIsModalOpen(false);
+      fetchPosts();
+    } catch { toast.error('Failed to share'); }
+    finally { setSubmitting(false); }
+  };
+
+  const handleLike = async (postId) => {
+    if (!user) { toast.error('Please login to like posts'); return; }
+    setLiking(postId);
+    try {
+      await api.post(`/community-posts/${postId}/like`);
+      fetchPosts();
+    } catch { toast.error('Failed to update like'); }
+    finally { setLiking(null); }
+  };
+
+  const handleAddComment = async (e, postId) => {
+    e.preventDefault();
+    const commentText = commentInputs[postId]?.trim();
+    if (!commentText) return;
+    setAddingComment(postId);
+    try {
+      await api.post(`/community-posts/${postId}/comments`, { content: commentText });
+      setCommentInputs(prev => ({ ...prev, [postId]: '' }));
+      fetchPosts();
+    } catch { toast.error('Failed to add comment'); }
+    finally { setAddingComment(null); }
+  };
+
+  const handleDeletePost = async (postId) => {
+    if (!window.confirm('Delete this post?')) return;
+    try {
+      await api.delete(`/community-posts/${postId}`);
+      toast.success('Post deleted');
+      fetchPosts();
+    } catch { toast.error('Failed to delete'); }
+  };
+
+  const allCards = buildCommunityCards(posts);
+  const experiencePosts = allCards.filter(c => c.rawPost.category === 'interview');
+  const statusPosts = allCards.filter(c => c.rawPost.category === 'general');
+
+  const isLeftExpanded = experiencePosts.slice(0, 3).some(c => c.id === expandedCardId);
+  const isRightExpanded = experiencePosts.slice(3, 6).some(c => c.id === expandedCardId);
+
+  const renderCard = (card, idx, isGrid = false, position = 'left') => {
+    const isExpanded = expandedCardId === card.id;
+    let expandClasses = '';
+    if (isExpanded) {
+      if (position === 'left') expandClasses = 'rotate-0 scale-[1.02] z-50 shadow-lg xl:w-[560px]';
+      else if (position === 'right') expandClasses = 'rotate-0 scale-[1.02] z-50 shadow-lg xl:w-[560px] xl:-translate-x-[240px]';
+      else expandClasses = 'rotate-0 scale-[1.02] z-50 shadow-lg';
+    }
+    return (
+      <div
+        key={card.id || idx}
+        onClick={() => setExpandedCardId(isExpanded ? null : card.id)}
+        className={`p-4 pt-5 rounded-2xl border border-t-[8px] shadow-xs transition-all duration-500 ease-in-out transform cursor-pointer relative flex flex-col justify-between ${
+          isExpanded ? expandClasses : `min-h-[175px] ${isGrid ? 'rotate-0 translate-x-0 z-10' : `${card.rotateClass} z-10`}`
+        } ${card.color.borderTop} ${card.color.bg} ${card.color.border} ${card.color.text}`}
+      >
+        <div className="flex items-center justify-between mb-2.5">
+          <div className="flex items-center gap-2">
+            {card.avatar ? (
+              <img src={card.avatar} alt={card.authorName} className="w-8 h-8 rounded-full object-cover border border-white/20" />
+            ) : (
+              <div className="w-8 h-8 rounded-full bg-white/40 border border-white/10 flex items-center justify-center font-bold text-xs">{card.initials}</div>
+            )}
+            <div>
+              <p className="text-xs font-bold leading-none">{card.authorName}</p>
+              <p className={`text-[9px] font-bold mt-0.5 ${card.color.secondary}`}>{card.authorTitle}</p>
+            </div>
+          </div>
+          <div className="flex flex-col items-end gap-0.5">
+            {card.createdAt && (
+              <>
+                <span className={`text-[9px] font-semibold ${card.color.secondary} opacity-80`}>
+                  {new Date(card.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
+                </span>
+                <span className={`text-[9px] font-semibold ${card.color.secondary} opacity-70`}>
+                  {new Date(card.createdAt).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true })}
+                </span>
+              </>
+            )}
+          </div>
+          {card.isMyPost && (
+            <button onClick={e => { e.stopPropagation(); handleDeletePost(card.id); }} className="p-1 opacity-60 hover:opacity-100 rounded hover:bg-black/5 transition-colors cursor-pointer" title="Delete">
+              <Trash2 size={11} />
+            </button>
+          )}
+        </div>
+
+        <p className={`text-[11px] leading-relaxed font-medium opacity-90 whitespace-pre-wrap flex-1 mt-2 mb-2 ${isExpanded ? '' : 'line-clamp-3'}`}>{card.content}</p>
+
+        <div className={`flex items-center justify-between mt-3 pt-2.5 border-t border-black/5 text-[9.5px] ${card.color.secondary} font-bold`}>
+          <div className="flex items-center gap-3">
+            <button onClick={e => { e.stopPropagation(); handleLike(card.id); }} className="flex items-center gap-1 hover:opacity-80 transition-opacity">
+              <Heart size={10} className={`text-rose-500 ${user && card.rawPost.likes?.includes(user._id) ? 'fill-rose-500' : ''}`} />
+              <span>{card.likes}</span>
+            </button>
+            <div className="flex items-center gap-1"><MessageSquare size={10} /><span>{card.commentsCount || 0}</span></div>
+          </div>
+          <span className="hover:underline">{isExpanded ? 'Show less' : 'Read more...'}</span>
+        </div>
+
+        {isExpanded && (
+          <div className="mt-4 pt-4 border-t border-black/5 space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
+            <div className="space-y-3 max-h-48 overflow-y-auto pr-1">
+              {card.rawPost.comments?.length > 0 ? card.rawPost.comments.map(comment => (
+                <div key={comment._id} className="flex items-start justify-between gap-1.5 bg-white/40 p-2 rounded-xl border border-black/5">
+                  <div className="flex gap-2">
+                    <div className="w-5 h-5 rounded-md bg-white/60 flex items-center justify-center font-bold text-[9px]">
+                      {comment.author?.name?.charAt(0).toUpperCase()}
+                    </div>
+                    <div>
+                      <h6 className="text-[9px] font-bold leading-none">{comment.author?.name}</h6>
+                      <p className="text-[10px] mt-0.5 leading-relaxed">{comment.content}</p>
+                    </div>
+                  </div>
+                </div>
+              )) : <p className="text-[10px] opacity-60 italic text-center py-2">No comments yet.</p>}
+            </div>
+            {user ? (
+              <form onSubmit={e => { e.stopPropagation(); handleAddComment(e, card.id); }} onClick={e => e.stopPropagation()} className="flex gap-1.5">
+                <input type="text" placeholder="Write a comment..." value={commentInputs[card.id] || ''} onChange={e => setCommentInputs(prev => ({ ...prev, [card.id]: e.target.value }))} className="flex-1 bg-white/60 border border-black/10 rounded-lg px-2.5 py-1 text-[10px] outline-hidden focus:border-black/25 placeholder-black/40 text-black font-medium" />
+                <button type="submit" disabled={addingComment === card.id} className="bg-gray-900 text-white px-2.5 py-1 rounded-lg text-[9px] font-bold hover:bg-gray-800 disabled:opacity-50 cursor-pointer"><Send size={9} /></button>
+              </form>
+            ) : <p className="text-[9px] opacity-65 italic text-center">Login to comment</p>}
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  return (
+    <section
+      className="pb-0"
+      style={{
+        background: 'linear-gradient(to bottom, #F5F9FF 92%, #ffffff 100%)'
+      }}
+    >
+      <div className="relative pt-10 pb-1 px-4 sm:px-6 lg:px-8">
+
+        {/* Left floating cards */}
+        <div className={`hidden xl:block absolute left-4 top-12 w-80 space-y-12 select-none opacity-85 transition-all duration-300 ${isLeftExpanded ? 'z-40' : 'z-10'}`}>
+          {experiencePosts.slice(0, 3).map((card, idx) => renderCard(card, idx, false, 'left'))}
+        </div>
+
+        {/* Right floating cards */}
+        <div className={`hidden xl:block absolute right-4 top-12 w-80 space-y-12 select-none opacity-85 transition-all duration-300 ${isRightExpanded ? 'z-40' : 'z-10'}`}>
+          {experiencePosts.slice(3, 6).map((card, idx) => renderCard(card, idx, false, 'right'))}
+        </div>
+
+        {/* Center hero block — Glass Card on top of scrollable container */}
+        <div className="max-w-2xl mx-auto text-center relative z-10 mt-4">
+          <div className="relative">
+
+            {/* Glass Card (Frosted Form) positioned absolute on top */}
+            <div
+              className="absolute top-0 left-0 right-0 z-20 rounded-2xl px-5 py-4 border border-white/40 shadow-lg"
+              style={{
+                background: 'linear-gradient(135deg, rgba(255,255,255,0.72) 0%, rgba(224,242,254,0.55) 50%, rgba(243,232,255,0.50) 100%)',
+                backdropFilter: 'blur(18px)',
+                WebkitBackdropFilter: 'blur(18px)',
+                boxShadow: '0 8px 32px rgba(99,102,241,0.10), 0 1.5px 8px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,0.80)',
+              }}
+            >
+              {/* Quick status form */}
+              <form onSubmit={handleQuickSubmit} className="space-y-2">
+                {/* Top row: anon toggle + add experience button */}
+                <div className="flex items-center justify-between gap-3">
+                  <label className="flex items-center gap-1.5 cursor-pointer select-none">
+                    <input
+                      type="checkbox"
+                      id="home-quick-anon"
+                      checked={quickAnonymous}
+                      onChange={e => setQuickAnonymous(e.target.checked)}
+                      className="w-3 h-3 accent-gray-900 cursor-pointer"
+                    />
+                    <span className="text-[9.5px] text-gray-400 font-semibold">Post anonymously</span>
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => { if (!user) { toast.error('Please login'); return; } setNewContent(''); setNewAnonymous(false); setIsModalOpen(true); }}
+                    className="inline-flex items-center gap-1 bg-amber-400 hover:bg-amber-500 text-gray-900 font-extrabold text-[9.5px] px-3 py-1.5 rounded-lg transition-all cursor-pointer shrink-0 shadow-xs"
+                  >
+                    <Plus size={10} /> Add Job Hunting Experience
+                  </button>
+                </div>
+
+                {/* Input + Share row */}
+                <div className="flex gap-2 items-center bg-white/60 border border-white/50 rounded-xl px-3 py-1.5 focus-within:border-white/80 focus-within:ring-1 focus-within:ring-white/30 transition-all">
+                  <input
+                    type="text"
+                    placeholder="What's on your mind?"
+                    value={quickStatusText}
+                    onChange={e => setQuickStatusText(e.target.value)}
+                    className="flex-1 bg-transparent text-[11px] font-medium placeholder-gray-400 text-gray-800 outline-none"
+                  />
+                  <button
+                    type="submit"
+                    disabled={submitting || !quickStatusText.trim()}
+                    className="bg-gray-900 text-white px-3.5 py-1.5 rounded-lg text-[10px] font-bold hover:bg-gray-700 disabled:opacity-40 transition-colors cursor-pointer shrink-0"
+                  >
+                    Share
+                  </button>
+                </div>
+              </form>
+            </div>
+
+            {/* Scrollable Status Feed behind the Glass Card */}
+            {statusPosts.length > 0 && (
+              <div
+                className="max-h-[760px] overflow-y-auto scrollbar-none rounded-2xl border border-white/40 pt-[115px] text-left"
+                style={{
+                  background: 'rgba(255,255,255,0.55)',
+                  backdropFilter: 'blur(10px)',
+                  WebkitBackdropFilter: 'blur(10px)',
+                }}
+              >
+                <div className="divide-y divide-white/30">
+                  {statusPosts.map((card, idx) => {
+                    const sc = STATUS_COLORS[idx % STATUS_COLORS.length];
+                    return (
+                      <div key={card.id || idx} className="px-4 py-3 hover:bg-white/20 transition-colors">
+                        <div className="flex items-baseline gap-2 mb-0.5">
+                          <span className={`text-[10.5px] font-black ${sc.name}`}>{card.authorName}</span>
+                          {card.createdAt && (
+                            <span className={`text-[9px] font-semibold ${sc.time}`}>
+                              {new Date(card.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}
+                            </span>
+                          )}
+                        </div>
+                        <p className={`text-[11px] font-medium leading-relaxed ${sc.content}`}>{card.content}</p>
+                        <div className="flex items-center gap-3 mt-1.5">
+                          <button type="button" onClick={() => handleLike(card.id)} className="flex items-center gap-1 text-rose-500 hover:opacity-70 transition-opacity cursor-pointer">
+                            <Heart size={9} className={user && card.rawPost?.likes?.includes(user._id) ? 'fill-rose-500' : ''} />
+                            <span className={`text-[9px] font-bold ${sc.accent}`}>{card.likes || 0}</span>
+                          </button>
+                          <button type="button" onClick={() => setExpandedStatusId(expandedStatusId === card.id ? null : card.id)} className={`flex items-center gap-1 hover:opacity-70 transition-opacity cursor-pointer ${sc.accent}`}>
+                            <MessageSquare size={9} />
+                            <span className="text-[9px] font-bold">{card.commentsCount || 0}</span>
+                          </button>
+                        </div>
+                        {expandedStatusId === card.id && (
+                          <div className="mt-2 pt-2 border-t border-white/30 space-y-2 animate-in fade-in duration-200">
+                            <div className="space-y-1.5 max-h-28 overflow-y-auto pr-1">
+                              {card.rawPost?.comments?.length > 0 ? card.rawPost.comments.map(comment => (
+                                <div key={comment._id} className="flex gap-1.5 bg-white/40 p-1.5 rounded-lg">
+                                  <div className="w-4 h-4 rounded bg-white/70 flex items-center justify-center font-bold text-[8px] text-gray-600 shrink-0">{comment.author?.name?.charAt(0).toUpperCase()}</div>
+                                  <div><p className="text-[9px] font-bold text-gray-700">{comment.author?.name}</p><p className="text-[9.5px] text-gray-600 leading-relaxed">{comment.content}</p></div>
+                                </div>
+                              )) : <p className="text-[9px] opacity-50 italic text-center py-1">No comments yet.</p>}
+                            </div>
+                            {user ? (
+                              <form onSubmit={e => { e.preventDefault(); handleAddComment(e, card.id); }} className="flex gap-1.5">
+                                <input type="text" placeholder="Write a comment..." value={commentInputs[card.id] || ''} onChange={e => setCommentInputs(prev => ({ ...prev, [card.id]: e.target.value }))} className="flex-1 bg-white/50 border border-white/40 rounded-lg px-2.5 py-1 text-[9.5px] outline-none placeholder-gray-400 text-gray-800 font-medium" />
+                                <button type="submit" disabled={addingComment === card.id} className="bg-gray-800 text-white px-2 py-1 rounded-lg text-[9px] font-bold hover:bg-gray-700 disabled:opacity-50 cursor-pointer"><Send size={8} /></button>
+                              </form>
+                            ) : <p className="text-[9px] opacity-60 italic text-center">Login to comment</p>}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Mobile grid of experience cards */}
+        <div className="mt-10 grid grid-cols-1 sm:grid-cols-2 gap-6 xl:hidden text-left max-w-2xl mx-auto relative z-10">
+          {loading ? Array.from({ length: 6 }).map((_, i) => (
+            <div key={i} className="bg-white border border-gray-100 rounded-2xl p-5 animate-pulse h-36" />
+          )) : experiencePosts.length > 0 ? experiencePosts.slice(0, 6).map((card, idx) => renderCard(card, idx, true, 'grid')) : null}
+        </div>
+      </div>
+
+      {/* "View full community" CTA */}
+      <div className="w-full text-right px-4 sm:px-6 lg:px-8 mt-1 relative z-10">
+        <Link to="/community-blog" className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-bold text-gray-500 hover:text-accent transition-colors">
+          View full community blog <ArrowRight size={12} />
+        </Link>
+      </div>
+
+
+
+      {/* Experience post modal */}
+      {isModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/60 backdrop-blur-xs">
+          <div className="relative w-full max-w-lg rounded-2xl shadow-xl overflow-hidden animate-in fade-in zoom-in-95 duration-200" style={{ background: 'linear-gradient(135deg, #EFF6FF 0%, #BFDBFE 40%, #93C5FD 75%, #6366F1 100%)' }}>
+            <button onClick={() => setIsModalOpen(false)} className="absolute top-3 right-3 p-1.5 text-blue-700/60 hover:text-blue-900 hover:bg-white/30 rounded-lg transition-all z-10">
+              <X size={16} />
+            </button>
+            <form onSubmit={handleDetailSubmit} className="px-5 pb-5 pt-5 space-y-4">
+              <label className="block text-xs font-bold text-blue-900/80 uppercase tracking-wider mb-1.5 text-center">What's on your mind?</label>
+              <textarea required placeholder="Share a status update, interview question, or daily job hunting experience..." value={newContent} onChange={e => setNewContent(e.target.value)} rows={6} className="w-full border border-blue-200/60 bg-white/50 rounded-xl p-3.5 text-xs outline-hidden focus:border-blue-400 focus:ring-1 focus:ring-blue-300/30 font-medium resize-none placeholder-blue-400/70 text-blue-950" />
+              <div className="flex items-center gap-1.5 px-1">
+                <input type="checkbox" id="home-modal-anon" checked={newAnonymous} onChange={e => setNewAnonymous(e.target.checked)} className="w-4 h-4 accent-blue-600 cursor-pointer" />
+                <label htmlFor="home-modal-anon" className="text-xs text-blue-900/70 font-bold select-none cursor-pointer">Post anonymously as Community Member</label>
+              </div>
+              <div className="flex justify-end gap-2 pt-2 border-t border-blue-200/50">
+                <button type="button" onClick={() => setIsModalOpen(false)} className="px-4 py-2 border border-blue-200 bg-white/40 rounded-xl text-xs font-bold text-blue-800 hover:bg-white/70 transition-all">Cancel</button>
+                <button type="submit" disabled={submitting || !newContent.trim()} className="px-5 py-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-extrabold text-xs rounded-xl transition-all shadow-xs cursor-pointer">
+                  {submitting ? 'Saving...' : 'Share Update'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+    </section>
+  );
+}
+
 export default function Home() {
   const { user: authUser } = useAuth();
   const [networkUsers, setNetworkUsers] = useState(PLACEHOLDER_USERS);
@@ -295,35 +722,19 @@ export default function Home() {
       {/* Hero */}
       <div
         className="relative overflow-hidden"
-        style={{ minHeight: 600, background: '#e0fafa' }}
+        style={{ minHeight: 300, background: '#e0fafa' }}
       >
         <NetworkGraph users={graphUsers} networkLoading={networkLoading} />
 
-        <section className="max-w-6xl mx-auto px-4 sm:px-6 pt-20 pb-16 text-center relative z-10 pointer-events-none">
+        <section className="max-w-6xl mx-auto px-4 sm:px-6 pt-10 pb-8 text-center relative z-10 pointer-events-none">
           {/* frosted backdrop behind text */}
           <div style={{
             position: 'absolute', inset: 0,
             background: 'radial-gradient(ellipse 70% 80% at 50% 50%, rgba(224,250,250,0.82) 40%, transparent 100%)',
             pointerEvents: 'none', zIndex: -1,
           }} />
-          {authUser && (
-            <div className="flex flex-col items-center mb-3 pointer-events-auto">
-              {authUser.avatar ? (
-                <img src={optimizeImage(authUser.avatar, 150)} alt={authUser.name} className="w-12 h-12 rounded-full object-cover border-2 border-white shadow-md" />
-              ) : (
-                <div className="w-12 h-12 rounded-full bg-accent text-white font-bold flex items-center justify-center text-base border-2 border-white shadow-md">
-                  {authUser.name?.charAt(0).toUpperCase()}
-                </div>
-              )}
-            </div>
-          )}
-          <div className="inline-flex items-center gap-5 bg-white/60 backdrop-blur-sm text-accent text-sm font-semibold px-5 py-2 rounded-full mb-6 pointer-events-auto">
-            <span className="flex items-center gap-1.5"><Hammer size={15} className="text-violet-500" /> Build</span>
-            <span className="text-accent/40">•</span>
-            <span className="flex items-center gap-1.5"><Share2 size={15} className="text-blue-500" /> Share</span>
-            <span className="text-accent/40">•</span>
-            <span className="flex items-center gap-1.5"><CircleDollarSign size={15} className="text-amber-500" /> Earn</span>
-          </div>
+
+
           <h1 className="text-5xl sm:text-6xl font-bold text-text tracking-tight leading-tight mb-10" style={{ fontFamily: "'Caveat', cursive" }}>
             Be part of the developers community to unlock{" "}
             <span className="text-accent">hiring</span>,{" "}
@@ -332,27 +743,17 @@ export default function Home() {
             <span className="text-[#F59E0B]">mentorship</span>{" "}
             opportunities
           </h1>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pointer-events-auto">
-            <Link
-              to="/explore"
-              className="flex items-center gap-2 bg-accent hover:bg-accent-hover text-white px-6 py-3 rounded-xl font-medium transition-colors text-sm"
-            >
-              Explore all projects <ArrowRight size={16} />
-            </Link>
-            <Link
-              to="/find-developers"
-              className="flex items-center gap-2 bg-yellow-400 hover:bg-yellow-500 text-white px-6 py-3 rounded-xl font-medium transition-colors text-sm"
-            >
-              Browse our developers <ArrowRight size={16} />
-            </Link>
-          </div>
+
         </section>
       </div>
 
+      {/* Community Blog Preview */}
+      <CommunityBlogPreview />
+
       {/* How it works */}
-      <section className="border-y border-border bg-white">
+      <section className="border-b border-border bg-white">
         <div className="max-w-[1500px] mx-auto px-3 sm:px-4 py-14">
-          <p className="text-xs font-semibold uppercase tracking-widest text-accent text-center mb-8">How it works</p>
+          <p className="text-xs font-semibold uppercase tracking-widest text-accent text-center mb-8">HOW PORTAL WORKS</p>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
             {[
               { step: '01', icon: LayoutGrid,     title: 'List your projects',      desc: 'Complete your profile & Showcase live projects.' },
