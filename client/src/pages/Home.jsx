@@ -437,7 +437,7 @@ function CommunityBlogPreview() {
   const allPosts = posts.length > 0 ? posts : MOCK_STATUS_POSTS;
   const allCards = buildCommunityCards(allPosts);
   const experiencePosts = allCards.filter(c => c.rawPost.category === 'interview' || c.rawPost.category === 'job-hunt');
-  const statusPosts = allCards;
+  const statusPosts = allCards.filter(c => c.rawPost.category === 'general');
 
   const isLeftExpanded = experiencePosts.slice(0, 3).some(c => c.id === expandedCardId);
   const isRightExpanded = experiencePosts.slice(3, 6).some(c => c.id === expandedCardId);
@@ -549,6 +549,11 @@ function CommunityBlogPreview() {
         <div className={`hidden xl:block absolute right-4 top-12 w-80 space-y-12 select-none opacity-85 transition-all duration-300 ${isRightExpanded ? 'z-40' : 'z-10'}`}>
           {experiencePosts.slice(3, 6).map((card, idx) => renderCard(card, idx, false, 'right'))}
         </div>
+
+        {/* Section title */}
+        <p className="text-center text-lg sm:text-xl font-black text-gray-800 tracking-tight mb-4 whitespace-nowrap relative z-10">
+          Share your <span className="text-orange-500">career</span> &amp; <span className="text-[#F59E0B]">job hunting</span> journey with community
+        </p>
 
         {/* Center hero block — Glass Card on top of scrollable container */}
         <div className="max-w-2xl mx-auto text-center relative z-10 mt-4">
