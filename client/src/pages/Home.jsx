@@ -644,7 +644,10 @@ function CommunityBlogPreview() {
         </div>
 
         {/* Section title */}
-        <p className="text-center text-xl sm:text-2xl font-black text-gray-800 tracking-tight mb-4 whitespace-nowrap relative z-10">
+        <p 
+          className="text-center text-3xl sm:text-4xl text-gray-800 mb-4 whitespace-nowrap relative z-10"
+          style={{ fontFamily: "'Cookie', cursive" }}
+        >
           Share your <span className="text-orange-500">career</span> &amp; <span className="text-[#F59E0B]">job hunting</span> journey with community
         </p>
 
@@ -690,7 +693,7 @@ function CommunityBlogPreview() {
                   <button
                     type="button"
                     onClick={() => { if (!user) { toast.error('Please login'); return; } setNewContent(''); setNewAnonymous(false); setIsModalOpen(true); }}
-                    className="inline-flex items-center gap-1 bg-amber-400 hover:bg-amber-500 text-gray-900 font-extrabold text-[9.5px] px-3 py-1.5 rounded-lg transition-all cursor-pointer shrink-0 shadow-xs"
+                    className="inline-flex items-center gap-1 bg-[#FFDD00] hover:bg-[#FFE53B] text-black font-extrabold text-[9.5px] px-4 py-1.5 rounded-full transition-all cursor-pointer shrink-0 shadow-xs active:scale-95"
                   >
                     <Plus size={10} /> Add Job Hunting Experience
                   </button>
@@ -883,6 +886,7 @@ export default function Home() {
   const [showcaseProjects, setShowcaseProjects] = useState([]);
   const [showcaseDevs, setShowcaseDevs] = useState([]);
   const [showcaseMentors, setShowcaseMentors] = useState([]);
+  const [registeredCount, setRegisteredCount] = useState(4579);
 
   useEffect(() => {
     api.get('/users/recent?limit=100')
@@ -897,6 +901,13 @@ export default function Home() {
       .catch(() => {});
     api.get('/users/mentors')
       .then(res => setShowcaseMentors(res.data.slice(0, 12)))
+      .catch(() => {});
+    api.get('/users/count')
+      .then(res => {
+        if (res.data && typeof res.data.count === 'number') {
+          setRegisteredCount(res.data.count);
+        }
+      })
       .catch(() => {});
   }, []);
 
@@ -934,7 +945,7 @@ export default function Home() {
           }} />
 
 
-          <h1 className="text-5xl sm:text-6xl font-bold text-text tracking-tight leading-tight mb-10" style={{ fontFamily: "'Caveat', cursive" }}>
+          <h1 className="text-5xl sm:text-6xl font-bold text-text tracking-tight leading-tight mb-4" style={{ fontFamily: "'Caveat', cursive" }}>
             Be part of the developers community to unlock{" "}
             <span className="text-accent">hiring</span>,{" "}
             <span className="text-[#6366F1]">freelance</span>{" "}
@@ -942,6 +953,23 @@ export default function Home() {
             <span className="text-[#F59E0B]">mentorship</span>{" "}
             opportunities
           </h1>
+
+          <div className="inline-flex flex-col items-center justify-center bg-[#EBF2FC]/80 border border-[#D0E2FA]/50 px-6 py-2.5 rounded-full mb-10 pointer-events-auto select-none shadow-xs">
+            <div className="flex -space-x-2 justify-center mb-1.5">
+              {networkUsers.slice(6, 12).map((dev, idx) => (
+                <img
+                  key={dev._id || idx}
+                  className="inline-block h-7 w-7 rounded-full ring-2 ring-white object-cover bg-white cursor-pointer"
+                  src={dev.avatar || defaultAvatar(dev.name)}
+                  alt={dev.name || 'Developer'}
+                  title={dev.name || 'Developer'}
+                />
+              ))}
+            </div>
+            <span className="text-[12.5px] font-extrabold text-[#1E3A8A] tracking-wide">
+              Joined by {Number(registeredCount).toLocaleString()} developers
+            </span>
+          </div>
 
         </section>
       </div>

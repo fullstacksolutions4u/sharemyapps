@@ -122,13 +122,13 @@ function DeveloperCard({ dev, idx }) {
           <div className="flex items-baseline justify-between gap-2">
             <h3 className="font-bold text-base text-text leading-tight truncate">{dev.name}</h3>
             {dev.expectedSalary && (
-              <span className="text-[11px] text-muted shrink-0">
-                CTC: <strong>{(Number(dev.expectedSalary) / 100000).toFixed(1).replace(/\.0$/, '')} LPA</strong>
+              <span className="text-[11px] text-[#5a788b] shrink-0">
+                Expected CTC: <strong>{(Number(dev.expectedSalary) / 100000).toFixed(1).replace(/\.0$/, '')} LPA</strong>
               </span>
             )}
           </div>
           {/* Row 2: Place and Experience */}
-          <div className="flex items-baseline justify-between gap-2 text-xs text-muted">
+          <div className="flex items-baseline justify-between gap-2 text-xs text-[#5a788b]">
             <span className="truncate">
               {[dev.place || dev.district, dev.state].filter(Boolean).join(', ') || '\u00A0'}
             </span>
