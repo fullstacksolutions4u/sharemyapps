@@ -213,12 +213,12 @@ function NetworkNode({ user, x, y }) {
             src={src}
             alt={user.name}
             style={{
-              width: 38,
-              height: 38,
+              width: 25,
+              height: 25,
               borderRadius: '50%',
               objectFit: 'cover',
               display: 'block',
-              border: '2px solid rgba(255,255,255,0.85)',
+              border: '1.5px solid rgba(255,255,255,0.85)',
               boxShadow: hovered ? '0 3px 14px rgba(0,100,90,0.35)' : '0 1px 4px rgba(0,0,0,0.1)',
               filter: hovered ? 'none' : 'blur(0.7px)',
               opacity: hovered ? 1 : 0.72,
@@ -574,7 +574,7 @@ function CommunityBlogPreview() {
         </div>
 
         {/* Section title */}
-        <p className="text-center text-lg sm:text-xl font-black text-gray-800 tracking-tight mb-4 whitespace-nowrap relative z-10">
+        <p className="text-center text-xl sm:text-2xl font-black text-gray-800 tracking-tight mb-4 whitespace-nowrap relative z-10">
           Share your <span className="text-orange-500">career</span> &amp; <span className="text-[#F59E0B]">job hunting</span> journey with community
         </p>
 
