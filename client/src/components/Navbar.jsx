@@ -390,8 +390,8 @@ export default function Navbar() {
           </div>
         </Link>
 
-        {/* Right: Desktop Nav + Action buttons */}
-        <div className="hidden md:flex items-center gap-3 lg:gap-4.5 xl:gap-6 flex-nowrap shrink-0">
+        {/* Desktop Nav + Action buttons grouped together */}
+        <div className="hidden md:flex items-center gap-4 lg:gap-6 flex-nowrap shrink-0 ml-4 lg:ml-8 mr-auto">
           <nav className="flex items-center gap-3 lg:gap-4.5 xl:gap-6 flex-nowrap shrink-0">
             <Link to="/feed" className="relative text-base font-bold text-muted hover:text-text transition-colors whitespace-nowrap shrink-0 after:absolute after:left-0 after:-bottom-0.5 after:h-[1.5px] after:w-0 after:bg-accent after:transition-[width] after:duration-300 hover:after:w-full">Timeline</Link>
             <Link to="/explore" className="relative text-base font-bold text-muted hover:text-text transition-colors whitespace-nowrap shrink-0 after:absolute after:left-0 after:-bottom-0.5 after:h-[1.5px] after:w-0 after:bg-accent after:transition-[width] after:duration-300 hover:after:w-full">Projects</Link>
@@ -426,13 +426,13 @@ export default function Navbar() {
             )}
           </nav>
 
-          {/* Action buttons with small gap */}
+          {/* Action buttons near Premium Services */}
           {user ? (
-            <div className="flex items-center gap-3 ml-2 shrink-0">
+            <div className="flex items-center gap-3 shrink-0">
               <UserDropdown user={user} onLogout={handleLogout} />
             </div>
           ) : (
-            <div className="flex items-center gap-2 ml-2 shrink-0">
+            <div className="flex items-center gap-4 shrink-0">
               <Link to="/register" className="flex items-center gap-1.5 text-sm border border-accent text-accent hover:bg-accent hover:text-white px-3.5 py-2 rounded-lg transition-colors font-medium whitespace-nowrap">
                 <Plus size={14} /> Add Project
               </Link>
