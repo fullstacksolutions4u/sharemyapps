@@ -885,7 +885,8 @@ export default function Home() {
   const [networkLoading, setNetworkLoading] = useState(true);
   const [showcaseProjects, setShowcaseProjects] = useState([]);
   const [showcaseDevs, setShowcaseDevs] = useState([]);
-  const [registeredCount, setRegisteredCount] = useState(4579);
+  const [targetCount, setTargetCount] = useState(4579);
+  const [displayCount, setDisplayCount] = useState(0);
 
   useEffect(() => {
     api.get('/users/recent?limit=100')
@@ -921,11 +922,35 @@ export default function Home() {
     api.get('/users/count')
       .then(res => {
         if (res.data && typeof res.data.count === 'number') {
-          setRegisteredCount(res.data.count);
+          setTargetCount(res.data.count);
         }
       })
       .catch(() => {});
   }, []);
+
+  useEffect(() => {
+    if (!targetCount) return;
+    let startTimestamp = null;
+    const duration = 5500; // 5.5s relaxed, smooth pace
+    let animationFrame;
+
+    const step = (timestamp) => {
+      if (!startTimestamp) startTimestamp = timestamp;
+      const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+      // Gentle sinusoidal easeInOut curve (starts smoothly, counts steadily, gently settles)
+      const easeInOut = 0.5 * (1 - Math.cos(Math.PI * progress));
+      const current = Math.floor(targetCount * easeInOut);
+      setDisplayCount(current);
+      if (progress < 1) {
+        animationFrame = requestAnimationFrame(step);
+      } else {
+        setDisplayCount(targetCount);
+      }
+    };
+
+    animationFrame = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(animationFrame);
+  }, [targetCount]);
 
   const graphUsers = useMemo(() => {
     if (!authUser || networkLoading) return networkUsers;
@@ -983,7 +1008,7 @@ export default function Home() {
               ))}
             </div>
             <span className="text-[12.5px] font-extrabold text-[#1E3A8A] tracking-wide">
-              Joined by {Number(registeredCount).toLocaleString()} developers
+              Community with {Number(displayCount).toLocaleString()} developers
             </span>
           </div>
 
