@@ -41,5 +41,7 @@ const moduleSchema = new mongoose.Schema({
 
 moduleSchema.index({ order: 1 });
 moduleSchema.index({ isActive: 1 });
+moduleSchema.index({ isActive: 1, order: 1, createdAt: 1 });
+moduleSchema.index({ "topics._id": 1 });
 
 module.exports = mongoose.model('LearningModule', moduleSchema);

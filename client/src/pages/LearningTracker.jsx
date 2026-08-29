@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo } from 'react';
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Trophy, Crown } from 'lucide-react';
 import { moduleAPI, progressAPI, feedbackAPI } from '../api/tick2test';
@@ -14,7 +14,7 @@ const Lottie = _Lottie.default ?? _Lottie;
 
 const LearningTracker = ({ embedded = false }) => {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const isAuthenticated = !!user;
   const [modules, setModules] = useState([]);
   const [userProgress, setUserProgress] = useState(null);
@@ -45,10 +45,29 @@ const LearningTracker = ({ embedded = false }) => {
     return modules.filter(m => m.topics.length > 0 && m.topics.every(t => t.completed)).length;
   }, [modules]);
 
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/immutability
-    fetchModulesAndProgress();
-  }, [isAuthenticated]); // eslint-disable-line react-hooks/exhaustive-deps
+  const applyProgress = useCallback((baseModules, progress) => {
+    const completedSet = new Set(
+      (progress?.completedTopics || []).map(ct => `${ct.moduleId}_${ct.topicId}`)
+    );
+    return baseModules.map(module => ({
+      ...module,
+      topics: (module.topics || []).map(topic => ({
+        ...topic,
+        completed: completedSet.has(`${module._id}_${topic._id}`)
+      }))
+    }));
+  }, []);
+
+  const refreshLeaderboard = useCallback(async () => {
+    try {
+      const leaderRes = await progressAPI.getLeaderboard();
+      if (leaderRes.data?.success) {
+        setLeaderboard(leaderRes.data.leaderboard || []);
+      }
+    } catch (err) {
+      console.error('Failed to load leaderboard', err);
+    }
+  }, []);
 
   useEffect(() => {
     localStorage.setItem('lastModuleIndex', currentIndex.toString());
@@ -89,17 +108,6 @@ const LearningTracker = ({ embedded = false }) => {
     });
   };
 
-  const refreshLeaderboard = async () => {
-    try {
-      const leaderRes = await progressAPI.getLeaderboard();
-      if (leaderRes.data.success) {
-        setLeaderboard(leaderRes.data.leaderboard);
-      }
-    } catch (err) {
-      console.error('Failed to load leaderboard', err);
-    }
-  };
-
   const handlePointsUpdate = (points) => {
     setUserPoints(prev => prev + points);
     const userId = user?._id?.toString?.() ?? user?.id?.toString?.();
@@ -118,37 +126,35 @@ const LearningTracker = ({ embedded = false }) => {
     refreshLeaderboard();
   };
 
-  const fetchModulesAndProgress = async () => {
+  const fetchModulesAndProgress = useCallback(async () => {
     try {
       setLoading(true);
-      const modulesResponse = await moduleAPI.getAll();
-      let progressResponse = { data: { success: false, progress: { completedTopics: [], completedModules: [] } } };
-      if (isAuthenticated) {
-        progressResponse = await progressAPI.getProgress();
-      }
+      setError('');
+
+      const [modulesResponse, progressResponse, leaderRes] = await Promise.all([
+        moduleAPI.getAll(),
+        isAuthenticated ? progressAPI.getProgress().catch(() => ({ data: { success: false } })) : Promise.resolve({ data: { success: false } }),
+        progressAPI.getLeaderboard().catch(() => ({ data: { success: false } }))
+      ]);
+
       const modulesData = modulesResponse.data;
-      if (modulesData.success) {
+      if (modulesData?.success) {
         const fetchedModules = (modulesData.data || []).filter(module =>
           !module.title || !module.title.toLowerCase().includes('be ready')
         );
-        const progressData = progressResponse.data;
-        const progress = progressData.success ? progressData.progress : { completedTopics: [], completedModules: [] };
+
+        const progressData = progressResponse?.data;
+        const progress = progressData?.success ? progressData.progress : { completedTopics: [], completedModules: [] };
         setUserProgress(progress);
-        if (progressData.userStats) {
+        if (progressData?.userStats) {
           setUserPoints(progressData.userStats.points || 0);
         }
 
-        await refreshLeaderboard();
-        const modulesWithProgress = fetchedModules.map(module => ({
-          ...module,
-          topics: module.topics.map(topic => ({
-            ...topic,
-            completed: progress.completedTopics.some(
-              ct => ct.moduleId === module._id && ct.topicId === topic._id.toString()
-            )
-          }))
-        }));
-        setModules(modulesWithProgress);
+        if (leaderRes?.data?.success) {
+          setLeaderboard(leaderRes.data.leaderboard || []);
+        }
+
+        setModules(applyProgress(fetchedModules, progress));
       } else {
         setError('Failed to fetch modules');
       }
@@ -157,7 +163,12 @@ const LearningTracker = ({ embedded = false }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [isAuthenticated, applyProgress]);
+
+  useEffect(() => {
+    if (authLoading) return;
+    fetchModulesAndProgress();
+  }, [authLoading, isAuthenticated, fetchModulesAndProgress]);
 
   const handleToggleTopic = async (moduleId, topicId, currentStatus, moduleIndex) => {
     try {
