@@ -10,7 +10,7 @@ Admin + developer surfaces for job vacancies, reported openings, freelance proje
 2. **Developers discover & apply** — browse opportunities, show interest (apply), track application progress.
 3. **Users can report openings** — community-submitted vacancies land in `pending` until admin reviews.
 4. **Freelance projects** — separate opportunity type under the same admin Opportunities section.
-5. **Job Post Links** — community-shared external job URLs; gated Apply Now (2 free per week + weekly contribution unlock).
+5. **Job Post Links** — community-shared external job URLs; gated Apply Now (3 free per week + weekly contribution unlock).
 6. **Feeds Interview Screening** — applicants marked `contacted` (or interview rounds) on a vacancy appear in Screening’s job → applicant dropdowns.
 
 Admin entry: **Admin Panel → Opportunities** (`opportunities` in `client/src/pages/AdminPanel.jsx`). Job Post Links admin UI: `AdminJobLinksSection` (Job Links / related admin nav).
@@ -135,7 +135,7 @@ Indexes: `{ createdBy, status, approvedAt }`, `{ clicks }`.
 
 **Product rules**
 
-1. Each user may click **Apply Now** on **2** distinct job links **per week** for free (no contribution required). Week runs **Monday 06:00 → next Monday 06:00 Asia/Kolkata (IST)**.
+1. Each user may click **Apply Now** on **3** distinct job links **per week** for free (no contribution required). Week runs **Monday 06:00 → next Monday 06:00 Asia/Kolkata (IST)**.
 2. To apply to **additional** links the same week, they must **contribute ≥1 job post URL** that week (to the community).
 3. Contribution unlock requires admin **Approve** (`approved` — listed publicly) **or** **Allow Access** (`access_granted` — unlock only, not listed). Pending does not unlock.
 4. Once unlocked for the week, they may Apply Now on **multiple** job posts.
@@ -164,7 +164,7 @@ Pending rows with a URL that already has an `approved` listing show a **Duplicat
 
 Unlock email: `User.jobLinkUnlockEmailSentAt` — send only if unset or `< week start`.
 
-**UI** (`Vacancies.jsx` → Job Post Links tab): inline warning in filter row — “Get 2 free applies weekly — share 1 job post to unlock unlimited applies.” Locked cards show “Contribute to unlock”. On contribute submit: toast “Job link submitted! It will appear after admin approval.” (5s).
+**UI** (`Vacancies.jsx` → Job Post Links tab): inline warning in filter row — “Get 3 free applies weekly — share 1 job post to unlock unlimited applies.” Locked cards show “Contribute to unlock”. On contribute submit: toast “Job link submitted! It will appear after admin approval.” (5s).
 
 Weekly free applies are tracked via `JobLink.clickEvents[{ user, at }]`.
 
@@ -295,7 +295,7 @@ See also: `docs/interview_modules.md`.
 - Toggle status only flips between `active` and `closed` (not pending).
 - Applicant status changes are no-ops if status unchanged (no duplicate history).
 - Hard delete removes vacancy permanently.
-- **Job Post Links:** 2 free Apply per week (Mon 06:00 IST week); further applies require ≥1 `approved` or `access_granted` contribution in the current week. Duplicate URLs allowed; use **Allow Access** so duplicates are not listed. Server enforces on `POST /job-links/:id/click`. Does **not** apply to Our Client Vacancies / Freelance. On **Approve** or **Allow Access**, contributor gets unlock email **once per week**; on **Reject**, `sendJobLinkRejectedEmail`.
+- **Job Post Links:** 3 free Apply per week (Mon 06:00 IST week); further applies require ≥1 `approved` or `access_granted` contribution in the current week. Duplicate URLs allowed; use **Allow Access** so duplicates are not listed. Server enforces on `POST /job-links/:id/click`. Does **not** apply to Our Client Vacancies / Freelance. On **Approve** or **Allow Access**, contributor gets unlock email **once per week**; on **Reject**, `sendJobLinkRejectedEmail`.
 
 ---
 

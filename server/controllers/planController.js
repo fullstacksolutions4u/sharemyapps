@@ -30,7 +30,7 @@ const JOB_LINK_PLAN = {
   description: 'Unlimited Apply Now on Job Post Links.',
   features: [
     'Unlimited Apply Now through Job Post Links',
-    'No weekly 2-apply limit',
+    'No weekly 3-apply limit',
     'Skip contribute-to-unlock — apply to every listing',
   ],
   active: true,

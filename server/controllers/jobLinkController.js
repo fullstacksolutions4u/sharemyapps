@@ -13,7 +13,7 @@ const {
   postProcessExtractedJob,
 } = require('../utils/jobDesignation');
 
-const FREE_APPLY_LIMIT = 5;
+const FREE_APPLY_LIMIT = 3;
 
 function calculateExpirationDate(postedDate) {
   const defaultExp = Date.now() + 5 * 24 * 60 * 60 * 1000;
@@ -100,11 +100,11 @@ function findDuplicateAgainstList({ url, title, company, excludeId, approvedLink
 }
 
 const APPLY_INSTRUCTION =
-  'Get 5 free applies weekly. Upgrade to Premium for ₹199/- for unlimited lifetime applies.';
+  'Get 3 free applies weekly. Upgrade to Premium for ₹199/- for unlimited lifetime applies.';
 
 /**
  * Apply Now rules for Job Post Links:
- * - 5 free Apply Now clicks per rolling 7-day week without contributing
+ * - 3 free Apply Now clicks per rolling 7-day week without contributing
  * - To apply to more, user needs ≥1 approved or access_granted contribution in the last 7 days
  * - Re-opening an already-clicked link is always allowed
  * - Does NOT apply to Our Client Vacancies or Freelance
@@ -133,7 +133,7 @@ async function getJobLinkApplyEligibility(userId) {
   const weeklyApplyCount = weeklyApplyDocs.length;
   const canApplyMore = isPremium || weeklyApplyCount < FREE_APPLY_LIMIT;
 
-  const dynamicApplyInstruction = `Get 5 free applies weekly. Upgrade to Premium for ₹${planDoc?.price ?? 199}/- for unlimited lifetime applies.`;
+  const dynamicApplyInstruction = `Get 3 free applies weekly. Upgrade to Premium for ₹${planDoc?.price ?? 199}/- for unlimited lifetime applies.`;
 
   return {
     canApplyMore,

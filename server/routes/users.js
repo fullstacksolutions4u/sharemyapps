@@ -238,57 +238,79 @@ router.get('/recent', async (req, res) => {
 router.get('/showcase-devs', optionalAuth, async (req, res) => {
   try {
     const User = require('../models/User');
-    const Project = require('../models/Project');
     const skip = Math.max(parseInt(req.query.skip) || 0, 0);
-    const limit = Math.min(parseInt(req.query.limit) || 3, 10);
+    const limit = Math.min(Math.max(parseInt(req.query.limit) || 12, 1), 50);
 
-    // Find all developers (both with and without avatars)
-    const allDevs = await User.find(
+    const result = await User.aggregate([
       {
-        role: { $ne: 'admin' },
-        isDeleted: { $ne: true },
-        hidden: { $ne: true },
-        userType: 'developer',
+        $match: {
+          role: { $ne: 'admin' },
+          isDeleted: { $ne: true },
+          hidden: { $ne: true },
+          $or: [
+            { userType: 'developer' },
+            { userType: { $exists: false } },
+            { userType: null },
+          ],
+        },
       },
-      { password: 0, googleId: 0, adminNote: 0 }
-    ).sort({ createdAt: -1 }).lean();
-
-    // Get approved project counts for all these devs
-    const allIds = allDevs.map(d => d._id);
-    const projects = await Project.find(
-      { owner: { $in: allIds }, status: 'approved' },
-      { owner: 1, title: 1 }
-    ).lean();
-
-    const projectMap = {};
-    for (const p of projects) {
-      const key = p.owner.toString();
-      if (!projectMap[key]) projectMap[key] = [];
-      projectMap[key].push(p.title);
-    }
-
-    // Sort to prioritize devs with projects and photos first, then apply skip/limit
-    const result = allDevs
-      .map(d => ({
-        ...d,
-        projectNames: projectMap[d._id.toString()] || [],
-        projectCount: (projectMap[d._id.toString()] || []).length,
-      }))
-      .sort((a, b) => {
-        // 1. Projects count first
-        if (a.projectCount !== b.projectCount) {
-          return b.projectCount - a.projectCount;
-        }
-        // 2. Avatar first
-        const aHasAv = a.avatar && a.avatar.trim() ? 1 : 0;
-        const bHasAv = b.avatar && b.avatar.trim() ? 1 : 0;
-        if (aHasAv !== bHasAv) {
-          return bHasAv - aHasAv;
-        }
-        // 3. Newest first
-        return new Date(b.createdAt) - new Date(a.createdAt);
-      })
-      .slice(skip, skip + limit);
+      {
+        $lookup: {
+          from: 'projects',
+          let: { uid: '$_id' },
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $and: [
+                    { $eq: ['$owner', '$$uid'] },
+                    { $eq: ['$status', 'approved'] },
+                    { $ne: ['$hidden', true] },
+                  ],
+                },
+              },
+            },
+            { $project: { _id: 1, title: 1 } },
+          ],
+          as: 'approvedProjects',
+        },
+      },
+      {
+        $addFields: {
+          projectCount: { $size: '$approvedProjects' },
+          projectNames: '$approvedProjects.title',
+          hasAvatar: {
+            $cond: [
+              {
+                $and: [
+                  { $ne: ['$avatar', null] },
+                  { $gt: [{ $strLenCP: { $ifNull: ['$avatar', ''] } }, 0] },
+                ],
+              },
+              1,
+              0,
+            ],
+          },
+        },
+      },
+      {
+        $sort: {
+          projectCount: -1,
+          hasAvatar: -1,
+          createdAt: -1,
+        },
+      },
+      { $skip: skip },
+      { $limit: limit },
+      {
+        $project: {
+          password: 0,
+          googleId: 0,
+          adminNote: 0,
+          approvedProjects: 0,
+        },
+      },
+    ]);
 
     const reqUser = req.user;
     const isRecruiterOrAdmin = reqUser && (
@@ -297,7 +319,7 @@ router.get('/showcase-devs', optionalAuth, async (req, res) => {
       reqUser.userType === 'client'
     );
 
-    const sanitizedResult = result.map(d => {
+    const sanitizedResult = result.map((d) => {
       const isSelf = reqUser && reqUser._id.toString() === d._id.toString();
       if (!isRecruiterOrAdmin && !isSelf) {
         delete d.email;
@@ -313,6 +335,7 @@ router.get('/showcase-devs', optionalAuth, async (req, res) => {
 
     res.json(sanitizedResult);
   } catch (err) {
+    console.error('Error in /showcase-devs:', err);
     res.status(500).json({ message: err.message });
   }
 });

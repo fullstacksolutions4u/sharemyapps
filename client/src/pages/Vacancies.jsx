@@ -9,7 +9,7 @@ import toast from 'react-hot-toast';
 import { normalizeJobDesignation } from '../utils/jobDesignation';
 
 const JOB_LINK_APPLY_INSTRUCTION =
-  'Get 5 free applies weekly. Upgrade for unlimited lifetime applies ₹499/-';
+  'Get 3 free applies weekly. Upgrade for unlimited lifetime applies ₹499/-';
 
 const getStatusConfig = (status) => {
   const s = (status || '').toLowerCase();
@@ -785,7 +785,7 @@ export default function Vacancies() {
               {activeTab === 'job-links' && (
                 <div className="flex items-center flex-1 justify-center px-4 overflow-hidden min-w-[200px]">
                   <p className="text-[11px] xl:text-[12px] font-medium text-amber-700 bg-amber-50 border border-amber-100 rounded-lg px-3 py-1.5 whitespace-nowrap truncate text-center w-full max-w-xl">
-                    {`Get 5 free applies weekly. Upgrade for unlimited lifetime applies ₹${jobLinkPrice}/-`}
+                    {`Get 3 free applies weekly. Upgrade for unlimited lifetime applies ₹${jobLinkPrice}/-`}
                   </p>
                 </div>
               )}
@@ -970,7 +970,7 @@ export default function Vacancies() {
                               <ul className="space-y-1.5 text-[11px] text-[#4A4A4A] leading-relaxed">
                                 <li className="flex gap-1.5">
                                   <span className="text-amber-600 shrink-0">•</span>
-                                  <span>You get <strong className="font-semibold text-[#1A1A1A]">2 free</strong> job applies each week.</span>
+                                  <span>You get <strong className="font-semibold text-[#1A1A1A]">3 free</strong> job applies each week.</span>
                                 </li>
                                 <li className="flex gap-1.5">
                                   <span className="text-amber-600 shrink-0">•</span>

@@ -885,7 +885,6 @@ export default function Home() {
   const [networkLoading, setNetworkLoading] = useState(true);
   const [showcaseProjects, setShowcaseProjects] = useState([]);
   const [showcaseDevs, setShowcaseDevs] = useState([]);
-  const [showcaseMentors, setShowcaseMentors] = useState([]);
   const [registeredCount, setRegisteredCount] = useState(4579);
 
   useEffect(() => {
@@ -897,11 +896,28 @@ export default function Home() {
       .then(res => setShowcaseProjects(res.data.slice(0, 4)))
       .catch(() => {});
     api.get('/users/showcase-devs?skip=0&limit=12')
-      .then(res => setShowcaseDevs(res.data))
-      .catch(() => {});
-    api.get('/users/mentors')
-      .then(res => setShowcaseMentors(res.data.slice(0, 12)))
-      .catch(() => {});
+      .then(res => {
+        if (Array.isArray(res.data) && res.data.length > 0) {
+          setShowcaseDevs(res.data);
+        } else {
+          api.get('/users/developers?page=1')
+            .then(devRes => {
+              if (Array.isArray(devRes.data?.developers)) {
+                setShowcaseDevs(devRes.data.developers.slice(0, 12));
+              }
+            })
+            .catch(() => {});
+        }
+      })
+      .catch(() => {
+        api.get('/users/developers?page=1')
+          .then(devRes => {
+            if (Array.isArray(devRes.data?.developers)) {
+              setShowcaseDevs(devRes.data.developers.slice(0, 12));
+            }
+          })
+          .catch(() => {});
+      });
     api.get('/users/count')
       .then(res => {
         if (res.data && typeof res.data.count === 'number') {
@@ -1032,33 +1048,7 @@ export default function Home() {
         </section>
       )}
 
-      {/* Showcase: mentors */}
-      {showcaseMentors.length > 0 && (
-        <section className="max-w-[1500px] mx-auto px-3 sm:px-4 pb-16">
-          <div className="flex items-center justify-between mb-8">
-            <h2 className="text-2xl font-bold text-text tracking-tight">Registered Mentors</h2>
-            <Link to="/mentors" className="text-sm text-accent hover:text-accent-hover flex items-center gap-1 font-medium">
-              View all <ArrowRight size={14} />
-            </Link>
-          </div>
-          <div className="relative w-full overflow-hidden group py-2 flex" style={{ maskImage: 'linear-gradient(to right, transparent, black 2%, black 98%, transparent)', WebkitMaskImage: 'linear-gradient(to right, transparent, black 2%, black 98%, transparent)' }}>
-            <div className="flex animate-marquee shrink-0 gap-5 pr-5 min-w-full group-hover:[animation-play-state:paused]" style={{ display: 'flex', animationDirection: 'reverse', animationDuration: '60s' }}>
-              {showcaseMentors.map((dev, idx) => (
-                <div key={dev._id} className="w-[300px] sm:w-[320px] flex-shrink-0 flex flex-col">
-                  <DeveloperCard dev={dev} stagger={{ ready: true, delay: (idx % showcaseMentors.length) * 50 }} hideContact hideGithub />
-                </div>
-              ))}
-            </div>
-            <div className="flex animate-marquee shrink-0 gap-5 pr-5 min-w-full group-hover:[animation-play-state:paused]" style={{ display: 'flex', animationDirection: 'reverse', animationDuration: '60s' }} aria-hidden="true">
-              {showcaseMentors.map((dev, idx) => (
-                <div key={`dup-${dev._id}`} className="w-[300px] sm:w-[320px] flex-shrink-0 flex flex-col">
-                  <DeveloperCard dev={dev} stagger={{ ready: true, delay: (idx % showcaseMentors.length) * 50 }} hideContact hideGithub />
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
+
 
       {/* Showcase: projects #100–103 */}
       {showcaseProjects.length > 0 && (

@@ -8,7 +8,7 @@ import PlacementPaymentModal from '../components/PlacementPaymentModal';
 
 const FEATURES = [
   'Unlimited job post applies',
-  'No weekly 2-apply limit',
+  'No weekly 3-apply limit',
   'ATS Compatible Resume & Cover letter Optimization',
   'One time payment',
 ];
