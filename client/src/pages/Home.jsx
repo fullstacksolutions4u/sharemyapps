@@ -655,21 +655,21 @@ function CommunityBlogPreview() {
         <div className="max-w-2xl mx-auto text-center relative z-10 mt-4">
           <div className="relative">
 
-            {/* Glass Card (Frosted Form) positioned absolute on top */}
+            {/* Glass Card (Frosted Form) positioned absolute on top with cool vibrant border */}
             <div
-              className="absolute top-0 left-0 right-0 z-20 rounded-2xl px-5 py-4 border border-white/40 shadow-lg"
+              className="absolute top-0 left-0 right-0 z-20 rounded-2xl px-5 py-4 border-2 border-indigo-200/90 hover:border-indigo-300 transition-all duration-300"
               style={{
-                background: 'linear-gradient(135deg, rgba(255,255,255,0.72) 0%, rgba(224,242,254,0.55) 50%, rgba(243,232,255,0.50) 100%)',
-                backdropFilter: 'blur(18px)',
-                WebkitBackdropFilter: 'blur(18px)',
-                boxShadow: '0 8px 32px rgba(99,102,241,0.10), 0 1.5px 8px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,0.80)',
+                background: 'linear-gradient(135deg, rgba(255,255,255,0.92) 0%, rgba(240,246,255,0.85) 50%, rgba(246,240,255,0.82) 100%)',
+                backdropFilter: 'blur(20px)',
+                WebkitBackdropFilter: 'blur(20px)',
+                boxShadow: '0 12px 36px -4px rgba(79,70,229,0.18), 0 4px 16px rgba(0,0,0,0.05), inset 0 1px 0 rgba(255,255,255,0.95)',
               }}
             >
               {/* Quick status form */}
-              <form onSubmit={handleQuickSubmit} className="space-y-2">
+              <form onSubmit={handleQuickSubmit} className="space-y-2.5">
                 {/* Top row: anon toggle + add experience button */}
                 <div className="flex items-center justify-between gap-3">
-                  <label className="flex items-center gap-1.5 cursor-pointer select-none">
+                  <label className="flex items-center gap-1.5 cursor-pointer select-none group">
                     <input
                       type="checkbox"
                       id="home-quick-anon"
@@ -679,8 +679,8 @@ function CommunityBlogPreview() {
                     />
                     <div className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center transition-all ${
                       quickAnonymous 
-                        ? 'bg-blue-600 border-blue-600 text-white' 
-                        : 'border-gray-300 bg-white/50 hover:border-gray-400'
+                        ? 'bg-indigo-600 border-indigo-600 text-white shadow-xs' 
+                        : 'border-indigo-200 bg-white group-hover:border-indigo-400'
                     }`}>
                       {quickAnonymous && (
                         <svg className="w-2.5 h-2.5 fill-current" viewBox="0 0 20 20">
@@ -688,30 +688,30 @@ function CommunityBlogPreview() {
                         </svg>
                       )}
                     </div>
-                    <span className="text-[9.5px] text-gray-400 font-semibold select-none">Post anonymously</span>
+                    <span className="text-[10px] text-gray-500 font-semibold select-none group-hover:text-gray-700 transition-colors">Post anonymously</span>
                   </label>
                   <button
                     type="button"
                     onClick={() => { if (!user) { toast.error('Please login'); return; } setNewContent(''); setNewAnonymous(false); setIsModalOpen(true); }}
-                    className="inline-flex items-center gap-1 bg-[#FFDD00] hover:bg-[#FFE53B] text-black font-extrabold text-[9.5px] px-4 py-1.5 rounded-full transition-all cursor-pointer shrink-0 shadow-xs active:scale-95"
+                    className="inline-flex items-center gap-1 bg-[#FFDD00] hover:bg-[#FFE53B] text-black font-extrabold text-[10px] px-4 py-1.5 rounded-full transition-all cursor-pointer shrink-0 shadow-xs hover:shadow-sm active:scale-95 border border-amber-300/60"
                   >
-                    <Plus size={10} /> Add Job Hunting Experience
+                    <Plus size={11} className="stroke-[3]" /> Add Job Hunting Experience
                   </button>
                 </div>
 
-                {/* Input + Share row */}
-                <div className="flex gap-2 items-center bg-white/60 border border-white/50 rounded-xl px-3 py-1.5 focus-within:border-white/80 focus-within:ring-1 focus-within:ring-white/30 transition-all">
+                {/* Input + Share row with cool border */}
+                <div className="flex gap-2 items-center bg-white/95 border-2 border-indigo-100 hover:border-indigo-200/90 focus-within:border-indigo-500 focus-within:ring-3 focus-within:ring-indigo-500/15 rounded-xl px-3.5 py-1.5 shadow-xs transition-all duration-200">
                   <input
                     type="text"
                     placeholder="What's on your mind?"
                     value={quickStatusText}
                     onChange={e => setQuickStatusText(e.target.value)}
-                    className="flex-1 bg-transparent text-[11px] font-medium placeholder-gray-400 text-gray-800 outline-none"
+                    className="flex-1 bg-transparent text-[11.5px] font-medium placeholder-gray-400 text-gray-800 outline-none"
                   />
                   <button
                     type="submit"
                     disabled={submitting || !quickStatusText.trim()}
-                    className="bg-[#DFE7F6] text-[#022C22] border border-[#022C22] px-5 py-1.5 rounded-full text-[11px] font-bold hover:bg-[#D0DAEC] transition-all duration-300 transform active:scale-95 shadow-xs hover:shadow-sm disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer shrink-0"
+                    className="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-1.5 rounded-full text-[11px] font-bold transition-all duration-200 transform active:scale-95 shadow-xs hover:shadow-sm disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer shrink-0"
                   >
                     Share
                   </button>

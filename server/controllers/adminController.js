@@ -167,10 +167,179 @@ exports.adminUpdateProject = async (req, res) => {
 
 exports.getAllUsers = async (req, res) => {
   try {
-    const query = {};
-    if (req.query.userType) {
-      query.userType = req.query.userType;
+    const isPaginated = req.query.page !== undefined || req.query.tab !== undefined || req.query.paginated === 'true';
+
+    // Base user projection for admin table & edit modal
+    const userSelect = '_id name email avatar role userType onboardingComplete phone linkedinUrl githubUrl leetcodeUrl portfolioUrl cvUrl cvWasPlaceholder badge regNumber hidden isBlocked isDeleted createdAt deletedAt points adminNote designations resumeData companyName companyWebsite industry hrName requirements freelanceAvailable freelanceRate mentorshipAvailable mentorshipRate mentorshipTech familiarTech mentorshipSchedule languagePreference gender place district state country dateOfBirth yearsOfExperience currentSalary expectedSalary preferredLocations jobMode menteeProfile clientProfile';
+
+    if (isPaginated) {
+      const page = Math.max(1, parseInt(req.query.page) || 1);
+      const limit = Math.min(100, Math.max(1, parseInt(req.query.limit) || 10));
+      const tab = req.query.tab || 'developers';
+      const search = (req.query.search || '').trim();
+      const filterPlaceholderCv = req.query.filterPlaceholderCv === 'true';
+      const filterUpdatedCv = req.query.filterUpdatedCv === 'true';
+
+      const match = {};
+
+      if (tab === 'deleted') {
+        match.isDeleted = true;
+      } else {
+        match.isDeleted = { $ne: true };
+        if (tab === 'developers') match.userType = 'developer';
+        else if (tab === 'recruiters') match.userType = 'recruiter';
+        else if (tab === 'clients') match.userType = 'client';
+        else if (tab === 'mentees') match.userType = 'mentee';
+      }
+
+      if (search) {
+        match.$or = [
+          { name: { $regex: search, $options: 'i' } },
+          { email: { $regex: search, $options: 'i' } },
+          { regNumber: { $regex: search, $options: 'i' } },
+          { phone: { $regex: search, $options: 'i' } },
+        ];
+      }
+
+      if (filterPlaceholderCv) {
+        match.cvUrl = { $regex: /drive\.google\.com/i };
+      } else if (filterUpdatedCv) {
+        match.cvWasPlaceholder = true;
+        match.cvUrl = { $exists: true, $ne: '' };
+      }
+
+      // Execute counts, designations, and paginated query in parallel
+      const [
+        total,
+        devCount,
+        recruiterCount,
+        clientCount,
+        menteeCount,
+        deletedCount,
+        missingCvCount,
+        missingSummaryCount,
+        placeholderCvCount,
+        updatedCvCount,
+        allDesignations,
+        pageUsers,
+      ] = await Promise.all([
+        User.countDocuments(match),
+        User.countDocuments({ isDeleted: { $ne: true }, userType: 'developer' }),
+        User.countDocuments({ isDeleted: { $ne: true }, userType: 'recruiter' }),
+        User.countDocuments({ isDeleted: { $ne: true }, userType: 'client' }),
+        User.countDocuments({ isDeleted: { $ne: true }, userType: 'mentee' }),
+        User.countDocuments({ isDeleted: true }),
+        User.countDocuments({ isDeleted: { $ne: true }, userType: 'developer', $or: [{ cvUrl: { $exists: false } }, { cvUrl: '' }, { cvUrl: null }] }),
+        User.countDocuments({ isDeleted: { $ne: true }, userType: 'developer', cvUrl: { $exists: true, $ne: '', $ne: null }, 'resumeData.summary': { $exists: false } }),
+        User.countDocuments({ isDeleted: { $ne: true }, userType: 'developer', cvUrl: { $regex: /drive\.google\.com/i } }),
+        User.countDocuments({ isDeleted: { $ne: true }, userType: 'developer', cvWasPlaceholder: true, cvUrl: { $exists: true, $ne: '', $ne: null } }),
+        User.distinct('designations'),
+        User.find(match)
+          .select(userSelect)
+          .sort({ createdAt: -1 })
+          .skip((page - 1) * limit)
+          .limit(limit)
+          .lean(),
+      ]);
+
+      const userIds = pageUsers.map(u => u._id);
+      let statsMap = {};
+
+      if (userIds.length > 0) {
+        const stats = await Project.aggregate([
+          { $match: { owner: { $in: userIds }, status: 'approved' } },
+          {
+            $group: {
+              _id: '$owner',
+              projectCount: { $sum: 1 },
+              totalLikes: { $sum: { $size: { $ifNull: ['$likes', []] } } },
+              allRatings: { $push: '$ratings' },
+            },
+          },
+          {
+            $addFields: {
+              flatRatings: {
+                $reduce: {
+                  input: '$allRatings',
+                  initialValue: [],
+                  in: { $concatArrays: ['$$value', { $ifNull: ['$$this', []] }] },
+                },
+              },
+            },
+          },
+          {
+            $addFields: {
+              avgRating: {
+                $cond: [
+                  { $gt: [{ $size: '$flatRatings' }, 0] },
+                  { $round: [{ $avg: '$flatRatings.value' }, 1] },
+                  0,
+                ],
+              },
+              ratingCount: { $size: '$flatRatings' },
+            },
+          },
+          { $project: { allRatings: 0, flatRatings: 0 } },
+        ]);
+
+        statsMap = Object.fromEntries(stats.map(s => [s._id.toString(), s]));
+      }
+
+      const ranks = await Promise.all(
+        pageUsers.map(async u => {
+          if (u.userType !== 'developer' || u.isDeleted) return null;
+          const pts = u.points || 0;
+          const higher = await User.countDocuments({
+            isDeleted: { $ne: true },
+            userType: 'developer',
+            $or: [
+              { points: { $gt: pts } },
+              { points: pts, createdAt: { $lt: u.createdAt } },
+            ],
+          });
+          return higher + 1;
+        })
+      );
+
+      const usersWithStats = pageUsers.map((u, i) => {
+        const s = statsMap[u._id.toString()] || {};
+        const projectCount = s.projectCount || 0;
+        const totalLikes   = s.totalLikes   || 0;
+        const avgRating    = s.avgRating    || 0;
+        const ratingCount  = s.ratingCount  || 0;
+        return {
+          ...u,
+          rank: ranks[i] || 1,
+          projectCount,
+          totalLikes,
+          avgRating,
+          engagementScore: totalLikes * 2 + avgRating * 10 + ratingCount,
+        };
+      });
+
+      return res.json({
+        users: usersWithStats,
+        total,
+        page,
+        totalPages: Math.ceil(total / limit) || 1,
+        counts: {
+          developers: devCount,
+          recruiters: recruiterCount,
+          clients: clientCount,
+          mentees: menteeCount,
+          deleted: deletedCount,
+          missingCv: missingCvCount,
+          missingSummary: missingSummaryCount,
+          placeholderCv: placeholderCvCount,
+          updatedCv: updatedCvCount,
+        },
+        allDesignations: (allDesignations || []).filter(Boolean),
+      });
     }
+
+    // Unpaginated fallback (for legacy exports/tools)
+    const query = {};
+    if (req.query.userType) query.userType = req.query.userType;
     if (req.query.onlyContacted === 'true') {
       const Vacancy = require('../models/Vacancy');
       const vacancies = await Vacancy.find({}, 'applicantStatus');
@@ -179,85 +348,24 @@ exports.getAllUsers = async (req, res) => {
         if (v.applicantStatus) {
           const statusObj = v.applicantStatus instanceof Map ? Object.fromEntries(v.applicantStatus) : v.applicantStatus;
           for (const userId in statusObj) {
-            if (statusObj[userId] === 'contacted') {
-              contactedUserIds.add(userId);
-            }
+            if (statusObj[userId] === 'contacted') contactedUserIds.add(userId);
           }
         }
       });
       query._id = { $in: Array.from(contactedUserIds) };
     }
 
-    const limit = req.query.limit ? parseInt(req.query.limit) : 0;
-    let userQuery = User.find(query)
-      .select('_id name email avatar role userType onboardingComplete phone linkedinUrl githubUrl leetcodeUrl portfolioUrl cvUrl cvWasPlaceholder badge regNumber hidden isBlocked isDeleted createdAt deletedAt points adminNote designations resumeData.summary companyName companyWebsite industry hrName requirements freelanceAvailable freelanceRate mentorshipAvailable mentorshipRate mentorshipTech familiarTech mentorshipSchedule languagePreference gender place district state country dateOfBirth yearsOfExperience currentSalary expectedSalary preferredLocations jobMode menteeProfile clientProfile')
+    const limit = req.query.limit ? parseInt(req.query.limit) : 100;
+    const users = await User.find(query)
+      .select(userSelect)
       .sort({ createdAt: -1 })
+      .limit(limit)
       .lean();
 
-    if (limit > 0) {
-      userQuery = userQuery.limit(limit);
-    }
-
-    const [users, stats] = await Promise.all([
-      userQuery,
-      Project.aggregate([
-        { $match: { status: 'approved' } },
-        {
-          $group: {
-            _id: '$owner',
-            projectCount: { $sum: 1 },
-            totalLikes: { $sum: { $size: '$likes' } },
-            allRatings: { $push: '$ratings' },
-          },
-        },
-        {
-          $addFields: {
-            flatRatings: {
-              $reduce: {
-                input: '$allRatings',
-                initialValue: [],
-                in: { $concatArrays: ['$$value', '$$this'] },
-              },
-            },
-          },
-        },
-        {
-          $addFields: {
-            avgRating: {
-              $cond: [
-                { $gt: [{ $size: '$flatRatings' }, 0] },
-                { $round: [{ $avg: '$flatRatings.value' }, 1] },
-                0,
-              ],
-            },
-          },
-        },
-        { $addFields: { ratingCount: { $size: '$flatRatings' } } },
-        { $project: { allRatings: 0, flatRatings: 0 } },
-      ]),
-    ]);
-
-    const statsMap = Object.fromEntries(stats.map(s => [s._id.toString(), s]));
-    const result = users.map(u => {
-      const s = statsMap[u._id.toString()] || {};
-      const projectCount = s.projectCount || 0;
-      const totalLikes   = s.totalLikes   || 0;
-      const avgRating    = s.avgRating    || 0;
-      const ratingCount  = s.ratingCount  || 0;
-      return {
-        ...u,
-        projectCount,
-        totalLikes,
-        avgRating,
-        engagementScore: totalLikes * 2 + avgRating * 10 + ratingCount,
-      };
-    });
-
-    result.sort((a, b) => b.engagementScore - a.engagementScore);
-
-    res.json(result);
+    res.json(users);
   } catch (err) {
-    res.status(500).json({ message: err.message }); }
+    res.status(500).json({ message: err.message });
+  }
 };
 
 exports.getResumes = async (req, res) => {

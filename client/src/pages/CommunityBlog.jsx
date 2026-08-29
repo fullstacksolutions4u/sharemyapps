@@ -456,57 +456,67 @@ export default function CommunityBlog() {
             Share your <span className="text-orange-500">career</span> & <span className="text-[#FFC436]">job hunting</span> journey
           </h1>
 
-          {/* Quick status field & button */}
-          <form onSubmit={handleQuickStatusSubmit} className="mt-2 max-w-lg mx-auto space-y-2.5 text-center">
-            <div className="flex gap-2">
-              <input
-                type="text"
-                placeholder="What's on your mind?"
-                value={quickStatusText}
-                onChange={(e) => setQuickStatusText(e.target.value)}
-                className="flex-1 bg-white border border-gray-200 rounded-xl px-4 py-2.5 text-xs outline-hidden focus:border-gray-400 focus:ring-1 focus:ring-gray-300/10 font-medium placeholder-gray-400"
-              />
-              <button
-                type="submit"
-                disabled={createPostMutation.isPending || !quickStatusText.trim()}
-                className="bg-gray-900 text-white px-5 py-2.5 rounded-xl hover:bg-gray-800 text-xs font-bold transition-colors disabled:opacity-50 cursor-pointer"
-              >
-                Share
-              </button>
-            </div>
-            <div className="flex items-center justify-between gap-4 px-1 mt-2">
-              <div className="flex items-center gap-1.5">
-                <input
-                  type="checkbox"
-                  id="quick-anon"
-                  checked={quickAnonymous}
-                  onChange={(e) => setQuickAnonymous(e.target.checked)}
-                  className="w-3.5 h-3.5 text-gray-900 border-gray-300 rounded focus:ring-gray-900 accent-gray-900 cursor-pointer"
-                />
-                <label htmlFor="quick-anon" className="text-[10px] text-gray-500 font-bold select-none cursor-pointer">
-                  Post anonymously as Community Member
-                </label>
+          {/* Quick status field & button in cool bordered card */}
+          <div
+            className="mt-4 max-w-xl mx-auto rounded-2xl p-4 border-2 border-indigo-200/90 hover:border-indigo-300 transition-all duration-300"
+            style={{
+              background: 'linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(240,246,255,0.90) 50%, rgba(246,240,255,0.85) 100%)',
+              boxShadow: '0 12px 36px -4px rgba(79,70,229,0.14), 0 4px 16px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.95)',
+            }}
+          >
+            <form onSubmit={handleQuickStatusSubmit} className="space-y-3 text-center">
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-1.5 group cursor-pointer">
+                  <input
+                    type="checkbox"
+                    id="quick-anon"
+                    checked={quickAnonymous}
+                    onChange={(e) => setQuickAnonymous(e.target.checked)}
+                    className="w-3.5 h-3.5 text-indigo-600 border-indigo-300 rounded focus:ring-indigo-500 accent-indigo-600 cursor-pointer"
+                  />
+                  <label htmlFor="quick-anon" className="text-[10.5px] text-gray-500 font-semibold select-none cursor-pointer group-hover:text-gray-700 transition-colors">
+                    Post anonymously as Community Member
+                  </label>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (!user) {
+                      toast.error('Please login to share experiences');
+                      return;
+                    }
+                    setNewContent('');
+                    setNewCategory('interview');
+                    setNewAnonymous(false);
+                    setEditingPostId(null);
+                    setIsModalOpen(true);
+                  }}
+                  className="inline-flex items-center justify-center gap-1 bg-[#FFDD00] hover:bg-[#FFE53B] text-black font-extrabold text-[10px] px-3.5 py-1.5 rounded-full transition-all shadow-xs hover:shadow-sm active:scale-95 cursor-pointer shrink-0 border border-amber-300/60"
+                >
+                  <Plus size={11} className="stroke-[3]" /> Add Job Hunting Experience
+                </button>
               </div>
 
-              <button
-                type="button"
-                onClick={() => {
-                  if (!user) {
-                    toast.error('Please login to share experiences');
-                    return;
-                  }
-                  setNewContent('');
-                  setNewCategory('interview');
-                  setNewAnonymous(false);
-                  setEditingPostId(null);
-                  setIsModalOpen(true);
-                }}
-                className="inline-flex items-center justify-center gap-1.5 bg-[#FFD93D] hover:bg-[#F4CE26] text-gray-900 font-extrabold text-[10px] px-3.5 py-1.5 rounded-xl transition-all shadow-xs cursor-pointer shrink-0"
-              >
-                <Plus size={12} /> Add Job Hunting Experience
-              </button>
-            </div>
-          </form>
+              {/* Input + Share row */}
+              <div className="flex gap-2 items-center bg-white/95 border-2 border-indigo-100 hover:border-indigo-200/90 focus-within:border-indigo-500 focus-within:ring-3 focus-within:ring-indigo-500/15 rounded-xl px-3.5 py-1.5 shadow-xs transition-all duration-200">
+                <input
+                  type="text"
+                  placeholder="What's on your mind?"
+                  value={quickStatusText}
+                  onChange={(e) => setQuickStatusText(e.target.value)}
+                  className="flex-1 bg-transparent text-[11.5px] font-medium placeholder-gray-400 text-gray-800 outline-none"
+                />
+                <button
+                  type="submit"
+                  disabled={createPostMutation.isPending || !quickStatusText.trim()}
+                  className="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-1.5 rounded-full text-[11px] font-bold transition-all duration-200 transform active:scale-95 shadow-xs hover:shadow-sm disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer shrink-0"
+                >
+                  Share
+                </button>
+              </div>
+            </form>
+          </div>
 
           {/* Simple Status Updates List */}
           {statusPosts.length > 0 && (

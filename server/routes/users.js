@@ -11,7 +11,7 @@ const { getUserVisibilityClause, canSeeUser } = require('../utils/visibility');
 // GET /api/users/count — public, returns total registered user count
 router.get('/count', async (req, res) => {
   try {
-    const count = await User.countDocuments({ isDeleted: { $ne: true }, role: { $ne: 'admin' }, hidden: { $ne: true } });
+    const count = await User.countDocuments();
     res.json({ count });
   } catch (err) {
     res.status(500).json({ message: err.message });
