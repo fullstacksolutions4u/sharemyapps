@@ -167,6 +167,7 @@ const LearningTracker = ({ embedded = false }) => {
 
   useEffect(() => {
     if (authLoading) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchModulesAndProgress();
   }, [authLoading, isAuthenticated, fetchModulesAndProgress]);
 
