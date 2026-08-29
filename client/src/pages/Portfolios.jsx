@@ -40,11 +40,7 @@ const toAbs = (url) => {
 };
 
 function SocialBtn({ href, icon: Icon, label, cls }) {
-  if (!href) return (
-    <div className="invisible pointer-events-none flex items-center gap-1.5 text-[11px] font-medium px-3 py-1 rounded-full border border-transparent">
-      <Icon size={11} />{label}
-    </div>
-  );
+  if (!href) return null;
   return (
     <a href={toAbs(href)} target="_blank" rel="noopener noreferrer"
       className={`flex items-center justify-center gap-1.5 text-[11px] font-medium px-3 py-1 rounded-full border transition-all hover:scale-105 hover:shadow-sm ${cls}`}>
@@ -169,19 +165,25 @@ function DeveloperCard({ dev, idx }) {
           </div>
         )}
 
-        {/* Social links */}
-        {(dev.linkedinUrl || dev.githubUrl || dev.leetcodeUrl || dev.portfolioUrl) && (
-          <div className="grid grid-cols-2 gap-1.5">
-            <SocialBtn href={dev.linkedinUrl} icon={Link2} label="LinkedIn"
-              cls="bg-[#EEF4FF] text-[#0A66C2] border-[#0A66C2]/20" />
-            <SocialBtn href={dev.githubUrl} icon={GitBranch} label="GitHub"
-              cls="bg-gray-900 text-white border-gray-900 hover:bg-gray-800" />
-            <SocialBtn href={dev.portfolioUrl} icon={Globe} label="Portfolio"
-              cls="bg-teal-50 text-teal-600 border-teal-200" />
-            <SocialBtn href={dev.leetcodeUrl} icon={Code2} label="LeetCode"
-              cls="bg-orange-50 text-orange-600 border-orange-200" />
-          </div>
-        )}
+        {/* Social links — top 2 based on priority: LinkedIn > Portfolio > GitHub > LeetCode */}
+        {(() => {
+          const allLinks = [
+            { href: dev.linkedinUrl, icon: Link2, label: 'LinkedIn', cls: 'bg-[#EEF4FF] text-[#0A66C2] border-[#0A66C2]/20' },
+            { href: dev.portfolioUrl, icon: Globe, label: 'Portfolio', cls: 'bg-teal-50 text-teal-600 border-teal-200' },
+            { href: dev.githubUrl, icon: GitBranch, label: 'GitHub', cls: 'bg-gray-900 text-white border-gray-900 hover:bg-gray-800' },
+            { href: dev.leetcodeUrl, icon: Code2, label: 'LeetCode', cls: 'bg-orange-50 text-orange-600 border-orange-200' },
+          ];
+          const visibleLinks = allLinks.filter(l => Boolean(l.href && l.href.trim())).slice(0, 2);
+          if (!visibleLinks.length) return null;
+
+          return (
+            <div className="grid grid-cols-2 gap-1.5">
+              {visibleLinks.map(l => (
+                <SocialBtn key={l.label} href={l.href} icon={l.icon} label={l.label} cls={l.cls} />
+              ))}
+            </div>
+          );
+        })()}
 
         {/* Projects & Freelance rate row */}
         {(dev.projects.length > 0 || (dev.freelanceAvailable && dev.freelanceRate)) && (
