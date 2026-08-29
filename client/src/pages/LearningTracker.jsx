@@ -284,8 +284,8 @@ const LearningTracker = ({ embedded = false }) => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ paddingTop: embedded ? '24px' : '24px', backgroundColor: '#F5F0E8' }}>
-        <div className="text-center">
+      <div className="min-h-[calc(100vh-70px)] flex items-center justify-center" style={{ paddingTop: embedded ? '24px' : '24px', backgroundColor: '#F5F0E8' }}>
+        <div className="text-center -mt-20 sm:-mt-28">
           <Lottie animationData={modulesAnimation} loop style={{ width: 400, height: 400, margin: '0 auto' }} />
         </div>
       </div>
@@ -294,8 +294,8 @@ const LearningTracker = ({ embedded = false }) => {
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ paddingTop: embedded ? '24px' : '24px', backgroundColor: '#F5F0E8' }}>
-        <div className="text-center">
+      <div className="min-h-[calc(100vh-70px)] flex items-center justify-center" style={{ paddingTop: embedded ? '24px' : '24px', backgroundColor: '#F5F0E8' }}>
+        <div className="text-center -mt-20 sm:-mt-28">
           <p className="text-red-500 mb-4">{error}</p>
           <button onClick={fetchModulesAndProgress} className="px-4 py-2 text-white rounded-lg" style={{ backgroundColor: '#9B7D43' }}>Retry</button>
         </div>
