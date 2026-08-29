@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import {
   ArrowLeft, Plus, X, Save, Check, Mail, Link as LinkIcon,
   AlertCircle, FileText, Briefcase, Pencil, Trash2, Eye, EyeOff,
@@ -641,38 +641,46 @@ export default function AdminUsersSection({ initialTab = 'developers' }) {
   const [messageSending, setMessageSending] = useState(false);
   const PER_PAGE = 10;
 
-  const fetchUsers = useCallback(async () => {
-    setLoading(true);
-    try {
-      const params = new URLSearchParams({
-        page: page.toString(),
-        limit: PER_PAGE.toString(),
-        tab,
-      });
-      if (search.trim()) params.set('search', search.trim());
-      if (filterPlaceholderCv) params.set('filterPlaceholderCv', 'true');
-      if (filterUpdatedCv) params.set('filterUpdatedCv', 'true');
-
-      const res = await api.get(`/admin/users?${params.toString()}`);
-      if (res.data && res.data.users) {
-        setUsers(res.data.users);
-        setCounts(res.data.counts || {});
-        setTotalCount(res.data.total || 0);
-        setTotalPages(res.data.totalPages || 1);
-        if (res.data.allDesignations) setAllDesignations(res.data.allDesignations);
-      } else if (Array.isArray(res.data)) {
-        setUsers(res.data);
-      }
-    } catch {
-      toast.error('Failed to load users');
-    } finally {
-      setLoading(false);
-    }
-  }, [page, tab, search, filterPlaceholderCv, filterUpdatedCv]);
-
   useEffect(() => {
-    fetchUsers();
-  }, [fetchUsers]);
+    let cancelled = false;
+    const loadUsers = async () => {
+      setLoading(true);
+      try {
+        const params = new URLSearchParams({
+          page: page.toString(),
+          limit: PER_PAGE.toString(),
+          tab,
+        });
+        if (search.trim()) params.set('search', search.trim());
+        if (filterPlaceholderCv) params.set('filterPlaceholderCv', 'true');
+        if (filterUpdatedCv) params.set('filterUpdatedCv', 'true');
+
+        const res = await api.get(`/admin/users?${params.toString()}`);
+        if (!cancelled) {
+          if (res.data && res.data.users) {
+            setUsers(res.data.users);
+            setCounts(res.data.counts || {});
+            setTotalCount(res.data.total || 0);
+            setTotalPages(res.data.totalPages || 1);
+            if (res.data.allDesignations) setAllDesignations(res.data.allDesignations);
+          } else if (Array.isArray(res.data)) {
+            setUsers(res.data);
+          }
+        }
+      } catch {
+        if (!cancelled) {
+          toast.error('Failed to load users');
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      }
+    };
+
+    loadUsers();
+    return () => { cancelled = true; };
+  }, [page, tab, search, filterPlaceholderCv, filterUpdatedCv]);
 
   useEffect(() => {
     if (!pickerOpen) return;
