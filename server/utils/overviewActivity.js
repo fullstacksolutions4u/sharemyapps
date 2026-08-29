@@ -70,6 +70,7 @@ async function buildOverviewActivity(userId, userObjectId, isJobAlertEligible) {
   }
 
   const clickDays = await JobLink.aggregate([
+    { $match: { 'clickEvents.user': userObjectId } },
     { $unwind: '$clickEvents' },
     { $match: { 'clickEvents.user': userObjectId } },
     {

@@ -71,13 +71,14 @@ router.get('/overview-stats', protect, async (req, res) => {
     const [applicationsCount, jobPostLinksCount, progressDoc, projectsCount, modules, jobAlertAgg, activity] = await Promise.all([
       Vacancy.countDocuments({ everApplied: userId }),
       JobLink.aggregate([
+        { $match: { 'clickEvents.user': userObjectId } },
         { $unwind: '$clickEvents' },
         { $match: { 'clickEvents.user': userObjectId } },
         { $count: 'total' },
       ]).then((r) => r[0]?.total || 0),
-      require('../models/LearningProgress').findOne({ userId }),
+      require('../models/LearningProgress').findOne({ userId }).select('completedModules completedTopics').lean(),
       Project.countDocuments({ owner: userId }),
-      require('../models/LearningModule').find({ isActive: true }).select('category title topics').lean(),
+      require('../models/LearningModule').find({ isActive: true }).select('category title topics._id').lean(),
       isJobAlertEligible
         ? JobAlertModel.aggregate([
             { $match: { notified: true, recipients: userObjectId } },
