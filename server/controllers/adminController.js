@@ -190,7 +190,7 @@ exports.getAllUsers = async (req, res) => {
 
     const limit = req.query.limit ? parseInt(req.query.limit) : 0;
     let userQuery = User.find(query)
-      .select('_id name email avatar role userType onboardingComplete phone linkedinUrl githubUrl leetcodeUrl portfolioUrl cvUrl cvWasPlaceholder badge regNumber hidden isBlocked isDeleted createdAt points adminNote designations resumeData.summary')
+      .select('_id name email avatar role userType onboardingComplete phone linkedinUrl githubUrl leetcodeUrl portfolioUrl cvUrl cvWasPlaceholder badge regNumber hidden isBlocked isDeleted createdAt deletedAt points adminNote designations resumeData.summary companyName companyWebsite industry hrName requirements freelanceAvailable freelanceRate mentorshipAvailable mentorshipRate mentorshipTech familiarTech mentorshipSchedule languagePreference gender place district state country dateOfBirth yearsOfExperience currentSalary expectedSalary preferredLocations jobMode menteeProfile clientProfile')
       .sort({ createdAt: -1 })
       .lean();
 
@@ -354,6 +354,9 @@ exports.adminUpdateUser = async (req, res) => {
     if (req.body.preferredLocations !== undefined) update.preferredLocations = toArr(req.body.preferredLocations);
     if (req.body.jobMode !== undefined) update.jobMode = toArr(req.body.jobMode);
     if (req.body.languagePreference !== undefined) update.languagePreference = toArr(req.body.languagePreference);
+
+    if (req.body.menteeProfile !== undefined) update.menteeProfile = req.body.menteeProfile;
+    if (req.body.clientProfile !== undefined) update.clientProfile = req.body.clientProfile;
 
     if (update.badge && !['new_member', 'active', 'top', 'champion'].includes(update.badge))
       return res.status(400).json({ message: 'Invalid badge value' });

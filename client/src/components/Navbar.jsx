@@ -45,14 +45,14 @@ function ServicesMenu() {
   }, []);
 
   return (
-    <div className="relative" ref={ref}>
+    <div className="relative shrink-0" ref={ref}>
       <button
         onClick={() => setOpen(v => !v)}
-        className="relative inline-flex items-center gap-1 text-base font-bold text-muted hover:text-text transition-colors after:absolute after:left-0 after:-bottom-0.5 after:h-[1.5px] after:w-0 after:bg-accent after:transition-[width] after:duration-300 hover:after:w-full"
+        className="relative inline-flex items-center gap-1 text-base font-bold text-muted hover:text-text transition-colors whitespace-nowrap shrink-0 after:absolute after:left-0 after:-bottom-0.5 after:h-[1.5px] after:w-0 after:bg-accent after:transition-[width] after:duration-300 hover:after:w-full"
       >
-        <Crown size={15} className="text-amber-500" />
-        Premium Services
-        <ChevronDown size={14} className={`transition-transform ${open ? 'rotate-180' : ''}`} />
+        <Crown size={15} className="text-amber-500 shrink-0" />
+        <span className="whitespace-nowrap">Premium Services</span>
+        <ChevronDown size={14} className={`shrink-0 transition-transform ${open ? 'rotate-180' : ''}`} />
       </button>
       {open && (
         <div className="absolute left-0 mt-2 w-56 bg-white border border-border rounded-xl shadow-lg py-1 z-50">
@@ -377,67 +377,66 @@ export default function Navbar() {
   return (
     <header className="sticky top-0 z-50 bg-white border-b border-border">
       <div className="w-full px-4 sm:px-6 h-16 flex items-center justify-between">
-        {/* Left: Logo + Navigation Links */}
-        <div className="flex items-center gap-12 lg:gap-16">
-          {/* Logo */}
-          <Link to="/" className="flex items-center gap-2 shrink-0">
-            <img src={logo} alt="ShareMyApps" className="h-8 w-auto" />
-            <div className="hidden sm:flex flex-col leading-tight">
-              <span className="font-bold text-lg leading-none">
-                <span className="text-blue-500">Share</span>
-                <span className="text-accent">My</span>
-                <span className="text-violet-600">Apps</span>
-              </span>
-              <span style={{ fontFamily: "'Caveat', cursive" }} className="text-sm leading-none text-pink-500">where developers meet opportunity</span>
-            </div>
-          </Link>
+        {/* Left: Logo */}
+        <Link to="/" className="flex items-center gap-2 shrink-0">
+          <img src={logo} alt="ShareMyApps" className="h-8 w-auto" />
+          <div className="hidden sm:flex flex-col leading-tight">
+            <span className="font-bold text-lg leading-none">
+              <span className="text-blue-500">Share</span>
+              <span className="text-accent">My</span>
+              <span className="text-violet-600">Apps</span>
+            </span>
+            <span style={{ fontFamily: "'Caveat', cursive" }} className="text-sm leading-none text-pink-500">where developers meet opportunity</span>
+          </div>
+        </Link>
 
-          {/* Desktop Nav */}
-          <nav className="hidden md:flex items-center gap-5 lg:gap-7">
-            <Link to="/feed" className="relative text-base font-bold text-muted hover:text-text transition-colors after:absolute after:left-0 after:-bottom-0.5 after:h-[1.5px] after:w-0 after:bg-accent after:transition-[width] after:duration-300 hover:after:w-full">Timeline</Link>
-            <Link to="/explore" className="relative text-base font-bold text-muted hover:text-text transition-colors after:absolute after:left-0 after:-bottom-0.5 after:h-[1.5px] after:w-0 after:bg-accent after:transition-[width] after:duration-300 hover:after:w-full">Projects</Link>
-            <Link to="/portfolios" className="relative text-base font-bold text-muted hover:text-text transition-colors after:absolute after:left-0 after:-bottom-0.5 after:h-[1.5px] after:w-0 after:bg-accent after:transition-[width] after:duration-300 hover:after:w-full">
+        {/* Right: Desktop Nav + Action buttons */}
+        <div className="hidden md:flex items-center gap-3 lg:gap-4.5 xl:gap-6 flex-nowrap shrink-0">
+          <nav className="flex items-center gap-3 lg:gap-4.5 xl:gap-6 flex-nowrap shrink-0">
+            <Link to="/feed" className="relative text-base font-bold text-muted hover:text-text transition-colors whitespace-nowrap shrink-0 after:absolute after:left-0 after:-bottom-0.5 after:h-[1.5px] after:w-0 after:bg-accent after:transition-[width] after:duration-300 hover:after:w-full">Timeline</Link>
+            <Link to="/explore" className="relative text-base font-bold text-muted hover:text-text transition-colors whitespace-nowrap shrink-0 after:absolute after:left-0 after:-bottom-0.5 after:h-[1.5px] after:w-0 after:bg-accent after:transition-[width] after:duration-300 hover:after:w-full">Projects</Link>
+            <Link to="/portfolios" className="relative text-base font-bold text-muted hover:text-text transition-colors whitespace-nowrap shrink-0 after:absolute after:left-0 after:-bottom-0.5 after:h-[1.5px] after:w-0 after:bg-accent after:transition-[width] after:duration-300 hover:after:w-full">
               Portfolios
             </Link>
             {isClient && (
-              <Link to="/freelance-developers" className="relative text-base font-bold text-muted hover:text-text transition-colors after:absolute after:left-0 after:-bottom-0.5 after:h-[1.5px] after:w-0 after:bg-accent after:transition-[width] after:duration-300 hover:after:w-full">Freelance Developers</Link>
+              <Link to="/freelance-developers" className="relative text-base font-bold text-muted hover:text-text transition-colors whitespace-nowrap shrink-0 after:absolute after:left-0 after:-bottom-0.5 after:h-[1.5px] after:w-0 after:bg-accent after:transition-[width] after:duration-300 hover:after:w-full">Freelance Developers</Link>
             )}
             {isRecruiter && (
-              <Link to="/find-developers" className="relative inline-flex items-center gap-1.5 text-base font-bold text-muted hover:text-text transition-colors after:absolute after:left-0 after:-bottom-0.5 after:h-[1.5px] after:w-0 after:bg-accent after:transition-[width] after:duration-300 hover:after:w-full">
+              <Link to="/find-developers" className="relative inline-flex items-center gap-1.5 text-base font-bold text-muted hover:text-text transition-colors whitespace-nowrap shrink-0 after:absolute after:left-0 after:-bottom-0.5 after:h-[1.5px] after:w-0 after:bg-accent after:transition-[width] after:duration-300 hover:after:w-full">
                 AI Talent Search
                 <GeminiIcon size={14} />
               </Link>
             )}
             {isRecruiter && (
-              <Link to="/find-developers/history" className="relative text-base font-bold text-muted hover:text-text transition-colors after:absolute after:left-0 after:-bottom-0.5 after:h-[1.5px] after:w-0 after:bg-accent after:transition-[width] after:duration-300 hover:after:w-full">Developers Directory</Link>
+              <Link to="/find-developers/history" className="relative text-base font-bold text-muted hover:text-text transition-colors whitespace-nowrap shrink-0 after:absolute after:left-0 after:-bottom-0.5 after:h-[1.5px] after:w-0 after:bg-accent after:transition-[width] after:duration-300 hover:after:w-full">Developers Directory</Link>
             )}
             {isRecruiter && (
-              <Link to="/post-vacancy" className="relative text-base font-bold text-muted hover:text-text transition-colors after:absolute after:left-0 after:-bottom-0.5 after:h-[1.5px] after:w-0 after:bg-accent after:transition-[width] after:duration-300 hover:after:w-full">Post Vacancy</Link>
+              <Link to="/post-vacancy" className="relative text-base font-bold text-muted hover:text-text transition-colors whitespace-nowrap shrink-0 after:absolute after:left-0 after:-bottom-0.5 after:h-[1.5px] after:w-0 after:bg-accent after:transition-[width] after:duration-300 hover:after:w-full">Post Vacancy</Link>
             )}
             {isMentee && (
-              <Link to="/mentors" className="relative text-base font-bold text-muted hover:text-text transition-colors after:absolute after:left-0 after:-bottom-0.5 after:h-[1.5px] after:w-0 after:bg-accent after:transition-[width] after:duration-300 hover:after:w-full">Mentors</Link>
+              <Link to="/mentors" className="relative text-base font-bold text-muted hover:text-text transition-colors whitespace-nowrap shrink-0 after:absolute after:left-0 after:-bottom-0.5 after:h-[1.5px] after:w-0 after:bg-accent after:transition-[width] after:duration-300 hover:after:w-full">Mentors</Link>
             )}
             {!isRecruiter && !isClient && !isMentee && !isMentor && (
               <>
-                <Link to="/opportunities" className="relative text-base font-bold text-muted hover:text-text transition-colors after:absolute after:left-0 after:-bottom-0.5 after:h-[1.5px] after:w-0 after:bg-accent after:transition-[width] after:duration-300 hover:after:w-full">Opportunities</Link>
-                <Link to="/community-blog" className="relative text-base font-bold text-muted hover:text-text transition-colors after:absolute after:left-0 after:-bottom-0.5 after:h-[1.5px] after:w-0 after:bg-accent after:transition-[width] after:duration-300 hover:after:w-full">Community Blog</Link>
-                <Link to="/quiz-zone" className="relative text-base font-bold text-muted hover:text-text transition-colors after:absolute after:left-0 after:-bottom-0.5 after:h-[1.5px] after:w-0 after:bg-accent after:transition-[width] after:duration-300 hover:after:w-full">Quiz Zone</Link>
+                <Link to="/opportunities" className="relative text-base font-bold text-muted hover:text-text transition-colors whitespace-nowrap shrink-0 after:absolute after:left-0 after:-bottom-0.5 after:h-[1.5px] after:w-0 after:bg-accent after:transition-[width] after:duration-300 hover:after:w-full">Opportunities</Link>
+                <Link to="/community-blog" className="relative text-base font-bold text-muted hover:text-text transition-colors whitespace-nowrap shrink-0 after:absolute after:left-0 after:-bottom-0.5 after:h-[1.5px] after:w-0 after:bg-accent after:transition-[width] after:duration-300 hover:after:w-full">Community Blog</Link>
+                <Link to="/quiz-zone" className="relative text-base font-bold text-muted hover:text-text transition-colors whitespace-nowrap shrink-0 after:absolute after:left-0 after:-bottom-0.5 after:h-[1.5px] after:w-0 after:bg-accent after:transition-[width] after:duration-300 hover:after:w-full">Quiz Zone</Link>
                 <ServicesMenu />
               </>
             )}
           </nav>
-        </div>
 
-        {/* Right: Actions / Auth buttons */}
-        <div className="hidden md:flex items-center gap-3 mr-16 lg:mr-24">
+          {/* Action buttons with small gap */}
           {user ? (
-            <UserDropdown user={user} onLogout={handleLogout} />
+            <div className="flex items-center gap-3 ml-2 shrink-0">
+              <UserDropdown user={user} onLogout={handleLogout} />
+            </div>
           ) : (
-            <div className="flex items-center gap-2">
-              <Link to="/register" className="flex items-center gap-1.5 text-sm border border-accent text-accent hover:bg-accent hover:text-white px-3.5 py-2 rounded-lg transition-colors font-medium">
+            <div className="flex items-center gap-2 ml-2 shrink-0">
+              <Link to="/register" className="flex items-center gap-1.5 text-sm border border-accent text-accent hover:bg-accent hover:text-white px-3.5 py-2 rounded-lg transition-colors font-medium whitespace-nowrap">
                 <Plus size={14} /> Add Project
               </Link>
-              <Link to="/login" className="text-sm bg-accent hover:bg-accent-hover text-white px-4 py-2 rounded-lg transition-colors font-medium">
+              <Link to="/login" className="text-sm bg-accent hover:bg-accent-hover text-white px-4 py-2 rounded-lg transition-colors font-medium whitespace-nowrap">
                 Join Now
               </Link>
             </div>
