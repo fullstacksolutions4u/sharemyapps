@@ -123,7 +123,7 @@ function DeveloperCard({ dev, idx }) {
             <h3 className="font-bold text-base text-text leading-tight truncate">{dev.name}</h3>
             {dev.expectedSalary && (
               <span className="text-[11px] text-[#5a788b] shrink-0">
-                Expected CTC: <strong>{(Number(dev.expectedSalary) / 100000).toFixed(1).replace(/\.0$/, '')} LPA</strong>
+                Expected CTC: <strong>{Number(dev.expectedSalary) <= 100 ? `${Number(dev.expectedSalary)} LPA` : `${(Number(dev.expectedSalary) / 100000).toFixed(1).replace(/\.0$/, '')} LPA`}</strong>
               </span>
             )}
           </div>
@@ -268,10 +268,31 @@ const DESIGNATIONS = [
   'Java Full Stack Developer', '.NET Developer', 'Spring Boot Developer', 'Others',
 ];
 
+const EXPERIENCES = [
+  { label: 'All Experience', value: '' },
+  { label: 'Fresher', value: 'Fresher' },
+  { label: '0 - 1 Years', value: '0-1' },
+  { label: '1 - 2 Years', value: '1-2' },
+  { label: '2 - 3 Years', value: '2-3' },
+  { label: '3 - 5 Years', value: '3-5' },
+  { label: '5+ Years', value: '5+' },
+];
+
+const CTC_RANGES = [
+  { label: 'All CTC / Salary', value: '' },
+  { label: '< ₹3 LPA', value: '0-300000' },
+  { label: '₹3 - ₹6 LPA', value: '300000-600000' },
+  { label: '₹6 - ₹10 LPA', value: '600000-1000000' },
+  { label: '₹10 - ₹15 LPA', value: '1000000-1500000' },
+  { label: '₹15+ LPA', value: '1500000+' },
+];
+
 export default function Portfolios() {
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [designation, setDesignation] = useState('');
+  const [experience, setExperience] = useState('');
+  const [ctc, setCtc] = useState('');
   const [page, setPage] = useState(1);
 
   useEffect(() => {
@@ -280,11 +301,13 @@ export default function Portfolios() {
   }, [search]);
 
   const { data, isFetching: loading } = useQuery({
-    queryKey: ['developers', page, debouncedSearch, designation],
+    queryKey: ['developers', page, debouncedSearch, designation, experience, ctc],
     queryFn: async () => {
       const params = new URLSearchParams({ page });
       if (debouncedSearch) params.set('search', debouncedSearch);
       if (designation) params.set('designation', designation);
+      if (experience) params.set('experience', experience);
+      if (ctc) params.set('ctc', ctc);
       const res = await api.get(`/users/developers?${params}`);
       return res.data;
     },
@@ -310,38 +333,78 @@ export default function Portfolios() {
 
       {/* Hero banner */}
       <div className="relative border-b border-border overflow-hidden">
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 py-5 flex flex-col sm:flex-row sm:items-center gap-4">
-          {/* Search — left */}
-          <div className="relative w-full sm:w-80">
-            <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted" />
-            <input
-              type="text"
-              placeholder="Search by name…"
-              value={search}
-              onChange={e => { setSearch(e.target.value); setPage(1); }}
-              className="w-full pl-10 pr-4 py-2.5 text-sm border border-border rounded-xl bg-white/80 backdrop-blur-sm focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/20 transition-all shadow-sm"
-            />
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 py-4 flex flex-col xl:flex-row xl:items-center justify-between gap-3">
+          
+          {/* Left side: Search + Experience Filter */}
+          <div className="flex flex-col sm:flex-row items-center gap-2.5 w-full xl:w-auto">
+            {/* Search */}
+            <div className="relative w-full sm:w-60 lg:w-64">
+              <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted" />
+              <input
+                type="text"
+                placeholder="Search by name…"
+                value={search}
+                onChange={e => { setSearch(e.target.value); setPage(1); }}
+                className="w-full pl-9 pr-3 py-2 text-xs border border-border rounded-xl bg-white/90 backdrop-blur-sm focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/20 transition-all shadow-xs"
+              />
+            </div>
+
+            {/* Experience Filter */}
+            <div className="relative w-full sm:w-40">
+              <select
+                value={experience}
+                onChange={e => { setExperience(e.target.value); setPage(1); }}
+                className="w-full pl-3 pr-7 py-2 text-xs border border-border rounded-xl bg-white/90 backdrop-blur-sm focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/20 transition-all shadow-xs text-text appearance-none cursor-pointer"
+              >
+                {EXPERIENCES.map(exp => (
+                  <option key={exp.value} value={exp.value}>{exp.label}</option>
+                ))}
+              </select>
+              <div className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-muted">
+                <svg width="10" height="10" viewBox="0 0 12 12" fill="currentColor"><path d="M6 8L1 3h10z"/></svg>
+              </div>
+            </div>
           </div>
 
-          <p className="text-sm text-muted items-center gap-1.5 hidden sm:flex flex-1 justify-center">
+          {/* Center message */}
+          <p className="text-xs text-muted items-center gap-1.5 hidden xl:flex justify-center text-center font-medium px-2 shrink-0">
             <Sparkles size={13} className="text-accent shrink-0" />
             Connect with our developers for hiring, freelance, and mentorship
           </p>
 
-          {/* Designation filter — right */}
-          <div className="relative w-full sm:w-64">
-            <select
-              value={designation}
-              onChange={e => { setDesignation(e.target.value); setPage(1); }}
-              className="w-full px-3 py-2.5 text-sm border border-border rounded-xl bg-white/80 backdrop-blur-sm focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/20 transition-all shadow-sm text-text appearance-none"
-            >
-              <option value="">All designations</option>
-              {DESIGNATIONS.map(d => (
-                <option key={d} value={d}>{d}</option>
-              ))}
-            </select>
-            <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-muted">
-              <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor"><path d="M6 8L1 3h10z"/></svg>
+          {/* Right side: CTC Filter + Designation Filter */}
+          <div className="flex flex-col sm:flex-row items-center gap-2.5 w-full xl:w-auto">
+            {/* CTC Filter */}
+            <div className="relative w-full sm:w-44">
+              <select
+                value={ctc}
+                onChange={e => { setCtc(e.target.value); setPage(1); }}
+                className="w-full pl-3 pr-7 py-2 text-xs border border-border rounded-xl bg-white/90 backdrop-blur-sm focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/20 transition-all shadow-xs text-text appearance-none cursor-pointer"
+              >
+                {CTC_RANGES.map(c => (
+                  <option key={c.value} value={c.value}>{c.label}</option>
+                ))}
+              </select>
+              <div className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-muted">
+                <svg width="10" height="10" viewBox="0 0 12 12" fill="currentColor"><path d="M6 8L1 3h10z"/></svg>
+              </div>
+            </div>
+
+            {/* Designation filter */}
+            <div className="relative w-full sm:w-52">
+              <select
+                value={designation}
+                onChange={e => { setDesignation(e.target.value); setPage(1); }}
+                className="w-full pl-3 pr-7 py-2 text-xs border border-border rounded-xl bg-white/90 backdrop-blur-sm focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/20 transition-all shadow-xs text-text appearance-none cursor-pointer"
+              >
+                <option value="">All designations</option>
+                {DESIGNATIONS.map(d => (
+                  <option key={d} value={d}>{d}</option>
+                ))}
+              </select>
+              <div className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-muted">
+                <svg width="10" height="10" viewBox="0 0 12 12" fill="currentColor"><path d="M6 8L1 3h10z"/></svg>
+              </div>
             </div>
           </div>
         </div>

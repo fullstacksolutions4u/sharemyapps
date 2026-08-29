@@ -357,6 +357,53 @@ router.get('/developers', optionalAuth, async (req, res) => {
       const safeDesig = req.query.designation.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
       matchStage.designations = { $elemMatch: { $regex: safeDesig, $options: 'i' } };
     }
+    if (req.query.experience?.trim()) {
+      const exp = req.query.experience.trim();
+      if (exp.toLowerCase() === 'fresher') {
+        matchStage.yearsOfExperience = { $regex: '^fresher', $options: 'i' };
+      } else if (exp === '0-1') {
+        matchStage.yearsOfExperience = { $in: ['0-1', 'Fresher', 'fresher', '0'] };
+      } else if (exp === '1-2') {
+        matchStage.yearsOfExperience = '1-2';
+      } else if (exp === '2-3') {
+        matchStage.yearsOfExperience = { $in: ['2-3', '2', '2.3'] };
+      } else if (exp === '3-5') {
+        matchStage.yearsOfExperience = '3-5';
+      } else if (exp === '5+') {
+        matchStage.yearsOfExperience = { $in: ['5-7', '7-10', '10+'] };
+      } else {
+        matchStage.yearsOfExperience = { $regex: exp.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), $options: 'i' };
+      }
+    }
+    if (req.query.ctc?.trim()) {
+      const ctc = req.query.ctc.trim();
+      if (ctc === '0-300000') {
+        matchStage.$or = [
+          { expectedSalary: { $gt: 0, $lt: 3 } },
+          { expectedSalary: { $gte: 10000, $lte: 300000 } }
+        ];
+      } else if (ctc === '300000-600000') {
+        matchStage.$or = [
+          { expectedSalary: { $gte: 3, $lte: 6 } },
+          { expectedSalary: { $gte: 300000, $lte: 600000 } }
+        ];
+      } else if (ctc === '600000-1000000') {
+        matchStage.$or = [
+          { expectedSalary: { $gt: 6, $lte: 10 } },
+          { expectedSalary: { $gt: 600000, $lte: 1000000 } }
+        ];
+      } else if (ctc === '1000000-1500000') {
+        matchStage.$or = [
+          { expectedSalary: { $gt: 10, $lte: 15 } },
+          { expectedSalary: { $gt: 1000000, $lte: 1500000 } }
+        ];
+      } else if (ctc === '1500000+') {
+        matchStage.$or = [
+          { expectedSalary: { $gt: 15, $lt: 10000 } },
+          { expectedSalary: { $gte: 1500000 } }
+        ];
+      }
+    }
 
     // Projects owned by this developer (for the card display)
     const ownProjectsLookup = {
