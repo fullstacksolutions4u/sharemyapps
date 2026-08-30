@@ -70,7 +70,7 @@ function MatchBadge({ jdMatch }) {
   );
 }
 
-export default function DeveloperCard({ dev, stagger, hideContact = false, hideGithub = false }) {
+export default function DeveloperCard({ dev, stagger, hideContact = false, hideGithub = false, hidePortfolio = false }) {
   const role = dev.designations?.[0] || dev.resumeData?.experience?.[0]?.role || null;
   const jdMatch = dev.jdMatch || null;
   const matchedSet = new Set((jdMatch?.matchedSkills || []).map(s => s.toLowerCase()));
@@ -80,7 +80,7 @@ export default function DeveloperCard({ dev, stagger, hideContact = false, hideG
     ...(Array.isArray(dev.resumeData?.skills) ? dev.resumeData.skills : []),
   ].filter((v, i, a) => v && a.indexOf(v) === i); // dedupe
 
-  const visibleSkills = skills.slice(0, 5);
+  const visibleSkills = skills.slice(0, 4);
   const extraCount = skills.length - visibleSkills.length;
 
   const cardCls = [
@@ -146,26 +146,32 @@ export default function DeveloperCard({ dev, stagger, hideContact = false, hideG
 
       {/* Skills */}
       {visibleSkills.length > 0 && (
-        <div className="flex flex-wrap gap-1.5">
-          {visibleSkills.map(skill => {
-            const matched = matchedSet.has(skill.toLowerCase());
-            const c = skillColor(skill);
-            return (
-              <span
-                key={skill}
-                className="text-[10px] font-medium px-2 py-0.5 rounded-md border"
-                style={matched
-                  ? { background: '#F0FDF4', borderColor: '#BBF7D0', color: '#15803D' }
-                  : { background: c.bg, borderColor: c.border, color: c.text }}
-              >
-                {skill}
-              </span>
-            );
-          })}
+        <div className="flex flex-col gap-1.5 min-w-0">
+          {/* Line 1: Skills strictly in 1 row */}
+          <div className="flex items-center gap-1.5 overflow-hidden flex-nowrap min-w-0">
+            {visibleSkills.map(skill => {
+              const matched = matchedSet.has(skill.toLowerCase());
+              const c = skillColor(skill);
+              return (
+                <span
+                  key={skill}
+                  className="text-[10px] font-medium px-2 py-0.5 rounded-md border shrink-0 truncate max-w-[110px]"
+                  style={matched
+                    ? { background: '#F0FDF4', borderColor: '#BBF7D0', color: '#15803D' }
+                    : { background: c.bg, borderColor: c.border, color: c.text }}
+                >
+                  {skill}
+                </span>
+              );
+            })}
+          </div>
+          {/* Line 2: Remaining count */}
           {extraCount > 0 && (
-            <span className="text-[10px] font-medium px-2 py-0.5 rounded-md bg-bg border border-border text-muted">
-              +{extraCount}
-            </span>
+            <div>
+              <span className="inline-block text-[10px] font-medium px-2 py-0.5 rounded-md bg-bg border border-border text-muted">
+                +{extraCount}
+              </span>
+            </div>
           )}
         </div>
       )}
@@ -218,12 +224,14 @@ export default function DeveloperCard({ dev, stagger, hideContact = false, hideG
       </div>}
 
       {/* Action buttons */}
-      <div className="grid grid-cols-4 gap-1.5 pt-0.5 border-t border-border mt-auto">
-        <span className="inline-flex items-center justify-center text-[10px] font-semibold px-2 py-1 rounded-lg bg-gray-100 text-gray-600 border border-gray-200 text-center">
-          {!hideContact && <Globe size={9} className="mr-1" />} Portfolio
-        </span>
+      <div className="flex items-center gap-1.5 pt-1 border-t border-border mt-auto">
+        {!hidePortfolio && (
+          <span className="inline-flex items-center justify-center text-[10px] font-semibold px-2.5 py-1 rounded-lg bg-gray-100 text-gray-600 border border-gray-200 shrink-0 text-center">
+            {!hideContact && <Globe size={9} className="mr-1" />} Portfolio
+          </span>
+        )}
         {dev.linkedinUrl && (hideContact ? (
-          <span className="inline-flex items-center justify-center text-[10px] font-semibold px-2 py-1 rounded-lg bg-[#EEF4FF] text-[#0A66C2] border border-[#0A66C2]/20 text-center">
+          <span className="inline-flex items-center justify-center text-[10px] font-semibold px-2.5 py-1 rounded-lg bg-[#EEF4FF] text-[#0A66C2] border border-[#0A66C2]/20 shrink-0 text-center">
             LinkedIn
           </span>
         ) : (
@@ -231,13 +239,13 @@ export default function DeveloperCard({ dev, stagger, hideContact = false, hideG
             href={toAbs(dev.linkedinUrl)}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center justify-center text-[10px] font-semibold px-2 py-1 rounded-lg bg-[#EEF4FF] text-[#0A66C2] border border-[#0A66C2]/20 hover:bg-[#0A66C2] hover:text-white transition-colors"
+            className="inline-flex items-center justify-center text-[10px] font-semibold px-2.5 py-1 rounded-lg bg-[#EEF4FF] text-[#0A66C2] border border-[#0A66C2]/20 hover:bg-[#0A66C2] hover:text-white transition-colors shrink-0 text-center"
           >
             <Link2 size={9} className="mr-1" /> LinkedIn
           </a>
         ))}
         {dev.githubUrl && !hideGithub && (hideContact ? (
-          <span className="inline-flex items-center justify-center text-[10px] font-semibold px-2 py-1 rounded-lg bg-gray-900 text-white border border-gray-900 text-center">
+          <span className="inline-flex items-center justify-center text-[10px] font-semibold px-2.5 py-1 rounded-lg bg-gray-900 text-white border border-gray-900 shrink-0 text-center">
             GitHub
           </span>
         ) : (
@@ -245,7 +253,7 @@ export default function DeveloperCard({ dev, stagger, hideContact = false, hideG
             href={toAbs(dev.githubUrl)}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center justify-center text-[10px] font-semibold px-2 py-1 rounded-lg bg-gray-900 text-white border border-gray-900 hover:bg-gray-700 transition-colors"
+            className="inline-flex items-center justify-center text-[10px] font-semibold px-2.5 py-1 rounded-lg bg-gray-900 text-white border border-gray-900 hover:bg-gray-700 transition-colors shrink-0 text-center"
           >
             <GitBranch size={9} className="mr-1" /> GitHub
           </a>
@@ -260,8 +268,12 @@ export default function DeveloperCard({ dev, stagger, hideContact = false, hideG
             loc = dev.country;
           }
           return loc ? (
-            <span className="inline-flex items-center justify-center gap-1 text-[10px] font-medium px-2 py-1 rounded-lg bg-bg border border-border text-muted text-center">
-              {loc?.toLowerCase() === 'remote' ? <Home size={9} className="shrink-0" /> : <MapPin size={9} className="shrink-0" />} {loc}
+            <span
+              title={loc}
+              className="inline-flex items-center justify-center gap-1 text-[10px] font-medium px-2.5 py-1 rounded-lg bg-bg border border-border text-muted whitespace-nowrap min-w-0 flex-1 overflow-hidden"
+            >
+              {loc?.toLowerCase() === 'remote' ? <Home size={9} className="shrink-0" /> : <MapPin size={9} className="shrink-0 text-muted" />}
+              <span className="truncate">{loc}</span>
             </span>
           ) : null;
         })()}
