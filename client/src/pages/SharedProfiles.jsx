@@ -63,7 +63,9 @@ export default function SharedProfiles() {
                 {vacancy.location && (
                   <span className="flex items-center gap-1.5"><MapPin size={16} /> {vacancy.location}</span>
                 )}
-                <span className="flex items-center gap-1.5"><Briefcase size={16} /> {vacancy.experience || 'Experience Not Specified'}</span>
+                {vacancy.experience && (
+                  <span className="flex items-center gap-1.5"><Briefcase size={16} /> {vacancy.experience}</span>
+                )}
               </div>
             </div>
             

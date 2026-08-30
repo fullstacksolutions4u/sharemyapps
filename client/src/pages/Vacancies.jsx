@@ -1038,28 +1038,49 @@ export default function Vacancies() {
 
                       {/* Info Row: Experience, Salary, Type, Location */}
                       <div className="flex flex-wrap items-center gap-x-3 gap-y-2 text-[13px] text-gray-600 font-medium">
-                        <div className="flex items-center gap-1.5">
-                          <Briefcase size={15} className="text-indigo-500" />
-                          {v.experience || '0-5 Yrs'}
-                        </div>
-                        <div className="w-[1px] h-3.5 bg-gray-300"></div>
-                        <div className="flex items-center gap-1.5">
-                          <Banknote size={15} className="text-emerald-500" />
-                          {v.salaryRange || v.budget || 'Not specified'}
-                        </div>
-                        {v.type && (
-                          <>
-                            <div className="w-[1px] h-3.5 bg-gray-300"></div>
-                            <div className="flex items-center gap-1.5 capitalize">
-                              {v.type === 'onsite' ? <Building size={15} className="text-amber-500" /> : <Laptop size={15} className="text-amber-500" />}
-                              {v.type}
-                            </div>
-                          </>
-                        )}
-                        <div className="flex items-center gap-1.5">
-                          <MapPin size={15} className="text-rose-500" />
-                          {v.location || 'Remote'}
-                        </div>
+                        {[
+                          v.experience && {
+                            key: 'exp',
+                            node: (
+                              <div className="flex items-center gap-1.5">
+                                <Briefcase size={15} className="text-indigo-500" />
+                                {v.experience}
+                              </div>
+                            )
+                          },
+                          (v.salaryRange || v.budget) && {
+                            key: 'salary',
+                            node: (
+                              <div className="flex items-center gap-1.5">
+                                <Banknote size={15} className="text-emerald-500" />
+                                {v.salaryRange || v.budget}
+                              </div>
+                            )
+                          },
+                          v.type && {
+                            key: 'type',
+                            node: (
+                              <div className="flex items-center gap-1.5 capitalize">
+                                {v.type === 'onsite' ? <Building size={15} className="text-amber-500" /> : <Laptop size={15} className="text-amber-500" />}
+                                {v.type}
+                              </div>
+                            )
+                          },
+                          v.location && {
+                            key: 'loc',
+                            node: (
+                              <div className="flex items-center gap-1.5">
+                                <MapPin size={15} className="text-rose-500" />
+                                {v.location}
+                              </div>
+                            )
+                          }
+                        ].filter(Boolean).map((item, idx, arr) => (
+                          <div key={item.key} className="flex items-center gap-3">
+                            {item.node}
+                            {idx < arr.length - 1 && <div className="w-[1px] h-3.5 bg-gray-300"></div>}
+                          </div>
+                        ))}
                       </div>
 
                       {/* Description */}
@@ -1078,19 +1099,21 @@ export default function Vacancies() {
                       </div>
 
                       {/* Skills / Tags */}
-                      <div>
-                        <div className={`text-[13.5px] text-gray-500 ${expanded[`${v._id}_skills`] ? '' : 'line-clamp-2'}`}>
-                          {v.skills && v.skills.length > 0 ? v.skills.join(' · ') : v.topics && v.topics.length > 0 ? v.topics.join(' · ') : 'Skills not specified'}
+                      {((v.skills && v.skills.length > 0) || (v.topics && v.topics.length > 0)) && (
+                        <div>
+                          <div className={`text-[13.5px] text-gray-500 ${expanded[`${v._id}_skills`] ? '' : 'line-clamp-2'}`}>
+                            {v.skills && v.skills.length > 0 ? v.skills.join(' · ') : v.topics.join(' · ')}
+                          </div>
+                          {((v.skills?.join(' · ') || v.topics?.join(' · ') || '').length > 70) && (
+                            <button
+                              onClick={() => setExpanded(e => ({ ...e, [`${v._id}_skills`]: !e[`${v._id}_skills`] }))}
+                              className="text-[12.5px] font-medium text-accent hover:text-accent-hover mt-0.5 transition-colors"
+                            >
+                              {expanded[`${v._id}_skills`] ? 'less' : '+ more'}
+                            </button>
+                          )}
                         </div>
-                        {((v.skills?.join(' · ') || v.topics?.join(' · ') || '').length > 70) && (
-                          <button
-                            onClick={() => setExpanded(e => ({ ...e, [`${v._id}_skills`]: !e[`${v._id}_skills`] }))}
-                            className="text-[12.5px] font-medium text-accent hover:text-accent-hover mt-0.5 transition-colors"
-                          >
-                            {expanded[`${v._id}_skills`] ? 'less' : '+ more'}
-                          </button>
-                        )}
-                      </div>
+                      )}
 
                       </div>
 
