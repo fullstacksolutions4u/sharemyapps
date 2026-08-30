@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
-  Search, Phone, GitBranch, Link2, Code2,
+  Search, GitBranch, Link2, Code2,
   Globe, Layers, ChevronLeft, ChevronRight, Users, Sparkles, Monitor, Smartphone, Crown
 } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
-  Search, Phone, GitBranch, Link2, Code2,
+  Search, GitBranch, Link2, Code2,
   Globe, Layers, ChevronLeft, ChevronRight, Users, IndianRupee, Monitor, Smartphone, Briefcase,
 } from 'lucide-react';
 import api from '../api/axios';
