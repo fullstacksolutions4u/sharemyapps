@@ -885,7 +885,7 @@ export default function Home() {
   const [networkLoading, setNetworkLoading] = useState(true);
   const [showcaseProjects, setShowcaseProjects] = useState([]);
   const [showcaseDevs, setShowcaseDevs] = useState([]);
-  const [targetCount, setTargetCount] = useState(4579);
+  const [targetCount, setTargetCount] = useState(4960);
   const [displayCount, setDisplayCount] = useState(0);
 
   useEffect(() => {
@@ -1008,7 +1008,7 @@ export default function Home() {
               ))}
             </div>
             <span className="text-[12.5px] font-extrabold text-[#1E3A8A] tracking-wide">
-              Community with {Number(displayCount).toLocaleString()} developers
+              Community with {Number(displayCount).toLocaleString()} software developers
             </span>
           </div>
 
