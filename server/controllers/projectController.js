@@ -211,7 +211,6 @@ exports.getProject = async (req, res) => {
 
     if (projectJSON.owner && !hasAccess) {
       delete projectJSON.owner.email;
-      delete projectJSON.owner.phone;
     }
 
     res.json(projectJSON);
@@ -250,7 +249,6 @@ exports.getUserProjects = async (req, res) => {
     const userJSON = user.toObject();
     if (!hasAccess) {
       delete userJSON.email;
-      delete userJSON.phone;
     }
 
     res.json({ user: userJSON, projects });

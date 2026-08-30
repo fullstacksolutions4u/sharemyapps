@@ -324,7 +324,6 @@ router.get('/showcase-devs', optionalAuth, async (req, res) => {
       const isSelf = reqUser && reqUser._id.toString() === d._id.toString();
       if (!isRecruiterOrAdmin && !isSelf) {
         delete d.email;
-        delete d.phone;
         delete d.cvUrl;
         if (d.resumeData && d.resumeData.personalInfo) {
           delete d.resumeData.personalInfo.email;
@@ -541,7 +540,6 @@ router.get('/developers', optionalAuth, async (req, res) => {
       const isSelf = reqUser && reqUser._id.toString() === dev._id.toString();
       if (!isRecruiterOrAdmin && !isSelf) {
         delete dev.email;
-        delete dev.phone;
         delete dev.cvUrl;
         if (dev.resumeData && dev.resumeData.personalInfo) {
           delete dev.resumeData.personalInfo.email;
@@ -651,7 +649,6 @@ router.get('/mentors', optionalAuth, async (req, res) => {
       const isSelf = reqUser && reqUser._id.toString() === m._id.toString();
       if (!isRecruiterOrAdmin && !isSelf) {
         delete m.email;
-        delete m.phone;
       }
       return m;
     });
@@ -1019,7 +1016,6 @@ router.post('/find-developers', protect, jdQuota, aiLimit, async (req, res) => {
       const isSelf = reqUser && reqUser._id.toString() === dev._id.toString();
       if (!isClientRecruiterOrAdmin && !isSelf) {
         delete dev.email;
-        delete dev.phone;
         delete dev.cvUrl;
         if (dev.resumeData && dev.resumeData.personalInfo) {
           delete dev.resumeData.personalInfo.email;
