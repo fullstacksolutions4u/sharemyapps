@@ -360,6 +360,27 @@ export default function MentorshipProgram() {
                     Secured by Razorpay · UPI, Cards, Net Banking accepted
                   </p>
                 )}
+
+                <div style={{ display: 'flex', justifyContent: 'center', marginTop: '22px', width: '100%' }}>
+                  <div 
+                    className="hover:-translate-y-0.5 hover:shadow-md transition-all duration-300 cursor-default"
+                    style={{ 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      gap: '10px', 
+                      background: 'linear-gradient(135deg, #fffcf5 0%, #fdf2d8 100%)', 
+                      border: '1px solid #f3dfb3', 
+                      padding: '10px 22px', 
+                      borderRadius: '16px', 
+                      boxShadow: '0 4px 16px rgba(148, 98, 0, 0.08)' 
+                    }}
+                  >
+                    <span style={{ fontSize: '20px' }}>🏆</span>
+                    <span style={{ fontSize: '14.5px', fontWeight: 800, color: '#946200', letterSpacing: '0.02em', fontFamily: "'Manrope', sans-serif" }}>
+                      23+ Placements
+                    </span>
+                  </div>
+                </div>
               </>
             )}
           </div>
