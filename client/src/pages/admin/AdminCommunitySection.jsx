@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { MessageSquare, Trash2, Pencil, Check, Heart, Calendar } from 'lucide-react';
+import { MessageSquare, Trash2, Pencil, Check, Heart, Calendar, Eye, X } from 'lucide-react';
 import api from '../../api/axios';
 import toast from 'react-hot-toast';
 
@@ -7,6 +7,9 @@ export default function AdminCommunitySection() {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('interview'); // 'interview' (Experiences) or 'general' (Statuses)
+
+  // View State
+  const [viewingPost, setViewingPost] = useState(null);
 
   // Edit State
   const [editingId, setEditingId] = useState(null);
@@ -215,7 +218,7 @@ export default function AdminCommunitySection() {
                       </div>
 
                       {/* Post body */}
-                      <p className="text-xs text-gray-700 leading-relaxed font-semibold whitespace-pre-wrap pl-0.5">
+                      <p className="text-xs text-gray-700 leading-relaxed font-semibold truncate pl-0.5 max-w-md xl:max-w-3xl">
                         {post.content}
                       </p>
 
@@ -234,6 +237,13 @@ export default function AdminCommunitySection() {
 
                     {/* Action buttons */}
                     <div className="flex items-center gap-2 shrink-0">
+                      <button
+                        onClick={() => setViewingPost(post)}
+                        className="p-2 rounded-xl border border-gray-200 text-gray-500 hover:text-blue-600 hover:border-blue-100 hover:bg-blue-50/50 transition-all cursor-pointer"
+                        title="View Details"
+                      >
+                        <Eye size={13} />
+                      </button>
                       <button
                         onClick={() => handleEditStart(post)}
                         className="p-2 rounded-xl border border-gray-200 text-gray-500 hover:text-indigo-600 hover:border-indigo-100 hover:bg-indigo-50/50 transition-all cursor-pointer"
@@ -254,6 +264,54 @@ export default function AdminCommunitySection() {
               </div>
             );
           })}
+        </div>
+      )}
+
+      {/* View Post Modal */}
+      {viewingPost && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl w-full max-w-2xl border border-gray-200 shadow-xl overflow-hidden flex flex-col max-h-[85vh]">
+            <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
+              <h3 className="font-bold text-gray-900">Post Details</h3>
+              <button onClick={() => setViewingPost(null)} className="text-gray-400 hover:text-gray-600 transition-colors p-1">
+                <X size={18} />
+              </button>
+            </div>
+            <div className="p-6 overflow-y-auto">
+              {/* Header metadata */}
+              <div className="flex items-center gap-3 mb-6 pb-6 border-b border-gray-100">
+                {viewingPost.author?.avatar && !viewingPost.anonymous ? (
+                  <img src={viewingPost.author.avatar} alt={viewingPost.author.name} className="w-10 h-10 rounded-full object-cover" />
+                ) : (
+                  <div className="w-10 h-10 rounded-full bg-indigo-50 text-indigo-600 border border-indigo-100 flex items-center justify-center font-bold text-sm">
+                    {viewingPost.anonymous ? 'CM' : (viewingPost.author?.name?.charAt(0).toUpperCase() || '?')}
+                  </div>
+                )}
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-bold text-gray-900">
+                      {viewingPost.anonymous ? 'Community Member (Anonymous)' : (viewingPost.author?.name || 'Unknown')}
+                    </span>
+                    {viewingPost.author?.email && !viewingPost.anonymous && (
+                      <span className="text-xs text-gray-400 font-medium">({viewingPost.author.email})</span>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2 mt-1">
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-gray-50 border border-gray-200 text-gray-500 uppercase tracking-wider">
+                      {viewingPost.category === 'interview' ? 'Experience' : 'Status'}
+                    </span>
+                    <span className="text-[11px] text-gray-400 font-semibold flex items-center gap-1">
+                      <Calendar size={11} />
+                      {new Date(viewingPost.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })} • {new Date(viewingPost.createdAt).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true })}
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <div className="text-sm text-gray-800 leading-relaxed font-medium whitespace-pre-wrap">
+                {viewingPost.content}
+              </div>
+            </div>
+          </div>
         </div>
       )}
     </div>
