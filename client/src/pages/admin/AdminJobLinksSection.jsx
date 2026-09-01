@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import api from '../../api/axios';
 import { toast } from 'react-hot-toast';
-import { Briefcase, Check, X, ExternalLink, Link as LinkIcon, MapPin, Laptop, Edit2, Plus, Save, Clock, Sparkles, Building, Calendar, ChevronDown, Copy, Download, MousePointerClick } from 'lucide-react';
+import { Briefcase, Check, X, ExternalLink, Link as LinkIcon, MapPin, Laptop, Edit2, Plus, Save, Clock, Sparkles, Building, Calendar, ChevronDown, Copy, Download, MousePointerClick, MessageCircle } from 'lucide-react';
 
 const DESIGNATION_OPTIONS = [
   "Frontend Developer",
@@ -77,6 +77,7 @@ export default function AdminJobLinksSection() {
   
   const [feedbackData, setFeedbackData] = useState([]);
   const [expandedClicks, setExpandedClicks] = useState({});
+  const [showHearBackDropdown, setShowHearBackDropdown] = useState(false);
 
   // AI extraction state — for Add New form
   const [aiText, setAiText] = useState('');
@@ -496,12 +497,13 @@ export default function AdminJobLinksSection() {
   const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
   const paginatedList = activeList.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
   const totalClicks = jobLinks.reduce((sum, link) => sum + (link.clicks?.length || 0), 0);
+  const totalHearBackYes = feedbackData.filter(f => f.heardBack).length;
 
   return (
-    <div className="space-y-6 max-w-5xl">
+    <div className="space-y-6">
       {/* Tabs */}
-      <div className="flex justify-between items-center border-b border-border flex-wrap gap-4 mb-6">
-        <div className="flex">
+      <div className="flex justify-between items-center border-b border-border flex-nowrap gap-4 mb-6">
+        <div className="flex shrink-0">
           <button
             onClick={() => { setActiveTab('approved'); setCurrentPage(1); }}
             className={`px-4 py-3 font-medium text-sm transition-colors border-b-2 ${activeTab === 'approved' ? 'border-accent text-accent' : 'border-transparent text-muted hover:text-text'}`}
@@ -531,9 +533,9 @@ export default function AdminJobLinksSection() {
         </div>
         
         {/* Right Side Controls */}
-        <div className="flex flex-wrap items-center gap-3 mb-1">
+        <div className="flex flex-nowrap items-center gap-3 mb-1 shrink-0">
           {/* Search Bar */}
-          <div className="relative w-64 max-w-full">
+          <div className="relative w-44 shrink-0">
             <svg className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
             <input
               type="text"
@@ -549,10 +551,41 @@ export default function AdminJobLinksSection() {
             )}
           </div>
           
-          {/* Total Clicks */}
-          <div className="bg-violet-50 border border-violet-100 rounded-lg px-3 py-1.5 flex items-center gap-1.5 shrink-0 shadow-sm text-[12px] font-bold text-violet-700">
-            <MousePointerClick size={14} className="text-violet-600" />
-            <span>Total Click {totalClicks}</span>
+          {/* Total Clicks & Hear Back Yes */}
+          <div className="flex items-center gap-3 shrink-0">
+            <div className="relative">
+              <button 
+                onClick={() => setShowHearBackDropdown(!showHearBackDropdown)}
+                className="bg-emerald-50 border border-emerald-100 rounded-lg px-3 py-1.5 flex items-center gap-1.5 shadow-sm text-[12px] font-bold text-emerald-700 hover:bg-emerald-100 transition-colors"
+              >
+                <MessageCircle size={14} className="text-emerald-600" />
+                <span>Hear Back Yes {totalHearBackYes}</span>
+              </button>
+              
+              {showHearBackDropdown && (
+                <div className="absolute top-full mt-2 right-0 w-80 bg-white border border-border shadow-xl rounded-xl z-50 overflow-hidden flex flex-col">
+                  <div className="bg-emerald-50 border-b border-emerald-100 px-3 py-2 text-[12px] font-bold text-emerald-800 flex justify-between items-center">
+                    <span>Positive Feedback ({totalHearBackYes})</span>
+                    <button onClick={() => setShowHearBackDropdown(false)} className="text-emerald-600 hover:text-emerald-800"><X size={14}/></button>
+                  </div>
+                  <div className="max-h-64 overflow-y-auto p-2 flex flex-col gap-1.5 text-[12px]">
+                    {feedbackData.filter(f => f.heardBack).length === 0 ? (
+                      <div className="text-gray-400 text-center py-4 italic">No positive feedback yet</div>
+                    ) : (
+                      feedbackData.filter(f => f.heardBack).map((f, i) => (
+                        <div key={i} className="bg-gray-50 border border-gray-100 rounded p-2">
+                          <span className="font-semibold text-gray-800">{f.user?.name || 'Unknown User'}</span>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+            <div className="bg-violet-50 border border-violet-100 rounded-lg px-3 py-1.5 flex items-center gap-1.5 shadow-sm text-[12px] font-bold text-violet-700">
+              <MousePointerClick size={14} className="text-violet-600" />
+              <span>Total Click {totalClicks}</span>
+            </div>
           </div>
 
           {activeTab === 'approved' && (
