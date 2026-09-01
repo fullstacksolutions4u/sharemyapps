@@ -210,6 +210,9 @@ function normalizeJobLocation(location, explicitState = '', sourceText = '') {
 
   if (!loc) return { location: '', state };
 
+  // Strip ", Out of India" if it was accidentally appended to Remote
+  loc = loc.replace(/,\s*out of india$/i, '').trim();
+
   if (/^remote$/i.test(loc)) return { location: 'Remote', state: '' };
 
   const stateInLoc = findStateInString(loc);
