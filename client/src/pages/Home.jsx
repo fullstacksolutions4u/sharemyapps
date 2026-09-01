@@ -997,7 +997,7 @@ export default function Home() {
 
           <div className="inline-flex flex-col items-center justify-center bg-[#EBF2FC]/80 border border-[#D0E2FA]/50 px-6 py-2.5 rounded-full mb-10 pointer-events-auto select-none shadow-xs">
             <div className="flex -space-x-2 justify-center mb-1.5">
-              {networkUsers.slice(6, 12).map((dev, idx) => (
+              {networkUsers.slice(6, 14).map((dev, idx) => (
                 <img
                   key={dev._id || idx}
                   className="inline-block h-7 w-7 rounded-full ring-2 ring-white object-cover bg-white cursor-pointer"
@@ -1007,9 +1007,13 @@ export default function Home() {
                 />
               ))}
             </div>
-            <span className="text-[12.5px] font-extrabold text-[#1E3A8A] tracking-wide">
-              Community with {Number(displayCount).toLocaleString()} software developers
-            </span>
+            <div className="text-[12.5px] font-extrabold text-[#1E3A8A] tracking-wide flex items-center justify-center gap-1">
+              <span>Community with</span>
+              <span className="inline-block text-center min-w-[38px] tabular-nums">
+                {Number(displayCount).toLocaleString()}
+              </span>
+              <span>software developers</span>
+            </div>
           </div>
 
         </section>
