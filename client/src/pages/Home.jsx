@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { ArrowRight, LayoutGrid, Users, MessageCircle, Brain, ShoppingBag, Briefcase, Heart, MessageSquare, Send, Plus, X, Trash2, ChevronUp } from 'lucide-react';
 
 import api from '../api/axios';
+import AppSpinner from '../components/AppSpinner';
 import ProjectCard from '../components/ProjectCard';
 import DeveloperCard from '../components/recruiter/DeveloperCard';
 import { useAuth } from '../context/AuthContext';
@@ -340,10 +341,10 @@ const MOCK_STATUS_POSTS = [
   }
 ];
 
-function CommunityBlogPreview() {
+function CommunityBlogPreview({ initialPosts }) {
   const { user } = useAuth();
-  const [posts, setPosts] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [posts, setPosts] = useState(initialPosts || []);
+  const [loading, setLoading] = useState(!initialPosts);
   const [quickStatusText, setQuickStatusText] = useState('');
   const [quickAnonymous, setQuickAnonymous] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -363,7 +364,9 @@ function CommunityBlogPreview() {
   };
 
   useEffect(() => {
-    fetchPosts();
+    if (!initialPosts) {
+      fetchPosts();
+    }
   }, []);
 
   const handleQuickSubmit = async (e) => {
@@ -852,46 +855,30 @@ export default function Home() {
   const [showcaseProjects, setShowcaseProjects] = useState([]);
   const [showcaseDevs, setShowcaseDevs] = useState([]);
   const [targetCount, setTargetCount] = useState(4960);
-  const [displayCount, setDisplayCount] = useState(4500);
+  const [displayCount, setDisplayCount] = useState(5000);
+  const [globalLoading, setGlobalLoading] = useState(true);
+  const [prefetchedPosts, setPrefetchedPosts] = useState([]);
 
   useEffect(() => {
-    api.get('/users/recent?limit=100')
-      .then(res => setNetworkUsers(res.data))
-      .catch(() => {})
-      .finally(() => setNetworkLoading(false));
-    api.get('/projects/showcase?skip=99&limit=4')
-      .then(res => setShowcaseProjects(res.data.slice(0, 4)))
-      .catch(() => {});
-    api.get('/users/showcase-devs?skip=0&limit=12')
-      .then(res => {
-        if (Array.isArray(res.data) && res.data.length > 0) {
-          setShowcaseDevs(res.data);
-        } else {
-          api.get('/users/developers?page=1')
-            .then(devRes => {
-              if (Array.isArray(devRes.data?.developers)) {
-                setShowcaseDevs(devRes.data.developers.slice(0, 12));
-              }
-            })
-            .catch(() => {});
-        }
-      })
-      .catch(() => {
-        api.get('/users/developers?page=1')
-          .then(devRes => {
-            if (Array.isArray(devRes.data?.developers)) {
-              setShowcaseDevs(devRes.data.developers.slice(0, 12));
-            }
-          })
-          .catch(() => {});
-      });
-    api.get('/users/count')
-      .then(res => {
-        if (res.data && typeof res.data.count === 'number') {
-          setTargetCount(res.data.count);
-        }
-      })
-      .catch(() => {});
+    Promise.all([
+      api.get('/users/recent?limit=100').then(r => r.data).catch(() => PLACEHOLDER_USERS),
+      api.get('/projects/showcase?skip=99&limit=4').then(r => r.data.slice(0, 4)).catch(() => []),
+      api.get('/users/showcase-devs?skip=0&limit=12').then(res => {
+        if (Array.isArray(res.data) && res.data.length > 0) return res.data;
+        return api.get('/users/developers?page=1').then(r => r.data?.developers?.slice(0, 12) || []);
+      }).catch(() => []),
+      api.get('/users/count').then(r => r.data?.count || 4960).catch(() => 4960),
+      api.get('/community-posts?limit=100').then(r => r.data?.posts || []).catch(() => [])
+    ]).then(([recentUsers, proj, devs, count, posts]) => {
+      setNetworkUsers(recentUsers);
+      setShowcaseProjects(proj);
+      setShowcaseDevs(devs);
+      setTargetCount(count);
+      setPrefetchedPosts(posts);
+      
+      setNetworkLoading(false);
+      setGlobalLoading(false);
+    });
   }, []);
 
   useEffect(() => {
@@ -905,7 +892,7 @@ export default function Home() {
       const progress = Math.min((timestamp - startTimestamp) / duration, 1);
       // Gentle sinusoidal easeInOut curve (starts smoothly, counts steadily, gently settles)
       const easeInOut = 0.5 * (1 - Math.cos(Math.PI * progress));
-      const startCount = 4500;
+      const startCount = 5000;
       if (targetCount <= startCount) {
         setDisplayCount(targetCount);
         return;
@@ -929,6 +916,14 @@ export default function Home() {
     if (alreadyIn) return networkUsers;
     return [{ _id: authUser._id, name: authUser.name, avatar: authUser.avatar || null }, ...networkUsers];
   }, [authUser, networkUsers, networkLoading]);
+
+  if (globalLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center w-full bg-[#f8fafa]">
+        <AppSpinner />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen overflow-x-hidden w-full max-w-full">
@@ -991,7 +986,7 @@ export default function Home() {
       </div>
 
       {/* Community Blog Preview */}
-      <CommunityBlogPreview />
+      <CommunityBlogPreview initialPosts={prefetchedPosts} />
 
       {/* How it works */}
       <section className="border-b border-border bg-white">
@@ -1033,14 +1028,14 @@ export default function Home() {
             <div className="flex animate-marquee shrink-0 gap-5 pr-5 min-w-full group-hover:[animation-play-state:paused]" style={{ display: 'flex', animationDuration: '60s' }}>
               {showcaseDevs.map((dev, idx) => (
                 <div key={dev._id} className="w-[300px] sm:w-[320px] flex-shrink-0 flex flex-col">
-                  <DeveloperCard dev={dev} stagger={{ ready: true, delay: (idx % showcaseDevs.length) * 50 }} hideContact hideGithub hidePortfolio />
+                  <DeveloperCard dev={dev} hideContact hideGithub hidePortfolio />
                 </div>
               ))}
             </div>
             <div className="flex animate-marquee shrink-0 gap-5 pr-5 min-w-full group-hover:[animation-play-state:paused]" style={{ display: 'flex', animationDuration: '60s' }} aria-hidden="true">
               {showcaseDevs.map((dev, idx) => (
                 <div key={`dup-${dev._id}`} className="w-[300px] sm:w-[320px] flex-shrink-0 flex flex-col">
-                  <DeveloperCard dev={dev} stagger={{ ready: true, delay: (idx % showcaseDevs.length) * 50 }} hideContact hideGithub hidePortfolio />
+                  <DeveloperCard dev={dev} hideContact hideGithub hidePortfolio />
                 </div>
               ))}
             </div>
