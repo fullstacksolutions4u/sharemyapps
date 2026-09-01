@@ -852,7 +852,7 @@ export default function Vacancies() {
                         {link.location && (
                           <div className="flex items-center gap-1.5 text-[13px] text-gray-600">
                             <MapPin size={14} className="text-gray-400 shrink-0" />
-                            <span className="truncate">{link.location.replace(/^Remote,\s*Out of India$/i, 'Remote')}</span>
+                            <span className="truncate">{link.location.toLowerCase().includes('remote') ? 'Remote' : link.location}</span>
                           </div>
                         )}
 
@@ -992,7 +992,7 @@ export default function Vacancies() {
                             node: (
                               <div className="flex items-center gap-1.5">
                                 <MapPin size={15} className="text-rose-500" />
-                                {v.location.replace(/^Remote,\s*Out of India$/i, 'Remote')}
+                                {v.location.toLowerCase().includes('remote') ? 'Remote' : v.location}
                               </div>
                             )
                           }
