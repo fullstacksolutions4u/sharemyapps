@@ -748,7 +748,7 @@ export default function Vacancies() {
                     <div className="relative flex items-center">
                       <input
                         type="text"
-                        placeholder="Paste job post URL to share with community"
+                        placeholder="Share job post links for community members to apply"
                         value={reportUrl}
                         onChange={e => { setReportUrl(e.target.value); if (urlError) setUrlError(''); }}
                         onKeyDown={e => {
@@ -758,7 +758,7 @@ export default function Vacancies() {
                             handleReportLinkSubmit(e);
                           }
                         }}
-                        className={`h-[34px] text-[11px] sm:text-[12px] border pl-2.5 pr-16 rounded-lg outline-hidden bg-white focus:ring-1 w-56 sm:w-72 transition-all font-medium placeholder-gray-400 ${
+                        className={`h-[34px] text-[11px] sm:text-[12px] border pl-2.5 pr-16 rounded-lg outline-hidden bg-white focus:ring-1 w-[320px] sm:w-[450px] transition-all font-medium placeholder-gray-400 ${
                           urlError
                             ? 'border-red-400 focus:border-red-400 focus:ring-red-200'
                             : 'border-border focus:border-[#5a788b] focus:ring-[#5a788b]/20'
