@@ -1,7 +1,7 @@
 import { useRef, useState, useEffect } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link, useNavigate } from 'react-router-dom';
-import { Menu, X, ChevronDown, LogOut, Plus, ShieldCheck, Bell, CheckCircle, XCircle, Clock, MessageSquare, AlertCircle, Heart, Star, MessageCircle, Briefcase, LayoutDashboard, GraduationCap, Crown, ChevronRight } from 'lucide-react';
+import { Menu, X, ChevronDown, LogOut, ShieldCheck, Bell, CheckCircle, XCircle, Clock, MessageSquare, AlertCircle, Heart, Star, MessageCircle, Briefcase, LayoutDashboard, GraduationCap, Crown, ChevronRight } from 'lucide-react';
 import { progressAPI } from '../api/tick2test';
 
 const GeminiIcon = ({ size = 14 }) => (
