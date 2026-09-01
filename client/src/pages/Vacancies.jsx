@@ -840,10 +840,13 @@ export default function Vacancies() {
                       style={{ '--sticky-bg': colorObj.bg, '--sticky-fold': colorObj.fold }}
                     >
                       <div className="flex flex-col gap-2">
-                        <div className="flex justify-between items-start">
-                          <h2 className="text-[16px] font-semibold text-gray-900 line-clamp-2">
+                        <div className="flex flex-col items-start w-full">
+                          <h2 className="text-[16px] font-semibold text-gray-900 line-clamp-2 w-full">
                             {normalizeJobDesignation(link.title) || 'Job Opportunity'}
                           </h2>
+                          {link.company && (
+                            <p className="text-[13px] text-[#4f6e87] font-medium mt-1 line-clamp-1">{link.company}</p>
+                          )}
                         </div>
 
                         {link.location && (
