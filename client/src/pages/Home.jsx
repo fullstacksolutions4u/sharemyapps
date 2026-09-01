@@ -886,7 +886,7 @@ export default function Home() {
   const [showcaseProjects, setShowcaseProjects] = useState([]);
   const [showcaseDevs, setShowcaseDevs] = useState([]);
   const [targetCount, setTargetCount] = useState(4960);
-  const [displayCount, setDisplayCount] = useState(3000);
+  const [displayCount, setDisplayCount] = useState(4500);
 
   useEffect(() => {
     api.get('/users/recent?limit=100')
@@ -939,7 +939,7 @@ export default function Home() {
       const progress = Math.min((timestamp - startTimestamp) / duration, 1);
       // Gentle sinusoidal easeInOut curve (starts smoothly, counts steadily, gently settles)
       const easeInOut = 0.5 * (1 - Math.cos(Math.PI * progress));
-      const startCount = 3000;
+      const startCount = 4500;
       if (targetCount <= startCount) {
         setDisplayCount(targetCount);
         return;
