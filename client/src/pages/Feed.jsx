@@ -268,12 +268,12 @@ export default function Feed() {
   const filteredJobLinks = [...jobLinks].sort((a, b) => parsePostedDate(b.postedDate, b.createdAt) - parsePostedDate(a.postedDate, a.createdAt));
 
   return (
-    <div className="min-h-screen bg-white relative">
-      <div className="relative max-w-[1600px] mx-auto px-2 lg:px-4 py-4 w-full flex flex-col lg:flex-row gap-4">
+    <div className="h-[calc(100vh-64px)] bg-white relative overflow-hidden">
+      <div className="relative max-w-[1600px] mx-auto px-2 lg:px-4 py-4 w-full h-full flex flex-col lg:flex-row gap-4">
       
       {/* LEFT: Shared Job Links */}
-      <div className="w-full lg:max-w-[25%] flex flex-col sticky top-20 max-h-[calc(100vh-100px)]">
-        <div className="bg-[#FAF7F2] rounded-xl shadow-sm border border-[#5a788b] flex flex-col h-full relative overflow-hidden">
+      <div className="w-full lg:max-w-[25%] flex flex-col h-full">
+        <div className="bg-white rounded-xl shadow-sm border border-[#5a788b] flex flex-col h-full relative overflow-hidden">
           {/* Abstract wavy background at the bottom */}
           <div className="absolute bottom-0 left-0 right-0 h-32 pointer-events-none opacity-50 flex items-end">
             <svg viewBox="0 0 1440 320" className="absolute bottom-0 w-full h-full object-cover" preserveAspectRatio="none">
@@ -291,12 +291,12 @@ export default function Feed() {
           </div>
 
 
-          <div className="overflow-y-auto custom-scrollbar p-2 flex-1">
+          <div className="overflow-y-auto custom-scrollbar px-2 pt-2 pb-1 flex-1">
             {filteredJobLinks.length === 0 ? (
               <p className="text-sm text-gray-500 text-center py-6">No job links match this filter.</p>
             ) : (
               <div className="space-y-1">
-                {filteredJobLinks.slice(0, 5).map(link => {
+                {filteredJobLinks.slice(0, 4).map(link => {
                   const isApplied = clickedLinks.includes(link._id);
                   return (
                     <div 
@@ -408,7 +408,7 @@ export default function Feed() {
                 {filteredJobLinks.length > 0 && (
                   <Link
                     to="/opportunities?tab=job-links"
-                    className="block text-center text-sm text-blue-600 font-medium py-2 mt-2 hover:bg-blue-50 rounded-lg transition-colors border border-transparent hover:border-blue-100"
+                    className="mt-6 flex items-center justify-center w-full bg-white border border-[#5a788b]/20 shadow-sm text-[#008b74] font-extrabold text-[12px] py-2 rounded-xl hover:bg-gray-50 transition-all uppercase tracking-wide"
                   >
                     View All Job Links
                   </Link>
@@ -421,7 +421,7 @@ export default function Feed() {
     </div>
 
       {/* MIDDLE: Activity Stream */}
-      <div className="w-full lg:max-w-[50%] flex-1">
+      <div className="w-full lg:max-w-[50%] flex-1 overflow-y-auto custom-scrollbar pb-10 h-full pr-2">
         {activities.length === 0 ? (
           <div className="text-center py-12 bg-white rounded-xl shadow-sm border border-border">
             <p className="text-muted">No activity yet. Check back soon!</p>
@@ -455,10 +455,10 @@ export default function Feed() {
       </div>
 
       {/* RIGHT: Leaderboard & Opportunities */}
-      <div className="w-full lg:max-w-[25%] flex-1 flex flex-col gap-6 sticky top-20 max-h-[calc(100vh-100px)] overflow-y-auto custom-scrollbar pb-4 pr-1">
+      <div className="w-full lg:max-w-[25%] flex-1 flex flex-col gap-4 h-full pr-1 overflow-hidden pb-4">
         
         {/* LEADERBOARD (Top 5) */}
-        <div className="bg-white rounded-xl shadow-sm border border-[#5a788b] overflow-hidden shrink-0 flex flex-col h-[360px] relative">
+        <div className="bg-white rounded-xl shadow-sm border border-[#5a788b] overflow-hidden shrink flex flex-col flex-1 min-h-0 relative">
           {/* Abstract wavy background at the bottom */}
           <div className="absolute bottom-0 left-0 right-0 h-32 pointer-events-none opacity-50 flex items-end">
             <svg viewBox="0 0 1440 320" className="absolute bottom-0 w-full h-full object-cover" preserveAspectRatio="none">
@@ -489,7 +489,7 @@ export default function Feed() {
                   <Link 
                     key={user.userId} 
                     to={`/portfolio/${user.userId}`}
-                    className="flex items-center gap-3 p-3 hover:bg-violet-100/50 transition"
+                    className="flex items-center gap-2 px-3 py-2 hover:bg-violet-100/50 transition"
                   >
                     <div className={`w-6 h-6 flex items-center justify-center rounded-full text-xs font-bold ${
                       idx === 0 ? 'bg-yellow-100 text-yellow-600' :
@@ -532,7 +532,7 @@ export default function Feed() {
           </button>
         )}
 
-        <div className="bg-white rounded-[32px] p-5 pb-6 flex flex-col relative overflow-hidden shrink-0 shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-[#5a788b] w-full sm:w-[340px]">
+        <div className="bg-white rounded-xl p-4 flex flex-col relative overflow-hidden shrink shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-[#5a788b] w-full min-h-0">
           {/* Abstract wavy background at the bottom */}
           <div className="absolute bottom-0 left-0 right-0 h-32 pointer-events-none opacity-50 flex items-end">
             <svg viewBox="0 0 1440 320" className="absolute bottom-0 w-full h-full object-cover" preserveAspectRatio="none">
@@ -558,7 +558,7 @@ export default function Feed() {
                     <Link 
                       key={job._id} 
                       to="/vacancies" 
-                      className="bg-[#fbfcfa] border border-gray-100/60 p-4 rounded-[18px] shadow-sm hover:shadow-md transition-all flex items-center justify-center group"
+                      className="bg-[#fbfcfa] border border-gray-100/60 p-2.5 rounded-xl shadow-sm hover:shadow-md transition-all flex items-center justify-center group"
                     >
                       <span className="text-[13.5px] font-semibold text-slate-800 text-center line-clamp-2 leading-tight tracking-wide drop-shadow-sm">{job.title}</span>
                     </Link>
