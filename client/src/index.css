@@ -152,12 +152,14 @@
   box-sizing: border-box;
 }
 
-body {
+html, body {
   font-family: var(--font-sans);
   background-color: #FFFFFF;
   color: #1A1A1A;
   -webkit-font-smoothing: antialiased;
   margin: 0;
+  overflow-x: hidden;
+  max-width: 100%;
 }
 
 /* Custom Scrollbar for smaller UI elements */

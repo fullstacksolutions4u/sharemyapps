@@ -965,7 +965,7 @@ export default function Home() {
   }, [authUser, networkUsers, networkLoading]);
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen overflow-x-hidden w-full max-w-full">
       <style>{`
         @keyframes marquee-half {
           0% { transform: translateX(0); }
