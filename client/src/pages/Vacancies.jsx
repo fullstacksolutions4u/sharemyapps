@@ -8,9 +8,6 @@ import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
 import { normalizeJobDesignation } from '../utils/jobDesignation';
 
-const JOB_LINK_APPLY_INSTRUCTION =
-  'Get 3 free applies weekly. Upgrade for unlimited lifetime applies ₹499/-';
-
 const getStatusConfig = (status) => {
   const s = (status || '').toLowerCase();
   
@@ -370,21 +367,6 @@ export default function Vacancies() {
   const [reportUrl, setReportUrl] = useState('');
   const [urlError, setUrlError] = useState('');
   const [submittingLink, setSubmittingLink] = useState(false);
-  const [jobLinkPrice, setJobLinkPrice] = useState(199);
-
-  useEffect(() => {
-    api.get('/plans/job-link-unlimited')
-      .then(res => {
-        if (res.data?.price != null) setJobLinkPrice(res.data.price);
-      })
-      .catch(() => {
-        api.get('/plans').then(res => {
-          const list = Array.isArray(res.data) ? res.data : [];
-          const plan = list.find(p => p.name === 'JobLinkUnlimited');
-          if (plan?.price != null) setJobLinkPrice(plan.price);
-        }).catch(() => {});
-      });
-  }, []);
 
   const handleReportLinkSubmit = async (e) => {
     if (e && typeof e.preventDefault === 'function') {
@@ -453,9 +435,6 @@ export default function Vacancies() {
     }
   }, [clickedLinks]);
 
-  const canApplyMore = !user || applyEligibility?.canApplyMore !== false;
-  const isPremium = !!(applyEligibility?.isPremium);
-
   const persistClicked = (id) => {
     if (localClickedLinks.includes(id) || serverClickedIds.includes(id)) return;
     setLocalClickedLinks(prev => [...prev, id]);
@@ -472,15 +451,6 @@ export default function Vacancies() {
     if (!user) return;
 
     e.preventDefault();
-
-    if (!canApplyMore) {
-      toast.error(
-        applyEligibility?.message
-          || JOB_LINK_APPLY_INSTRUCTION,
-        { duration: 6000 }
-      );
-      return;
-    }
 
     const tab = window.open('about:blank', '_blank');
     try {
@@ -713,19 +683,7 @@ export default function Vacancies() {
               );
             })}
           </div>
-          {activeTab === 'job-links' ? (
-            <Link
-              to="/job-post-links-premium"
-              className="flex items-center gap-1.5 bg-white border border-amber-300 hover:border-amber-400 text-gray-700 text-xs font-semibold px-3 py-1.5 rounded-full transition-colors shrink-0 mb-1"
-            >
-              <Crown size={12} className="text-amber-500 shrink-0" />
-              <span>Unlimited Job Post Applies with Premium</span>
-              <span className="inline-flex items-center gap-0.5">
-                <IndianRupee size={11} className="text-gray-700" />
-                {jobLinkPrice}/-
-              </span>
-            </Link>
-          ) : (
+          {activeTab === 'job-links' ? null : (
             <Link
               to="/placement-services"
               className="flex items-center gap-1.5 bg-white border border-amber-300 hover:border-amber-400 text-gray-700 text-xs font-semibold px-3 py-1.5 rounded-full transition-colors shrink-0 mb-1"
@@ -741,7 +699,7 @@ export default function Vacancies() {
         <div className="border-b border-border/40">
           <div className="max-w-[1550px] mx-auto px-2 sm:px-3 py-3">
             <div className="overflow-x-auto">
-            <div className="flex items-center gap-3 justify-between flex-nowrap min-w-max">
+            <div className="flex items-center gap-3 justify-center flex-nowrap min-w-max">
 
               {/* LEFT: Filters */}
               <div className="flex items-center gap-3 flex-nowrap shrink-0">
@@ -781,14 +739,6 @@ export default function Vacancies() {
                   </button>
                 )}
               </div>
-
-              {activeTab === 'job-links' && (
-                <div className="flex items-center flex-1 justify-center px-4 overflow-hidden min-w-[200px]">
-                  <p className="text-[11px] xl:text-[12px] font-medium text-amber-700 bg-amber-50 border border-amber-100 rounded-lg px-3 py-1.5 whitespace-nowrap truncate text-center w-full max-w-xl">
-                    {`Get 3 free applies weekly. Upgrade for unlimited lifetime applies ₹${jobLinkPrice}/-`}
-                  </p>
-                </div>
-              )}
 
               {/* RIGHT: Report URL field + count */}
               <div className="flex items-center gap-3 flex-nowrap shrink-0">
@@ -948,43 +898,6 @@ export default function Vacancies() {
                             <span>Sign in to apply</span>
                             <ArrowRight size={12} />
                           </Link>
-                        ) : !isApplied && !canApplyMore && !isPremium ? (
-                          <div className="relative group/unlock z-10">
-                            <button
-                              type="button"
-                              onClick={(e) => { e.preventDefault(); navigate('/job-post-links-premium'); }}
-                              className="py-1.5 px-3 rounded-lg text-[12px] font-semibold flex items-center justify-center gap-1.5 bg-amber-100 text-amber-700 hover:bg-amber-200 border-b-[3px] border-amber-300 transition-all"
-                              aria-describedby={`unlock-tip-${link._id}`}
-                            >
-                              <span>Upgrade to unlimited job post applies</span>
-                              <Crown size={12} />
-                            </button>
-                            <div
-                              id={`unlock-tip-${link._id}`}
-                              role="tooltip"
-                              className="absolute bottom-full right-0 mb-2 w-[260px] p-3.5 bg-white text-left rounded-xl shadow-[0_8px_28px_-6px_rgba(0,0,0,0.18)] border border-[#E5E1DA] opacity-0 invisible translate-y-1 group-hover/unlock:opacity-100 group-hover/unlock:visible group-hover/unlock:translate-y-0 group-focus-within/unlock:opacity-100 group-focus-within/unlock:visible group-focus-within/unlock:translate-y-0 transition-all duration-200 pointer-events-none z-[100]"
-                            >
-                              <p className="text-[11px] font-semibold text-[#1A1A1A] mb-2">
-                                Weekly limit reached
-                              </p>
-                              <ul className="space-y-1.5 text-[11px] text-[#4A4A4A] leading-relaxed">
-                                <li className="flex gap-1.5">
-                                  <span className="text-amber-600 shrink-0">•</span>
-                                  <span>You get <strong className="font-semibold text-[#1A1A1A]">3 free</strong> job applies each week.</span>
-                                </li>
-                                <li className="flex gap-1.5">
-                                  <span className="text-amber-600 shrink-0">•</span>
-                                  <span>Upgrade to Premium for <strong className="font-semibold text-[#1A1A1A]">₹{jobLinkPrice}/-</strong>.</span>
-                                </li>
-                                <li className="flex gap-1.5">
-                                  <span className="text-amber-600 shrink-0">•</span>
-                                  <span>Unlock <strong className="font-semibold text-[#1A1A1A]">unlimited lifetime</strong> applies instantly.</span>
-                                </li>
-                              </ul>
-                              <span className="absolute top-full right-5 border-[6px] border-transparent border-t-[#E5E1DA]" />
-                              <span className="absolute top-full right-5 mt-[-1px] border-[5px] border-transparent border-t-white" />
-                            </div>
-                          </div>
                         ) : (
                           <a
                             href={link.url}

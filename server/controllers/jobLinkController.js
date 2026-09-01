@@ -560,15 +560,6 @@ exports.recordClick = async (req, res) => {
     }
 
     const eligibility = await getJobLinkApplyEligibility(req.user._id);
-    // Premium members always get unlimited applies — only block non-premium over-limit users
-    if (!eligibility.canApplyMore && !eligibility.isPremium) {
-      return res.status(403).json({
-        success: false,
-        code: 'APPLY_LIMIT',
-        message: eligibility.message,
-        data: eligibility,
-      });
-    }
 
     jobLink.clicks.push(req.user._id);
     if (!jobLink.clickEvents) jobLink.clickEvents = [];
