@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { MapPin, Briefcase, CheckCircle, XCircle, ArrowRight, Laptop, Crown, Banknote, IndianRupee, ExternalLink, Building, Clock, Calendar } from 'lucide-react';
+import { MapPin, Briefcase, CheckCircle, XCircle, ArrowRight, Laptop, Crown, Banknote, ExternalLink, Building, Clock, Calendar } from 'lucide-react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
@@ -699,10 +699,13 @@ export default function Vacancies() {
         <div className="border-b border-border/40">
           <div className="max-w-[1550px] mx-auto px-2 sm:px-3 py-3">
             <div className="overflow-x-auto">
-            <div className="flex items-center gap-3 justify-center flex-nowrap min-w-max">
+            <div className="flex items-center justify-between w-full min-w-max gap-3">
 
-              {/* LEFT: Filters */}
-              <div className="flex items-center gap-3 flex-nowrap shrink-0">
+              {/* Spacer for centering */}
+              <div className="flex-1"></div>
+
+              {/* CENTER: Filters */}
+              <div className="flex items-center justify-center gap-3 flex-nowrap shrink-0">
                 <FilterDropdown
                   icon={Briefcase}
                   placeholder="Designation"
@@ -738,12 +741,10 @@ export default function Vacancies() {
                     Clear
                   </button>
                 )}
-              </div>
 
-              {/* RIGHT: Report URL field + count */}
-              <div className="flex items-center gap-3 flex-nowrap shrink-0">
+                {/* Add Input in Center */}
                 {activeTab === 'job-links' && user && (
-                  <div className="relative flex flex-col gap-0.5">
+                  <div className="relative flex flex-col gap-0.5 ml-3">
                     <div className="relative flex items-center">
                       <input
                         type="text"
@@ -773,12 +774,16 @@ export default function Vacancies() {
                       </button>
                     </div>
                     {urlError && (
-                      <p className="text-[10px] text-red-500 font-medium px-0.5 whitespace-nowrap">
-                        ⚠ Add job post links only (e.g. https://linkedin.com/jobs/…)
+                      <p className="absolute -bottom-5 left-0 text-[10px] text-red-500 font-medium px-0.5 whitespace-nowrap">
+                        ⚠ Add job post links only
                       </p>
                     )}
                   </div>
                 )}
+              </div>
+
+              {/* RIGHT: count */}
+              <div className="flex items-center justify-end gap-3 flex-nowrap shrink-0 flex-1">
 
                 {activeTab === 'job-links' && !TAB_CONFIG[activeTab].loading && (
                   <p className="text-[13px] text-gray-500 shrink-0 whitespace-nowrap">

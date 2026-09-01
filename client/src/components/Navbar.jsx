@@ -376,7 +376,7 @@ export default function Navbar() {
 
   return (
     <header className="sticky top-0 z-50 bg-white border-b border-border">
-      <div className="w-full max-w-[1550px] mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <div className="w-full max-w-[1550px] mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-8 lg:gap-16">
         {/* Left: Logo */}
         <Link to="/" className="flex items-center gap-2 shrink-0">
           <img src={logo} alt="ShareMyApps" className="h-8 w-auto" />
@@ -391,8 +391,8 @@ export default function Navbar() {
         </Link>
 
         {/* Desktop Nav + Action buttons grouped together */}
-        <div className="hidden md:flex items-center gap-4 lg:gap-6 flex-nowrap shrink-0">
-          <nav className="flex items-center gap-3 lg:gap-4.5 xl:gap-6 flex-nowrap shrink-0">
+        <div className="hidden md:flex items-center gap-6 lg:gap-10 flex-nowrap shrink-0">
+          <nav className="flex items-center gap-5 lg:gap-8 xl:gap-10 flex-nowrap shrink-0">
             <Link to="/feed" className="relative text-base font-bold text-muted hover:text-text transition-colors whitespace-nowrap shrink-0 after:absolute after:left-0 after:-bottom-0.5 after:h-[1.5px] after:w-0 after:bg-accent after:transition-[width] after:duration-300 hover:after:w-full">Timeline</Link>
             <Link to="/explore" className="relative text-base font-bold text-muted hover:text-text transition-colors whitespace-nowrap shrink-0 after:absolute after:left-0 after:-bottom-0.5 after:h-[1.5px] after:w-0 after:bg-accent after:transition-[width] after:duration-300 hover:after:w-full">Projects</Link>
             <Link to="/portfolios" className="relative text-base font-bold text-muted hover:text-text transition-colors whitespace-nowrap shrink-0 after:absolute after:left-0 after:-bottom-0.5 after:h-[1.5px] after:w-0 after:bg-accent after:transition-[width] after:duration-300 hover:after:w-full">
