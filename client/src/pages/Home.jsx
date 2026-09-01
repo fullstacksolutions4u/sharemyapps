@@ -142,22 +142,7 @@ const SPINNER_POSITIONS = [
 
 function NetworkGraph({ users, networkLoading }) {
   if (networkLoading) {
-    return (
-      <div className="absolute inset-0 overflow-hidden select-none" aria-hidden="true">
-        {SPINNER_POSITIONS.map((pos, i) => (
-          <div key={i} style={{
-            position: 'absolute',
-            left: `${pos.x}%`,
-            top: `${pos.y}%`,
-            transform: 'translate(-50%, -50%)',
-            opacity: 0.55,
-            pointerEvents: 'none',
-          }}>
-            <Lottie animationData={spinnerData} loop style={{ width: pos.size, height: pos.size }} />
-          </div>
-        ))}
-      </div>
-    );
+    return null;
   }
 
   if (!users.length) return null;
