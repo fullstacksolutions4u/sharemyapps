@@ -1,9 +1,7 @@
 import { useEffect, useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, LayoutGrid, Users, MessageCircle, Brain, ShoppingBag, Briefcase, Heart, MessageSquare, Send, Plus, X, Trash2, ChevronUp } from 'lucide-react';
-import _Lottie from 'lottie-react';
-const Lottie = _Lottie.default ?? _Lottie;
-import spinnerData from '../assets/spinner.json';
+
 import api from '../api/axios';
 import ProjectCard from '../components/ProjectCard';
 import DeveloperCard from '../components/recruiter/DeveloperCard';
@@ -121,24 +119,7 @@ function buildEdges(nodes) {
   return Array.from(edgesSet).map(e => e.split('-').map(Number));
 }
 
-// Fixed pseudo-random positions for loading spinners
-const SPINNER_POSITIONS = [
-  { x:  8, y: 12, size: 90  },
-  { x: 28, y:  6, size: 70  },
-  { x: 52, y: 10, size: 110 },
-  { x: 75, y:  5, size: 80  },
-  { x: 92, y: 14, size: 95  },
-  { x:  5, y: 45, size: 75  },
-  { x: 20, y: 60, size: 100 },
-  { x: 42, y: 55, size: 85  },
-  { x: 65, y: 50, size: 105 },
-  { x: 88, y: 48, size: 78  },
-  { x: 12, y: 82, size: 95  },
-  { x: 35, y: 88, size: 70  },
-  { x: 58, y: 80, size: 90  },
-  { x: 80, y: 85, size: 80  },
-  { x: 95, y: 75, size: 100 },
-];
+
 
 function NetworkGraph({ users, networkLoading }) {
   if (networkLoading) {
