@@ -432,10 +432,7 @@ export default function Navbar() {
               <UserDropdown user={user} onLogout={handleLogout} />
             </div>
           ) : (
-            <div className="flex items-center justify-start w-[232px] gap-4 shrink-0">
-              <Link to="/register" className="flex items-center gap-1.5 text-sm border border-accent text-accent hover:bg-accent hover:text-white px-3.5 py-2 rounded-lg transition-colors font-medium whitespace-nowrap">
-                <Plus size={14} /> Add Project
-              </Link>
+            <div className="flex items-center justify-start w-[232px] shrink-0">
               <Link to="/login" className="text-sm bg-accent hover:bg-accent-hover text-white px-4 py-2 rounded-lg transition-colors font-medium whitespace-nowrap">
                 Join Now
               </Link>
@@ -493,9 +490,7 @@ export default function Navbar() {
                 <Link to="/dashboard" onClick={() => setMenuOpen(false)} className="block text-sm text-muted hover:text-text font-medium">Dashboard</Link>
               )}
               <Link to="/dashboard/inbox" state={{ tab: 'messages' }} onClick={() => setMenuOpen(false)} className="block text-sm text-muted hover:text-text">Inbox</Link>
-              {!isRecruiter && !isClient && !isMentee && !isMentor && (
-                <Link to="/dashboard/add" onClick={() => setMenuOpen(false)} className="block text-sm text-text font-medium">Add Project</Link>
-              )}
+
               <button onClick={handleLogout} className="block text-sm text-red-500">Logout</button>
             </>
           ) : (
