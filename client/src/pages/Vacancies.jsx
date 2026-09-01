@@ -705,7 +705,7 @@ export default function Vacancies() {
               <div className="flex-1"></div>
 
               {/* CENTER: Filters */}
-              <div className="flex items-center justify-center gap-3 flex-nowrap shrink-0">
+              <div className="flex items-center justify-center gap-8 sm:gap-10 flex-nowrap shrink-0">
                 <FilterDropdown
                   icon={Briefcase}
                   placeholder="Designation"
