@@ -639,7 +639,14 @@ export default function AdminUsersSection({ initialTab = 'developers' }) {
   const [messagingUser, setMessagingUser] = useState(null);
   const [messageText, setMessageText] = useState('');
   const [messageSending, setMessageSending] = useState(false);
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const PER_PAGE = 10;
+
+  // Debounce search input by 400ms to avoid hammering the server on every keystroke
+  useEffect(() => {
+    const t = setTimeout(() => setDebouncedSearch(search.trim()), 400);
+    return () => clearTimeout(t);
+  }, [search]);
 
   useEffect(() => {
     let cancelled = false;
@@ -651,7 +658,7 @@ export default function AdminUsersSection({ initialTab = 'developers' }) {
           limit: PER_PAGE.toString(),
           tab,
         });
-        if (search.trim()) params.set('search', search.trim());
+        if (debouncedSearch) params.set('search', debouncedSearch);
         if (filterPlaceholderCv) params.set('filterPlaceholderCv', 'true');
         if (filterUpdatedCv) params.set('filterUpdatedCv', 'true');
 
@@ -667,8 +674,9 @@ export default function AdminUsersSection({ initialTab = 'developers' }) {
             setUsers(res.data);
           }
         }
-      } catch {
+      } catch (err) {
         if (!cancelled) {
+          console.error('[AdminUsers] Failed to load users:', err?.response?.data || err.message);
           toast.error('Failed to load users');
         }
       } finally {
@@ -680,7 +688,7 @@ export default function AdminUsersSection({ initialTab = 'developers' }) {
 
     loadUsers();
     return () => { cancelled = true; };
-  }, [page, tab, search, filterPlaceholderCv, filterUpdatedCv]);
+  }, [page, tab, debouncedSearch, filterPlaceholderCv, filterUpdatedCv]);
 
   useEffect(() => {
     if (!pickerOpen) return;

@@ -230,9 +230,9 @@ exports.getAllUsers = async (req, res) => {
         User.countDocuments({ isDeleted: { $ne: true }, userType: 'mentee' }),
         User.countDocuments({ isDeleted: true }),
         User.countDocuments({ isDeleted: { $ne: true }, userType: 'developer', $or: [{ cvUrl: { $exists: false } }, { cvUrl: '' }, { cvUrl: null }] }),
-        User.countDocuments({ isDeleted: { $ne: true }, userType: 'developer', cvUrl: { $exists: true, $ne: '', $ne: null }, 'resumeData.summary': { $exists: false } }),
+        User.countDocuments({ isDeleted: { $ne: true }, userType: 'developer', cvUrl: { $exists: true }, $and: [{ cvUrl: { $ne: '' } }, { cvUrl: { $ne: null } }], 'resumeData.summary': { $exists: false } }),
         User.countDocuments({ isDeleted: { $ne: true }, userType: 'developer', cvUrl: { $regex: /drive\.google\.com/i } }),
-        User.countDocuments({ isDeleted: { $ne: true }, userType: 'developer', cvWasPlaceholder: true, cvUrl: { $exists: true, $ne: '', $ne: null } }),
+        User.countDocuments({ isDeleted: { $ne: true }, userType: 'developer', cvWasPlaceholder: true, cvUrl: { $exists: true }, $and: [{ cvUrl: { $ne: '' } }, { cvUrl: { $ne: null } }] }),
         User.distinct('designations'),
         User.find(match)
           .select(userSelect)
