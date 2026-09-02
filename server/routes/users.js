@@ -353,6 +353,11 @@ router.get('/developers', optionalAuth, async (req, res) => {
     const matchStage = { userType: 'developer', role: { $ne: 'admin' }, isDeleted: { $ne: true }, ...visibility };
     if (safeSearch) matchStage.name = { $regex: safeSearch, $options: 'i' };
     if (req.query.freelance === 'true') matchStage.freelanceAvailable = true;
+    if (req.query.state?.trim()) {
+      const safeState = req.query.state.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const statePattern = safeState.replace(/\s+/g, '\\s*');
+      matchStage.state = { $regex: statePattern, $options: 'i' };
+    }
     if (req.query.designation?.trim()) {
       const safeDesig = req.query.designation.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
       matchStage.designations = { $elemMatch: { $regex: safeDesig, $options: 'i' } };

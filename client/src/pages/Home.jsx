@@ -465,7 +465,7 @@ function CommunityBlogPreview({ initialPosts }) {
         key={card.id || idx}
         onClick={() => setExpandedCardId(isExpanded ? null : card.id)}
         className={`p-4 pt-5 rounded-2xl border border-t-[8px] shadow-xs transition-all duration-500 ease-in-out transform cursor-pointer relative flex flex-col justify-between ${
-          isExpanded ? expandClasses : `min-h-[175px] ${isGrid ? 'rotate-0 translate-x-0 z-10' : `${card.rotateClass} z-10`}`
+          isExpanded ? expandClasses : `min-h-[210px] ${isGrid ? 'rotate-0 translate-x-0 z-10' : `${card.rotateClass} z-10`}`
         } ${card.color.borderTop} ${card.color.bg} ${card.color.border} ${card.color.text}`}
       >
         <div className="flex items-center justify-between mb-2.5">
@@ -542,13 +542,13 @@ function CommunityBlogPreview({ initialPosts }) {
             suppressContentEditableWarning={true}
             onClick={e => e.stopPropagation()}
             onBlur={e => handleEditPost(card.id, e.target.innerText, card.rawPost.category, card.rawPost.anonymous)}
-            className={`text-[11px] leading-relaxed font-medium opacity-90 whitespace-pre-wrap flex-1 mt-2 mb-2 outline-hidden focus:bg-black/5 px-1 rounded transition-all cursor-text ${isExpanded ? '' : 'line-clamp-3'}`}
+            className={`text-[11px] leading-relaxed font-medium opacity-90 whitespace-pre-wrap flex-1 mt-2 mb-2 outline-hidden focus:bg-black/5 px-1 rounded transition-all cursor-text ${isExpanded ? '' : 'line-clamp-4'}`}
             title="Click to edit content"
           >
             {card.content}
           </p>
         ) : (
-          <p className={`text-[11px] leading-relaxed font-medium opacity-90 whitespace-pre-wrap flex-1 mt-2 mb-2 ${isExpanded ? '' : 'line-clamp-3'}`}>
+          <p className={`text-[11px] leading-relaxed font-medium opacity-90 whitespace-pre-wrap flex-1 mt-2 mb-2 ${isExpanded ? '' : 'line-clamp-4'}`}>
             {linkify(card.content)}
           </p>
         )}
@@ -854,8 +854,8 @@ export default function Home() {
   const [networkLoading, setNetworkLoading] = useState(true);
   const [showcaseProjects, setShowcaseProjects] = useState([]);
   const [showcaseDevs, setShowcaseDevs] = useState([]);
-  const [targetCount, setTargetCount] = useState(4960);
-  const [displayCount, setDisplayCount] = useState(5000);
+  const [targetCount, setTargetCount] = useState(0);
+  const [displayCount, setDisplayCount] = useState(0);
   const [globalLoading, setGlobalLoading] = useState(true);
   const [prefetchedPosts, setPrefetchedPosts] = useState([]);
 
@@ -874,6 +874,7 @@ export default function Home() {
       setShowcaseProjects(proj);
       setShowcaseDevs(devs);
       setTargetCount(count);
+      setDisplayCount(Math.max(0, count - 200));
       setPrefetchedPosts(posts);
       
       setNetworkLoading(false);
@@ -884,19 +885,17 @@ export default function Home() {
   useEffect(() => {
     if (!targetCount) return;
     let startTimestamp = null;
-    const duration = 5500; // 5.5s relaxed, smooth pace
+    const duration = 4000; // smooth pace
     let animationFrame;
+
+    const startCount = Math.max(0, targetCount - 200);
+    setDisplayCount(startCount);
 
     const step = (timestamp) => {
       if (!startTimestamp) startTimestamp = timestamp;
       const progress = Math.min((timestamp - startTimestamp) / duration, 1);
       // Gentle sinusoidal easeInOut curve (starts smoothly, counts steadily, gently settles)
       const easeInOut = 0.5 * (1 - Math.cos(Math.PI * progress));
-      const startCount = 5000;
-      if (targetCount <= startCount) {
-        setDisplayCount(targetCount);
-        return;
-      }
       const current = startCount + Math.floor((targetCount - startCount) * easeInOut);
       setDisplayCount(current);
       if (progress < 1) {
@@ -990,8 +989,7 @@ export default function Home() {
 
       {/* How it works */}
       <section className="border-b border-border bg-white">
-        <div className="max-w-[1500px] mx-auto px-3 sm:px-4 py-14">
-          <p className="text-xs font-semibold uppercase tracking-widest text-accent text-center mb-8">HOW PORTAL WORKS</p>
+        <div className="max-w-[1500px] mx-auto px-3 sm:px-4 pt-6 pb-12 sm:pt-8 sm:pb-14">
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
             {[
               { step: '01', icon: LayoutGrid,     title: 'List your projects',      desc: 'Complete your profile & Showcase live projects.' },
@@ -1045,7 +1043,7 @@ export default function Home() {
 
 
 
-      {/* Showcase: projects #100–103 */}
+      {/* Showcase: projects */}
       {showcaseProjects.length > 0 && (
         <section className="max-w-[1500px] mx-auto px-3 sm:px-4 pb-16">
           <div className="flex items-center justify-between mb-8">
@@ -1054,8 +1052,21 @@ export default function Home() {
               View all <ArrowRight size={14} />
             </Link>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-            {showcaseProjects.map(p => <ProjectCard key={p._id} project={p} />)}
+          <div className="relative w-full overflow-hidden group py-2 flex" style={{ maskImage: 'linear-gradient(to right, transparent, black 2%, black 98%, transparent)', WebkitMaskImage: 'linear-gradient(to right, transparent, black 2%, black 98%, transparent)' }}>
+            <div className="flex animate-marquee-reverse shrink-0 gap-5 pr-5 min-w-full group-hover:[animation-play-state:paused]" style={{ display: 'flex', animationDuration: '60s' }}>
+              {showcaseProjects.map((p) => (
+                <div key={p._id} className="w-[300px] sm:w-[320px] flex-shrink-0 flex flex-col">
+                  <ProjectCard project={p} />
+                </div>
+              ))}
+            </div>
+            <div className="flex animate-marquee-reverse shrink-0 gap-5 pr-5 min-w-full group-hover:[animation-play-state:paused]" style={{ display: 'flex', animationDuration: '60s' }} aria-hidden="true">
+              {showcaseProjects.map((p) => (
+                <div key={`dup-${p._id}`} className="w-[300px] sm:w-[320px] flex-shrink-0 flex flex-col">
+                  <ProjectCard project={p} />
+                </div>
+              ))}
+            </div>
           </div>
         </section>
       )}

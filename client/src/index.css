@@ -23,9 +23,19 @@
   100% { transform: translateX(-100%); }
 }
 
+@keyframes marquee-reverse {
+  0%   { transform: translateX(-100%); }
+  100% { transform: translateX(0); }
+}
+
 .animate-marquee {
   display: inline-block;
   animation: marquee 28s linear infinite;
+}
+
+.animate-marquee-reverse {
+  display: inline-block;
+  animation: marquee-reverse 28s linear infinite;
 }
 
 @keyframes slotIn {

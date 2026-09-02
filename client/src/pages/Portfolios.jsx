@@ -7,6 +7,7 @@ import {
 import { useQuery } from '@tanstack/react-query';
 import api from '../api/axios';
 import { optimizeImage } from '../utils/image';
+import { INDIAN_STATES } from '../data/locationData';
 
 const BADGE = {
   premium:    { label: 'Premium Member', cls: 'bg-linear-to-r from-amber-400 via-yellow-500 to-orange-400 text-white border-0 shadow-sm' },
@@ -272,7 +273,7 @@ const EXPERIENCES = [
 ];
 
 const CTC_RANGES = [
-  { label: 'All CTC / Salary', value: '' },
+  { label: 'Salary', value: '' },
   { label: '< ₹3 LPA', value: '0-300000' },
   { label: '₹3 - ₹6 LPA', value: '300000-600000' },
   { label: '₹6 - ₹10 LPA', value: '600000-1000000' },
@@ -283,6 +284,7 @@ const CTC_RANGES = [
 export default function Portfolios() {
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
+  const [state, setState] = useState('');
   const [designation, setDesignation] = useState('');
   const [experience, setExperience] = useState('');
   const [ctc, setCtc] = useState('');
@@ -294,10 +296,11 @@ export default function Portfolios() {
   }, [search]);
 
   const { data, isFetching: loading } = useQuery({
-    queryKey: ['developers', page, debouncedSearch, designation, experience, ctc],
+    queryKey: ['developers', page, debouncedSearch, state, designation, experience, ctc],
     queryFn: async () => {
       const params = new URLSearchParams({ page });
       if (debouncedSearch) params.set('search', debouncedSearch);
+      if (state) params.set('state', state);
       if (designation) params.set('designation', designation);
       if (experience) params.set('experience', experience);
       if (ctc) params.set('ctc', ctc);
@@ -324,82 +327,88 @@ export default function Portfolios() {
     <div className="min-h-screen bg-linear-to-br from-accent/10 via-white to-violet-50 relative">
       <div className="absolute inset-0 opacity-20 pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle, #00A693 1px, transparent 1px)', backgroundSize: '28px 28px' }} />
 
-      {/* Hero banner */}
+      {/* Hero banner / Filters */}
       <div className="relative border-b border-border overflow-hidden">
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 py-4 flex flex-col xl:flex-row xl:items-center justify-between gap-3">
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 py-4 flex flex-wrap items-center justify-center gap-3">
           
-          {/* Left side: Search + Experience Filter */}
-          <div className="flex flex-col sm:flex-row items-center gap-2.5 w-full xl:w-auto">
-            {/* Search */}
-            <div className="relative w-full sm:w-60 lg:w-64">
-              <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted" />
-              <input
-                type="text"
-                placeholder="Search by name…"
-                value={search}
-                onChange={e => { setSearch(e.target.value); setPage(1); }}
-                className="w-full pl-9 pr-3 py-2 text-xs border border-border rounded-xl bg-white/90 backdrop-blur-sm focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/20 transition-all shadow-xs"
-              />
-            </div>
+          {/* Search */}
+          <div className="relative w-full sm:w-64 lg:w-72">
+            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted" />
+            <input
+              type="text"
+              placeholder="Search by name…"
+              value={search}
+              onChange={e => { setSearch(e.target.value); setPage(1); }}
+              className="w-full pl-9 pr-3 py-2 text-xs border border-border rounded-xl bg-white/90 backdrop-blur-sm focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/20 transition-all shadow-xs"
+            />
+          </div>
 
-            {/* Experience Filter */}
-            <div className="relative w-full sm:w-40">
-              <select
-                value={experience}
-                onChange={e => { setExperience(e.target.value); setPage(1); }}
-                className="w-full pl-3 pr-7 py-2 text-xs border border-border rounded-xl bg-white/90 backdrop-blur-sm focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/20 transition-all shadow-xs text-text appearance-none cursor-pointer"
-              >
-                {EXPERIENCES.map(exp => (
-                  <option key={exp.value} value={exp.value}>{exp.label}</option>
-                ))}
-              </select>
-              <div className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-muted">
-                <svg width="10" height="10" viewBox="0 0 12 12" fill="currentColor"><path d="M6 8L1 3h10z"/></svg>
-              </div>
+          {/* State Filter */}
+          <div className="relative w-full sm:w-44">
+            <select
+              value={state}
+              onChange={e => { setState(e.target.value); setPage(1); }}
+              className="w-full pl-3 pr-7 py-2 text-xs border border-border rounded-xl bg-white/90 backdrop-blur-sm focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/20 transition-all shadow-xs text-text appearance-none cursor-pointer"
+            >
+              <option value="">All States</option>
+              {INDIAN_STATES.map(s => (
+                <option key={s} value={s}>{s}</option>
+              ))}
+            </select>
+            <div className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-muted">
+              <svg width="10" height="10" viewBox="0 0 12 12" fill="currentColor"><path d="M6 8L1 3h10z"/></svg>
             </div>
           </div>
 
-          {/* Center message */}
-          <p className="text-xs text-muted items-center gap-1.5 hidden xl:flex justify-center text-center font-medium px-2 shrink-0">
-            <Sparkles size={13} className="text-accent shrink-0" />
-            Connect with our developers for hiring, freelance, and mentorship
-          </p>
-
-          {/* Right side: CTC Filter + Designation Filter */}
-          <div className="flex flex-col sm:flex-row items-center gap-2.5 w-full xl:w-auto">
-            {/* CTC Filter */}
-            <div className="relative w-full sm:w-44">
-              <select
-                value={ctc}
-                onChange={e => { setCtc(e.target.value); setPage(1); }}
-                className="w-full pl-3 pr-7 py-2 text-xs border border-border rounded-xl bg-white/90 backdrop-blur-sm focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/20 transition-all shadow-xs text-text appearance-none cursor-pointer"
-              >
-                {CTC_RANGES.map(c => (
-                  <option key={c.value} value={c.value}>{c.label}</option>
-                ))}
-              </select>
-              <div className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-muted">
-                <svg width="10" height="10" viewBox="0 0 12 12" fill="currentColor"><path d="M6 8L1 3h10z"/></svg>
-              </div>
-            </div>
-
-            {/* Designation filter */}
-            <div className="relative w-full sm:w-52">
-              <select
-                value={designation}
-                onChange={e => { setDesignation(e.target.value); setPage(1); }}
-                className="w-full pl-3 pr-7 py-2 text-xs border border-border rounded-xl bg-white/90 backdrop-blur-sm focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/20 transition-all shadow-xs text-text appearance-none cursor-pointer"
-              >
-                <option value="">All designations</option>
-                {DESIGNATIONS.map(d => (
-                  <option key={d} value={d}>{d}</option>
-                ))}
-              </select>
-              <div className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-muted">
-                <svg width="10" height="10" viewBox="0 0 12 12" fill="currentColor"><path d="M6 8L1 3h10z"/></svg>
-              </div>
+          {/* Experience Filter */}
+          <div className="relative w-full sm:w-40">
+            <select
+              value={experience}
+              onChange={e => { setExperience(e.target.value); setPage(1); }}
+              className="w-full pl-3 pr-7 py-2 text-xs border border-border rounded-xl bg-white/90 backdrop-blur-sm focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/20 transition-all shadow-xs text-text appearance-none cursor-pointer"
+            >
+              {EXPERIENCES.map(exp => (
+                <option key={exp.value} value={exp.value}>{exp.label}</option>
+              ))}
+            </select>
+            <div className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-muted">
+              <svg width="10" height="10" viewBox="0 0 12 12" fill="currentColor"><path d="M6 8L1 3h10z"/></svg>
             </div>
           </div>
+
+          {/* CTC Filter */}
+          <div className="relative w-full sm:w-44">
+            <select
+              value={ctc}
+              onChange={e => { setCtc(e.target.value); setPage(1); }}
+              className="w-full pl-3 pr-7 py-2 text-xs border border-border rounded-xl bg-white/90 backdrop-blur-sm focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/20 transition-all shadow-xs text-text appearance-none cursor-pointer"
+            >
+              {CTC_RANGES.map(c => (
+                <option key={c.value} value={c.value}>{c.label}</option>
+              ))}
+            </select>
+            <div className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-muted">
+              <svg width="10" height="10" viewBox="0 0 12 12" fill="currentColor"><path d="M6 8L1 3h10z"/></svg>
+            </div>
+          </div>
+
+          {/* Designation filter */}
+          <div className="relative w-full sm:w-56">
+            <select
+              value={designation}
+              onChange={e => { setDesignation(e.target.value); setPage(1); }}
+              className="w-full pl-3 pr-7 py-2 text-xs border border-border rounded-xl bg-white/90 backdrop-blur-sm focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/20 transition-all shadow-xs text-text appearance-none cursor-pointer"
+            >
+              <option value="">All designations</option>
+              {DESIGNATIONS.map(d => (
+                <option key={d} value={d}>{d}</option>
+              ))}
+            </select>
+            <div className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-muted">
+              <svg width="10" height="10" viewBox="0 0 12 12" fill="currentColor"><path d="M6 8L1 3h10z"/></svg>
+            </div>
+          </div>
+
         </div>
       </div>
 
@@ -416,9 +425,12 @@ export default function Portfolios() {
               <Users size={28} className="text-muted" />
             </div>
             <p className="font-semibold text-text text-lg">No developers found</p>
-            {debouncedSearch && (
-              <button onClick={() => setSearch('')} className="text-sm text-accent hover:underline mt-2">
-                Clear search
+            {(debouncedSearch || state || designation || experience || ctc) && (
+              <button
+                onClick={() => { setSearch(''); setState(''); setDesignation(''); setExperience(''); setCtc(''); }}
+                className="text-sm text-accent hover:underline mt-2 inline-block cursor-pointer"
+              >
+                Clear all filters
               </button>
             )}
           </div>
