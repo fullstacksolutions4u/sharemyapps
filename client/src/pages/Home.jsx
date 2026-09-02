@@ -1021,17 +1021,17 @@ export default function Home() {
               View all <ArrowRight size={14} />
             </Link>
           </div>
-          <div className="relative w-full overflow-hidden group py-2 flex" style={{ maskImage: 'linear-gradient(to right, transparent, black 2%, black 98%, transparent)', WebkitMaskImage: 'linear-gradient(to right, transparent, black 2%, black 98%, transparent)' }}>
-            <div className="flex animate-marquee shrink-0 gap-5 pr-5 min-w-full group-hover:[animation-play-state:paused]" style={{ display: 'flex', animationDuration: '60s' }}>
+          <div className="relative w-full overflow-hidden group py-2 flex items-stretch" style={{ maskImage: 'linear-gradient(to right, transparent, black 2%, black 98%, transparent)', WebkitMaskImage: 'linear-gradient(to right, transparent, black 2%, black 98%, transparent)' }}>
+            <div className="flex animate-marquee shrink-0 gap-5 pr-5 min-w-full items-stretch group-hover:[animation-play-state:paused]" style={{ display: 'flex', animationDuration: '60s' }}>
               {showcaseDevs.map((dev) => (
-                <div key={dev._id} className="w-[300px] sm:w-[320px] flex-shrink-0 flex flex-col">
+                <div key={dev._id} className="w-[300px] sm:w-[320px] flex-shrink-0 flex flex-col h-full">
                   <DeveloperCard dev={dev} hideContact hideGithub hidePortfolio />
                 </div>
               ))}
             </div>
-            <div className="flex animate-marquee shrink-0 gap-5 pr-5 min-w-full group-hover:[animation-play-state:paused]" style={{ display: 'flex', animationDuration: '60s' }} aria-hidden="true">
+            <div className="flex animate-marquee shrink-0 gap-5 pr-5 min-w-full items-stretch group-hover:[animation-play-state:paused]" style={{ display: 'flex', animationDuration: '60s' }} aria-hidden="true">
               {showcaseDevs.map((dev) => (
-                <div key={`dup-${dev._id}`} className="w-[300px] sm:w-[320px] flex-shrink-0 flex flex-col">
+                <div key={`dup-${dev._id}`} className="w-[300px] sm:w-[320px] flex-shrink-0 flex flex-col h-full">
                   <DeveloperCard dev={dev} hideContact hideGithub hidePortfolio />
                 </div>
               ))}
@@ -1051,17 +1051,17 @@ export default function Home() {
               View all <ArrowRight size={14} />
             </Link>
           </div>
-          <div className="relative w-full overflow-hidden group py-2 flex" style={{ maskImage: 'linear-gradient(to right, transparent, black 2%, black 98%, transparent)', WebkitMaskImage: 'linear-gradient(to right, transparent, black 2%, black 98%, transparent)' }}>
-            <div className="flex animate-marquee-reverse shrink-0 gap-5 pr-5 min-w-full group-hover:[animation-play-state:paused]" style={{ display: 'flex', animationDuration: '60s' }}>
+          <div className="relative w-full overflow-hidden group py-2 flex items-stretch" style={{ maskImage: 'linear-gradient(to right, transparent, black 2%, black 98%, transparent)', WebkitMaskImage: 'linear-gradient(to right, transparent, black 2%, black 98%, transparent)' }}>
+            <div className="flex animate-marquee-reverse shrink-0 gap-5 pr-5 min-w-full items-stretch group-hover:[animation-play-state:paused]" style={{ display: 'flex', animationDuration: '60s' }}>
               {showcaseProjects.map((p) => (
-                <div key={p._id} className="w-[300px] sm:w-[320px] flex-shrink-0 flex flex-col">
+                <div key={p._id} className="w-[300px] sm:w-[320px] flex-shrink-0 flex flex-col h-full">
                   <ProjectCard project={p} />
                 </div>
               ))}
             </div>
-            <div className="flex animate-marquee-reverse shrink-0 gap-5 pr-5 min-w-full group-hover:[animation-play-state:paused]" style={{ display: 'flex', animationDuration: '60s' }} aria-hidden="true">
+            <div className="flex animate-marquee-reverse shrink-0 gap-5 pr-5 min-w-full items-stretch group-hover:[animation-play-state:paused]" style={{ display: 'flex', animationDuration: '60s' }} aria-hidden="true">
               {showcaseProjects.map((p) => (
-                <div key={`dup-${p._id}`} className="w-[300px] sm:w-[320px] flex-shrink-0 flex flex-col">
+                <div key={`dup-${p._id}`} className="w-[300px] sm:w-[320px] flex-shrink-0 flex flex-col h-full">
                   <ProjectCard project={p} />
                 </div>
               ))}

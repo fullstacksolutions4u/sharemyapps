@@ -34,9 +34,9 @@ const ProjectCard = memo(function ProjectCard({ project }) {
   const avg = avgRating(ratings);
 
   return (
-    <div className="group bg-white border border-accent/30 rounded-xl overflow-hidden shadow-md hover:shadow-xl hover:border-accent/60 transition-all duration-200 flex flex-col">
+    <div className="group bg-white border border-accent/30 rounded-xl overflow-hidden shadow-md hover:shadow-xl hover:border-accent/60 transition-all duration-200 flex flex-col h-full">
       {/* Banner */}
-      <Link to={`/project/${_id}`} className="block overflow-hidden relative">
+      <Link to={`/project/${_id}`} className="block overflow-hidden relative shrink-0">
         <div className="absolute top-2 left-2 z-10 flex flex-col items-start gap-1">
           {featured && (
             <span className="flex items-center gap-1 bg-amber-500 text-white text-[10px] font-semibold px-2 py-0.5 rounded-full shadow">
@@ -62,15 +62,15 @@ const ProjectCard = memo(function ProjectCard({ project }) {
       </Link>
 
       {/* Body */}
-      <div className="p-4 flex flex-col flex-1 gap-3">
-        <div>
+      <div className="p-4 flex flex-col flex-1 justify-between gap-3">
+        <div className="flex flex-col gap-1">
           <Link to={`/project/${_id}`}>
-            <h3 className="font-semibold text-text hover:text-accent transition-colors leading-tight mb-1">{title}</h3>
+            <h3 className="font-semibold text-text hover:text-accent transition-colors leading-snug line-clamp-2 min-h-[2.5rem]">{title}</h3>
           </Link>
-          <p className="text-sm text-muted line-clamp-2 leading-relaxed">{description}</p>
+          <p className="text-sm text-muted line-clamp-2 leading-relaxed min-h-[2.5rem]">{description || '\u00A0'}</p>
         </div>
 
-        <div className="mt-auto pt-3 border-t border-border flex items-center justify-between gap-2">
+        <div className="mt-auto pt-3 border-t border-border flex items-center justify-between gap-2 min-h-[44px]">
           <div className="flex items-center gap-2 min-w-0 flex-1">
           {owner && (
             <div className="flex items-center gap-2 min-w-0">
