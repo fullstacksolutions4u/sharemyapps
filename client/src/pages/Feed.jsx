@@ -421,7 +421,7 @@ export default function Feed() {
     </div>
 
       {/* MIDDLE: Activity Stream */}
-      <div className="w-full lg:max-w-[50%] flex-1 overflow-y-auto custom-scrollbar pb-10 h-full px-2 lg:px-3">
+      <div className="w-full lg:max-w-[50%] flex-1 overflow-y-auto custom-scrollbar pb-10 h-full px-2 lg:px-3 bg-white">
         {activities.length === 0 ? (
           <div className="text-center py-12 bg-white rounded-xl shadow-sm border border-border">
             <p className="text-muted">No activity yet. Check back soon!</p>
