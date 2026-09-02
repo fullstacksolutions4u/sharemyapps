@@ -889,7 +889,6 @@ export default function Home() {
     let animationFrame;
 
     const startCount = Math.max(0, targetCount - 200);
-    setDisplayCount(startCount);
 
     const step = (timestamp) => {
       if (!startTimestamp) startTimestamp = timestamp;

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Search, GitBranch, Link2, Code2,
-  Globe, Layers, ChevronLeft, ChevronRight, Users, Sparkles, Monitor, Smartphone, Crown
+  Globe, Layers, ChevronLeft, ChevronRight, Users, Monitor, Smartphone, Crown
 } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import api from '../api/axios';

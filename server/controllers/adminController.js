@@ -579,6 +579,9 @@ exports.deleteProject = async (req, res) => {
 
 exports.getStats = async (req, res) => {
   try {
+    const startOfToday = new Date();
+    startOfToday.setHours(0, 0, 0, 0);
+
     const [
       total,
       pending,
@@ -590,7 +593,9 @@ exports.getStats = async (req, res) => {
       forSale,
       pendingVacancies,
       pendingOffers,
-      pendingMentorships
+      pendingMentorships,
+      usersToday,
+      projectsToday
     ] = await Promise.all([
       Project.countDocuments(),
       Project.countDocuments({ status: 'pending' }),
@@ -603,6 +608,8 @@ exports.getStats = async (req, res) => {
       require('../models/Vacancy').countDocuments({ status: 'pending', isViewed: { $ne: true } }),
       FreeOffer.countDocuments({ status: 'pending' }),
       require('../models/MentorshipApplication').countDocuments({ status: 'pending' }),
+      User.countDocuments({ createdAt: { $gte: startOfToday } }),
+      Project.countDocuments({ status: 'approved', updatedAt: { $gte: startOfToday } }),
     ]);
     res.json({
       total,
@@ -614,7 +621,9 @@ exports.getStats = async (req, res) => {
       clients,
       forSale,
       pendingVacancies,
-      pendingApplicants: pendingOffers + pendingMentorships
+      pendingApplicants: pendingOffers + pendingMentorships,
+      usersToday,
+      projectsToday
     });
   } catch (err) {
     res.status(500).json({ message: err.message });
