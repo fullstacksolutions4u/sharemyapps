@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { X, ShieldCheck, Check, IndianRupee } from 'lucide-react';
 import api from '../api/axios';
 import toast from 'react-hot-toast';
+import { loadRazorpay } from '../hooks/useRazorpay';
 
 export default function PlacementPaymentModal({
   plan,
@@ -20,6 +21,9 @@ export default function PlacementPaymentModal({
   const handlePay = async () => {
     setLoading(true);
     try {
+      // Load Razorpay script on demand (no-op if already loaded)
+      await loadRazorpay();
+
       const { data: order } = await api.post('/payments/placement/create-order', { planId: plan._id });
 
       const options = {

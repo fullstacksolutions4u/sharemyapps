@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { X, Sparkles, ShieldCheck, Zap } from 'lucide-react';
 import api from '../../api/axios';
 import toast from 'react-hot-toast';
+import { loadRazorpay } from '../../hooks/useRazorpay';
 
 export default function JDPaymentModal({ onClose, onSuccess, packSize = 5, pricePaise = 49900 }) {
   const [loading, setLoading] = useState(false);
@@ -9,6 +10,9 @@ export default function JDPaymentModal({ onClose, onSuccess, packSize = 5, price
   const handlePay = async () => {
     setLoading(true);
     try {
+      // Load Razorpay script on demand (no-op if already loaded)
+      await loadRazorpay();
+
       const { data: order } = await api.post('/payments/jd-pack/create-order');
 
       const options = {
