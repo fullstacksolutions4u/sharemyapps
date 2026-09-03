@@ -32,9 +32,9 @@ const FindDevelopersHistory = lazy(() => import('./pages/FindDevelopersHistory')
 const Mentors            = lazy(() => import('./pages/Mentors'));
 const FreelanceDevelopers = lazy(() => import('./pages/FreelanceDevelopers'));
 const ForgotPassword     = lazy(() => import('./pages/ForgotPassword'));
-const PaidServices       = lazy(() => import('./pages/PaidServices'));
+import PaidServices from './pages/PaidServices';
 const JobPostLinksPremium  = lazy(() => import('./pages/JobPostLinksPremium'));
-const MentorshipProgram  = lazy(() => import('./pages/MentorshipProgram'));
+import MentorshipProgram from './pages/MentorshipProgram';
 const AddVacancy         = lazy(() => import('./pages/AddVacancy'));
 const LearningTracker    = lazy(() => import('./pages/LearningTracker'));
 const Profile            = lazy(() => import('./pages/Profile'));

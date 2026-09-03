@@ -4,6 +4,9 @@ import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
 import PlacementPaymentModal from '../components/PlacementPaymentModal';
+import _Lottie from 'lottie-react';
+const Lottie = _Lottie.default ?? _Lottie;
+import spinnerAnimation from '../assets/mentorship.json';
 
 const MENTORSHIP_FEATURES = [
   '30 structured learning modules',
@@ -129,6 +132,12 @@ export default function MentorshipProgram() {
   const [purchased, setPurchased] = useState(false);
   const [application, setApplication] = useState(null);
   const [checking, setChecking] = useState(user != null);
+  const [minLoadTimeDone, setMinLoadTimeDone] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setMinLoadTimeDone(true), 2500);
+    return () => clearTimeout(timer);
+  }, []);
 
   useEffect(() => {
     if (!user) return;
@@ -222,6 +231,23 @@ export default function MentorshipProgram() {
       </button>
     );
   };
+
+  if (checking || plansLoading || !minLoadTimeDone) {
+    return (
+      <div style={{
+        minHeight: 'calc(100vh - 64px)',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        background: '#eefcf5'
+      }}>
+        <div style={{ width: 300, height: 300 }}>
+          <Lottie animationData={spinnerAnimation} loop={true} />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>
@@ -331,13 +357,13 @@ export default function MentorshipProgram() {
           {/* Body */}
           <div style={{ padding: '30px 32px' }}>
             {purchased && !checking ? (
-              <div style={{ textAlign: 'center', padding: '12px 0 4px' }}>
+              <div style={{ textAlign: 'center', padding: '12px 0 60px', minHeight: '380px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
                 <p style={{ fontSize: '34px', margin: '0 0 8px' }}>🎉</p>
                 <p style={{ fontFamily: "'Spectral', serif", fontSize: '20px', fontWeight: 600, color: '#243433', margin: '0 0 6px' }}>
                   You're enrolled!
                 </p>
                 <p style={{ fontSize: '13.5px', color: '#4a6663', margin: 0, lineHeight: 1.5 }}>
-                  Our team will contact you within 2 business days to kick off your mentorship journey.
+                  Our team will contact you within 1 business day to kick off your mentorship journey.
                 </p>
               </div>
             ) : (

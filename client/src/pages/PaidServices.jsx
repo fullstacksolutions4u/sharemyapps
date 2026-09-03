@@ -4,6 +4,9 @@ import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
 import PlacementPaymentModal from '../components/PlacementPaymentModal';
+import _Lottie from 'lottie-react';
+const Lottie = _Lottie.default ?? _Lottie;
+import spinnerAnimation from '../assets/placement-services-spinner.json';
 
 const FREE_FEATURES = [
   'Recruiter Direct Hiring based on your portfolio and projects',
@@ -35,6 +38,12 @@ export default function PaidServices() {
   const [hasPremiumAccess, setHasPremiumAccess] = useState(false);
   const [hasFreeGrant, setHasFreeGrant] = useState(false);
   const [checkingPaid, setCheckingPaid] = useState(user != null);
+  const [minLoadTimeDone, setMinLoadTimeDone] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setMinLoadTimeDone(true), 2500);
+    return () => clearTimeout(timer);
+  }, []);
 
   const freeOfferActive = offerConfig?.freeOfferEnabled && (
     !offerConfig.freeOfferDueDate || new Date() <= new Date(offerConfig.freeOfferDueDate)
@@ -247,6 +256,25 @@ export default function PaidServices() {
     );
   };
 
+
+
+  if (plansLoading || checkingPaid || !minLoadTimeDone) {
+    return (
+      <div style={{
+        minHeight: 'calc(100vh - 64px)',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        background: '#e6f5f4'
+      }}>
+        <div style={{ width: 300, height: 300 }}>
+          <Lottie animationData={spinnerAnimation} loop={true} />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <>
     {payModal && (
@@ -260,7 +288,7 @@ export default function PaidServices() {
     <div style={{
       position: 'relative',
       minHeight: 'calc(100vh - 64px)',
-      background: '#e9e6df',
+      background: '#e6f5f4',
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',
