@@ -551,26 +551,11 @@ export default function AdminPlansSection() {
 
   return (
     <div className="max-w-5xl">
-      {/* Top row — three cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+      {/* Top row — two cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
         {loadingConfig
           ? <div className="bg-white border border-border rounded-2xl px-5 py-4 h-40 animate-pulse" />
           : <JdAnalysisCard key={config?._id ?? 'jd'} config={config} onSaved={setConfig} />}
-
-        {/* Total Revenue */}
-        <div className="bg-white border border-border rounded-2xl px-5 py-4 flex flex-col gap-4">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-center shrink-0">
-              <IndianRupee size={18} className="text-emerald-600" />
-            </div>
-            <p className="text-sm font-semibold text-text">Total Revenue</p>
-          </div>
-          <div className="border-t border-border pt-3">
-            <p className="text-2xl font-bold text-text">
-              {paymentsData ? fmt(paymentsData.totalRevenuePaise) : '—'}
-            </p>
-          </div>
-        </div>
 
         {/* Plans Pricing */}
         <PlansPricingCard 

@@ -82,7 +82,7 @@ function homeFor(user) {
   if (user.userType === 'recruiter') return user.companyName ? '/find-developers' : '/client-profile';
   if (user.userType === 'client') return user.clientProfile?.projectName ? '/portfolios' : '/client-profile';
   if (user.userType === 'mentee') return '/portfolios';
-  return '/dashboard';
+  return '/feed';
 }
 
 function GuestRoute({ children }) {

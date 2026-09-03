@@ -38,7 +38,7 @@ export default function SelectRole() {
   const homeFor = (u) => {
     if (u.role === 'admin') return '/admin';
     if (u.userType === 'recruiter') return '/client-profile';
-    return '/dashboard';
+    return '/feed';
   };
 
   useEffect(() => {

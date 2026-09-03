@@ -361,7 +361,7 @@ export default function Profile() {
       const res = await api.put('/auth/profile', payload);
       setUser(res.data.user);
       toast.success('Profile updated!');
-      navigate(isNewUser ? '/career-services' : '/opportunities');
+      navigate(isNewUser ? '/feed' : '/opportunities');
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to update profile');
     } finally {

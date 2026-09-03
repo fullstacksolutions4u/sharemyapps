@@ -21,6 +21,7 @@ import AdminAdvancedUsersFilterSection from './admin/AdminAdvancedUsersFilterSec
 import AdminJobLinksSection from './admin/AdminJobLinksSection';
 import AdminCurationSection from './admin/AdminCurationSection';
 import AdminCommunitySection from './admin/AdminCommunitySection';
+import AdminPaymentsSection from './admin/AdminPaymentsSection';
 import { optimizeImage } from '../utils/image';
 
 const NAV = [
@@ -34,6 +35,7 @@ const NAV = [
   { key: 'applicants',      label: 'Applicants',        icon: Crown },
   { key: 'service_access', label: 'Services',           icon: Unlock },
   { key: 'plans_payments',  label: 'Plans & Payments',  icon: IndianRupee },
+  { key: 'payments',       label: 'Received Payments', icon: IndianRupee },
   { key: 'communications', label: 'Communications',   icon: MessageSquare },
   { key: 'learning',       label: 'Quiz Zone',        icon: BookOpen },
   { key: 'community',      label: 'Community Feed',   icon: MessageSquare },
@@ -182,6 +184,7 @@ const { user, setUser, logout } = useAuth();
           {section === 'resumes'          && <AdminResumesSection />}
           {section === 'communications'   && <AdminCommunicationsWrapperSection onUnreadChange={setUnreadMessages} />}
           {section === 'plans_payments'    && <AdminPlansSection />}
+          {section === 'payments'         && <AdminPaymentsSection />}
           {section === 'applicants'       && <AdminApplicantsWrapperSection />}
           { section === 'service_access'   && <AdminServicesWrapperSection /> }
           { section === 'job_links'        && <AdminJobLinksSection /> }
