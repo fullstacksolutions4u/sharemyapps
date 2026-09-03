@@ -860,6 +860,7 @@ export default function Home() {
   const [prefetchedPosts, setPrefetchedPosts] = useState([]);
 
   useEffect(() => {
+    const startTime = Date.now();
     Promise.all([
       api.get('/users/recent?limit=100').then(r => r.data).catch(() => PLACEHOLDER_USERS),
       api.get('/projects/showcase?skip=99&limit=4').then(r => r.data.slice(0, 4)).catch(() => []),
@@ -878,7 +879,13 @@ export default function Home() {
       setPrefetchedPosts(posts);
       
       setNetworkLoading(false);
-      setGlobalLoading(false);
+      const elapsed = Date.now() - startTime;
+      const minLoadTime = 1200;
+      if (elapsed < minLoadTime) {
+        setTimeout(() => setGlobalLoading(false), minLoadTime - elapsed);
+      } else {
+        setGlobalLoading(false);
+      }
     });
   }, []);
 

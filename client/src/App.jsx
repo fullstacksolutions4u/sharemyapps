@@ -8,7 +8,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import AdminRoute from './components/AdminRoute';
 import AppSpinner from './components/AppSpinner';
 
-const Home               = lazy(() => import('./pages/Home'));
+import Home from './pages/Home';
 const Explore            = lazy(() => import('./pages/Explore'));
 import Feed from './pages/Feed';
 const ProjectDetail      = lazy(() => import('./pages/ProjectDetail'));
