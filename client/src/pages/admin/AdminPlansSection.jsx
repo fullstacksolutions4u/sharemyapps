@@ -4,10 +4,6 @@ import api from '../../api/axios';
 import toast from 'react-hot-toast';
 import { optimizeImage } from '../../utils/image';
 
-function fmt(paise) {
-  return `₹${(paise / 100).toLocaleString('en-IN', { minimumFractionDigits: 2 })}`;
-}
-
 /* ── JD Analysis card ───────────────────────────────────────── */
 function JdAnalysisCard({ config, onSaved }) {
   const [paymentEnabled, setPaymentEnabled] = useState(config?.jdFeatureEnabled ?? true);
@@ -533,7 +529,6 @@ function timeAgo(date) {
 export default function AdminPlansSection() {
   const [config, setConfig]         = useState(null);
   const [loadingConfig, setLoadingConfig] = useState(true);
-  const [paymentsData, setPaymentsData] = useState(null);
   const [plans, setPlans] = useState(null);
 
   useEffect(() => {
@@ -544,9 +539,6 @@ export default function AdminPlansSection() {
       .then(r => setConfig(r.data))
       .catch(() => toast.error('Failed to load config.'))
       .finally(() => setLoadingConfig(false));
-    api.get('/admin/payments?page=1')
-      .then(r => setPaymentsData(r.data))
-      .catch(() => {});
   }, []);
 
   return (
