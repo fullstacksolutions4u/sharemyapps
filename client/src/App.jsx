@@ -45,6 +45,7 @@ const Overview           = lazy(() => import('./pages/Overview'));
 const ProjectsSection    = lazy(() => import('./pages/Dashboard').then(m => ({ default: m.ProjectsSection })));
 const SharedProfiles     = lazy(() => import('./pages/SharedProfiles'));
 const SharedProfileDetail = lazy(() => import('./pages/SharedProfileDetail'));
+const PrivacyPolicy      = lazy(() => import('./pages/PrivacyPolicy'));
 
 class ErrorBoundary extends Component {
   state = { error: null };
@@ -121,6 +122,7 @@ function AppRoutes() {
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/explore" element={<Explore />} />
+            <Route path="/privacy-policy" element={<PrivacyPolicy />} />
             <Route path="/feed" element={<Feed />} />
             <Route path="/project/:id" element={<ProjectDetail />} />
             <Route path="/login" element={<GuestRoute><Login /></GuestRoute>} />
