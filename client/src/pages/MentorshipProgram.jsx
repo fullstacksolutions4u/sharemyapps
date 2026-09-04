@@ -14,6 +14,8 @@ const MENTORSHIP_FEATURES = [
   'Weekly Tech review by experienced developer from community',
   '24×7 tech support',
   'Earn during the program with client freelance projects',
+  'Work on real projects for software companies during the mentorship period',
+  'Start job searching as an experienced developer after the mentorship',
   'Job Assistance Plan included FREE — exclusive for mentorship students',
 ];
 
@@ -280,7 +282,7 @@ export default function MentorshipProgram() {
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'flex-start',
-        padding: '60px 24px 24px',
+        padding: '20px 24px 24px',
         fontFamily: "'Manrope', system-ui, sans-serif",
       }}>
         {/* Floating tech badges container */}
