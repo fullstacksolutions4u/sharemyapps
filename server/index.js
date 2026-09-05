@@ -149,14 +149,19 @@ app.use((_req, res, next) => {
 app.set('json spaces', 0);
 
 const allowedOrigins = (process.env.ALLOWED_ORIGINS || process.env.CLIENT_URL || 'http://localhost:5173')
-  .split(',').map(o => o.trim());
+  .split(',')
+  .map(o => o.trim().replace(/\/$/, '')); // Strip trailing slashes for reliable exact-matching
 
 app.use(cors({
   origin: (origin, cb) => {
+    // Allow requests with no origin (like mobile apps, curl, server-to-server)
     if (!origin || allowedOrigins.includes(origin)) return cb(null, true);
     cb(new Error('Not allowed by CORS'));
   },
   credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
+  optionsSuccessStatus: 200 // Legacy browsers (IE11, smart TVs) choke on 204
 }));
 app.use(express.json({ limit: '5mb' }));
 app.use(express.urlencoded({ extended: true, limit: '5mb' }));

@@ -18,23 +18,6 @@ const getNextRegNumber = async () => {
   return last?.regNumber ? last.regNumber + 1 : 101;
 };
 
-const cookieOptions = () => ({
-  httpOnly: true,
-  secure: process.env.NODE_ENV === 'production',
-  sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-});
-
-const setCookie = (res, token) => {
-  res.cookie('token', token, {
-    ...cookieOptions(),
-    maxAge: 7 * 24 * 60 * 60 * 1000,
-  });
-};
-
-// clearCookie must use the same attributes the cookie was set with —
-// cross-site responses silently drop Set-Cookie without SameSite=None; Secure
-const clearAuthCookie = (res) => res.clearCookie('token', cookieOptions());
-
 exports.register = async (req, res) => {
   try {
     const { name, email, password } = req.body;
@@ -56,14 +39,18 @@ exports.register = async (req, res) => {
       await existing.save();
       const token = signToken(existing._id);
       setCookie(res, token);
-      return res.status(201).json({ user: existing.toAuthJSON(), token });
+      return res.status(201).json({ success: true, token, user: existing.toAuthJSON() });
     }
 
     const regNumber = await getNextRegNumber();
     const user = await User.create({ name, email, password, regNumber });
     const token = signToken(user._id);
-    setCookie(res, token);
-    res.status(201).json({ user: user.toAuthJSON(), token });
+
+    res.status(201).json({
+      success: true,
+      token,
+      user: user.toAuthJSON()
+    });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -89,16 +76,19 @@ exports.login = async (req, res) => {
     if (!match) return res.status(401).json({ message: 'Invalid credentials' });
 
     const token = signToken(user._id);
-    setCookie(res, token);
-    res.json({ user: user.toAuthJSON(), token });
+
+    res.json({
+      success: true,
+      token,
+      user: user.toAuthJSON()
+    });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 };
 
-exports.logout = (_req, res) => {
-  clearAuthCookie(res);
-  res.json({ message: 'Logged out' });
+exports.logout = (req, res) => {
+  res.json({ success: true, message: 'Logged out successfully' });
 };
 
 exports.getMe = async (req, res) => {
@@ -245,10 +235,9 @@ exports.deleteAccount = async (req, res) => {
     if (user) {
       user.isDeleted = true;
       user.deletedAt = new Date();
-      await user.save();
+      await User.findByIdAndDelete(userId);
     }
-    clearAuthCookie(res);
-    res.json({ message: 'Account deleted' });
+    res.json({ message: 'Account deleted successfully' });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -369,7 +358,6 @@ exports.resetPassword = async (req, res) => {
 exports.googleCallback = async (req, res) => {
   try {
     const token = signToken(req.user._id);
-    setCookie(res, token);
 
     // Always fetch fresh from DB — Passport may return a stale user object
     const user = await User.findById(req.user._id);

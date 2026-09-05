@@ -14,6 +14,9 @@ Each file covers a specific security topic and is added incrementally — one by
 | 02 | iFrame Attacks (Clickjacking) Prevention | [02_iframe_clickjacking.md](./02_iframe_clickjacking.md) | ✅ Implemented |
 | 03 | Security Headers Hardening | [03_security_headers.md](./03_security_headers.md) | ✅ Implemented |
 | 04 | Information Disclosure Prevention | [04_information_disclosure.md](./04_information_disclosure.md) | ✅ Implemented |
+| 05 | SSRF (Server-Side Request Forgery) Audit | [05_ssrf_audit.md](./05_ssrf_audit.md) | ✅ Audited (Safe) |
+| 06 | CORS (Cross-Origin Resource Sharing) Hardening | [06_cors_hardening.md](./06_cors_hardening.md) | ✅ Implemented |
+| 07 | CSRF (Cross-Site Request Forgery) Prevention | [07_csrf_prevention.md](./07_csrf_prevention.md) | ✅ Implemented |
 | — | *(More topics will be added here)* | — | — |
 
 ---
