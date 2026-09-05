@@ -16,6 +16,12 @@ export default defineConfig({
   build: {
     rollupOptions: {
       output: {
+        // Information Disclosure Prevention — obfuscate chunk names in production build.
+        // Hides library fingerprints: 'vendor.js' → 'assets/[hash].js'
+        // See docs/security/04_information_disclosure.md
+        chunkFileNames: 'assets/[hash].js',
+        entryFileNames: 'assets/[hash].js',
+        assetFileNames: 'assets/[hash].[ext]',
         manualChunks(id) {
           if (id.includes('node_modules/react') || id.includes('node_modules/react-dom') || id.includes('node_modules/react-router-dom')) return 'vendor';
           if (id.includes('@tanstack/react-query')) return 'query';

@@ -6,6 +6,9 @@ const Comment = require('../models/Comment');
 const Activity = require('../models/Activity');
 const { cloudinary, deleteImage } = require('../middleware/upload');
 const { sendOtpEmail } = require('../utils/email');
+// XSS Prevention — sanitize all user-supplied text before storing in MongoDB
+// See docs/security/01_xss_prevention.md
+const { sanitizeText, sanitizeRichText, sanitizeUrl, sanitizeTextArray } = require('../utils/sanitize');
 
 const signToken = (id) =>
   jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: '7d' });
@@ -44,7 +47,7 @@ exports.register = async (req, res) => {
         return res.status(409).json({ message: 'Email already in use' });
 
       // Deleted account re-registering — reset it and send to role selection
-      existing.name = name.trim();
+      existing.name = sanitizeText(name.trim());
       existing.password = password;
       existing.isDeleted = false;
       existing.deletedAt = null;
@@ -130,14 +133,15 @@ exports.updateProfile = async (req, res) => {
     const user = await User.findById(req.user._id);
     if (!user) return res.status(404).json({ message: 'User not found' });
 
-    if (name?.trim()) user.name = name.trim().replace(/\b\w+/g, w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase());
-    if (phone !== undefined) user.phone = phone.trim();
-    if (linkedinUrl !== undefined) user.linkedinUrl = linkedinUrl.trim();
-    if (githubUrl !== undefined) user.githubUrl = githubUrl.trim();
-    if (leetcodeUrl !== undefined) user.leetcodeUrl = leetcodeUrl.trim();
-    if (portfolioUrl !== undefined) user.portfolioUrl = portfolioUrl.trim();
+    // XSS Prevention: sanitize all text/URL fields before saving to MongoDB
+    if (name?.trim()) user.name = sanitizeText(name.trim()).replace(/\b\w+/g, w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase());
+    if (phone !== undefined) user.phone = sanitizeText(phone);
+    if (linkedinUrl !== undefined) user.linkedinUrl = sanitizeUrl(linkedinUrl);
+    if (githubUrl !== undefined) user.githubUrl = sanitizeUrl(githubUrl);
+    if (leetcodeUrl !== undefined) user.leetcodeUrl = sanitizeUrl(leetcodeUrl);
+    if (portfolioUrl !== undefined) user.portfolioUrl = sanitizeUrl(portfolioUrl);
     if (cvUrl !== undefined) {
-      const trimmed = cvUrl.trim();
+      const trimmed = sanitizeUrl(cvUrl) || sanitizeText(cvUrl);
       const isPlaceholder = (u) => {
         const c = u.replace(/^https?:\/\//, '').replace(/\/$/, '');
         return c === 'drive.google.com';
@@ -146,34 +150,34 @@ exports.updateProfile = async (req, res) => {
       if (trimmed && isPlaceholder(trimmed)) user.cvWasPlaceholder = true;
       user.cvUrl = trimmed;
     }
-    if (companyName !== undefined) user.companyName = companyName.trim();
-    if (companyWebsite !== undefined) user.companyWebsite = companyWebsite.trim();
-    if (industry !== undefined) user.industry = industry.trim();
-    if (hrName !== undefined) user.hrName = hrName.trim();
-    if (requirements !== undefined) user.requirements = requirements.trim();
+    if (companyName !== undefined) user.companyName = sanitizeText(companyName);
+    if (companyWebsite !== undefined) user.companyWebsite = sanitizeUrl(companyWebsite);
+    if (industry !== undefined) user.industry = sanitizeText(industry);
+    if (hrName !== undefined) user.hrName = sanitizeText(hrName);
+    if (requirements !== undefined) user.requirements = sanitizeRichText(requirements);
     if (freelanceAvailable !== undefined) user.freelanceAvailable = Boolean(freelanceAvailable);
     if (freelanceRate !== undefined) user.freelanceRate = freelanceRate === '' || freelanceRate === null ? null : Number(freelanceRate);
     if (mentorshipAvailable !== undefined) user.mentorshipAvailable = Boolean(mentorshipAvailable);
     if (mentorshipRate !== undefined) user.mentorshipRate = mentorshipRate === '' || mentorshipRate === null ? null : Number(mentorshipRate);
-    if (mentorshipTech !== undefined) user.mentorshipTech = (Array.isArray(mentorshipTech) ? mentorshipTech : [mentorshipTech]).map(t => t.trim()).filter(Boolean);
-    if (familiarTech !== undefined) user.familiarTech = (Array.isArray(familiarTech) ? familiarTech : [familiarTech]).map(t => t.trim()).filter(Boolean);
+    if (mentorshipTech !== undefined) user.mentorshipTech = sanitizeTextArray(Array.isArray(mentorshipTech) ? mentorshipTech : [mentorshipTech]);
+    if (familiarTech !== undefined) user.familiarTech = sanitizeTextArray(Array.isArray(familiarTech) ? familiarTech : [familiarTech]);
     if (mentorshipSchedule !== undefined) user.mentorshipSchedule = (mentorshipSchedule && typeof mentorshipSchedule === 'object') ? mentorshipSchedule : null;
-    if (languagePreference !== undefined) user.languagePreference = (Array.isArray(languagePreference) ? languagePreference : [languagePreference]).map(l => l.trim()).filter(Boolean);
-    if (joiningAvailability !== undefined) user.joiningAvailability = joiningAvailability.trim();
+    if (languagePreference !== undefined) user.languagePreference = sanitizeTextArray(Array.isArray(languagePreference) ? languagePreference : [languagePreference]);
+    if (joiningAvailability !== undefined) user.joiningAvailability = sanitizeText(joiningAvailability);
     if (currentSalary !== undefined) user.currentSalary = currentSalary === '' || currentSalary === null ? null : Number(currentSalary);
     if (expectedSalary !== undefined) user.expectedSalary = expectedSalary === '' || expectedSalary === null ? null : Number(expectedSalary);
-    if (preferredLocations !== undefined) user.preferredLocations = (Array.isArray(preferredLocations) ? preferredLocations : [preferredLocations]).map(l => l.trim()).filter(Boolean);
-    if (jobMode !== undefined) user.jobMode = (Array.isArray(jobMode) ? jobMode : [jobMode]).map(m => m.trim()).filter(Boolean);
-    if (yearsOfExperience !== undefined) user.yearsOfExperience = yearsOfExperience.trim();
+    if (preferredLocations !== undefined) user.preferredLocations = sanitizeTextArray(Array.isArray(preferredLocations) ? preferredLocations : [preferredLocations]);
+    if (jobMode !== undefined) user.jobMode = sanitizeTextArray(Array.isArray(jobMode) ? jobMode : [jobMode]);
+    if (yearsOfExperience !== undefined) user.yearsOfExperience = sanitizeText(yearsOfExperience);
     if (gender !== undefined) user.gender = ['male', 'female', 'other', ''].includes(gender) ? gender : '';
-    if (place !== undefined) user.place = place.trim();
-    if (district !== undefined) user.district = district.trim();
-    if (state !== undefined) user.state = state.trim();
-    if (country !== undefined) user.country = country.trim();
+    if (place !== undefined) user.place = sanitizeText(place);
+    if (district !== undefined) user.district = sanitizeText(district);
+    if (state !== undefined) user.state = sanitizeText(state);
+    if (country !== undefined) user.country = sanitizeText(country);
     if (dateOfBirth !== undefined) user.dateOfBirth = dateOfBirth ? new Date(dateOfBirth) : null;
     if (designations !== undefined) {
       const hadDesignations = user.designations && user.designations.length > 0;
-      user.designations = (Array.isArray(designations) ? designations : [designations]).map(d => String(d).trim()).filter(Boolean);
+      user.designations = sanitizeTextArray(Array.isArray(designations) ? designations : [designations]);
       const hasDesignationsNow = user.designations.length > 0;
 
       if (!hadDesignations && hasDesignationsNow) {
@@ -187,12 +191,12 @@ exports.updateProfile = async (req, res) => {
     const { clientProfile } = req.body;
     if (clientProfile !== undefined && clientProfile && typeof clientProfile === 'object') {
       user.clientProfile = {
-        projectName: clientProfile.projectName?.trim() || '',
+        projectName: sanitizeText(clientProfile.projectName) || '',
         budget: clientProfile.budget ? Number(clientProfile.budget) : null,
-        duration: clientProfile.duration?.trim() || '',
-        skillsNeeded: Array.isArray(clientProfile.skillsNeeded) ? clientProfile.skillsNeeded : [],
-        experienceLevel: clientProfile.experienceLevel?.trim() || '',
-        description: clientProfile.description?.trim() || '',
+        duration: sanitizeText(clientProfile.duration) || '',
+        skillsNeeded: Array.isArray(clientProfile.skillsNeeded) ? sanitizeTextArray(clientProfile.skillsNeeded) : [],
+        experienceLevel: sanitizeText(clientProfile.experienceLevel) || '',
+        description: sanitizeRichText(clientProfile.description) || '',
       };
     }
 

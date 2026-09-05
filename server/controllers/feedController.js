@@ -2,6 +2,9 @@ const Activity = require('../models/Activity');
 const Project = require('../models/Project');
 const User = require('../models/User');
 const { getExcludedHiddenUserIds } = require('../utils/visibility');
+// XSS Prevention — sanitize comment text before saving to MongoDB
+// See docs/security/01_xss_prevention.md
+const { sanitizeText } = require('../utils/sanitize');
 
 exports.getFeed = async (req, res) => {
   try {
@@ -123,7 +126,7 @@ exports.commentActivity = async (req, res) => {
     
     const comment = {
       user: req.user._id,
-      text: text.trim(),
+      text: sanitizeText(text.trim()),
       createdAt: new Date()
     };
     

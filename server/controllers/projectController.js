@@ -5,6 +5,9 @@ const Notification = require('../models/Notification');
 const Activity = require('../models/Activity');
 const { cloudinary, deleteImage } = require('../middleware/upload');
 const { sendCollaboratorAddedEmail } = require('../utils/email');
+// XSS Prevention — sanitize all user-supplied text before storing in MongoDB
+// See docs/security/01_xss_prevention.md
+const { sanitizeText, sanitizeRichText, sanitizeUrl, sanitizeTextArray, sanitizeUrlArray } = require('../utils/sanitize');
 const {
   canSeeUser,
   canBrowseAllHidden,
@@ -278,12 +281,13 @@ exports.createProject = async (req, res) => {
     const bannerImage = files.banner?.[0]?.path || '';
     const screenshots = (files.screenshots || []).map(f => f.path);
 
+    // XSS Prevention: sanitize user-supplied fields before saving
     const tags = techTags
-      ? (Array.isArray(techTags) ? techTags : techTags.split(',').map(t => t.trim()).filter(Boolean))
+      ? sanitizeTextArray(Array.isArray(techTags) ? techTags : techTags.split(',').map(t => t.trim()).filter(Boolean))
       : [];
 
     const parsedGithubUrls = githubUrls
-      ? (Array.isArray(githubUrls) ? githubUrls : [githubUrls]).map(u => u.trim()).filter(Boolean)
+      ? sanitizeUrlArray((Array.isArray(githubUrls) ? githubUrls : [githubUrls]).filter(Boolean))
       : [];
 
     const collaboratorIds = collaborators
@@ -291,13 +295,16 @@ exports.createProject = async (req, res) => {
       : [];
 
     const project = await Project.create({
-      title, description, liveUrl, bannerImage, screenshots,
-      appType: appType || 'web',
-      category: category || '',
+      title: sanitizeText(title),
+      description: sanitizeRichText(description),
+      liveUrl: sanitizeUrl(liveUrl),
+      bannerImage, screenshots,
+      appType: sanitizeText(appType) || 'web',
+      category: sanitizeText(category) || '',
       techTags: tags,
-      contactEmail: contactEmail || '',
-      contactPhone: contactPhone || '',
-      linkedinUrl: linkedinUrl || '',
+      contactEmail: sanitizeText(contactEmail) || '',
+      contactPhone: sanitizeText(contactPhone) || '',
+      linkedinUrl: sanitizeUrl(linkedinUrl) || '',
       githubUrls: parsedGithubUrls,
       githubVisible: githubVisible !== 'false',
       collaborators: collaboratorIds,
@@ -326,21 +333,23 @@ exports.updateProject = async (req, res) => {
     const { title, description, liveUrl, appType, category, techTags, removeScreenshots, contactEmail, contactPhone, linkedinUrl, githubUrls, githubVisible, resubmit, collaborators, forSale, salePrice } = req.body;
     const files = req.files || {};
 
-    if (title) project.title = title;
-    if (description) project.description = description;
-    if (liveUrl) project.liveUrl = liveUrl;
-    if (appType) project.appType = appType;
-    if (category !== undefined) project.category = category;
+    // XSS Prevention: sanitize user-supplied fields before saving
+    if (title) project.title = sanitizeText(title);
+    if (description) project.description = sanitizeRichText(description);
+    if (liveUrl) project.liveUrl = sanitizeUrl(liveUrl);
+    if (appType) project.appType = sanitizeText(appType);
+    if (category !== undefined) project.category = sanitizeText(category);
     if (techTags !== undefined) {
-      project.techTags = Array.isArray(techTags)
+      const rawTags = Array.isArray(techTags)
         ? techTags
         : techTags.split(',').map(t => t.trim()).filter(Boolean);
+      project.techTags = sanitizeTextArray(rawTags);
     }
-    if (contactEmail !== undefined) project.contactEmail = contactEmail;
-    if (contactPhone !== undefined) project.contactPhone = contactPhone;
-    if (linkedinUrl !== undefined) project.linkedinUrl = linkedinUrl;
+    if (contactEmail !== undefined) project.contactEmail = sanitizeText(contactEmail);
+    if (contactPhone !== undefined) project.contactPhone = sanitizeText(contactPhone);
+    if (linkedinUrl !== undefined) project.linkedinUrl = sanitizeUrl(linkedinUrl);
     if (githubUrls !== undefined) {
-      project.githubUrls = (Array.isArray(githubUrls) ? githubUrls : [githubUrls]).map(u => u.trim()).filter(Boolean);
+      project.githubUrls = sanitizeUrlArray((Array.isArray(githubUrls) ? githubUrls : [githubUrls]).filter(Boolean));
     }
     if (githubVisible !== undefined) project.githubVisible = githubVisible !== 'false';
     if (forSale !== undefined) {

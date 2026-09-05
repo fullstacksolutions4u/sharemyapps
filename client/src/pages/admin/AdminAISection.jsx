@@ -1,5 +1,8 @@
 import { useRef, useState } from 'react';
 import { Bot, Send, User, Sparkles, RotateCcw, Copy, Check } from 'lucide-react';
+// XSS Prevention — sanitize markdown HTML before injecting into DOM
+// See docs/security/01_xss_prevention.md
+import DOMPurify from 'dompurify';
 
 
 function renderMarkdown(text) {
@@ -30,7 +33,7 @@ function MessageBubble({ msg, onCopy, copied }) {
           ) : (
             <div
               className="prose-sm"
-              dangerouslySetInnerHTML={{ __html: renderMarkdown(msg.content) }}
+            dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(renderMarkdown(msg.content)) }}
             />
           )}
           {msg.streaming && (

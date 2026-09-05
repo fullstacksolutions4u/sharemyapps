@@ -514,6 +514,10 @@ export default function Profile() {
                     className="w-full h-full"
                     frameBorder="0"
                     allow="autoplay"
+                    {/* iFrame Defense — sandbox restricts what embedded Google Drive content can do */}
+                    {/* See docs/security/02_iframe_clickjacking.md */}
+                    sandbox="allow-scripts allow-same-origin allow-popups"
+                    referrerPolicy="strict-origin"
                   />
                 </motion.div>
               </motion.div>

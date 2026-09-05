@@ -7,6 +7,7 @@ const passport = require('passport');
 const compression = require('compression');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
+const errorHandler = require('./middleware/errorHandler');
 
 require('./middleware/passport');
 
@@ -40,7 +41,111 @@ const app = express();
 app.set('trust proxy', 1); 
 
 app.use(compression());
-app.use(helmet({ contentSecurityPolicy: false }));
+// ─── Security Headers ─────────────────────────────────────────────────────────
+// XSS Defense          → contentSecurityPolicy  (Topic #1)
+// Clickjacking Defense → frameguard + frameAncestors  (Topic #2)
+// Security Headers     → hsts, referrerPolicy, permissionsPolicy, etc.  (Topic #3)
+// See docs/security/ for full documentation
+// ──────────────────────────────────────────────────────────────────────────────
+app.use(helmet({
+
+  // ── Topic #2: Clickjacking ──────────────────────────────────────────────────
+  // X-Frame-Options: DENY — blocks our app being embedded in any external iframe
+  frameguard: { action: 'deny' },
+
+  // ── Topic #3: HSTS ─────────────────────────────────────────────────────────
+  // Strict-Transport-Security — force HTTPS for 1 year, across all subdomains
+  hsts: {
+    maxAge: 31536000,
+    includeSubDomains: true,
+    preload: true,
+  },
+
+  // ── Topic #3: Referrer Policy ──────────────────────────────────────────────
+  // FIX: Helmet default 'no-referrer' breaks Google OAuth and Razorpay callbacks.
+  // 'strict-origin-when-cross-origin' sends only the domain on cross-origin requests.
+  referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
+
+  // ── Topic #3: Cross-Origin-Resource-Policy ─────────────────────────────────
+  // FIX: Helmet default 'same-origin' blocks our React frontend (different origin)
+  // from fetching our API. CORS headers already restrict which domains can call us.
+  crossOriginResourcePolicy: { policy: 'cross-origin' },
+
+  // ── Topic #3: Permissions-Policy ──────────────────────────────────────────
+  // NOTE: Helmet 8.x has no built-in permissionsPolicy — set via custom middleware below.
+
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: [
+        "'self'",
+        "https://apis.google.com",
+        "https://accounts.google.com",
+        "https://checkout.razorpay.com",
+      ],
+      styleSrc: [
+        "'self'",
+        "'unsafe-inline'",                   // Required for TailwindCSS inline styles
+        "https://fonts.googleapis.com",
+      ],
+      fontSrc: [
+        "'self'",
+        "https://fonts.gstatic.com",
+      ],
+      imgSrc: [
+        "'self'",
+        "data:",
+        "blob:",
+        "https://res.cloudinary.com",
+        "https://lh3.googleusercontent.com",
+        "https://firebasestorage.googleapis.com",
+        "https://storage.googleapis.com",
+      ],
+      connectSrc: [
+        "'self'",
+        ...(process.env.CLIENT_URL ? [process.env.CLIENT_URL] : []),
+        ...(process.env.ALLOWED_ORIGINS ? process.env.ALLOWED_ORIGINS.split(',').map(o => o.trim()) : []),
+        "https://accounts.google.com",
+        "https://api.razorpay.com",
+        "https://lumberjack.razorpay.com",
+        "https://firebasestorage.googleapis.com",
+      ],
+      // Controls what iframes YOUR app can LOAD (outbound) — Razorpay, Google OAuth
+      frameSrc: [
+        "https://accounts.google.com",
+        "https://api.razorpay.com",
+        "https://checkout.razorpay.com",
+        "https://drive.google.com",          // CV preview iframe in Profile page
+        "https://docs.google.com",           // Google Docs CV preview
+      ],
+      // Clickjacking Defense — Layer 2: CSP frame-ancestors (modern, stronger)
+      // 'none' = nobody can embed ShareMyApps in an iframe on any external site
+      frameAncestors: ["'none'"],
+      objectSrc: ["'none'"],                 // Block Flash / plugins
+      upgradeInsecureRequests: [],           // Force HTTPS in production
+    },
+  },
+  crossOriginEmbedderPolicy: false,          // Required for Cloudinary images to load
+}));
+
+// ── Topic #3: Permissions-Policy ─────────────────────────────────────────────
+// Helmet 8.x has no built-in permissionsPolicy middleware — set it directly.
+// Restricts browser features: blocks camera, mic, geolocation, USB from being
+// silently activated by our pages or any embedded third-party scripts.
+app.use((_req, res, next) => {
+  res.setHeader(
+    'Permissions-Policy',
+    [
+      'camera=()',           // No camera access on any origin
+      'microphone=()',       // No microphone access
+      'geolocation=()',      // No location tracking
+      'usb=()',              // No USB device access
+      'payment=(self)',      // Payment API allowed only on our own domain (Razorpay)
+      'interest-cohort=()', // Opt out of FLoC / ad-targeting
+    ].join(', ')
+  );
+  next();
+});
 app.set('json spaces', 0);
 
 const allowedOrigins = (process.env.ALLOWED_ORIGINS || process.env.CLIENT_URL || 'http://localhost:5173')
@@ -90,6 +195,11 @@ app.use('/api/community-posts', generalLimiter, communityPostRoutes);
 app.use('/api/interview-feedback', generalLimiter, require('./middleware/auth').protect, require('./routes/interviewFeedback'));
 
 app.get('/api/health', (_req, res) => res.json({ status: 'ok' }));
+
+// Information Disclosure Prevention — global error handler (must be LAST middleware)
+// Returns generic messages in production to avoid leaking internal error details.
+// See docs/security/04_information_disclosure.md
+app.use(errorHandler);
 
 mongoose.connect(process.env.MONGO_URI, { maxPoolSize: 10 })
   .then(() => {
