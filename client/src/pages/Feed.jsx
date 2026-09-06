@@ -206,7 +206,7 @@ export default function Feed() {
           axios.get('/vacancies').catch(() => ({ data: [] })),
           axios.get('/job-links').catch(() => ({ data: { success: false } })),
           user ? axios.get('/job-links/apply-eligibility').catch(() => null) : Promise.resolve(null),
-          new Promise(resolve => setTimeout(resolve, 2000))
+          new Promise(resolve => setTimeout(resolve, 5000))
         ]);
         if (feedRes.data.success) {
           setActivities(feedRes.data.data);
@@ -259,7 +259,7 @@ export default function Feed() {
 
   if (loading) return (
     <div className="flex justify-center items-center h-[70vh] w-full">
-      <Lottie animationData={feedAnimation} loop={true} className="w-40 h-40" />
+      <Lottie animationData={feedAnimation} loop={true} className="w-64 h-64" />
     </div>
   );
 
@@ -444,7 +444,7 @@ export default function Feed() {
             
             {loadingMore && (
               <div className="flex justify-center py-2">
-                <Lottie animationData={feedAnimation} loop={true} className="w-16 h-16" />
+                <Lottie animationData={feedAnimation} loop={true} className="w-24 h-24" />
               </div>
             )}
             {!hasMore && activities.length > 0 && (
