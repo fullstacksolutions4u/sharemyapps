@@ -192,6 +192,7 @@ function postProcessExtractedJob(job, sourceText) {
     title,
     text: sourceText,
   });
+  const isInternship = Boolean(job.isInternship) || /\bintern(?:ship)?\b/i.test(title) || /\bintern(?:ship)?\b/i.test(sourceText.slice(0, 500));
 
   return {
     ...job,
@@ -201,6 +202,7 @@ function postProcessExtractedJob(job, sourceText) {
     workMode,
     location,
     state,
+    isInternship,
   };
 }
 function normalizeJobDesignation(raw) {

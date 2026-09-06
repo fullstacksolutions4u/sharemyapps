@@ -119,7 +119,7 @@ function FilterDropdown({ icon: Icon, placeholder, value, onChange, options }) {
       <button
         ref={btnRef}
         onClick={() => setOpen(o => !o)}
-        className={`flex items-center gap-2 pl-3.5 pr-3 py-2 rounded-xl border text-[13px] font-medium transition-all duration-200 select-none ${
+        className={`flex items-center justify-between gap-2 pl-3.5 pr-3 py-2 rounded-xl border text-[13px] font-medium transition-all duration-200 select-none w-[140px] ${
           active && (value === 'Out of India' || value === 'Remote Jobs')
             ? 'border-[#5a788b] bg-[#5a788b]/10 text-[#5a788b] shadow-sm'
             : active
@@ -127,11 +127,13 @@ function FilterDropdown({ icon: Icon, placeholder, value, onChange, options }) {
             : 'border-border bg-white text-gray-500 hover:border-gray-300 hover:text-gray-700 hover:shadow-sm'
         }`}
       >
-        <Icon size={13} className={active ? (value === 'Out of India' || value === 'Remote Jobs' ? 'text-[#5a788b]' : 'text-accent') : 'text-gray-400'} />
-        <span className="whitespace-nowrap">{label}</span>
+        <div className="flex items-center gap-2 min-w-0">
+          <Icon size={13} className={`shrink-0 ${active ? (value === 'Out of India' || value === 'Remote Jobs' ? 'text-[#5a788b]' : 'text-accent') : 'text-gray-400'}`} />
+          <span className="truncate">{label}</span>
+        </div>
         <svg
           width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"
-          className={`transition-transform duration-200 ${open ? 'rotate-180' : ''} ${
+          className={`shrink-0 transition-transform duration-200 ${open ? 'rotate-180' : ''} ${
             active ? (value === 'Out of India' || value === 'Remote Jobs' ? 'text-[#5a788b]' : 'text-accent') : 'text-gray-400'
           }`}
         >
@@ -281,7 +283,13 @@ function filterOpportunityItems(data, activeTab, filterDesignation, filterLocati
       const fiveDaysAgoTime = new Date().getTime() - 5 * 24 * 60 * 60 * 1000;
       if (postedTime < fiveDaysAgoTime) return false;
     }
-    if (filterDesignation && normalizeJobDesignation(d.title) !== filterDesignation) return false;
+    if (filterDesignation) {
+      if (filterDesignation === 'Internship') {
+        if (!d.isInternship && !/\bintern(?:ship)?\b/i.test(d.title)) return false;
+      } else if (normalizeJobDesignation(d.title) !== filterDesignation) {
+        return false;
+      }
+    }
 
     if (filterLocation) {
       const loc = (d.location || '').toLowerCase();
@@ -711,9 +719,12 @@ export default function Vacancies() {
                   placeholder="Designation"
                   value={filterDesignation}
                   onChange={(val) => { setFilterDesignation(val); setCurrentPage(1); }}
-                  options={Array.from(new Set(
-                    TAB_CONFIG[activeTab].data.map(d => normalizeJobDesignation(d.title)).filter(Boolean)
-                  )).sort()}
+                  options={(() => {
+                    const titles = Array.from(new Set(
+                      TAB_CONFIG[activeTab].data.map(d => normalizeJobDesignation(d.title)).filter(Boolean)
+                    )).sort();
+                    return ['Internship', ...titles.filter(t => t !== 'Internship')];
+                  })()}
                 />
 
                 <FilterDropdown
@@ -732,15 +743,15 @@ export default function Vacancies() {
                   options={EXPERIENCE_OPTIONS}
                 />
 
-                {(filterDesignation || filterLocation || filterExperience) && (
-                  <button
-                    onClick={() => { setFilterDesignation(''); setFilterLocation(''); setFilterExperience(''); setCurrentPage(1); }}
-                    className="flex items-center gap-1 text-[11px] font-bold text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100/80 border border-red-100 hover:border-red-200 px-2.5 py-1.5 rounded-lg transition-all cursor-pointer whitespace-nowrap shrink-0"
-                  >
-                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M18 6L6 18M6 6l12 12"/></svg>
-                    Clear
-                  </button>
-                )}
+                <button
+                  onClick={() => { setFilterDesignation(''); setFilterLocation(''); setFilterExperience(''); setCurrentPage(1); }}
+                  className={`flex items-center gap-1 text-[11px] font-bold text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100/80 border border-red-100 hover:border-red-200 px-2.5 py-1.5 rounded-lg transition-all duration-300 cursor-pointer whitespace-nowrap shrink-0 ${
+                    (filterDesignation || filterLocation || filterExperience) ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+                  }`}
+                >
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                  Clear
+                </button>
 
                 {/* Add Input in Center */}
                 {activeTab === 'job-links' && user && (
@@ -840,12 +851,19 @@ export default function Vacancies() {
                       style={{ '--sticky-bg': colorObj.bg, '--sticky-fold': colorObj.fold }}
                     >
                       <div className="flex flex-col gap-2">
-                        <div className="flex flex-col items-start w-full">
-                          <h2 className="text-[16px] font-semibold text-gray-900 line-clamp-2 w-full">
-                            {normalizeJobDesignation(link.title) || 'Job Opportunity'}
-                          </h2>
-                          {link.company && (
-                            <p className="text-[13px] text-[#4f6e87] font-medium mt-1 line-clamp-1">{link.company}</p>
+                        <div className="flex justify-between items-start w-full gap-2">
+                          <div className="flex flex-col items-start min-w-0">
+                            <h2 className="text-[16px] font-semibold text-gray-900 line-clamp-2 w-full">
+                              {normalizeJobDesignation(link.title) || 'Job Opportunity'}
+                            </h2>
+                            {link.company && (
+                              <p className="text-[13px] text-[#4f6e87] font-medium mt-1 line-clamp-1">{link.company}</p>
+                            )}
+                          </div>
+                          {(link.isInternship || /\bintern(?:ship)?\b/i.test(link.title)) && (
+                            <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-purple-100 text-purple-700 shrink-0 border border-purple-200">
+                              Internship
+                            </span>
                           )}
                         </div>
 

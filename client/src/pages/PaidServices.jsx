@@ -292,8 +292,8 @@ export default function PaidServices() {
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',
-      justifyContent: 'center',
-      padding: '60px 24px 24px',
+      justifyContent: 'flex-start',
+      padding: '40px 24px 24px',
       fontFamily: "'Manrope', system-ui, sans-serif",
     }}>
       <div style={{

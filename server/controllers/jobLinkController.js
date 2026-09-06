@@ -223,7 +223,7 @@ exports.getAdminJobLinks = async (req, res) => {
 
 exports.createAdminJobLink = async (req, res) => {
   try {
-    const { url, title, company, postedDate, workMode, location, platform, experience, state } = req.body;
+    const { url, title, company, postedDate, workMode, location, platform, experience, isInternship, state } = req.body;
 
     if (!url || !title || !workMode) {
       return res.status(400).json({ success: false, message: 'URL, Designation, and Work Mode are required' });
@@ -239,6 +239,7 @@ exports.createAdminJobLink = async (req, res) => {
       workMode,
       location: normalized.location,
       experience: experience || '',
+      isInternship: Boolean(isInternship),
       state: normalized.state,
       expiresAt: calculateExpirationDate(postedDate),
       approvedAt: new Date(),
@@ -378,6 +379,7 @@ Return ONLY a valid JSON object with a single "jobs" key containing an array of 
       "location": "REQUIRED when any city, area, office, or tech park is mentioned. Format MUST be 'Place, State' for India (e.g. 'Ernakulam, Kerala', 'Mohali, Punjab', 'Chakan, Maharashtra', 'Bengaluru, Karnataka'). Always infer the Indian state from the place name — never return only the city (e.g. 'Mohali' alone is WRONG; use 'Mohali, Punjab'). For non-Indian locations use 'City, Country' and set state to 'Out of India'. Empty only if fully remote with no place mentioned. Do NOT append 'Out of India' if the location is just 'Remote'.",
       "state": "Indian state name matching the location (e.g. 'Kerala', 'Punjab', 'Maharashtra'). REQUIRED whenever location has an Indian place. Use 'Out of India' for foreign locations. Empty only for Remote or when no location at all.",
       "experience": "experience requirement as a short string (e.g. 2-4 years, 3+ years, Fresher). Put Freshers/Fresher/Entry Level here — not in title",
+      "isInternship": "true or false boolean — true if the job role is explicitly an internship or intern role, else false",
       "email": "any email address found in the job posting (e.g. hr@company.com), else empty string",
       "aiLikelyDuplicate": true or false — true if this opening clearly matches an ALREADY APPROVED listing above (same company + same/similar role, or same job post),
       "aiDuplicateNote": "short reason if aiLikelyDuplicate is true (e.g. 'Same as listed: React Developer @ Matrix Marketers'), else empty string"

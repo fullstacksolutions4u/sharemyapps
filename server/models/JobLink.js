@@ -18,6 +18,7 @@ const jobLinkSchema = new mongoose.Schema({
   workMode: { type: String, trim: true, default: '' },
   location: { type: String, trim: true, default: '' },
   experience: { type: String, trim: true, default: '' },
+  isInternship: { type: Boolean, default: false },
   state: { type: String, trim: true, default: '' },
   adminNote: { type: String, trim: true, default: '' },
   expiresAt: { type: Date, expires: 0 },

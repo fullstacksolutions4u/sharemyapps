@@ -308,10 +308,15 @@ export default function Feed() {
                     >
                       <div className="flex items-start justify-between gap-3">
                         <div className="flex flex-col gap-0.5 flex-1 min-w-0">
-                          <div className="flex mt-0.5 max-w-full overflow-hidden">
+                          <div className="flex mt-0.5 max-w-full overflow-hidden items-start justify-between gap-1">
                             <span className={`text-[9px] font-bold uppercase tracking-wider truncate ${getDesignationStyle(link.title)}`}>
                               {link.title || 'Job Opportunity'}
                             </span>
+                            {(link.isInternship || /\bintern(?:ship)?\b/i.test(link.title)) && (
+                              <span className="px-1.5 py-0.5 rounded text-[8px] font-bold uppercase tracking-wider bg-purple-100 text-purple-700 shrink-0 border border-purple-200">
+                                Intern
+                              </span>
+                            )}
                           </div>
 
                           
