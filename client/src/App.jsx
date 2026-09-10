@@ -7,6 +7,7 @@ import Navbar from './components/Navbar';
 import ProtectedRoute from './components/ProtectedRoute';
 import AdminRoute from './components/AdminRoute';
 import AppSpinner from './components/AppSpinner';
+import Footer from './components/Footer';
 
 import Home from './pages/Home';
 const Explore            = lazy(() => import('./pages/Explore'));
@@ -107,9 +108,18 @@ function AdminRedirect() {
   return null;
 }
 
+// Pages where the footer should be visible (public-facing only)
+const PUBLIC_FOOTER_PATHS = ['/', '/explore', '/login', '/register', '/privacy-policy', '/forgot-password'];
+
 function AppRoutes() {
   const location = useLocation();
   const isAdmin = location.pathname.startsWith('/admin');
+  const showFooter = !isAdmin && (
+    PUBLIC_FOOTER_PATHS.includes(location.pathname) ||
+    location.pathname.startsWith('/portfolio/') ||
+    location.pathname.startsWith('/project/') ||
+    location.pathname.startsWith('/showcase/')
+  );
 
   return (
     <div className="min-h-screen flex flex-col bg-bg">
@@ -176,6 +186,7 @@ function AppRoutes() {
           </ErrorBoundary>
         </Suspense>
       </main>
+      {showFooter && <Footer />}
       <Toaster
         position="top-right"
         toastOptions={{
