@@ -113,8 +113,9 @@ const PUBLIC_FOOTER_PATHS = ['/', '/explore', '/login', '/register', '/privacy-p
 
 function AppRoutes() {
   const location = useLocation();
+  const { loading } = useAuth();
   const isAdmin = location.pathname.startsWith('/admin');
-  const showFooter = !isAdmin && (
+  const showFooter = !loading && !isAdmin && (
     PUBLIC_FOOTER_PATHS.includes(location.pathname) ||
     location.pathname.startsWith('/portfolio/') ||
     location.pathname.startsWith('/project/') ||
