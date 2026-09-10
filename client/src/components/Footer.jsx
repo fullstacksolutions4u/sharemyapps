@@ -6,33 +6,21 @@ export default function Footer() {
 
   return (
     <footer className="border-t border-border bg-surface mt-auto">
-      <div className="max-w-6xl mx-auto px-4 py-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-muted">
-        {/* Brand */}
-        <div className="flex items-center gap-2">
-          <img src={logo} alt="ShareMyApps logo" className="h-5 w-5 object-contain" />
-          <span className="font-semibold text-text">ShareMyApps</span>
-          <span className="hidden sm:inline">·</span>
-          <span className="hidden sm:inline">© {year} All rights reserved.</span>
-        </div>
-
-        {/* Mobile copyright */}
-        <span className="sm:hidden">© {year} All rights reserved.</span>
-
-        {/* Links */}
-        <nav className="flex items-center gap-4">
-          <Link
-            to="/privacy-policy"
-            className="hover:text-accent transition-colors duration-150 underline underline-offset-2"
-          >
-            Privacy Policy
-          </Link>
-          <a
-            href="mailto:sharemyappsportal@gmail.com"
-            className="hover:text-accent transition-colors duration-150"
-          >
-            Contact
-          </a>
-        </nav>
+      <div className="max-w-6xl mx-auto px-4 py-5 flex flex-row items-center justify-center gap-4 text-xs" style={{ color: '#4682B4' }}>
+        <img src={logo} alt="ShareMyApps logo" className="h-5 w-5 object-contain shrink-0" />
+        <span className="font-semibold">ShareMyApps</span>
+        <span>© {year}</span>
+        <span>·</span>
+        <Link to="/privacy-policy" className="hover:opacity-75 transition-opacity duration-150">
+          Privacy Policy
+        </Link>
+        <span>·</span>
+        <a
+          href="mailto:hello@sharemyapps.in"
+          className="hover:text-accent transition-colors duration-150"
+        >
+          hello@sharemyapps.in
+        </a>
       </div>
     </footer>
   );

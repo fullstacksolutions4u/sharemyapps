@@ -210,40 +210,63 @@ export default function Explore() {
       {/* Pagination */}
       {pages > 1 && (() => {
         const { groupStart, groupEnd, hasPrev, hasNext } = getPageGroup(page, pages);
+
+        // Calculate the range shown on the current page
+        const SCORE_PAGE1 = 12;
+        const NEWLY_ADDED_COUNT = newlyAdded.length;
+        const PAGE_SIZE = 16;
+        let from, to;
+        if (page === 1) {
+          from = 1;
+          to = projects.length + NEWLY_ADDED_COUNT;
+        } else {
+          from = SCORE_PAGE1 + NEWLY_ADDED_COUNT + (page - 2) * PAGE_SIZE + 1;
+          to = Math.min(from + projects.length - 1, total);
+        }
+
         return (
-          <div className="w-3/4 mx-auto flex items-center justify-center gap-1 mt-12 flex-wrap">
-            <button onClick={() => goPage(page - 1)} disabled={page === 1}
-              className="px-3 h-9 text-sm border border-border rounded-lg text-muted hover:border-accent hover:text-accent disabled:opacity-40 disabled:cursor-not-allowed transition">
-              ‹
-            </button>
-            {hasPrev && (
-              <button onClick={() => goPage(groupStart - GROUP)}
-                className="px-2.5 h-9 text-sm border border-border rounded-lg text-muted hover:border-accent hover:text-accent transition"
-                title={`Pages ${groupStart - GROUP}–${groupStart - 1}`}>
-                «
+          <div className="mt-10 flex items-center justify-center gap-4 flex-wrap">
+            {/* Count label */}
+            <p className="text-xs text-muted shrink-0">
+              Showing <span className="font-semibold text-text">{from}–{to}</span> of{' '}
+              <span className="font-semibold text-text">{total}</span> project{total !== 1 ? 's' : ''}
+            </p>
+
+            {/* Page buttons */}
+            <div className="flex items-center justify-center gap-1 flex-wrap">
+              <button onClick={() => goPage(page - 1)} disabled={page === 1}
+                className="px-3 h-9 text-sm border border-border rounded-lg text-muted hover:border-accent hover:text-accent disabled:opacity-40 disabled:cursor-not-allowed transition">
+                ‹
               </button>
-            )}
-            {Array.from({ length: groupEnd - groupStart + 1 }, (_, i) => groupStart + i).map(p => (
-              <button key={p} onClick={() => goPage(p)}
-                className={`w-9 h-9 text-sm rounded-lg border transition ${
-                  p === page
-                    ? 'bg-accent text-white border-accent font-medium'
-                    : 'border-border text-muted hover:border-accent hover:text-accent'
-                }`}>
-                {p}
+              {hasPrev && (
+                <button onClick={() => goPage(groupStart - GROUP)}
+                  className="px-2.5 h-9 text-sm border border-border rounded-lg text-muted hover:border-accent hover:text-accent transition"
+                  title={`Pages ${groupStart - GROUP}–${groupStart - 1}`}>
+                  «
+                </button>
+              )}
+              {Array.from({ length: groupEnd - groupStart + 1 }, (_, i) => groupStart + i).map(p => (
+                <button key={p} onClick={() => goPage(p)}
+                  className={`w-9 h-9 text-sm rounded-lg border transition ${
+                    p === page
+                      ? 'bg-accent text-white border-accent font-medium'
+                      : 'border-border text-muted hover:border-accent hover:text-accent'
+                  }`}>
+                  {p}
+                </button>
+              ))}
+              {hasNext && (
+                <button onClick={() => goPage(groupEnd + 1)}
+                  className="px-2.5 h-9 text-sm border border-border rounded-lg text-muted hover:border-accent hover:text-accent transition"
+                  title={`Pages ${groupEnd + 1}–${Math.min(groupEnd + GROUP, pages)}`}>
+                  »
+                </button>
+              )}
+              <button onClick={() => goPage(page + 1)} disabled={page === pages}
+                className="px-3 h-9 text-sm border border-border rounded-lg text-muted hover:border-accent hover:text-accent disabled:opacity-40 disabled:cursor-not-allowed transition">
+                ›
               </button>
-            ))}
-            {hasNext && (
-              <button onClick={() => goPage(groupEnd + 1)}
-                className="px-2.5 h-9 text-sm border border-border rounded-lg text-muted hover:border-accent hover:text-accent transition"
-                title={`Pages ${groupEnd + 1}–${Math.min(groupEnd + GROUP, pages)}`}>
-                »
-              </button>
-            )}
-            <button onClick={() => goPage(page + 1)} disabled={page === pages}
-              className="px-3 h-9 text-sm border border-border rounded-lg text-muted hover:border-accent hover:text-accent disabled:opacity-40 disabled:cursor-not-allowed transition">
-              ›
-            </button>
+            </div>
           </div>
         );
       })()}
