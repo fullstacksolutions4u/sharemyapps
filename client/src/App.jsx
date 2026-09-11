@@ -3,50 +3,49 @@ import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-route
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ConfirmProvider } from './context/ConfirmContext';
-import Navbar from './components/Navbar';
-import ProtectedRoute from './components/ProtectedRoute';
-import AdminRoute from './components/AdminRoute';
-import AppSpinner from './components/AppSpinner';
-import Footer from './components/Footer';
+import Navbar from './components/layout/Navbar';
+import ProtectedRoute from './components/routing/ProtectedRoute';
+import AdminRoute from './components/routing/AdminRoute';
+import AppSpinner from './components/ui/AppSpinner';
+import Footer from './components/layout/Footer';
 
-import Home from './pages/Home';
-const Explore            = lazy(() => import('./pages/Explore'));
-import Feed from './pages/Feed';
-const ProjectDetail      = lazy(() => import('./pages/ProjectDetail'));
-const Login              = lazy(() => import('./pages/Login'));
-const Register           = lazy(() => import('./pages/Register'));
-const Dashboard          = lazy(() => import('./pages/Dashboard'));
-const ProjectForm        = lazy(() => import('./pages/ProjectForm'));
-const NotFound           = lazy(() => import('./pages/NotFound'));
-const JobAlerts          = lazy(() => import('./pages/JobAlerts'));
-const Inbox              = lazy(() => import('./pages/Inbox'));
-const Applications       = lazy(() => import('./pages/Applications'));
-const AdminPanel         = lazy(() => import('./pages/AdminPanel'));
-const PublicPortfolio    = lazy(() => import('./pages/PublicPortfolio'));
-const ClientProfile      = lazy(() => import('./pages/ClientProfile'));
-const ChatAdmin          = lazy(() => import('./pages/ChatAdmin'));
-const Vacancies          = lazy(() => import('./pages/Vacancies'));
-const Portfolios         = lazy(() => import('./pages/Portfolios'));
-const SelectRole         = lazy(() => import('./pages/SelectRole'));
-const FindDevelopers     = lazy(() => import('./pages/FindDevelopers'));
-const FindDevelopersHistory = lazy(() => import('./pages/FindDevelopersHistory'));
-const Mentors            = lazy(() => import('./pages/Mentors'));
-const FreelanceDevelopers = lazy(() => import('./pages/FreelanceDevelopers'));
-const ForgotPassword     = lazy(() => import('./pages/ForgotPassword'));
-import PaidServices from './pages/PaidServices';
-const JobPostLinksPremium  = lazy(() => import('./pages/JobPostLinksPremium'));
-import MentorshipProgram from './pages/MentorshipProgram';
-const AddVacancy         = lazy(() => import('./pages/AddVacancy'));
-const LearningTracker    = lazy(() => import('./pages/LearningTracker'));
-const Profile            = lazy(() => import('./pages/Profile'));
-const CurationShowcase   = lazy(() => import('./pages/CurationShowcase'));
-const DeveloperInterviewFeedback = lazy(() => import('./pages/DeveloperInterviewFeedback'));
-const CommunityBlog      = lazy(() => import('./pages/CommunityBlog'));
-const Overview           = lazy(() => import('./pages/Overview'));
-const ProjectsSection    = lazy(() => import('./pages/Dashboard').then(m => ({ default: m.ProjectsSection })));
-const SharedProfiles     = lazy(() => import('./pages/SharedProfiles'));
-const SharedProfileDetail = lazy(() => import('./pages/SharedProfileDetail'));
-const PrivacyPolicy      = lazy(() => import('./pages/PrivacyPolicy'));
+import Home from './pages/public/Home';
+const Explore            = lazy(() => import('./pages/public/Explore'));
+import Feed from './pages/public/Feed';
+const ProjectDetail      = lazy(() => import('./pages/public/ProjectDetail'));
+const Login              = lazy(() => import('./pages/auth/Login'));
+const Register           = lazy(() => import('./pages/auth/Register'));
+const Dashboard          = lazy(() => import('./pages/user/Dashboard'));
+const ProjectForm        = lazy(() => import('./pages/user/ProjectForm'));
+const NotFound           = lazy(() => import('./pages/public/NotFound'));
+const JobAlerts          = lazy(() => import('./pages/user/JobAlerts'));
+const Inbox              = lazy(() => import('./pages/user/Inbox'));
+const Applications       = lazy(() => import('./pages/user/Applications'));
+const AdminPanel         = lazy(() => import('./pages/admin/AdminPanel'));
+const PublicPortfolio    = lazy(() => import('./pages/public/PublicPortfolio'));
+const ChatAdmin          = lazy(() => import('./pages/user/ChatAdmin'));
+const Vacancies          = lazy(() => import('./pages/public/Vacancies'));
+const Portfolios         = lazy(() => import('./pages/public/Portfolios'));
+const SelectRole         = lazy(() => import('./pages/auth/SelectRole'));
+const FindDevelopers     = lazy(() => import('./pages/user/FindDevelopers'));
+const FindDevelopersHistory = lazy(() => import('./pages/user/FindDevelopersHistory'));
+const Mentors            = lazy(() => import('./pages/user/Mentors'));
+const FreelanceDevelopers = lazy(() => import('./pages/public/FreelanceDevelopers'));
+const ForgotPassword     = lazy(() => import('./pages/auth/ForgotPassword'));
+import PaidServices from './pages/user/PaidServices';
+const JobPostLinksPremium  = lazy(() => import('./pages/user/JobPostLinksPremium'));
+import MentorshipProgram from './pages/user/MentorshipProgram';
+const AddVacancy         = lazy(() => import('./pages/user/AddVacancy'));
+const LearningTracker    = lazy(() => import('./pages/public/LearningTracker'));
+const Profile            = lazy(() => import('./pages/user/Profile'));
+const CurationShowcase   = lazy(() => import('./pages/public/CurationShowcase'));
+const DeveloperInterviewFeedback = lazy(() => import('./pages/user/DeveloperInterviewFeedback'));
+const CommunityBlog      = lazy(() => import('./pages/public/CommunityBlog'));
+const Overview           = lazy(() => import('./pages/user/Overview'));
+const ProjectsSection    = lazy(() => import('./pages/user/Dashboard').then(m => ({ default: m.ProjectsSection })));
+const SharedProfiles     = lazy(() => import('./pages/public/SharedProfiles'));
+const SharedProfileDetail = lazy(() => import('./pages/public/SharedProfileDetail'));
+const PrivacyPolicy      = lazy(() => import('./pages/public/PrivacyPolicy'));
 
 class ErrorBoundary extends Component {
   state = { error: null };
@@ -80,9 +79,7 @@ function PageLoader() {
 function homeFor(user) {
   if (user.role === 'admin') return '/admin';
   if (!user.onboardingComplete) return '/select-role';
-  if (user.userType === 'recruiter') return user.companyName ? '/find-developers' : '/client-profile';
-  if (user.userType === 'client') return user.clientProfile?.projectName ? '/portfolios' : '/client-profile';
-  if (user.userType === 'mentee') return '/portfolios';
+  if (user.userType === 'recruiter') return user.companyName ? '/find-developers' : '/portfolios';
   return '/feed';
 }
 
@@ -159,7 +156,6 @@ function AppRoutes() {
             <Route path="/notifications" element={<Navigate to="/dashboard/inbox" state={{ tab: 'notifications' }} replace />} />
             <Route path="/feedback" element={<Navigate to="/dashboard/inbox" state={{ tab: 'feedback' }} replace />} />
             <Route path="/profile" element={<ProtectedRoute><Navigate to="/dashboard/profile" replace /></ProtectedRoute>} />
-            <Route path="/client-profile" element={<ProtectedRoute><ClientProfile /></ProtectedRoute>} />
             <Route path="/chat-admin" element={<ProtectedRoute><ChatAdmin /></ProtectedRoute>} />
             <Route path="/opportunities" element={<Vacancies />} />
             <Route path="/community-blog" element={<CommunityBlog />} />
