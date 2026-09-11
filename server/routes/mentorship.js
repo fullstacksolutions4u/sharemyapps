@@ -35,9 +35,10 @@ router.post('/program/apply', protect, async (req, res) => {
   try {
     const MentorshipApplication = require('../models/MentorshipApplication');
     const phone = (req.body.phone || '').trim();
+    const location = (req.body.location || '').trim();
     const qualification = (req.body.qualification || '').trim();
-    if (!phone || !qualification) {
-      return res.status(400).json({ message: 'Contact number and qualification are required.' });
+    if (!phone || !location || !qualification) {
+      return res.status(400).json({ message: 'Contact number, location, and qualification are required.' });
     }
     if (!/^[+\d][\d\s-]{6,18}$/.test(phone)) {
       return res.status(400).json({ message: 'Please enter a valid contact number.' });
@@ -50,13 +51,14 @@ router.post('/program/apply', protect, async (req, res) => {
       }
       // pending or rejected — update details and put (back) under review
       application.phone = phone;
+      application.location = location;
       application.qualification = qualification;
       application.status = 'pending';
       application.reviewedAt = undefined;
       application.reviewedBy = undefined;
       await application.save();
     } else {
-      application = await MentorshipApplication.create({ user: req.user._id, phone, qualification });
+      application = await MentorshipApplication.create({ user: req.user._id, phone, location, qualification });
     }
 
     const { sendMentorshipApplicationEmail } = require('../utils/email');

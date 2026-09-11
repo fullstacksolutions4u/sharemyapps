@@ -76,17 +76,22 @@ function JdAnalysisCard({ config, onSaved }) {
 function PlansPricingCard({ plans, onPlanUpdated }) {
   const [editingPlan, setEditingPlan] = useState(null);
   const [price, setPrice] = useState('');
+  const [originalPrice, setOriginalPrice] = useState('');
   const [saving, setSaving] = useState(false);
 
   const handleEdit = (plan) => {
     setEditingPlan(plan._id);
     setPrice(plan.price);
+    setOriginalPrice(plan.originalPrice ?? '');
   };
 
   const handleSave = async (id) => {
     setSaving(true);
     try {
-      const res = await api.put(`/admin/plans/${id}`, { price: Number(price) });
+      const payload = { price: Number(price) };
+      if (originalPrice !== '') payload.originalPrice = Number(originalPrice);
+      else payload.originalPrice = null;
+      const res = await api.put(`/admin/plans/${id}`, payload);
       toast.success('Plan price updated.');
       onPlanUpdated(res.data);
       setEditingPlan(null);
@@ -117,26 +122,43 @@ function PlansPricingCard({ plans, onPlanUpdated }) {
                 {plan.name === 'Premium' ? 'Placement Services' : plan.name} Fee (₹)
               </label>
               <div className="flex gap-2">
-                <input
-                  type="number"
-                  min={0}
-                  value={editingPlan === plan._id ? price : plan.price}
-                  onChange={e => setPrice(e.target.value)}
-                  disabled={editingPlan !== plan._id || saving}
-                  className="flex-1 border border-border rounded-xl px-3 py-2 text-sm font-semibold text-text focus:outline-none focus:border-accent disabled:opacity-40 disabled:cursor-not-allowed disabled:bg-bg"
-                />
+                <div className="flex flex-col gap-1 flex-1">
+                  <input
+                    type="number"
+                    min={0}
+                    placeholder="Offer price"
+                    value={editingPlan === plan._id ? price : plan.price}
+                    onChange={e => setPrice(e.target.value)}
+                    disabled={editingPlan !== plan._id || saving}
+                    className="w-full border border-border rounded-xl px-3 py-2 text-sm font-semibold text-text focus:outline-none focus:border-accent disabled:opacity-40 disabled:cursor-not-allowed disabled:bg-bg"
+                  />
+                  {editingPlan === plan._id && (
+                    <input
+                      type="number"
+                      min={0}
+                      placeholder="Original price (strikethrough)"
+                      value={originalPrice}
+                      onChange={e => setOriginalPrice(e.target.value)}
+                      disabled={saving}
+                      className="w-full border border-border rounded-xl px-3 py-2 text-sm text-muted focus:outline-none focus:border-accent"
+                    />
+                  )}
+                  {editingPlan !== plan._id && plan.originalPrice && (
+                    <span className="text-xs text-muted">Original: ₹{plan.originalPrice.toLocaleString('en-IN')}</span>
+                  )}
+                </div>
                 {editingPlan === plan._id ? (
                   <button
                     onClick={() => handleSave(plan._id)}
                     disabled={saving}
-                    className="bg-accent hover:bg-accent-hover text-white text-xs font-bold px-3 py-2 rounded-xl transition-colors shrink-0"
+                    className="bg-accent hover:bg-accent-hover text-white text-xs font-bold px-3 py-2 rounded-xl transition-colors shrink-0 self-start"
                   >
                     {saving ? 'Saving…' : 'Save'}
                   </button>
                 ) : (
                   <button
                     onClick={() => handleEdit(plan)}
-                    className="bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold px-3 py-2 rounded-xl transition-colors shrink-0"
+                    className="bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold px-3 py-2 rounded-xl transition-colors shrink-0 self-start"
                   >
                     Edit
                   </button>

@@ -57,18 +57,18 @@ function ServicesMenu() {
       {open && (
         <div className="absolute left-0 mt-2 w-56 bg-white border border-border rounded-xl shadow-lg py-1 z-50">
           <Link
-            to="/placement-services"
-            onClick={() => setOpen(false)}
-            className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-text hover:bg-bg transition-colors"
-          >
-            <Briefcase size={15} className="text-accent shrink-0" /> Job Assistance Services
-          </Link>
-          <Link
             to="/mentorship-program"
             onClick={() => setOpen(false)}
             className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-text hover:bg-bg transition-colors"
           >
             <GraduationCap size={15} className="text-accent shrink-0" /> Mentorship Program
+          </Link>
+          <Link
+            to="/placement-services"
+            onClick={() => setOpen(false)}
+            className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-text hover:bg-bg transition-colors"
+          >
+            <Briefcase size={15} className="text-accent shrink-0" /> Job Assistance Services
           </Link>
         </div>
       )}

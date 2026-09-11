@@ -126,6 +126,8 @@ export default function AdminMentorshipApplicationsSection() {
                 <p className="text-xs text-muted mt-1">
                   <span className="font-semibold text-text/70">Qualification:</span> {a.qualification}
                   <span className="mx-2">·</span>
+                  <span className="font-semibold text-text/70">Location:</span> {a.location || '—'}
+                  <span className="mx-2">·</span>
                   Applied {new Date(a.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
                 </p>
               </div>
