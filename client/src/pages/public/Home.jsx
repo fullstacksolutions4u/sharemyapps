@@ -1,4 +1,4 @@
-﻿import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, LayoutGrid, Users, MessageCircle, Brain, ShoppingBag, Briefcase, Heart, MessageSquare, Send, Plus, X, Trash2, ChevronUp } from 'lucide-react';
 
@@ -1023,7 +1023,7 @@ export default function Home() {
       {showcaseDevs.length > 0 && (
         <section className="max-w-[1500px] mx-auto px-3 sm:px-4 pb-16">
           <div className="flex items-center justify-between mb-8">
-            <h2 className="text-2xl font-bold text-text tracking-tight">Registered Developers</h2>
+            <h2 className="text-2xl font-bold text-text tracking-tight">Registered Developers & Mentoring Students</h2>
             <Link to="/portfolios" className="text-sm text-accent hover:text-accent-hover flex items-center gap-1 font-medium">
               View all <ArrowRight size={14} />
             </Link>

@@ -1,11 +1,10 @@
-﻿import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from '../../api/axios';
 import { formatDistanceToNow } from 'date-fns';
 import { Trophy, MessageCircle, Heart, Star, TrendingUp, UserPlus, Crown, Sparkles, MapPin, Laptop, ExternalLink, Clock, Calendar, Briefcase } from 'lucide-react';
 import _Lottie from 'lottie-react';
 import feedAnimation from '../../assets/feed.json';
-import easyApplyBanner from '../../assets/easyapply.png';
 import FeedProjectCard from '../../components/cards/FeedProjectCard';
 import { useAuth } from '../../context/AuthContext';
 import ReportVacancyModal from '../../components/modals/ReportVacancyModal';
@@ -282,12 +281,11 @@ export default function Feed() {
             </svg>
           </div>
           <div className="relative z-10 flex flex-col h-full overflow-hidden">
-          <div className="shrink-0 overflow-hidden border-b border-black/5">
-            <img
-              src={easyApplyBanner}
-              alt="Stop Easy Apply — Start to apply through job posts"
-              className="w-full h-auto block rounded-t-xl"
-            />
+          <div className="shrink-0 border-b border-black/5 bg-[#006994]/5 px-4 py-4 rounded-t-xl">
+            <h2 className="text-sm font-bold text-[#006994] uppercase tracking-wide flex items-center gap-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#006994]"></span>
+              LinkedIn job posts links for apply
+            </h2>
           </div>
 
 
