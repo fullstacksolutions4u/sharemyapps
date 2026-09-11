@@ -1,4 +1,4 @@
-﻿export default function PrivacyPolicy() {
+export default function PrivacyPolicy() {
   return (
     <div className="max-w-4xl mx-auto px-4 py-12 md:py-20 text-text">
       <h1 className="text-3xl md:text-4xl font-bold mb-4">Privacy Policy</h1>
@@ -216,8 +216,8 @@
           </ul>
           <p className="mt-3">
             To exercise any of these rights, please email us at{" "}
-            <a href="mailto:sharemyappsportal@gmail.com" className="underline">
-              sharemyappsportal@gmail.com
+            <a href="mailto:hello@sharemyapps.in" className="underline">
+              hello@sharemyapps.in
             </a>
             . We will respond within 30 days. You also have the right to lodge a complaint
             with your local data protection authority.
@@ -266,8 +266,8 @@
           <ul className="list-none mt-2 space-y-1">
             <li>
               <strong>Email:</strong>{" "}
-              <a href="mailto:sharemyappsportal@gmail.com" className="underline">
-                sharemyappsportal@gmail.com
+              <a href="mailto:hello@sharemyapps.in" className="underline">
+                hello@sharemyapps.in
               </a>
             </li>
             <li>
