@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../../api/axios';
 import { useAuth } from '../../context/AuthContext';
@@ -11,7 +11,7 @@ import spinnerAnimation from '../../assets/mentorship.json';
 const MENTORSHIP_FEATURES = [
   '30 structured learning modules, including hands-on, real-world project building.',
   '8-month program duration',
-  'Experience 2 free modules before joining the full program.',
+  'Register and attend first 2 modules completely free before joining the full program.',
   'Weekly Tech review by experienced developer from our community',
   '24/7 dedicated tech support, including personalized 1:1 doubt-clearing calls over Meet.',
   'Earn during the program with client freelance projects',
@@ -153,8 +153,11 @@ function ModulesModal({ onClose }) {
                 }}>
                   {i + 1}
                 </div>
-                <div style={{ fontSize: '12.5px', color: '#3f4f4d', fontWeight: 600, fontFamily: "'Manrope', sans-serif" }}>
+                <div style={{ display: 'flex', alignItems: 'center', fontSize: '12.5px', color: '#3f4f4d', fontWeight: 600, fontFamily: "'Manrope', sans-serif" }}>
                   {mod}
+                  {i < 2 && (
+                    <span style={{ marginLeft: '8px', padding: '1px 5px', background: '#dcfce7', color: '#15803d', fontSize: '9px', fontWeight: 'bold', borderRadius: '4px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Free</span>
+                  )}
                 </div>
               </div>
             ))}
@@ -299,7 +302,7 @@ export default function MentorshipProgram() {
         onClick={() => { if (!user) { navigate('/register'); return; } setApplyOpen(true); }}
         style={{ width: '100%', background: '#0c8c8c', color: '#fff', border: 'none', borderRadius: '8px', padding: '14px', fontSize: '13.5px', fontWeight: 700, letterSpacing: '.02em', cursor: 'pointer', fontFamily: "'Manrope', sans-serif" }}
       >
-        Enroll in Mentorship Program for Free
+        Register in mentorship program for Free
       </button>
     );
   };
