@@ -201,8 +201,7 @@ class UserBrowseService {
     const premiumMatchStage = { ...matchStage, ...premiumMatch };
     const normalMatchStage = { ...matchStage, $nor: premiumMatch.$or };
 
-    const premiumSkip = (page - 1) * 4;
-    const normalSkip = (page - 1) * 8;
+    // Pagination calculated dynamically below to handle uneven distribution
 
     const baseStages = [
       {
@@ -293,6 +292,33 @@ class UserBrowseService {
       }
     ];
 
+    const countPipeline = [
+      { $match: matchStage },
+      { $count: 'n' }
+    ];
+
+    const premiumCountPipeline = [
+      { $match: premiumMatchStage },
+      { $count: 'n' }
+    ];
+
+    const [countResult, premiumCountResult] = await Promise.all([
+      userBrowseRepo.getDevelopers(countPipeline),
+      userBrowseRepo.getDevelopers(premiumCountPipeline)
+    ]);
+
+    const totalCount = countResult[0]?.n ?? 0;
+    const totalPremiumUsers = premiumCountResult[0]?.n ?? 0;
+
+    const prevDevs = (page - 1) * 12;
+    const prevPremiums = Math.min((page - 1) * 4, totalPremiumUsers);
+    
+    const premiumSkip = prevPremiums;
+    const normalSkip = prevDevs - prevPremiums;
+
+    const availablePremiumsThisPage = Math.max(0, Math.min(4, totalPremiumUsers - prevPremiums));
+    const normalLimit = 12 - availablePremiumsThisPage;
+
     const premiumPipeline = [
       { $match: premiumMatchStage },
       ...baseStages,
@@ -304,21 +330,13 @@ class UserBrowseService {
       { $match: normalMatchStage },
       ...baseStages,
       { $skip: normalSkip },
-      { $limit: 8 }
+      { $limit: normalLimit }
     ];
 
-    const countPipeline = [
-      { $match: matchStage },
-      { $count: 'n' }
-    ];
-
-    const [premiumResult, normalResult, countResult] = await Promise.all([
+    const [premiumResult, normalResult] = await Promise.all([
       userBrowseRepo.getDevelopers(premiumPipeline),
-      userBrowseRepo.getDevelopers(normalPipeline),
-      userBrowseRepo.getDevelopers(countPipeline)
+      userBrowseRepo.getDevelopers(normalPipeline)
     ]);
-
-    const totalCount = countResult[0]?.n ?? 0;
 
     // Interleave pattern: 2 Normals, 1 Premium, 2 Normals, 1 Premium...
     const developers = [];
