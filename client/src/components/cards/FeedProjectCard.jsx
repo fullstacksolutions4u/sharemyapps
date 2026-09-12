@@ -1,4 +1,4 @@
-﻿import { useState } from 'react';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { formatDistanceToNow } from 'date-fns';
 import { Heart, MessageCircle, Star, Code, Send, Briefcase } from 'lucide-react';
@@ -294,6 +294,8 @@ export default function FeedProjectCard({ activity, index = 0 }) {
           <Link to={`/project/${project._id}`} className="relative z-10 block flex-1 rounded-2xl overflow-hidden border-[6px] border-white shadow-md bg-white">
             {project.bannerImage ? (
               <img src={optimizeImage(project.bannerImage, 800)} alt={project.title} className="w-full h-full min-h-[140px] object-cover transition duration-500 group-hover:scale-105" />
+            ) : project.liveUrl ? (
+              <img src={`https://s0.wordpress.com/mshots/v1/${encodeURIComponent(project.liveUrl)}?w=800`} alt={project.title} className="w-full h-full min-h-[140px] object-cover transition duration-500 group-hover:scale-105" />
             ) : (
               <div className="w-full h-full min-h-[140px] bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center transition duration-500 group-hover:scale-105">
                 <Code size={40} className="text-gray-400" />

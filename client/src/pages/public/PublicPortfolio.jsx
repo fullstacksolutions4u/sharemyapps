@@ -1,4 +1,4 @@
-﻿import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { ExternalLink, Layers, AlertCircle, Mail, Phone, Monitor, Smartphone, Camera, Briefcase, Clock } from 'lucide-react';
 import api from '../../api/axios';
@@ -114,7 +114,7 @@ const TAG_COLORS = [
 ];
 
 
-const getbanner = (bannerImage) => bannerImage || PLACEHOLDER;
+const getbanner = (bannerImage, liveUrl) => bannerImage || (liveUrl ? `https://s0.wordpress.com/mshots/v1/${encodeURIComponent(liveUrl)}?w=800` : PLACEHOLDER);
 
 const toAbsoluteUrl = (url) => {
   if (!url) return '';

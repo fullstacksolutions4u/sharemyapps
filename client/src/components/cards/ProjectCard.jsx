@@ -1,4 +1,4 @@
-﻿import { memo } from 'react';
+import { memo } from 'react';
 import { Link } from 'react-router-dom';
 import { ExternalLink, Heart, Star, Eye, Zap, Sparkles, Sprout, Monitor, Smartphone, Crown } from 'lucide-react';
 import { optimizeImage } from '../../utils/image';
@@ -16,7 +16,7 @@ const AVATAR_COLORS = [
   'bg-orange-500', 'bg-teal-500',
 ];
 const avatarColor = (name = '') => AVATAR_COLORS[name.charCodeAt(0) % AVATAR_COLORS.length];
-const getbanner = (bannerImage) => bannerImage || PLACEHOLDER;
+const getbanner = (bannerImage, liveUrl) => bannerImage || (liveUrl ? `https://s0.wordpress.com/mshots/v1/${encodeURIComponent(liveUrl)}?w=800` : PLACEHOLDER);
 
 function avgRating(ratings = []) {
   if (!ratings.length) return null;

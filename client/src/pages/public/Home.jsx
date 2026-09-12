@@ -1049,33 +1049,6 @@ export default function Home() {
 
 
 
-      {/* Showcase: projects */}
-      {showcaseProjects.length > 0 && (
-        <section className="max-w-[1500px] mx-auto px-3 sm:px-4 pb-16">
-          <div className="flex items-center justify-between mb-8">
-            <h2 className="text-2xl font-bold text-text tracking-tight">Projects</h2>
-            <Link to="/explore" className="text-sm text-accent hover:text-accent-hover flex items-center gap-1 font-medium">
-              View all <ArrowRight size={14} />
-            </Link>
-          </div>
-          <div className="relative w-full overflow-hidden group py-2 flex items-stretch" style={{ maskImage: 'linear-gradient(to right, transparent, black 2%, black 98%, transparent)', WebkitMaskImage: 'linear-gradient(to right, transparent, black 2%, black 98%, transparent)' }}>
-            <div className="flex animate-marquee-reverse shrink-0 gap-5 pr-5 min-w-full items-stretch group-hover:[animation-play-state:paused]" style={{ display: 'flex', animationDuration: '60s' }}>
-              {showcaseProjects.map((p) => (
-                <div key={p._id} className="w-[300px] sm:w-[320px] flex-shrink-0 flex flex-col h-full">
-                  <ProjectCard project={p} />
-                </div>
-              ))}
-            </div>
-            <div className="flex animate-marquee-reverse shrink-0 gap-5 pr-5 min-w-full items-stretch group-hover:[animation-play-state:paused]" style={{ display: 'flex', animationDuration: '60s' }} aria-hidden="true">
-              {showcaseProjects.map((p) => (
-                <div key={`dup-${p._id}`} className="w-[300px] sm:w-[320px] flex-shrink-0 flex flex-col h-full">
-                  <ProjectCard project={p} />
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
 
     </div>
   );
