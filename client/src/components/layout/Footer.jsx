@@ -5,9 +5,9 @@ export default function Footer() {
   const year = new Date().getFullYear();
 
   return (
-    <footer className="border-t border-border bg-surface mt-auto">
-      <div className="max-w-6xl mx-auto px-4 py-5 flex flex-row items-center justify-center gap-8 text-xs" style={{ color: '#4682B4' }}>
-        <img src={logo} alt="ShareMyApps logo" className="h-5 w-5 object-contain shrink-0" />
+    <footer className="bg-[#00A693] mt-auto">
+      <div className="max-w-6xl mx-auto px-4 py-5 flex flex-row items-center justify-center gap-8 text-xs text-white">
+        <img src={logo} alt="ShareMyApps logo" className="h-5 w-5 object-contain shrink-0 brightness-0 invert" />
         <span className="font-semibold">ShareMyApps</span>
         <span>© {year}</span>
         <span>·</span>

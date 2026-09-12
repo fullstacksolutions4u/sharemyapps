@@ -219,7 +219,6 @@ function NetworkNode({ user, x, y }) {
 }
 
 const NOTE_COLORS = [
-  { bg: 'bg-[#FEF9C3]', border: 'border-[#FEF08A]', text: 'text-amber-950', secondary: 'text-amber-700/80', borderTop: 'border-t-black/10' },
   { bg: 'bg-[#DBEAFE]', border: 'border-[#BFDBFE]', text: 'text-blue-950', secondary: 'text-blue-700/80', borderTop: 'border-t-black/10' },
   { bg: 'bg-[#DCFCE7]', border: 'border-[#BBF7D0]', text: 'text-emerald-950', secondary: 'text-emerald-700/80', borderTop: 'border-t-black/10' },
   { bg: 'bg-[#FFE4E6]', border: 'border-[#FECDD3]', text: 'text-rose-950', secondary: 'text-rose-700/80', borderTop: 'border-t-black/10' },
@@ -597,7 +596,7 @@ function CommunityBlogPreview({ initialPosts }) {
     <section
       className="pb-0"
       style={{
-        background: 'linear-gradient(to bottom, #F5F9FF 92%, #ffffff 100%)'
+        background: '#FFDD00'
       }}
     >
       <div className="relative pt-10 pb-1 px-4 sm:px-6 lg:px-8">
@@ -614,10 +613,10 @@ function CommunityBlogPreview({ initialPosts }) {
 
         {/* Section title */}
         <p 
-          className="text-center text-3xl sm:text-4xl text-gray-800 mb-4 whitespace-nowrap relative z-10"
+          className="text-center text-3xl sm:text-4xl text-black mb-4 whitespace-nowrap relative z-10"
           style={{ fontFamily: "'Cookie', cursive" }}
         >
-          Share your <span className="text-orange-500">career</span> &amp; <span className="text-[#F59E0B]">job hunting</span> journey with community
+          Share your career &amp; job hunting journey with community
         </p>
 
         {/* Center hero block — Glass Card on top of scrollable container */}
@@ -992,7 +991,7 @@ export default function Home() {
       <CommunityBlogPreview initialPosts={prefetchedPosts} />
 
       {/* How it works */}
-      <section className="border-b border-border bg-white">
+      <section className="border-b border-border bg-[#F5F9FF]">
         <div className="max-w-[1500px] mx-auto px-3 sm:px-4 pt-6 pb-12 sm:pt-8 sm:pb-14">
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
             {[
@@ -1003,7 +1002,7 @@ export default function Home() {
               { step: '05', icon: MessageCircle,   title: 'Connect with devs',       desc: 'Meet fellow developers, share ideas, and grow your network.' },
               { step: '06', icon: Brain,           title: 'Quiz Zone',               desc: 'Test your skills with topic-based quizzes, climb the leaderboard, and prove your expertise to recruiters.' },
             ].map(({ step, icon: Icon, title, desc }) => (
-              <div key={step} className="relative flex flex-col items-center text-center gap-4 p-5 rounded-2xl border border-border hover:border-accent/40 hover:shadow-sm transition-all bg-[#FAFAF8]">
+              <div key={step} className="relative flex flex-col items-center text-center gap-4 p-5 rounded-2xl border border-border hover:border-accent/40 hover:shadow-sm transition-all bg-white">
                 <div className="w-10 h-10 bg-accent-light rounded-xl flex items-center justify-center">
                   <Icon size={19} className="text-accent" />
                 </div>
@@ -1019,13 +1018,14 @@ export default function Home() {
 
       {/* Showcase: developers #100–103 */}
       {showcaseDevs.length > 0 && (
-        <section className="max-w-[1500px] mx-auto px-3 sm:px-4 pb-16">
-          <div className="flex items-center justify-between mb-8">
-            <h2 className="text-2xl font-bold text-text tracking-tight">Registered Developers & Mentoring Students</h2>
-            <Link to="/portfolios" className="text-sm text-accent hover:text-accent-hover flex items-center gap-1 font-medium">
-              View all <ArrowRight size={14} />
-            </Link>
-          </div>
+        <section className="bg-[#4682B4] py-16 mt-4">
+          <div className="max-w-[1500px] mx-auto px-3 sm:px-4">
+            <div className="flex items-center justify-between mb-8">
+              <h2 className="text-2xl font-bold text-white tracking-tight">Registered Developers & Mentoring Students</h2>
+              <Link to="/portfolios" className="text-sm text-white hover:text-white/80 flex items-center gap-1 font-medium">
+                View all <ArrowRight size={14} />
+              </Link>
+            </div>
           <div className="relative w-full overflow-hidden group py-2 flex items-stretch" style={{ maskImage: 'linear-gradient(to right, transparent, black 2%, black 98%, transparent)', WebkitMaskImage: 'linear-gradient(to right, transparent, black 2%, black 98%, transparent)' }}>
             <div className="flex animate-marquee shrink-0 gap-5 pr-5 min-w-full items-stretch group-hover:[animation-play-state:paused]" style={{ display: 'flex', animationDuration: '60s' }}>
               {showcaseDevs.map((dev) => (
@@ -1042,6 +1042,7 @@ export default function Home() {
               ))}
             </div>
           </div>
+        </div>
         </section>
       )}
 
