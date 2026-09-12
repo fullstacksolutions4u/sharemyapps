@@ -68,12 +68,47 @@ class UserBrowseService {
               0,
             ],
           },
+          isPremiumStatus: {
+             $cond: [
+                {
+                   $or: [
+                      { $eq: ['$badge', 'champion'] },
+                      { $eq: ['$badge', 'top'] },
+                      { $eq: ['$freePremiumGrant.granted', true] }
+                   ]
+                },
+                1,
+                0
+             ]
+          },
+          socialLinksCount: {
+             $add: [
+                { $cond: [{ $gt: [{ $strLenCP: { $ifNull: ['$linkedinUrl', ''] } }, 0] }, 1, 0] },
+                { $cond: [{ $gt: [{ $strLenCP: { $ifNull: ['$githubUrl', ''] } }, 0] }, 1, 0] },
+                { $cond: [{ $gt: [{ $strLenCP: { $ifNull: ['$leetcodeUrl', ''] } }, 0] }, 1, 0] },
+                { $cond: [{ $gt: [{ $strLenCP: { $ifNull: ['$portfolioUrl', ''] } }, 0] }, 1, 0] },
+                { $cond: [{ $gt: [{ $strLenCP: { $ifNull: ['$cvUrl', ''] } }, 0] }, 1, 0] }
+             ]
+          },
+          engagementPoints: { $ifNull: ['$points', 0] }
         },
       },
       {
+        $addFields: {
+          priorityScore: {
+             $add: [
+                { $multiply: ['$isPremiumStatus', 1000] },
+                { $multiply: ['$projectCount', 50] },
+                { $multiply: ['$socialLinksCount', 20] },
+                { $multiply: ['$hasAvatar', 50] },
+                '$engagementPoints'
+             ]
+          }
+        }
+      },
+      {
         $sort: {
-          projectCount: -1,
-          hasAvatar: -1,
+          priorityScore: -1,
           createdAt: -1,
         },
       },
@@ -155,27 +190,144 @@ class UserBrowseService {
     }
     
     // (Omitted the complex CTC parsing for brevity but kept basic match building)
-    const pipeline = [
-      { $match: matchStage },
-      { $sort: { createdAt: -1 } },
-      { $facet: {
-          total: [{ $count: 'n' }],
-          developers: [
-            { $skip: skip },
-            { $limit: LIMIT },
+    const premiumMatch = {
+      $or: [
+        { badge: 'champion' },
+        { badge: 'top' },
+        { 'freePremiumGrant.granted': true }
+      ]
+    };
+    
+    const premiumMatchStage = { ...matchStage, ...premiumMatch };
+    const normalMatchStage = { ...matchStage, $nor: premiumMatch.$or };
+
+    const premiumSkip = (page - 1) * 4;
+    const normalSkip = (page - 1) * 8;
+
+    const baseStages = [
+      {
+        $lookup: {
+          from: 'projects',
+          let: { uid: '$_id' },
+          pipeline: [
             {
-              $project: {
-                password: 0, googleId: 0, companyName: 0, companyWebsite: 0,
-                industry: 0, requirements: 0, adminNote: 0
-              }
-            }
-          ]
-      }}
+              $match: {
+                $expr: {
+                  $and: [
+                    { $eq: ['$owner', '$$uid'] },
+                    { $eq: ['$status', 'approved'] },
+                    { $ne: ['$hidden', true] },
+                  ],
+                },
+              },
+            },
+            { $project: { _id: 1 } },
+          ],
+          as: 'approvedProjects',
+        },
+      },
+      {
+        $addFields: {
+          projectCount: { $size: '$approvedProjects' },
+          hasAvatar: {
+            $cond: [
+              {
+                $and: [
+                  { $ne: ['$avatar', null] },
+                  { $gt: [{ $strLenCP: { $ifNull: ['$avatar', ''] } }, 0] },
+                ],
+              },
+              1,
+              0,
+            ],
+          },
+          isPremiumStatus: {
+             $cond: [
+                {
+                   $or: [
+                      { $eq: ['$badge', 'champion'] },
+                      { $eq: ['$badge', 'top'] },
+                      { $eq: ['$freePremiumGrant.granted', true] }
+                   ]
+                },
+                1,
+                0
+             ]
+          },
+          socialLinksCount: {
+             $add: [
+                { $cond: [{ $gt: [{ $strLenCP: { $ifNull: ['$linkedinUrl', ''] } }, 0] }, 1, 0] },
+                { $cond: [{ $gt: [{ $strLenCP: { $ifNull: ['$githubUrl', ''] } }, 0] }, 1, 0] },
+                { $cond: [{ $gt: [{ $strLenCP: { $ifNull: ['$leetcodeUrl', ''] } }, 0] }, 1, 0] },
+                { $cond: [{ $gt: [{ $strLenCP: { $ifNull: ['$portfolioUrl', ''] } }, 0] }, 1, 0] },
+                { $cond: [{ $gt: [{ $strLenCP: { $ifNull: ['$cvUrl', ''] } }, 0] }, 1, 0] }
+             ]
+          },
+          engagementPoints: { $ifNull: ['$points', 0] }
+        },
+      },
+      {
+        $addFields: {
+          priorityScore: {
+             $add: [
+                { $multiply: ['$isPremiumStatus', 1000] },
+                { $multiply: ['$projectCount', 50] },
+                { $multiply: ['$socialLinksCount', 20] },
+                { $multiply: ['$hasAvatar', 50] },
+                '$engagementPoints'
+             ]
+          }
+        }
+      },
+      {
+        $sort: {
+          priorityScore: -1,
+          createdAt: -1,
+        },
+      },
+      {
+        $project: {
+          password: 0, googleId: 0, companyName: 0, companyWebsite: 0,
+          industry: 0, requirements: 0, adminNote: 0, approvedProjects: 0
+        }
+      }
     ];
 
-    const result = await userBrowseRepo.getDevelopers(pipeline);
-    const developers = result[0]?.developers ?? [];
-    const totalCount = result[0]?.total?.[0]?.n ?? 0;
+    const premiumPipeline = [
+      { $match: premiumMatchStage },
+      ...baseStages,
+      { $skip: premiumSkip },
+      { $limit: 4 }
+    ];
+
+    const normalPipeline = [
+      { $match: normalMatchStage },
+      ...baseStages,
+      { $skip: normalSkip },
+      { $limit: 8 }
+    ];
+
+    const countPipeline = [
+      { $match: matchStage },
+      { $count: 'n' }
+    ];
+
+    const [premiumResult, normalResult, countResult] = await Promise.all([
+      userBrowseRepo.getDevelopers(premiumPipeline),
+      userBrowseRepo.getDevelopers(normalPipeline),
+      userBrowseRepo.getDevelopers(countPipeline)
+    ]);
+
+    const totalCount = countResult[0]?.n ?? 0;
+
+    // Interleave pattern: 2 Normals, 1 Premium, 2 Normals, 1 Premium...
+    const developers = [];
+    let pIdx = 0, nIdx = 0;
+    while (pIdx < premiumResult.length || nIdx < normalResult.length) {
+      if (nIdx < normalResult.length) developers.push(normalResult[nIdx++]);
+      if (nIdx < normalResult.length) developers.push(normalResult[nIdx++]);
+      if (pIdx < premiumResult.length) developers.push(premiumResult[pIdx++]);
+    }
 
     const isRecruiterOrAdmin = reqUser && (
       reqUser.role === 'admin' ||
