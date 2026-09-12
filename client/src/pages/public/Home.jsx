@@ -4,7 +4,7 @@ import { ArrowRight, LayoutGrid, Users, MessageCircle, Brain, ShoppingBag, Brief
 
 import api from '../../api/axios';
 import AppSpinner from '../../components/ui/AppSpinner';
-import ProjectCard from '../../components/cards/ProjectCard';
+
 import DeveloperCard from '../../components/recruiter/DeveloperCard';
 import { useAuth } from '../../context/AuthContext';
 import { optimizeImage } from '../../utils/image';
@@ -852,7 +852,7 @@ export default function Home() {
   const { user: authUser } = useAuth();
   const [networkUsers, setNetworkUsers] = useState(PLACEHOLDER_USERS);
   const [networkLoading, setNetworkLoading] = useState(true);
-  const [showcaseProjects, setShowcaseProjects] = useState([]);
+
   const [showcaseDevs, setShowcaseDevs] = useState([]);
   const [targetCount, setTargetCount] = useState(0);
   const [displayCount, setDisplayCount] = useState(0);
@@ -863,16 +863,14 @@ export default function Home() {
     const startTime = Date.now();
     Promise.all([
       api.get('/users/recent?limit=100').then(r => r.data).catch(() => PLACEHOLDER_USERS),
-      api.get('/projects/showcase?skip=99&limit=4').then(r => r.data.slice(0, 4)).catch(() => []),
       api.get('/users/showcase-devs?skip=0&limit=12').then(res => {
         if (Array.isArray(res.data) && res.data.length > 0) return res.data;
         return api.get('/users/developers?page=1').then(r => r.data?.developers?.slice(0, 12) || []);
       }).catch(() => []),
       api.get('/users/count').then(r => r.data?.count || 4960).catch(() => 4960),
       api.get('/community-posts?limit=100').then(r => r.data?.posts || []).catch(() => [])
-    ]).then(([recentUsers, proj, devs, count, posts]) => {
+    ]).then(([recentUsers, devs, count, posts]) => {
       setNetworkUsers(recentUsers);
-      setShowcaseProjects(proj);
       setShowcaseDevs(devs);
       setTargetCount(count);
       setDisplayCount(Math.max(0, count - 200));
