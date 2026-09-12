@@ -1,38 +1,19 @@
-const SiteConfig = require('../models/SiteConfig');
-const Plan = require('../models/Plan');
-const { invalidateCache, getConfig } = require('../utils/configCache');
+const configService = require('../services/config.service');
+const ConfigDto = require('../dtos/config.dto');
 
-const getAdminConfig = async (req, res) => {
+const getAdminConfig = async (req, res, next) => {
   try {
-    const config = await getConfig();
+    const config = await configService.getAdminConfig();
     res.json(config);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 };
 
-const updateAdminConfig = async (req, res) => {
+const updateAdminConfig = async (req, res, next) => {
   try {
-    const allowed = ['jdFreeLimit', 'jdPaidPackSize', 'jdPackPricePaise', 'jdFeatureEnabled', 'freeOfferEnabled', 'freeOfferDueDate', 'premiumServicePricePaise', 'rank1OfferPricePaise'];
-    const update = {};
-    for (const key of allowed) {
-      if (req.body[key] !== undefined) update[key] = req.body[key];
-    }
-
-    await SiteConfig.findOneAndUpdate(
-      { key: 'main' },
-      { $set: update },
-      { upsert: true, new: true }
-    );
-
-    // Keep Plan model in sync so Razorpay charges the correct amount
-    if (update.premiumServicePricePaise !== undefined) {
-      const priceRupees = update.premiumServicePricePaise / 100;
-      await Plan.updateMany({}, { $set: { price: priceRupees } });
-    }
-
-    invalidateCache();
-    const fresh = await getConfig();
+    const updateData = ConfigDto.validateUpdate(req.body);
+    const fresh = await configService.updateAdminConfig(updateData);
     res.json(fresh);
   } catch (err) {
     res.status(500).json({ message: err.message });

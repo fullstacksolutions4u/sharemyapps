@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Search, GitBranch, Link2, Code2,
@@ -178,10 +178,10 @@ function DeveloperCard({ dev, idx }) {
         })()}
 
         {/* Projects & Freelance rate row */}
-        {(dev.projects.length > 0 || (dev.freelanceAvailable && dev.freelanceRate)) && (
+        {((dev.projects?.length > 0) || (dev.freelanceAvailable && dev.freelanceRate)) && (
           <div>
             <div className="flex items-baseline justify-between mb-2 gap-2">
-              {dev.projects.length > 0 ? (
+              {dev.projects?.length > 0 ? (
                 <p className="flex items-center gap-1 text-[10px] font-semibold text-muted uppercase tracking-widest">
                   <Layers size={10} /> Projects
                 </p>
@@ -195,7 +195,7 @@ function DeveloperCard({ dev, idx }) {
               )}
             </div>
 
-            {dev.projects.length > 0 && (
+            {dev.projects?.length > 0 && (
               <div className="grid grid-cols-2 gap-1.5">
                 {dev.projects.slice(0, 2).map((p, pi) => {
                   const TypeIcon = p.appType === 'mobile' ? Smartphone : Monitor;

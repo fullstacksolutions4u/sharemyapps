@@ -1,101 +1,62 @@
-const Announcement = require('../models/Announcement');
-const Notification = require('../models/Notification');
+const announcementService = require('../services/announcement.service');
+const AnnouncementDto = require('../dtos/announcement.dto');
 
-exports.getFeed = async (req, res) => {
+exports.getFeed = async (req, res, next) => {
   try {
-    const [announcements, activity] = await Promise.all([
-      Announcement.find({ active: true }).sort({ createdAt: -1 }).lean(),
-      Notification.find({ type: { $in: ['like', 'rated', 'commented'] } })
-        .sort({ createdAt: -1 })
-        .limit(10)
-        .populate({ path: 'project', select: 'title owner', populate: { path: 'owner', select: 'name' } })
-        .lean(),
-    ]);
-
-    const actionLabel = { like: 'a new like', rated: 'a rating', commented: 'a new comment' };
-
-    const activityItems = activity
-      .filter(n => n.project?.title && n.project?.owner?.name)
-      .map(n => ({
-        _id: n._id.toString() + '_a',
-        text: `${n.project.title} by ${n.project.owner.name.split(' ')[0]} received ${actionLabel[n.type] || n.type}`,
-        kind: 'activity',
-        types: [n.type],
-      }));
-
-    const announcementItems = announcements.map(a => ({
-      _id: a._id,
-      text: a.text,
-      kind: 'announcement',
-    }));
-
-    // pattern: 3 activity items, then 1 announcement, repeat
-    const feed = [];
-    let ai = 0; // announcement index
-    for (let i = 0; i < activityItems.length; i++) {
-      feed.push(activityItems[i]);
-      if ((i + 1) % 3 === 0 && announcementItems.length > 0) {
-        feed.push(announcementItems[ai % announcementItems.length]);
-        ai++;
-      }
-    }
-    // if no activity at all, just show announcements
-    if (activityItems.length === 0) feed.push(...announcementItems);
-
+    const feed = await announcementService.getFeed();
     res.json(feed);
-  } catch (err) { res.status(500).json({ message: err.message }); }
+  } catch (err) { next(err); }
 };
 
-exports.getActive = async (req, res) => {
+exports.getActive = async (req, res, next) => {
   try {
-    const items = await Announcement.find({ active: true }).sort({ createdAt: -1 }).lean();
+    const items = await announcementService.getActive();
     res.json(items);
-  } catch (err) { res.status(500).json({ message: err.message }); }
+  } catch (err) { next(err); }
 };
 
-exports.getAll = async (req, res) => {
+exports.getAll = async (req, res, next) => {
   try {
-    const items = await Announcement.find().sort({ createdAt: -1 }).lean();
+    const items = await announcementService.getAll();
     res.json(items);
-  } catch (err) { res.status(500).json({ message: err.message }); }
+  } catch (err) { next(err); }
 };
 
-exports.create = async (req, res) => {
+exports.create = async (req, res, next) => {
   try {
-    const { text } = req.body;
-    if (!text?.trim()) return res.status(400).json({ message: 'Text required' });
-    const item = await Announcement.create({ text: text.trim() });
+    const data = AnnouncementDto.validateCreate(req.body);
+    const item = await announcementService.create(data);
     res.status(201).json(item);
-  } catch (err) { res.status(500).json({ message: err.message }); }
+  } catch (err) {
+    if (err.status) return res.status(err.status).json({ message: err.message });
+    next(err);
+  }
 };
 
-exports.toggle = async (req, res) => {
+exports.toggle = async (req, res, next) => {
   try {
-    const item = await Announcement.findById(req.params.id);
-    if (!item) return res.status(404).json({ message: 'Not found' });
-    item.active = !item.active;
-    await item.save();
+    const item = await announcementService.toggle(req.params.id);
     res.json(item);
-  } catch (err) { res.status(500).json({ message: err.message }); }
+  } catch (err) {
+    if (err.status) return res.status(err.status).json({ message: err.message });
+    next(err);
+  }
 };
 
-exports.update = async (req, res) => {
+exports.update = async (req, res, next) => {
   try {
-    const { text } = req.body;
-    if (!text?.trim()) return res.status(400).json({ message: 'Text required' });
-    const item = await Announcement.findByIdAndUpdate(
-      req.params.id,
-      { text: text.trim() },
-      { new: true }
-    );
-    if (!item) return res.status(404).json({ message: 'Not found' });
+    const data = AnnouncementDto.validateUpdate(req.body);
+    const item = await announcementService.update(req.params.id, data);
     res.json(item);
-  } catch (err) { res.status(500).json({ message: err.message }); }
+  } catch (err) {
+    if (err.status) return res.status(err.status).json({ message: err.message });
+    next(err);
+  }
 };
 
-exports.remove = async (req, res) => {
+exports.remove = async (req, res, next) => {
   try {
-    await Announcement.findByIdAndDelete(req.params.id);
-    res.json({ message: 'Deleted' });
-  } catch (err) { res.status(500).json({ message: err.message }); }
+    const result = await announcementService.remove(req.params.id);
+    res.json(result);
+  } catch (err) { next(err); }
 };

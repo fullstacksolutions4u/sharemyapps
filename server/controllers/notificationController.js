@@ -1,34 +1,22 @@
-const Notification = require('../models/Notification');
+const notificationService = require('../services/notification.service');
 
-exports.getNotifications = async (req, res) => {
+exports.getNotifications = async (req, res, next) => {
   try {
-    const notifications = await Notification.find({ user: req.user._id })
-      .sort({ createdAt: -1 })
-      .limit(30);
-    const unreadCount = await Notification.countDocuments({ user: req.user._id, read: false });
-    res.json({ notifications, unreadCount });
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
+    const result = await notificationService.getNotifications(req.user._id);
+    res.json(result);
+  } catch (err) { next(err); }
 };
 
-exports.markRead = async (req, res) => {
+exports.markRead = async (req, res, next) => {
   try {
-    await Notification.findOneAndUpdate(
-      { _id: req.params.id, user: req.user._id },
-      { read: true }
-    );
-    res.json({ success: true });
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
+    const result = await notificationService.markRead(req.user._id, req.params.id);
+    res.json(result);
+  } catch (err) { next(err); }
 };
 
-exports.markAllRead = async (req, res) => {
+exports.markAllRead = async (req, res, next) => {
   try {
-    await Notification.updateMany({ user: req.user._id, read: false }, { read: true });
-    res.json({ success: true });
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
+    const result = await notificationService.markAllRead(req.user._id);
+    res.json(result);
+  } catch (err) { next(err); }
 };

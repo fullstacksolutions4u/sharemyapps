@@ -1,155 +1,63 @@
-const Plan = require('../models/Plan');
+const planService = require('../services/plan.service');
+const PlanDto = require('../dtos/plan.dto');
 
-const SEED_PLANS = [
-  {
-    name: 'Basic', price: 499, order: 0, variant: 'ghost', badge: '', badgeStyle: '',
-    description: 'Resume & LinkedIn essentials to help you get noticed.',
-    features: ['ATS-optimised resume creation', 'LinkedIn profile optimisation'],
-  },
-  {
-    name: 'Premium', price: 999, order: 1, variant: 'dark', badge: 'Best Value', badgeStyle: 'top-center',
-    description: 'Full-service placement with direct company referrals.',
-    features: [
-      'ATS-optimised resume creation',
-      'LinkedIn profile optimisation',
-      'Resume distribution services to companies',
-      'Direct referrals to partner companies',
-      'Dedicated Placement Officer',
-      'Mock Interviews with Industry Experts',
-    ],
-  },
-];
-
-const JOB_LINK_PLAN = {
-  name: 'JobLinkUnlimited',
-  price: 199,
-  order: 2,
-  variant: 'accent',
-  badge: '',
-  badgeStyle: '',
-  description: 'Unlimited Apply Now on Job Post Links.',
-  features: [
-    'Unlimited Apply Now through Job Post Links',
-    'No weekly 3-apply limit',
-    'Skip contribute-to-unlock — apply to every listing',
-  ],
-  active: true,
-};
-
-async function seedIfEmpty() {
-  const count = await Plan.countDocuments();
-  if (count === 0) {
-    await Plan.insertMany(SEED_PLANS);
-  }
-}
-
-async function ensureJobLinkPlan() {
-  const existing = await Plan.findOne({ name: JOB_LINK_PLAN.name });
-  if (!existing) {
-    await Plan.create(JOB_LINK_PLAN);
-    return;
-  }
-  if (!existing.active) {
-    await Plan.updateOne({ name: JOB_LINK_PLAN.name }, { $set: { active: true } });
-  }
-}
-
-async function ensurePremiumPlan() {
-  const existing = await Plan.findOne({ name: 'Premium' }).lean();
-  if (!existing) {
-    await Plan.create({
-      name: 'Premium',
-      price: SEED_PLANS[1].price,
-      order: 1,
-      variant: 'dark',
-      badge: 'Best Value',
-      badgeStyle: 'top-center',
-      description: SEED_PLANS[1].description,
-      features: SEED_PLANS[1].features,
-      active: true,
-    });
-  }
-}
-
-exports.getPublicPlans = async (req, res) => {
+exports.getPublicPlans = async (req, res, next) => {
   try {
-    await seedIfEmpty();
-    await ensurePremiumPlan();
-    await ensureJobLinkPlan();
-    const plans = await Plan.find({ active: true }).sort({ order: 1 }).lean();
-    // Placement page must always receive Premium pricing even if misconfigured inactive
-    const premium = await Plan.findOne({ name: 'Premium' }).lean();
-    if (premium && !plans.some((p) => p.name === 'Premium')) {
-      plans.push(premium);
-      plans.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
-    }
+    const plans = await planService.getPublicPlans();
     res.json(plans);
   } catch (err) {
     res.status(500).json({ message: 'Failed to load plans' });
   }
 };
 
-exports.adminGetPlans = async (req, res) => {
+exports.adminGetPlans = async (req, res, next) => {
   try {
-    await seedIfEmpty();
-    await ensureJobLinkPlan();
-    const plans = await Plan.find().sort({ order: 1 }).lean();
+    const plans = await planService.adminGetPlans();
     res.json(plans);
   } catch (err) {
     res.status(500).json({ message: 'Failed to load plans' });
   }
 };
 
-exports.getJobLinkUnlimitedPlan = async (req, res) => {
+exports.getJobLinkUnlimitedPlan = async (req, res, next) => {
   try {
-    await ensureJobLinkPlan();
-    const plan = await Plan.findOne({ name: JOB_LINK_PLAN.name, active: true }).lean();
-    if (!plan) return res.status(404).json({ message: 'Plan not found' });
+    const plan = await planService.getJobLinkUnlimitedPlan();
     res.json(plan);
   } catch (err) {
     console.error('getJobLinkUnlimitedPlan error:', err);
+    if (err.status) return res.status(err.status).json({ message: err.message });
     res.status(500).json({ message: 'Failed to load plan' });
   }
 };
 
-exports.adminCreatePlan = async (req, res) => {
+exports.adminCreatePlan = async (req, res, next) => {
   try {
-    const count = await Plan.countDocuments();
-    const plan = await Plan.create({ ...req.body, order: count });
+    const data = PlanDto.validateCreate(req.body);
+    const plan = await planService.adminCreatePlan(data);
     res.status(201).json(plan);
   } catch (err) {
+    if (err.status) return res.status(err.status).json({ message: err.message });
     res.status(400).json({ message: err.message });
   }
 };
 
-exports.adminUpdatePlan = async (req, res) => {
+exports.adminUpdatePlan = async (req, res, next) => {
   try {
-    const plan = await Plan.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
-    if (!plan) return res.status(404).json({ message: 'Plan not found' });
-
-    if (plan.name === 'Premium' && req.body.price != null) {
-      const SiteConfig = require('../models/SiteConfig');
-      const { invalidateCache } = require('../utils/configCache');
-      await SiteConfig.findOneAndUpdate(
-        { key: 'main' },
-        { $set: { premiumServicePricePaise: Math.round(Number(req.body.price) * 100) } },
-        { upsert: true }
-      );
-      invalidateCache();
-    }
-
+    const data = PlanDto.validateUpdate(req.body);
+    const plan = await planService.adminUpdatePlan(req.params.id, data);
     res.json(plan);
   } catch (err) {
+    if (err.status) return res.status(err.status).json({ message: err.message });
     res.status(400).json({ message: err.message });
   }
 };
 
-exports.adminDeletePlan = async (req, res) => {
+exports.adminDeletePlan = async (req, res, next) => {
   try {
-    const plan = await Plan.findByIdAndDelete(req.params.id);
-    if (!plan) return res.status(404).json({ message: 'Plan not found' });
-    res.json({ message: 'Deleted' });
+    const result = await planService.adminDeletePlan(req.params.id);
+    res.json(result);
   } catch (err) {
+    if (err.status) return res.status(err.status).json({ message: err.message });
     res.status(500).json({ message: err.message });
   }
 };

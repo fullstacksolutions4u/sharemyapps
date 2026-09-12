@@ -1,275 +1,129 @@
-const Vacancy = require('../models/Vacancy');
-const Notification = require('../models/Notification');
-const { sendJobApplicationEmail, sendApplicationReviewingEmail } = require('../utils/email');
-const User = require('../models/User');
-const InterviewSession = require('../models/InterviewSession');
-const parseSkills = (skills) =>
-  Array.isArray(skills)
-    ? skills.map(s => s.trim()).filter(Boolean)
-    : (skills || '').split(',').map(s => s.trim()).filter(Boolean);
+const vacancyService = require('../services/vacancy.service');
+const VacancyDto = require('../dtos/vacancy.dto');
 
-// ─── Public / User ────────────────────────────────────────────────────────────
-
-exports.getVacancies = async (req, res) => {
+exports.getVacancies = async (req, res, next) => {
   try {
-    const vacancies = await Vacancy.find({
-      createdBy: { $exists: true, $ne: null },
-      listOnOpportunities: { $ne: false },
-    }).sort({ status: 1, createdAt: -1 }).limit(200).lean();
     const userId = req.user?._id?.toString();
-    const result = vacancies.map(v => ({
-      ...v,
-      interestCount: v.interests.length,
-      interested: userId ? v.interests.some(id => id.toString() === userId) : false,
-      applicationStatus: userId && v.applicantStatus && v.applicantStatus[userId] ? v.applicantStatus[userId] : null,
-      appliedPosition: userId && v.applicantPositions && v.applicantPositions[userId] ? v.applicantPositions[userId] : null,
-      interests: undefined,
-      applicantStatus: undefined,
-      applicantStatusHistory: undefined,
-      applicantPositions: undefined,
-    }));
+    const result = await vacancyService.getVacancies(userId);
     res.json(result);
-  } catch (err) { res.status(500).json({ message: err.message }); }
+  } catch (err) { next(err); }
 };
 
-exports.showInterest = async (req, res) => {
+exports.showInterest = async (req, res, next) => {
   try {
-    const vacancy = await Vacancy.findOne({ _id: req.params.id, status: 'active' });
-    if (!vacancy) return res.status(404).json({ message: 'Vacancy not found or closed' });
-    const userId = req.user._id;
-    if (vacancy.interests.some(id => id.toString() === userId.toString())) {
-      return res.status(400).json({ message: 'Already interested' });
-    }
-    const isFirstTime = !vacancy.everApplied.some(id => id.toString() === userId.toString());
-    vacancy.interests.push(userId);
-    if (isFirstTime) {
-      vacancy.everApplied.push(userId);
-      if (!vacancy.applicantStatusHistory) vacancy.applicantStatusHistory = new Map();
-      vacancy.applicantStatusHistory.set(userId.toString(), [{ status: 'applied', date: new Date() }]);
-    }
-
-    const { position } = req.body;
-    if (position) {
-      if (!vacancy.applicantPositions) vacancy.applicantPositions = new Map();
-      vacancy.applicantPositions.set(userId.toString(), position);
-    }
-
-    await vacancy.save();
-    res.json({ interested: true, interestCount: vacancy.interests.length });
-
-    if (isFirstTime) {
-      sendJobApplicationEmail({
-        to: req.user.email,
-        name: req.user.name,
-        vacancy,
-        selectedPosition: position || null,
-      }).catch(() => {});
-    }
-  } catch (err) { res.status(500).json({ message: err.message }); }
+    const result = await vacancyService.showInterest(req.params.id, req.user, req.body.position);
+    res.json(result);
+  } catch (err) {
+    if (err.status) return res.status(err.status).json({ message: err.message });
+    res.status(500).json({ message: err.message });
+  }
 };
 
-exports.withdrawInterest = async (req, res) => {
+exports.withdrawInterest = async (req, res, next) => {
   try {
-    const vacancy = await Vacancy.findOne({ _id: req.params.id, status: 'active' });
-    if (!vacancy) return res.status(404).json({ message: 'Vacancy not found or closed' });
-    vacancy.interests = vacancy.interests.filter(id => id.toString() !== req.user._id.toString());
-    await vacancy.save();
-    res.json({ interested: false, interestCount: vacancy.interests.length });
-  } catch (err) { res.status(500).json({ message: err.message }); }
+    const result = await vacancyService.withdrawInterest(req.params.id, req.user._id);
+    res.json(result);
+  } catch (err) {
+    if (err.status) return res.status(err.status).json({ message: err.message });
+    res.status(500).json({ message: err.message });
+  }
 };
 
-exports.reportVacancy = async (req, res) => {
+exports.reportVacancy = async (req, res, next) => {
   try {
-    const { company, title, type, salaryRange, description } = req.body;
-    if (!company || !title || !description) {
-      return res.status(400).json({ message: 'Company, Designation, and Description are required' });
-    }
-    const vacancy = await Vacancy.create({
-      title,
-      company,
-      description,
-      type: type || 'remote',
-      salaryRange,
-      status: 'pending',
-      createdBy: req.user._id,
-    });
+    const data = VacancyDto.validateReportVacancy(req.body);
+    const vacancy = await vacancyService.reportVacancy(req.user._id, data);
     res.status(201).json(vacancy);
   } catch (err) {
+    if (err.status) return res.status(err.status).json({ message: err.message });
     res.status(400).json({ message: err.message });
   }
 };
 
-
-// ─── Admin ────────────────────────────────────────────────────────────────────
-
-exports.getAllVacanciesAdmin = async (req, res) => {
+exports.getAllVacanciesAdmin = async (req, res, next) => {
   try {
-    const vacancies = await Vacancy.find()
-      .sort({ createdAt: -1 })
-      .populate('interests', 'name email phone regNumber userType avatar cvUrl premiumServices freePremiumGrant')
-      .populate('createdBy', 'name email phone companyName userType')
-      .lean();
+    const vacancies = await vacancyService.getAllVacanciesAdmin();
     res.json(vacancies);
-  } catch (err) { res.status(500).json({ message: err.message }); }
+  } catch (err) { next(err); }
 };
 
-exports.createVacancy = async (req, res) => {
+exports.createVacancy = async (req, res, next) => {
   try {
-    const { title, company, description, skills, location, type, industry, jobType, experience, salaryRange, listOnOpportunities, positions } = req.body;
-    const vacancy = await Vacancy.create({
-      title, company, description,
-      skills: parseSkills(skills),
-      location, type, industry, jobType, experience, salaryRange,
-      listOnOpportunities: listOnOpportunities !== false,
-      createdBy: req.user._id,
-      positions: parseSkills(positions),
-    });
+    const data = VacancyDto.validateCreateVacancy(req.body);
+    const vacancy = await vacancyService.createVacancy(req.user._id, data);
     res.status(201).json(vacancy);
   } catch (err) { res.status(400).json({ message: err.message }); }
 };
 
-exports.updateVacancy = async (req, res) => {
+exports.updateVacancy = async (req, res, next) => {
   try {
-    const { title, company, description, skills, location, type, industry, jobType, experience, salaryRange, status, positions } = req.body;
-    const vacancy = await Vacancy.findByIdAndUpdate(
-      req.params.id,
-      { title, company, description, skills: parseSkills(skills), location, type, industry, jobType, experience, salaryRange, status, positions: parseSkills(positions) },
-      { new: true, runValidators: true }
-    ).populate('interests', 'name email phone regNumber userType avatar cvUrl');
-    if (!vacancy) return res.status(404).json({ message: 'Vacancy not found' });
+    const data = VacancyDto.validateUpdateVacancy(req.body);
+    const vacancy = await vacancyService.updateVacancy(req.params.id, data);
     res.json(vacancy);
-  } catch (err) { res.status(400).json({ message: err.message }); }
-};
-
-exports.replyToInterest = async (req, res) => {
-  try {
-    const { userId, message } = req.body;
-    if (!userId || !message?.trim()) {
-      return res.status(400).json({ message: 'userId and message are required' });
-    }
-    const vacancy = await Vacancy.findById(req.params.id);
-    if (!vacancy) return res.status(404).json({ message: 'Vacancy not found' });
-
-    const hasInterest = vacancy.interests.some(id => id.toString() === userId);
-    if (!hasInterest) return res.status(400).json({ message: 'User has not shown interest in this vacancy' });
-
-    await Notification.create({
-      user: userId,
-      fromUser: req.user._id,
-      type: 'vacancy_reply',
-      title: `Admin replied about: ${vacancy.title}`,
-      message: message.trim(),
-      vacancy: vacancy._id,
-    });
-
-    res.json({ success: true });
-  } catch (err) { res.status(500).json({ message: err.message }); }
-};
-
-exports.toggleVacancyStatus = async (req, res) => {
-  try {
-    const vacancy = await Vacancy.findById(req.params.id);
-    if (!vacancy) return res.status(404).json({ message: 'Vacancy not found' });
-    vacancy.status = vacancy.status === 'active' ? 'closed' : 'active';
-    await vacancy.save();
-    res.json({ status: vacancy.status });
-  } catch (err) { res.status(500).json({ message: err.message }); }
-};
-
-exports.deleteVacancy = async (req, res) => {
-  try {
-    const vacancy = await Vacancy.findByIdAndDelete(req.params.id);
-    if (!vacancy) return res.status(404).json({ message: 'Vacancy not found' });
-    res.json({ message: 'Deleted' });
-  } catch (err) { res.status(500).json({ message: err.message }); }
-};
-exports.updateApplicantStatus = async (req, res) => {
-  try {
-    const { userId, userIds, status, note } = req.body;
-    if ((!userId && (!userIds || !userIds.length)) || !status) {
-      return res.status(400).json({ message: 'userId or userIds and status are required' });
-    }
-    const vacancy = await Vacancy.findById(req.params.id);
-    if (!vacancy) return res.status(404).json({ message: 'Vacancy not found' });
-    
-    // Ensure the applicantStatus Map exists
-    if (!vacancy.applicantStatus) {
-      vacancy.applicantStatus = new Map();
-    }
-    if (!vacancy.applicantStatusHistory) {
-      vacancy.applicantStatusHistory = new Map();
-    }
-    
-    const targetUserIds = userIds || [userId];
-    let changed = false;
-
-    for (const uId of targetUserIds) {
-      const previousStatus = vacancy.applicantStatus.get(uId);
-      if (previousStatus !== status) {
-        vacancy.applicantStatus.set(uId, status);
-        
-        const history = vacancy.applicantStatusHistory.get(uId) || [];
-        history.push({ status: status, date: new Date(), note: note || '' });
-        vacancy.applicantStatusHistory.set(uId, history);
-        changed = true;
-
-        // Async sending email / creating notifications
-        User.findById(uId).select('name email').then(user => {
-          if (user) {
-            if (status === 'reviewing') {
-              sendApplicationReviewingEmail({
-                to: user.email,
-                name: user.name,
-                vacancyTitle: vacancy.title
-              }).catch(console.error);
-            }
-
-            Notification.create({
-              user: uId,
-              fromUser: req.user._id,
-              type: 'vacancy_reply',
-              title: 'Application Status Updated',
-              message: `Your application status for "${vacancy.title}" has been updated to: ${status}`,
-              vacancy: vacancy._id,
-            }).catch(console.error);
-          }
-        }).catch(console.error);
-      }
-    }
-    
-    if (changed) {
-      await vacancy.save();
-    }
-    
-    res.json({ success: true, applicantStatus: vacancy.applicantStatus });
   } catch (err) {
+    if (err.status) return res.status(err.status).json({ message: err.message });
+    res.status(400).json({ message: err.message });
+  }
+};
+
+exports.replyToInterest = async (req, res, next) => {
+  try {
+    const data = VacancyDto.validateReplyToInterest(req.body);
+    const result = await vacancyService.replyToInterest(req.params.id, req.user._id, data);
+    res.json(result);
+  } catch (err) {
+    if (err.status) return res.status(err.status).json({ message: err.message });
     res.status(500).json({ message: err.message });
   }
 };
 
-exports.markVacancyViewed = async (req, res) => {
+exports.toggleVacancyStatus = async (req, res, next) => {
   try {
-    const vacancy = await Vacancy.findByIdAndUpdate(req.params.id, { isViewed: true }, { new: true });
-    if (!vacancy) return res.status(404).json({ message: 'Vacancy not found' });
-    res.json(vacancy);
+    const result = await vacancyService.toggleVacancyStatus(req.params.id);
+    res.json(result);
   } catch (err) {
+    if (err.status) return res.status(err.status).json({ message: err.message });
     res.status(500).json({ message: err.message });
   }
 };
 
-exports.getSharedProfiles = async (req, res) => {
+exports.deleteVacancy = async (req, res, next) => {
   try {
-    const vacancy = await Vacancy.findById(req.params.id)
-      .select('title company description skills location type experience salaryRange');
-    if (!vacancy) return res.status(404).json({ message: 'Vacancy not found' });
-
-    const sessions = await InterviewSession.find({ vacancy: req.params.id })
-      .populate('user', 'name email phone linkedinUrl githubUrl portfolioUrl cvUrl avatar bio yearsOfExperience skills designations')
-      .sort({ overallRating: -1 }) // Sort by best evaluated
-      .lean();
-
-    res.json({ success: true, vacancy, sessions });
+    const result = await vacancyService.deleteVacancy(req.params.id);
+    res.json(result);
   } catch (err) {
+    if (err.status) return res.status(err.status).json({ message: err.message });
+    res.status(500).json({ message: err.message });
+  }
+};
+
+exports.updateApplicantStatus = async (req, res, next) => {
+  try {
+    const data = VacancyDto.validateUpdateApplicantStatus(req.body);
+    const result = await vacancyService.updateApplicantStatus(req.params.id, req.user._id, data);
+    res.json(result);
+  } catch (err) {
+    if (err.status) return res.status(err.status).json({ message: err.message });
+    res.status(500).json({ message: err.message });
+  }
+};
+
+exports.markVacancyViewed = async (req, res, next) => {
+  try {
+    const vacancy = await vacancyService.markVacancyViewed(req.params.id);
+    res.json(vacancy);
+  } catch (err) {
+    if (err.status) return res.status(err.status).json({ message: err.message });
+    res.status(500).json({ message: err.message });
+  }
+};
+
+exports.getSharedProfiles = async (req, res, next) => {
+  try {
+    const result = await vacancyService.getSharedProfiles(req.params.id);
+    res.json(result);
+  } catch (err) {
+    if (err.status) return res.status(err.status).json({ message: err.message });
     res.status(500).json({ message: err.message });
   }
 };

@@ -1,34 +1,20 @@
-const JDSearchHistory = require('../models/JDSearchHistory');
-const User = require('../models/User');
-const { currentDay } = require('../middleware/jdQuota');
-const { getConfig } = require('../utils/configCache');
+const jdAnalysisService = require('../services/jdAnalysis.service');
+const JDAnalysisDto = require('../dtos/jdAnalysis.dto');
 
 const saveSearchHistory = async (req, res) => {
   try {
-    const { jd, extracted, resultCount, developers } = req.body;
-    if (!jd?.trim()) return res.status(400).json({ message: 'jd is required' });
-
-    await JDSearchHistory.create({
-      user: req.user._id,
-      jd: jd.trim(),
-      jdSnippet: jd.trim().slice(0, 120).replace(/\s+/g, ' '),
-      extracted: extracted || {},
-      resultCount: resultCount || 0,
-      developers: developers || [],
-    });
-
+    const data = JDAnalysisDto.validateSaveHistory(req.body);
+    await jdAnalysisService.saveSearchHistory(req.user._id, data);
     res.json({ ok: true });
   } catch (err) {
+    if (err.status) return res.status(err.status).json({ message: err.message });
     res.status(500).json({ message: err.message });
   }
 };
 
 const getSearchHistory = async (req, res) => {
   try {
-    const history = await JDSearchHistory.find({ user: req.user._id })
-      .sort({ createdAt: -1 })
-      .limit(20)
-      .lean();
+    const history = await jdAnalysisService.getSearchHistory(req.user._id);
     res.json(history);
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -37,8 +23,8 @@ const getSearchHistory = async (req, res) => {
 
 const deleteSearchHistory = async (req, res) => {
   try {
-    await JDSearchHistory.findOneAndDelete({ _id: req.params.id, user: req.user._id });
-    res.json({ ok: true });
+    const result = await jdAnalysisService.deleteSearchHistory(req.params.id, req.user._id);
+    res.json(result);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -46,10 +32,7 @@ const deleteSearchHistory = async (req, res) => {
 
 const adminGetUserJDHistory = async (req, res) => {
   try {
-    const history = await JDSearchHistory.find({ user: req.params.id })
-      .sort({ createdAt: -1 })
-      .limit(50)
-      .lean();
+    const history = await jdAnalysisService.adminGetUserJDHistory(req.params.id);
     res.json(history);
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -58,8 +41,8 @@ const adminGetUserJDHistory = async (req, res) => {
 
 const clearAllSearchHistory = async (req, res) => {
   try {
-    await JDSearchHistory.deleteMany({ user: req.user._id });
-    res.json({ ok: true });
+    const result = await jdAnalysisService.clearAllSearchHistory(req.user._id);
+    res.json(result);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -67,25 +50,8 @@ const clearAllSearchHistory = async (req, res) => {
 
 const getQuota = async (req, res) => {
   try {
-    const [user, cfg] = await Promise.all([
-      User.findById(req.user._id).select('jdQuota').lean(),
-      getConfig(),
-    ]);
-    const quota = user?.jdQuota || {};
-    const day   = currentDay();
-
-    const dailyUsed     = quota.resetDay === day ? (quota.dailyUsed ?? 0) : 0;
-    const paidRemaining = quota.paidRemaining ?? 0;
-
-    res.json({
-      freeUsed:        dailyUsed,
-      freeLimit:       cfg.jdFreeLimit,
-      paidRemaining,
-      paidPackSize:    cfg.jdPaidPackSize,
-      packPricePaise:  cfg.jdPackPricePaise,
-      featureEnabled:  cfg.jdFeatureEnabled,
-      resetDay:        day,
-    });
+    const quotaInfo = await jdAnalysisService.getQuota(req.user._id);
+    res.json(quotaInfo);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

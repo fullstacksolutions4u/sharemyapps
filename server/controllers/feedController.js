@@ -1,142 +1,41 @@
-const Activity = require('../models/Activity');
-const Project = require('../models/Project');
-const User = require('../models/User');
-const { getExcludedHiddenUserIds } = require('../utils/visibility');
-// XSS Prevention — sanitize comment text before saving to MongoDB
-// See docs/security/01_xss_prevention.md
-const { sanitizeText } = require('../utils/sanitize');
+const feedService = require('../services/feed.service');
+const FeedDto = require('../dtos/feed.dto');
 
-exports.getFeed = async (req, res) => {
+exports.getFeed = async (req, res, next) => {
   try {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 40;
-    const skip = (page - 1) * limit;
-
-    const hiddenExclude = await getExcludedHiddenUserIds(req.user, User);
-    const deletedUsers = await User.find({ isDeleted: true }).select('_id').lean();
-    const excludeIds = [
-      ...hiddenExclude.map((id) => id.toString()),
-      ...deletedUsers.map((u) => u._id.toString()),
-    ];
-
-    let activities = await Activity.find({ user: { $nin: excludeIds } })
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(limit)
-      .populate('user', 'name profileImage avatar designations userType linkedinUrl')
-      .populate({
-        path: 'project',
-        select: 'title description bannerImage liveUrl _id owner status likes ratings techTags category',
-        populate: { path: 'owner', select: 'name profileImage avatar designations linkedinUrl' }
-      })
-      .populate('module', 'title _id')
-      .populate({
-        path: 'communityPost',
-        populate: { path: 'author', select: 'name avatar badge premiumServices' }
-      })
-      .populate('comments.user', 'name profileImage avatar')
-      .lean();
-
-    // Sanitize and filter activities
-    activities = activities.map(activity => {
-      if (activity.type === 'COMMUNITY_POST_CREATED') {
-        if (!activity.communityPost) return null; // Post is deleted/missing
-        
-        if (activity.communityPost.anonymous) {
-          // Anonymize activity user (card creator)
-          activity.user = {
-            _id: 'anonymous',
-            name: 'Community Member',
-            avatar: '',
-            profileImage: '',
-            designations: [],
-            userType: 'developer',
-            linkedinUrl: ''
-          };
-          // Anonymize post author
-          activity.communityPost.author = {
-            _id: 'anonymous',
-            name: 'Community Member',
-            avatar: '',
-            badge: '',
-            premiumServices: []
-          };
-        }
-      }
-      return activity;
-    }).filter(Boolean);
-
-    // To ensure the feed isn't empty when first launching, if we have 0 activities, 
-    // dynamically pull the latest 40 approved projects and format them as activities
-    if (activities.length === 0 && page === 1) {
-      const recentProjects = await Project.find({ status: 'approved', owner: { $nin: excludeIds } })
-        .sort({ createdAt: -1 })
-        .limit(40)
-        .populate('owner', 'name profileImage avatar designations linkedinUrl')
-        .lean();
-      
-      activities = recentProjects.map(p => ({
-        _id: p._id,
-        user: p.owner,
-        type: 'PROJECT_APPROVED',
-        project: p,
-        createdAt: p.createdAt || new Date(),
-        meta: {}
-      }));
-    }
-
+    
+    const result = await feedService.getFeed(req.user, page, limit);
+    
     res.json({
       success: true,
-      data: activities,
+      data: result.activities,
       page,
-      hasMore: activities.length === limit
+      hasMore: result.hasMore
     });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    next(error);
   }
 };
 
-exports.likeActivity = async (req, res) => {
+exports.likeActivity = async (req, res, next) => {
   try {
-    const activity = await Activity.findById(req.params.id);
-    if (!activity) return res.status(404).json({ success: false, message: 'Activity not found' });
-    
-    const userId = req.user._id;
-    const idx = activity.likes.indexOf(userId);
-    if (idx === -1) {
-      activity.likes.push(userId);
-    } else {
-      activity.likes.splice(idx, 1);
-    }
-    
-    await activity.save();
-    res.json({ success: true, likes: activity.likes });
+    const likes = await feedService.likeActivity(req.params.id, req.user._id);
+    res.json({ success: true, likes });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    if (error.status) return res.status(error.status).json({ success: false, message: error.message });
+    next(error);
   }
 };
 
-exports.commentActivity = async (req, res) => {
+exports.commentActivity = async (req, res, next) => {
   try {
-    const { text } = req.body;
-    if (!text || !text.trim()) return res.status(400).json({ success: false, message: 'Comment text is required' });
-    
-    const activity = await Activity.findById(req.params.id);
-    if (!activity) return res.status(404).json({ success: false, message: 'Activity not found' });
-    
-    const comment = {
-      user: req.user._id,
-      text: sanitizeText(text.trim()),
-      createdAt: new Date()
-    };
-    
-    activity.comments.push(comment);
-    await activity.save();
-    
-    await activity.populate('comments.user', 'name profileImage avatar');
-    
-    res.json({ success: true, comment: activity.comments[activity.comments.length - 1] });
+    const data = FeedDto.validateComment(req.body);
+    const comment = await feedService.commentActivity(req.params.id, req.user._id, data.text);
+    res.json({ success: true, comment });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    if (error.status) return res.status(error.status).json({ success: false, message: error.message });
+    next(error);
   }
 };

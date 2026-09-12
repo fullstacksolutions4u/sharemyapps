@@ -1,89 +1,69 @@
-const FreelanceOpportunity = require('../models/FreelanceOpportunity');
-const Message = require('../models/Message');
+const freelanceService = require('../services/freelanceOpportunity.service');
+const FreelanceOpportunityDto = require('../dtos/freelanceOpportunity.dto');
 
-exports.getAllAdmin = async (req, res) => {
+exports.getAllAdmin = async (req, res, next) => {
   try {
-    const items = await FreelanceOpportunity.find()
-      .populate('interests', 'name email avatar regNumber userType')
-      .sort({ createdAt: -1 });
+    const items = await freelanceService.getAllAdmin();
     res.json(items);
-  } catch (err) {
-    res.status(500).json({ message: 'Server error' });
-  }
+  } catch (err) { next(err); }
 };
 
-exports.create = async (req, res) => {
+exports.create = async (req, res, next) => {
   try {
-    const { title, description, skills, budget, duration, type, status } = req.body;
-    if (!title?.trim() || !description?.trim()) return res.status(400).json({ message: 'Title and description are required' });
-    const skillArr = typeof skills === 'string' ? skills.split(',').map(s => s.trim()).filter(Boolean) : skills || [];
-    const item = await FreelanceOpportunity.create({ title, description, skills: skillArr, budget, duration, type, status, createdBy: req.user._id });
+    const data = FreelanceOpportunityDto.validateCreate(req.body);
+    const item = await freelanceService.create(req.user._id, data);
     res.status(201).json(item);
   } catch (err) {
+    if (err.status) return res.status(err.status).json({ message: err.message });
     res.status(500).json({ message: 'Server error' });
   }
 };
 
-exports.update = async (req, res) => {
+exports.update = async (req, res, next) => {
   try {
-    const { skills, ...rest } = req.body;
-    const skillArr = typeof skills === 'string' ? skills.split(',').map(s => s.trim()).filter(Boolean) : skills || [];
-    const item = await FreelanceOpportunity.findByIdAndUpdate(req.params.id, { ...rest, skills: skillArr }, { new: true });
-    if (!item) return res.status(404).json({ message: 'Not found' });
+    const data = FreelanceOpportunityDto.validateUpdate(req.body);
+    const item = await freelanceService.update(req.params.id, data);
     res.json(item);
   } catch (err) {
+    if (err.status) return res.status(err.status).json({ message: err.message });
     res.status(500).json({ message: 'Server error' });
   }
 };
 
-exports.remove = async (req, res) => {
+exports.remove = async (req, res, next) => {
   try {
-    await FreelanceOpportunity.findByIdAndDelete(req.params.id);
-    res.json({ message: 'Deleted' });
+    const result = await freelanceService.remove(req.params.id);
+    res.json(result);
+  } catch (err) { res.status(500).json({ message: 'Server error' }); }
+};
+
+exports.toggleStatus = async (req, res, next) => {
+  try {
+    const result = await freelanceService.toggleStatus(req.params.id);
+    res.json(result);
   } catch (err) {
+    if (err.status) return res.status(err.status).json({ message: err.message });
     res.status(500).json({ message: 'Server error' });
   }
 };
 
-exports.toggleStatus = async (req, res) => {
+exports.replyToInterest = async (req, res, next) => {
   try {
-    const item = await FreelanceOpportunity.findById(req.params.id);
-    if (!item) return res.status(404).json({ message: 'Not found' });
-    item.status = item.status === 'active' ? 'closed' : 'active';
-    await item.save();
-    res.json({ status: item.status });
+    const data = FreelanceOpportunityDto.validateReply(req.body);
+    const result = await freelanceService.replyToInterest(req.user._id, data);
+    res.json(result);
   } catch (err) {
+    if (err.status) return res.status(err.status).json({ message: err.message });
     res.status(500).json({ message: 'Server error' });
   }
 };
 
-exports.replyToInterest = async (req, res) => {
+exports.showInterest = async (req, res, next) => {
   try {
-    const { userId, message } = req.body;
-    if (!userId || !message?.trim()) return res.status(400).json({ message: 'userId and message required' });
-    await Message.create({ sender: req.user._id, recipient: userId, text: message });
-    res.json({ message: 'Sent' });
+    const result = await freelanceService.showInterest(req.params.id, req.user._id);
+    res.json(result);
   } catch (err) {
-    res.status(500).json({ message: 'Server error' });
-  }
-};
-
-exports.showInterest = async (req, res) => {
-  try {
-    const item = await FreelanceOpportunity.findById(req.params.id);
-    if (!item) return res.status(404).json({ message: 'Not found' });
-    const uid = req.user._id.toString();
-    const idx = item.interests.findIndex(i => i.toString() === uid);
-    if (idx === -1) {
-      item.interests.push(req.user._id);
-      await item.save();
-      res.json({ interested: true, interestCount: item.interests.length });
-    } else {
-      item.interests.splice(idx, 1);
-      await item.save();
-      res.json({ interested: false, interestCount: item.interests.length });
-    }
-  } catch (err) {
+    if (err.status) return res.status(err.status).json({ message: err.message });
     res.status(500).json({ message: 'Server error' });
   }
 };
