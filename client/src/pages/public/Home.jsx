@@ -795,7 +795,7 @@ function CommunityBlogPreview({ initialPosts }) {
 
       {/* "View full community" CTA */}
       <div className="w-full text-right px-4 sm:px-6 lg:px-8 mt-1 relative z-10">
-        <Link to="/community-blog" className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-bold text-gray-500 hover:text-accent transition-colors">
+        <Link to="/community" className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-bold text-gray-500 hover:text-accent transition-colors">
           View full community blog <ArrowRight size={12} />
         </Link>
       </div>

@@ -192,7 +192,7 @@ export default function PublicPortfolio() {
       <div className="text-center">
         <AlertCircle size={44} className="text-[#D1CBC0] mx-auto mb-3" />
         <p className="text-text font-semibold text-lg">{error}</p>
-        <Link to="/explore" className="text-sm text-accent hover:underline mt-2 inline-block">Browse all projects →</Link>
+        <Link to="/projects" className="text-sm text-accent hover:underline mt-2 inline-block">Browse all projects →</Link>
       </div>
     </div>
   );

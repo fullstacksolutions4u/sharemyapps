@@ -1,4 +1,4 @@
-﻿import { useRef, useState, useEffect } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link, useNavigate } from 'react-router-dom';
 import { Menu, X, ChevronDown, LogOut, ShieldCheck, Bell, CheckCircle, XCircle, Clock, MessageSquare, AlertCircle, Heart, Star, MessageCircle, Briefcase, LayoutDashboard, GraduationCap, Crown, ChevronRight } from 'lucide-react';
@@ -57,14 +57,14 @@ function ServicesMenu() {
       {open && (
         <div className="absolute left-0 mt-2 w-56 bg-white border border-border rounded-xl shadow-lg py-1 z-50">
           <Link
-            to="/mentorship-program"
+            to="/mentorship"
             onClick={() => setOpen(false)}
             className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-text hover:bg-bg transition-colors"
           >
             <GraduationCap size={15} className="text-accent shrink-0" /> Mentorship Program
           </Link>
           <Link
-            to="/placement-services"
+            to="/placement"
             onClick={() => setOpen(false)}
             className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-text hover:bg-bg transition-colors"
           >
@@ -394,7 +394,7 @@ export default function Navbar() {
         <div className="hidden md:flex items-center gap-6 lg:gap-10 flex-nowrap shrink-0">
           <nav className="flex items-center gap-5 lg:gap-8 xl:gap-10 flex-nowrap shrink-0">
             <Link to="/feed" className="relative text-base font-bold text-muted hover:text-text transition-colors whitespace-nowrap shrink-0 after:absolute after:left-0 after:-bottom-0.5 after:h-[1.5px] after:w-0 after:bg-accent after:transition-[width] after:duration-300 hover:after:w-full">Timeline</Link>
-            <Link to="/explore" className="relative text-base font-bold text-muted hover:text-text transition-colors whitespace-nowrap shrink-0 after:absolute after:left-0 after:-bottom-0.5 after:h-[1.5px] after:w-0 after:bg-accent after:transition-[width] after:duration-300 hover:after:w-full">Projects</Link>
+            <Link to="/projects" className="relative text-base font-bold text-muted hover:text-text transition-colors whitespace-nowrap shrink-0 after:absolute after:left-0 after:-bottom-0.5 after:h-[1.5px] after:w-0 after:bg-accent after:transition-[width] after:duration-300 hover:after:w-full">Projects</Link>
             <Link to="/portfolios" className="relative text-base font-bold text-muted hover:text-text transition-colors whitespace-nowrap shrink-0 after:absolute after:left-0 after:-bottom-0.5 after:h-[1.5px] after:w-0 after:bg-accent after:transition-[width] after:duration-300 hover:after:w-full">
               Portfolios
             </Link>
@@ -419,7 +419,7 @@ export default function Navbar() {
             {!isRecruiter && !isClient && !isMentee && !isMentor && (
               <>
                 <Link to="/opportunities" className="relative text-base font-bold text-muted hover:text-text transition-colors whitespace-nowrap shrink-0 after:absolute after:left-0 after:-bottom-0.5 after:h-[1.5px] after:w-0 after:bg-accent after:transition-[width] after:duration-300 hover:after:w-full">Opportunities</Link>
-                <Link to="/community-blog" className="relative text-base font-bold text-muted hover:text-text transition-colors whitespace-nowrap shrink-0 after:absolute after:left-0 after:-bottom-0.5 after:h-[1.5px] after:w-0 after:bg-accent after:transition-[width] after:duration-300 hover:after:w-full">Community Blog</Link>
+                <Link to="/community" className="relative text-base font-bold text-muted hover:text-text transition-colors whitespace-nowrap shrink-0 after:absolute after:left-0 after:-bottom-0.5 after:h-[1.5px] after:w-0 after:bg-accent after:transition-[width] after:duration-300 hover:after:w-full">Community Blog</Link>
                 <Link to="/quiz-zone" className="relative text-base font-bold text-muted hover:text-text transition-colors whitespace-nowrap shrink-0 after:absolute after:left-0 after:-bottom-0.5 after:h-[1.5px] after:w-0 after:bg-accent after:transition-[width] after:duration-300 hover:after:w-full">Quiz Zone</Link>
                 <ServicesMenu />
               </>
@@ -453,7 +453,7 @@ export default function Navbar() {
       {menuOpen && (
         <div className="md:hidden bg-white border-t border-border px-4 py-4 space-y-3">
           <Link to="/feed" onClick={() => setMenuOpen(false)} className="block text-sm text-muted hover:text-text">Timeline</Link>
-          <Link to="/explore" onClick={() => setMenuOpen(false)} className="block text-sm text-muted hover:text-text">Projects</Link>
+          <Link to="/projects" onClick={() => setMenuOpen(false)} className="block text-sm text-muted hover:text-text">Projects</Link>
           <Link to="/portfolios" onClick={() => setMenuOpen(false)} className="block text-sm text-muted hover:text-text">
             Portfolios
           </Link>
@@ -478,10 +478,10 @@ export default function Navbar() {
           {!isRecruiter && !isClient && !isMentee && !isMentor && (
             <>
               <Link to="/opportunities" onClick={() => setMenuOpen(false)} className="block text-sm text-muted hover:text-text">Opportunities</Link>
-              <Link to="/community-blog" onClick={() => setMenuOpen(false)} className="block text-sm text-muted hover:text-text">Community Blog</Link>
+              <Link to="/community" onClick={() => setMenuOpen(false)} className="block text-sm text-muted hover:text-text">Community Blog</Link>
               <Link to="/quiz-zone" onClick={() => setMenuOpen(false)} className="block text-sm text-muted hover:text-text">Quiz Zone</Link>
-              <Link to="/placement-services" onClick={() => setMenuOpen(false)} className="block text-sm text-muted hover:text-text">Job Assistance Services</Link>
-              <Link to="/mentorship-program" onClick={() => setMenuOpen(false)} className="block text-sm text-muted hover:text-text">Mentorship Program</Link>
+              <Link to="/placement" onClick={() => setMenuOpen(false)} className="block text-sm text-muted hover:text-text">Job Assistance Services</Link>
+              <Link to="/mentorship" onClick={() => setMenuOpen(false)} className="block text-sm text-muted hover:text-text">Mentorship Program</Link>
             </>
           )}
           {user ? (

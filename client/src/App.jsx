@@ -106,7 +106,7 @@ function AdminRedirect() {
 }
 
 // Pages where the footer should be visible (public-facing only)
-const PUBLIC_FOOTER_PATHS = ['/', '/explore', '/login', '/register', '/privacy-policy', '/forgot-password'];
+const PUBLIC_FOOTER_PATHS = ['/', '/projects', '/explore', '/login', '/register', '/privacy-policy', '/forgot-password'];
 
 function AppRoutes() {
   const location = useLocation();
@@ -129,7 +129,8 @@ function AppRoutes() {
           <ErrorBoundary>
           <Routes>
             <Route path="/" element={<Home />} />
-            <Route path="/explore" element={<Explore />} />
+            <Route path="/projects" element={<Explore />} />
+            <Route path="/explore" element={<Navigate to="/projects" replace />} />
             <Route path="/privacy-policy" element={<PrivacyPolicy />} />
             <Route path="/feed" element={<Feed />} />
             <Route path="/project/:id" element={<ProjectDetail />} />
@@ -158,7 +159,8 @@ function AppRoutes() {
             <Route path="/profile" element={<ProtectedRoute><Navigate to="/dashboard/profile" replace /></ProtectedRoute>} />
             <Route path="/chat-admin" element={<ProtectedRoute><ChatAdmin /></ProtectedRoute>} />
             <Route path="/opportunities" element={<Vacancies />} />
-            <Route path="/community-blog" element={<CommunityBlog />} />
+            <Route path="/community" element={<CommunityBlog />} />
+            <Route path="/community-blog" element={<Navigate to="/community" replace />} />
             <Route path="/vacancies" element={<Vacancies />} />
             <Route path="/portfolios" element={<Portfolios />} />
             <Route path="/developers" element={<Navigate to="/portfolios" replace />} />
@@ -168,9 +170,11 @@ function AppRoutes() {
             <Route path="/post-vacancy" element={<ProtectedRoute><AddVacancy /></ProtectedRoute>} />
             <Route path="/mentors" element={<ProtectedRoute><Mentors /></ProtectedRoute>} />
             <Route path="/freelance-developers" element={<FreelanceDevelopers />} />
-            <Route path="/placement-services" element={<PaidServices />} />
+            <Route path="/placement" element={<PaidServices />} />
+            <Route path="/placement-services" element={<Navigate to="/placement" replace />} />
             <Route path="/job-post-links-premium" element={<JobPostLinksPremium />} />
-            <Route path="/mentorship-program" element={<MentorshipProgram />} />
+            <Route path="/mentorship" element={<MentorshipProgram />} />
+            <Route path="/mentorship-program" element={<Navigate to="/mentorship" replace />} />
             <Route path="/career-services" element={<Navigate to="/dashboard/premium" replace />} />
             <Route path="/quiz-zone" element={<LearningTracker />} />
             <Route path="/portfolio/:userId" element={<PublicPortfolio />} />

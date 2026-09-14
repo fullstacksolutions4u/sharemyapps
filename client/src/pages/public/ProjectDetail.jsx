@@ -131,7 +131,7 @@ export default function ProjectDetail() {
       return res.data;
     },
     staleTime: 1000 * 60 * 5,
-    onError: () => navigate('/explore'),
+    onError: () => navigate('/projects'),
   });
 
   const { data: commentsData } = useQuery({
@@ -290,8 +290,8 @@ export default function ProjectDetail() {
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
       {/* Back */}
-      <Link to="/explore" className="inline-flex items-center gap-1.5 text-sm text-[#6B7280] hover:text-[#1A1A1A] mb-6 transition-colors">
-        <ArrowLeft size={14} /> Back to Explore
+      <Link to="/projects" className="inline-flex items-center gap-1.5 text-sm text-[#6B7280] hover:text-[#1A1A1A] mb-6 transition-colors">
+        <ArrowLeft size={14} /> Back to Projects
       </Link>
 
       {/* Main two-column layout */}

@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { MapPin, Briefcase, CheckCircle, XCircle, ArrowRight, Laptop, Crown, Banknote, ExternalLink, Building, Clock, Calendar } from 'lucide-react';
@@ -693,7 +693,7 @@ export default function Vacancies() {
           </div>
           {activeTab === 'job-links' ? null : (
             <Link
-              to="/placement-services"
+              to="/placement"
               className="flex items-center gap-1.5 bg-white border border-amber-300 hover:border-amber-400 text-gray-700 text-xs font-semibold px-3 py-1.5 rounded-full transition-colors shrink-0 mb-1"
             >
               <Crown size={12} className="text-amber-500" /> Job Assistance Services
