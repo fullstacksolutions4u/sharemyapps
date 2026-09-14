@@ -207,6 +207,23 @@ class AdminRepository {
     ]);
   }
 
+  async aggregateUsersHourly(since, until) {
+    const match = { createdAt: { $gte: since } };
+    if (until) {
+      match.createdAt.$lte = until;
+    }
+    return await User.aggregate([
+      { $match: match },
+      {
+        $group: {
+          _id: { $dateToString: { format: '%Y-%m-%d %H', date: '$createdAt', timezone: 'Asia/Kolkata' } },
+          count: { $sum: 1 },
+        },
+      },
+      { $sort: { _id: 1 } },
+    ]);
+  }
+
   async findUsersForEmail(filter) {
     return await User.find(filter)
       .select('name email avatar regNumber userType designations resumeData')

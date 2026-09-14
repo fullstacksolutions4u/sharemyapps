@@ -480,7 +480,36 @@ class AdminService {
     };
   }
 
-  async getUserGrowth(mode, params) {
+  async getUserGrowth(mode, params = {}) {
+    if (mode === 'hourly') {
+      const istDateStr = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Kolkata' }).format(new Date());
+      const targetDate = params.date || istDateStr;
+
+      const since = new Date(`${targetDate}T00:00:00+05:30`);
+      const until = new Date(`${targetDate}T23:59:59.999+05:30`);
+
+      const rows = await adminRepo.aggregateUsersHourly(since, until);
+      const map = Object.fromEntries(rows.map(r => [r._id, r.count]));
+
+      const result = [];
+      for (let h = 0; h < 24; h++) {
+        const hourPadded = String(h).padStart(2, '0');
+        const key = `${targetDate} ${hourPadded}`;
+        const ampm = h >= 12 ? 'PM' : 'AM';
+        const displayH = h % 12 === 0 ? 12 : h % 12;
+        const label = `${displayH} ${ampm}`;
+
+        result.push({
+          date: key,
+          hour: h,
+          label,
+          timeStr: `${hourPadded}:00`,
+          count: map[key] || 0,
+        });
+      }
+      return result;
+    }
+
     if (mode === 'monthly') {
       const months = parseInt(params.months) || 12;
       const since = new Date();

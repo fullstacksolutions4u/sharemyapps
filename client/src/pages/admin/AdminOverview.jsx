@@ -14,9 +14,12 @@ const BAR_COLORS = [
 
 const CustomAreaTooltip = ({ active, payload, label }) => {
   if (!active || !payload?.length) return null;
+  const timeStr = payload[0]?.payload?.timeStr;
   return (
-    <div className="bg-white border border-border rounded-xl px-3 py-2 shadow-md text-xs">
-      <p className="font-semibold text-text mb-0.5">{label}</p>
+    <div className="bg-white border border-gray-100 rounded-xl px-3 py-2 shadow-md text-xs">
+      <p className="font-semibold text-gray-900 mb-0.5">
+        {timeStr ? `${label} (${timeStr})` : label}
+      </p>
       <p className="text-indigo-600 font-medium">{payload[0].value} new user{payload[0].value !== 1 ? 's' : ''}</p>
     </div>
   );
@@ -46,7 +49,13 @@ export default function AdminOverview({ stats, onNavigate }) {
 
   useEffect(() => {
     let cancelled = false;
-    const url = growthDays === 'monthly' ? '/admin/user-growth?mode=monthly' : `/admin/user-growth?days=${growthDays}`;
+    let url = `/admin/user-growth?days=${growthDays}`;
+    if (growthDays === 'monthly') {
+      url = '/admin/user-growth?mode=monthly';
+    } else if (growthDays === 'hourly') {
+      url = '/admin/user-growth?mode=hourly';
+    }
+
     api.get(url)
       .then(res => { if (!cancelled) { setGrowth(res.data); setGrowthLoading(false); } })
       .catch(() => { if (!cancelled) setGrowthLoading(false); });
@@ -69,9 +78,16 @@ export default function AdminOverview({ stats, onNavigate }) {
   const totalGrowthUsers = growth.reduce((s, d) => s + d.count, 0);
 
   const chartData = growth.map(d => {
-    const label = d.date.length === 7
-      ? new Date(d.date + '-02T00:00:00').toLocaleDateString('en-IN', { month: 'short', year: '2-digit' })
-      : new Date(d.date + 'T00:00:00').toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
+    let label = d.label;
+    if (!label) {
+      if (d.date?.length === 7) {
+        label = new Date(d.date + '-02T00:00:00').toLocaleDateString('en-IN', { month: 'short', year: '2-digit' });
+      } else if (d.date?.length === 10) {
+        label = new Date(d.date + 'T00:00:00').toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
+      } else {
+        label = d.date;
+      }
+    }
     return { ...d, label };
   });
 
@@ -162,35 +178,47 @@ export default function AdminOverview({ stats, onNavigate }) {
 
       </div>
 
-      {/* Main Content Grid: Daily Registrations + Recent Payments */}
+      {/* Main Content Grid: Daily/Hourly/Monthly Registrations + Recent Payments */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">
         
-        {/* Left Card: Daily Registrations Chart */}
+        {/* Left Card: Registrations Chart */}
         <div className="lg:col-span-8 bg-white border border-gray-100 rounded-2xl p-6 shadow-xs flex flex-col justify-between">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
             <div>
               <h3 className="text-base font-bold text-gray-900">
-                {growthDays === 'monthly' ? 'Monthly' : 'Daily'} Registrations
+                {growthDays === 'hourly'
+                  ? 'Hourly Registrations'
+                  : growthDays === 'monthly'
+                    ? 'Monthly Registrations'
+                    : 'Daily Registrations'}
               </h3>
               <p className="text-xs text-gray-400 font-medium mt-0.5">
-                {totalGrowthUsers} new users in last {growthDays === 'monthly' ? '12 months' : `${growthDays} days`}
+                {growthDays === 'hourly'
+                  ? `${totalGrowthUsers} new user${totalGrowthUsers !== 1 ? 's' : ''} today`
+                  : growthDays === 'monthly'
+                    ? `${totalGrowthUsers} new user${totalGrowthUsers !== 1 ? 's' : ''} in last 12 months`
+                    : `${totalGrowthUsers} new user${totalGrowthUsers !== 1 ? 's' : ''} in last 7 days`}
               </p>
             </div>
             <div className="flex items-center gap-1.5">
-              {[7, 14, 30, 'monthly'].map(d => (
+              {[
+                { key: 'hourly', label: 'Hourly' },
+                { key: 7, label: '7d' },
+                { key: 'monthly', label: 'Monthly' },
+              ].map(opt => (
                 <button
-                  key={d}
+                  key={opt.key}
                   onClick={() => {
                     setGrowthLoading(true);
-                    setGrowthDays(d);
+                    setGrowthDays(opt.key);
                   }}
                   className={`text-xs px-3 py-1.5 rounded-lg font-semibold transition-all cursor-pointer ${
-                    growthDays === d
+                    growthDays === opt.key
                       ? 'bg-[#4338CA] text-white shadow-xs'
                       : 'border border-gray-200 text-gray-600 hover:text-gray-900 bg-white'
                   }`}
                 >
-                  {d === 'monthly' ? 'Monthly' : `${d}d`}
+                  {opt.label}
                 </button>
               ))}
             </div>
@@ -203,7 +231,11 @@ export default function AdminOverview({ stats, onNavigate }) {
           ) : (
             <div className="w-full h-64 pt-2">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={chartData} margin={{ top: 24, right: 8, left: -24, bottom: 0 }} barSize={growthDays === 7 ? 36 : (growthDays === 14 || growthDays === 'monthly') ? 22 : 14}>
+                <BarChart
+                  data={chartData}
+                  margin={{ top: 24, right: 8, left: -24, bottom: 0 }}
+                  barSize={growthDays === 'hourly' ? 14 : growthDays === 7 ? 36 : 22}
+                >
                   <CartesianGrid strokeDasharray="3 3" stroke="#F1F5F9" vertical={false} />
                   <XAxis
                     dataKey="label"
@@ -211,7 +243,7 @@ export default function AdminOverview({ stats, onNavigate }) {
                     axisLine={false}
                     tickLine={false}
                     dy={6}
-                    interval={growthDays === 7 || growthDays === 'monthly' ? 0 : growthDays === 14 ? 1 : 4}
+                    interval={growthDays === 'hourly' ? 1 : 0}
                   />
                   <YAxis
                     tick={{ fontSize: 10, fill: '#9CA3AF' }}
@@ -221,11 +253,20 @@ export default function AdminOverview({ stats, onNavigate }) {
                     allowDecimals={false}
                   />
                   <Tooltip content={<CustomAreaTooltip />} cursor={{ fill: '#F8FAFC' }} />
-                  <Bar dataKey="count" radius={[6, 6, 0, 0]} shape={(props) => {
-                    const color = BAR_COLORS[props.index % BAR_COLORS.length];
-                    return <Rectangle {...props} fill={color} />;
-                  }}>
-                    <LabelList dataKey="count" position="top" style={{ fontSize: 11, fontWeight: 700, fill: '#374151' }} />
+                  <Bar
+                    dataKey="count"
+                    radius={[6, 6, 0, 0]}
+                    shape={(props) => {
+                      const color = BAR_COLORS[props.index % BAR_COLORS.length];
+                      return <Rectangle {...props} fill={color} />;
+                    }}
+                  >
+                    <LabelList
+                      dataKey="count"
+                      position="top"
+                      formatter={(v) => (growthDays === 'hourly' && v === 0 ? '' : v)}
+                      style={{ fontSize: 11, fontWeight: 700, fill: '#374151' }}
+                    />
                   </Bar>
                 </BarChart>
               </ResponsiveContainer>
