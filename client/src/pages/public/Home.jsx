@@ -978,7 +978,7 @@ export default function Home() {
             <div className="text-[12.5px] font-extrabold text-[#1E3A8A] tracking-wide flex items-center justify-center gap-1 flex-wrap text-center">
               <span>Joined by</span>
               <span className="inline-block text-center min-w-[38px] tabular-nums">
-                {Number(displayCount).toLocaleString()}+
+                {Number(displayCount).toLocaleString()}
               </span>
               <span>software developers &amp; mentorship students</span>
             </div>
