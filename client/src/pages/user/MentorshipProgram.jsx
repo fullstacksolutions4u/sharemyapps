@@ -123,6 +123,24 @@ const MODULES_LIST = [
 ];
 
 function ModulesModal({ onClose }) {
+  const renderModuleItem = (mod, i) => (
+    <div key={i} style={{ display: 'flex', gap: '8px', alignItems: 'center', minHeight: '26px' }}>
+      <div style={{ 
+        background: '#eef8f3', color: '#0a7373', fontSize: '11px', fontWeight: 800, 
+        minWidth: '22px', height: '22px', borderRadius: '50%', display: 'flex', 
+        alignItems: 'center', justifyContent: 'center', flexShrink: 0 
+      }}>
+        {i + 1}
+      </div>
+      <div style={{ display: 'flex', alignItems: 'center', fontSize: '12.5px', color: '#3f4f4d', fontWeight: 600, fontFamily: "'Manrope', sans-serif" }}>
+        {mod}
+        {i < 2 && (
+          <span style={{ marginLeft: '8px', padding: '1px 5px', background: '#dcfce7', color: '#15803d', fontSize: '9px', fontWeight: 'bold', borderRadius: '4px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Free</span>
+        )}
+      </div>
+    </div>
+  );
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm" onClick={onClose}>
       <div 
@@ -131,7 +149,8 @@ function ModulesModal({ onClose }) {
           background: '#fbfcfb', borderRadius: '16px', width: '100%', maxWidth: '750px', 
           display: 'flex', flexDirection: 'column',
           border: '1px solid #e8edeb', boxShadow: '0 24px 60px -28px rgba(20,40,38,0.35)',
-          overflow: 'hidden'
+          overflow: 'hidden',
+          maxHeight: '90vh'
         }}
       >
         <div style={{ padding: '16px', borderBottom: '1px solid #e8edeb', position: 'relative', display: 'flex', justifyContent: 'center', alignItems: 'center', background: '#fff' }}>
@@ -142,25 +161,14 @@ function ModulesModal({ onClose }) {
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
           </button>
         </div>
-        <div style={{ padding: '16px 24px 20px' }}>
+        <div style={{ padding: '16px 24px 20px', overflowY: 'auto' }}>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-2">
-            {MODULES_LIST.map((mod, i) => (
-              <div key={i} style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                <div style={{ 
-                  background: '#eef8f3', color: '#0a7373', fontSize: '11px', fontWeight: 800, 
-                  minWidth: '22px', height: '22px', borderRadius: '50%', display: 'flex', 
-                  alignItems: 'center', justifyContent: 'center', flexShrink: 0 
-                }}>
-                  {i + 1}
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', fontSize: '12.5px', color: '#3f4f4d', fontWeight: 600, fontFamily: "'Manrope', sans-serif" }}>
-                  {mod}
-                  {i < 2 && (
-                    <span style={{ marginLeft: '8px', padding: '1px 5px', background: '#dcfce7', color: '#15803d', fontSize: '9px', fontWeight: 'bold', borderRadius: '4px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Free</span>
-                  )}
-                </div>
-              </div>
-            ))}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              {MODULES_LIST.slice(0, 15).map((mod, i) => renderModuleItem(mod, i))}
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              {MODULES_LIST.slice(15).map((mod, i) => renderModuleItem(mod, i + 15))}
+            </div>
           </div>
         </div>
       </div>
