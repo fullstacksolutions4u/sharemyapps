@@ -963,7 +963,7 @@ export default function Home() {
             opportunities
           </h1>
 
-          <div className="inline-flex flex-col items-center justify-center bg-[#EBF2FC]/80 border border-[#D0E2FA]/50 px-6 py-2.5 rounded-full mb-10 pointer-events-auto select-none shadow-xs">
+          <div className="inline-flex flex-col items-center justify-center bg-[#EBF2FC]/80 border border-[#D0E2FA]/50 px-5 sm:px-6 py-2.5 rounded-2xl sm:rounded-full mb-10 pointer-events-auto select-none shadow-xs">
             <div className="flex -space-x-2 justify-center mb-1.5">
               {networkUsers.slice(6, 14).map((dev, idx) => (
                 <img
@@ -975,12 +975,12 @@ export default function Home() {
                 />
               ))}
             </div>
-            <div className="text-[12.5px] font-extrabold text-[#1E3A8A] tracking-wide flex items-center justify-center gap-1">
-              <span>Community with</span>
+            <div className="text-[12.5px] font-extrabold text-[#1E3A8A] tracking-wide flex items-center justify-center gap-1 flex-wrap text-center">
+              <span>Joined by</span>
               <span className="inline-block text-center min-w-[38px] tabular-nums">
-                {Number(displayCount).toLocaleString()}
+                {Number(displayCount).toLocaleString()}+
               </span>
-              <span>software developers</span>
+              <span>software developers &amp; mentorship students</span>
             </div>
           </div>
 
@@ -991,7 +991,7 @@ export default function Home() {
       <CommunityBlogPreview initialPosts={prefetchedPosts} />
 
       {/* How it works */}
-      <section className="border-b border-border bg-[#F5F9FF]">
+      <section className="bg-[#637A82]">
         <div className="max-w-[1500px] mx-auto px-3 sm:px-4 pt-6 pb-12 sm:pt-8 sm:pb-14">
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
             {[
@@ -1018,10 +1018,10 @@ export default function Home() {
 
       {/* Showcase: developers #100–103 */}
       {showcaseDevs.length > 0 && (
-        <section className="bg-[#4682B4] py-16 mt-4">
+        <section className="bg-[#4c5a68] py-16">
           <div className="max-w-[1500px] mx-auto px-3 sm:px-4">
             <div className="flex items-center justify-between mb-8">
-              <h2 className="text-2xl font-bold text-white tracking-tight">Registered Developers & Mentoring Students</h2>
+              <h2 className="text-2xl font-bold text-white tracking-tight">Our Registered software developers & Mentorship Students</h2>
               <Link to="/portfolios" className="text-sm text-white hover:text-white/80 flex items-center gap-1 font-medium">
                 View all <ArrowRight size={14} />
               </Link>
