@@ -7,11 +7,11 @@ class AdminService {
     return await adminRepo.getPendingProjects();
   }
 
-  async getAllProjects(options) {
-    const { status, page, limit, search } = options;
-    const p = Math.max(1, parseInt(page));
-    const l = parseInt(limit);
-    const safeSearch = search.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  async getAllProjects(options = {}) {
+    const { status, page = 1, limit = 12, search } = options || {};
+    const p = Math.max(1, parseInt(page, 10) || 1);
+    const l = Math.max(1, parseInt(limit, 10) || 12);
+    const safeSearch = (search || '').trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
     if (safeSearch) {
       const searchMatch = {
