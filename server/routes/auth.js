@@ -1,4 +1,5 @@
 const router = require('express').Router();
+const crypto = require('crypto');
 const passport = require('passport');
 const {
   register, login, logout, getMe, updateProfile, deleteAccount, deleteAvatar, googleCallback, selectRole,
@@ -23,10 +24,21 @@ const googleEnabled = !!(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIE
 
 router.get('/google', (req, res, next) => {
   if (!googleEnabled) return res.status(503).json({ message: 'Google login is not configured' });
-  passport.authenticate('google', { scope: ['profile', 'email'], session: false })(req, res, next);
+  // 'openid' is required by Google's v2/auth OpenID Connect endpoint.
+  // 'state' is a random CSRF token stored in a short-lived cookie since session: false.
+  const state = crypto.randomBytes(16).toString('hex');
+  res.cookie('oauth_state', state, { httpOnly: true, secure: true, sameSite: 'lax', maxAge: 5 * 60 * 1000 });
+  passport.authenticate('google', { scope: ['openid', 'profile', 'email'], session: false, state })(req, res, next);
 });
 router.get('/google/callback', (req, res, next) => {
   if (!googleEnabled) return res.redirect(`${process.env.CLIENT_URL}/login?error=oauth`);
+  // Validate CSRF state
+  const storedState = req.cookies?.oauth_state;
+  const returnedState = req.query?.state;
+  if (!storedState || !returnedState || storedState !== returnedState) {
+    return res.redirect(`${process.env.CLIENT_URL}/login?error=oauth_state_mismatch`);
+  }
+  res.clearCookie('oauth_state');
   passport.authenticate('google', { session: false, failureRedirect: `${process.env.CLIENT_URL}/login?error=oauth` })(req, res, next);
 }, googleCallback);
 
