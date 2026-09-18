@@ -57,6 +57,20 @@
     ],
     "rewrites": [
       {
+        "source": "/api/auth/google",
+        "run": {
+          "serviceId": "sharemyapps-server",
+          "region": "us-central1"
+        }
+      },
+      {
+        "source": "/api/auth/google/callback",
+        "run": {
+          "serviceId": "sharemyapps-server",
+          "region": "us-central1"
+        }
+      },
+      {
         "source": "**",
         "destination": "/index.html"
       }
