@@ -11,9 +11,9 @@ if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
   console.warn('Google OAuth credentials not set — Google login disabled');
 } else {
 passport.use(new GoogleStrategy({
-  clientID: process.env.GOOGLE_CLIENT_ID,
-  clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-  callbackURL: process.env.GOOGLE_CALLBACK_URL,
+  clientID: process.env.GOOGLE_CLIENT_ID?.trim(),
+  clientSecret: process.env.GOOGLE_CLIENT_SECRET?.trim(),
+  callbackURL: process.env.GOOGLE_CALLBACK_URL?.trim(),
 }, async (_accessToken, _refreshToken, profile, done) => {
   try {
     let user = await User.findOne({ googleId: profile.id });
