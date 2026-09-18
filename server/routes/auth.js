@@ -27,18 +27,18 @@ router.get('/google', (req, res, next) => {
   // 'openid' is required by Google's v2/auth OpenID Connect endpoint.
   // 'state' is a random CSRF token stored in a short-lived cookie since session: false.
   const state = crypto.randomBytes(16).toString('hex');
-  res.cookie('oauth_state', state, { httpOnly: true, secure: true, sameSite: 'lax', maxAge: 5 * 60 * 1000 });
+  res.cookie('__session', state, { httpOnly: true, secure: true, sameSite: 'lax', maxAge: 5 * 60 * 1000 });
   passport.authenticate('google', { scope: ['openid', 'profile', 'email'], session: false, state })(req, res, next);
 });
 router.get('/google/callback', (req, res, next) => {
   if (!googleEnabled) return res.redirect(`${process.env.CLIENT_URL}/login?error=oauth`);
   // Validate CSRF state
-  const storedState = req.cookies?.oauth_state;
+  const storedState = req.cookies?.__session;
   const returnedState = req.query?.state;
   if (!storedState || !returnedState || storedState !== returnedState) {
     return res.redirect(`${process.env.CLIENT_URL}/login?error=oauth_state_mismatch`);
   }
-  res.clearCookie('oauth_state');
+  res.clearCookie('__session');
   passport.authenticate('google', { session: false, failureRedirect: `${process.env.CLIENT_URL}/login?error=oauth` })(req, res, next);
 }, googleCallback);
 
