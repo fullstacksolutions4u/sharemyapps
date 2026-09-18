@@ -18,7 +18,7 @@ export default function Footer() {
           hello@sharemyapps.in
         </a>
         <span>·</span>
-        <Link to="/privacy-policy" className="hover:opacity-75 transition-opacity duration-150">
+        <Link to="/privacy" className="hover:opacity-75 transition-opacity duration-150">
           Privacy Policy
         </Link>
         <span>·</span>

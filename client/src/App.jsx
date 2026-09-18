@@ -46,6 +46,7 @@ const ProjectsSection    = lazy(() => import('./pages/user/Dashboard').then(m =>
 const SharedProfiles     = lazy(() => import('./pages/public/SharedProfiles'));
 const SharedProfileDetail = lazy(() => import('./pages/public/SharedProfileDetail'));
 const PrivacyPolicy      = lazy(() => import('./pages/public/PrivacyPolicy'));
+const TermsOfService     = lazy(() => import('./pages/public/TermsOfService'));
 
 class ErrorBoundary extends Component {
   state = { error: null };
@@ -181,6 +182,8 @@ function AppRoutes() {
             <Route path="/shared-profiles/:id" element={<SharedProfiles />} />
             <Route path="/shared-profiles/:id/candidate/:sessionId" element={<SharedProfileDetail />} />
             <Route path="/showcase/:slug" element={<CurationShowcase />} />
+            <Route path="/privacy" element={<PrivacyPolicy />} />
+            <Route path="/terms" element={<TermsOfService />} />
             <Route path="/admin" element={<AdminRoute><AdminPanel /></AdminRoute>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
