@@ -1,4 +1,4 @@
-﻿import { useState } from 'react';
+import { useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import toast from 'react-hot-toast';
@@ -100,7 +100,7 @@ export default function Login() {
             </div>
           ) : (
             <a
-              href={`${import.meta.env.VITE_API_URL || ''}/api/auth/google`}
+              href={`/api/auth/google`}
               className="flex items-center justify-center gap-3 w-full border border-border hover:border-text bg-white px-4 py-2.5 rounded-xl text-sm font-medium text-text transition-colors"
             >
               <GoogleIcon />
@@ -245,7 +245,7 @@ export default function Login() {
                 </div>
               ) : (
                 <a
-                  href={`${import.meta.env.VITE_API_URL || ''}/api/auth/google`}
+                  href={`/api/auth/google`}
                   className="flex items-center justify-center gap-3 w-full border border-border hover:border-text bg-white px-4 py-2.5 rounded-xl text-sm font-medium text-text transition-colors"
                 >
                   <GoogleIcon />
