@@ -137,11 +137,11 @@ export default function PaidServices() {
       return (
         <div style={{
           marginTop: '26px', width: '100%', background: '#dcefed', color: '#0a7373',
-          borderRadius: '8px', padding: '14px', fontSize: '13.5px',
+          borderRadius: '8px', padding: '14px', fontSize: '12px',
           fontWeight: 700, textAlign: 'center', letterSpacing: '.02em',
         }}>
           Payment Successful 🎉
-          <span style={{ display: 'block', fontSize: '11.5px', fontWeight: 500, marginTop: '4px', color: '#2a8a7a' }}>
+          <span style={{ display: 'block', fontSize: '10px', fontWeight: 500, marginTop: '4px', color: '#2a8a7a' }}>
             Our Executive will contact you shortly for further process.
           </span>
         </div>
@@ -152,12 +152,12 @@ export default function PaidServices() {
       return (
         <div style={{
           marginTop: '26px', width: '100%', background: '#dcefed', color: '#0a7373',
-          borderRadius: '8px', padding: '14px', fontSize: '13.5px',
+          borderRadius: '8px', padding: '14px', fontSize: '12px',
           fontWeight: 700, textAlign: 'center', letterSpacing: '.02em',
           boxSizing: 'border-box',
         }}>
           Premium Unlocked for You 🎉
-          <span style={{ display: 'block', fontSize: '11.5px', fontWeight: 500, marginTop: '4px', color: '#2a8a7a' }}>
+          <span style={{ display: 'block', fontSize: '10px', fontWeight: 500, marginTop: '4px', color: '#2a8a7a' }}>
             All premium services are free on your account.
           </span>
         </div>
@@ -168,11 +168,11 @@ export default function PaidServices() {
       return (
         <div style={{
           marginTop: '26px', width: '100%', background: '#dcefed', color: '#0a7373',
-          borderRadius: '8px', padding: '14px', fontSize: '13.5px',
+          borderRadius: '8px', padding: '14px', fontSize: '12px',
           fontWeight: 700, textAlign: 'center', letterSpacing: '.02em',
         }}>
           Successfully registered for job hunting assistance service.
-          <span style={{ display: 'block', fontSize: '11.5px', fontWeight: 500, marginTop: '4px', color: '#2a8a7a' }}>
+          <span style={{ display: 'block', fontSize: '10px', fontWeight: 500, marginTop: '4px', color: '#2a8a7a' }}>
             Executive will contact you shortly.
           </span>
         </div>
@@ -185,7 +185,7 @@ export default function PaidServices() {
         <div style={{ marginTop: '26px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
           <div style={{
             width: '100%', background: '#dcefed', color: '#0a7373',
-            borderRadius: '8px', padding: '12px 14px', fontSize: '12.5px',
+            borderRadius: '8px', padding: '12px 14px', fontSize: '11px',
             fontWeight: 700, textAlign: 'center', letterSpacing: '.02em',
             boxSizing: 'border-box',
           }}>
@@ -196,7 +196,7 @@ export default function PaidServices() {
             disabled={applyLoading}
             style={{
               width: '100%', background: '#0c8c8c', color: '#fff', border: 'none',
-              borderRadius: '8px', padding: '14px', fontSize: '13.5px', fontWeight: 700,
+              borderRadius: '8px', padding: '14px', fontSize: '12px', fontWeight: 700,
               letterSpacing: '.02em', fontFamily: "'Manrope', sans-serif",
               cursor: applyLoading ? 'default' : 'pointer', opacity: applyLoading ? 0.6 : 1,
             }}
@@ -204,7 +204,7 @@ export default function PaidServices() {
             {applyLoading ? 'Applying…' : 'Apply for Free Premium Services'}
           </button>
           {applyError && (
-            <p style={{ fontSize: '12px', color: '#c0392b', margin: 0, textAlign: 'center' }}>{applyError}</p>
+            <p style={{ fontSize: '10.5px', color: '#c0392b', margin: 0, textAlign: 'center' }}>{applyError}</p>
           )}
         </div>
       );
@@ -218,7 +218,7 @@ export default function PaidServices() {
             disabled={applyLoading}
             style={{
               width: '100%', background: '#0c8c8c', color: '#fff', border: 'none',
-              borderRadius: '8px', padding: '14px', fontSize: '13.5px', fontWeight: 700,
+              borderRadius: '8px', padding: '14px', fontSize: '12px', fontWeight: 700,
               letterSpacing: '.02em', fontFamily: "'Manrope', sans-serif",
               cursor: applyLoading ? 'default' : 'pointer', opacity: applyLoading ? 0.6 : 1,
             }}
@@ -228,7 +228,7 @@ export default function PaidServices() {
               : 'Reserve Your Free Spot'}
           </button>
           {applyError && (
-            <p style={{ fontSize: '12px', color: '#c0392b', margin: 0, textAlign: 'center' }}>{applyError}</p>
+            <p style={{ fontSize: '10.5px', color: '#c0392b', margin: 0, textAlign: 'center' }}>{applyError}</p>
           )}
         </div>
       );
@@ -253,7 +253,7 @@ export default function PaidServices() {
           disabled={plansLoading || !priceDisplay}
           style={{
             width: '100%', background: '#008b74', color: '#fff',
-            border: 'none', borderRadius: '10px', padding: '14px', fontSize: '14px',
+            border: 'none', borderRadius: '10px', padding: '14px', fontSize: '12.5px',
             fontWeight: 700, letterSpacing: '.02em', fontFamily: "'Manrope', sans-serif",
             boxShadow: '0 6px 16px rgba(0, 139, 116, 0.25)',
             cursor: plansLoading ? 'default' : 'pointer', opacity: plansLoading ? 0.7 : 1,
@@ -319,7 +319,7 @@ export default function PaidServices() {
         <div style={{
           display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
           background: '#f0f6f5', borderBottom: '1px solid #e2ecea',
-          padding: '12px 24px', fontSize: '13.5px', color: '#4a6663', flexWrap: 'wrap',
+          padding: '12px 24px', fontSize: '12px', color: '#4a6663', flexWrap: 'wrap',
         }}>
           <span>Secure a high-paying job and get hired ⚡</span>
           <span style={{ fontWeight: 800, color: '#0a7373' }}>10x faster</span>
@@ -332,15 +332,15 @@ export default function PaidServices() {
           {/* Free */}
           <div style={{ padding: '32px 30px', display: 'flex', flexDirection: 'column', borderRight: '1px solid #eef2f0', background: '#e6f5f4' }}>
             <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: '4px' }}>
-              <span style={{ fontFamily: "'Spectral', serif", fontSize: '25px', fontWeight: 600, color: '#243433' }}>Free</span>
-              <span style={{ fontFamily: "'Spectral', serif", fontSize: '18px', fontWeight: 600, color: '#9aa6a4' }}>₹0</span>
+              <span style={{ fontFamily: "'Spectral', serif", fontSize: '23.5px', fontWeight: 600, color: '#243433' }}>Free</span>
+              <span style={{ fontFamily: "'Spectral', serif", fontSize: '16.5px', fontWeight: 600, color: '#9aa6a4' }}>₹0</span>
             </div>
             <div style={{ height: '1.5px', background: '#dfe6e4', margin: '14px 0 18px' }} />
             <div style={{ display: 'flex', flexDirection: 'column', gap: '13px', flex: 1 }}>
               {FREE_FEATURES.map((f, i) => (
                 <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: '11px' }}>
-                  <span style={{ color: '#a8b2af', fontFamily: "'Spectral', serif", fontSize: '15px', lineHeight: 1.3, marginTop: '1px' }}>✓</span>
-                  <span style={{ fontSize: '14px', color: '#586160', lineHeight: 1.4 }}>{f}</span>
+                  <span style={{ color: '#a8b2af', fontFamily: "'Spectral', serif", fontSize: '13.5px', lineHeight: 1.3, marginTop: '1px' }}>✓</span>
+                  <span style={{ fontSize: '12.5px', color: '#586160', lineHeight: 1.4 }}>{f}</span>
                 </div>
               ))}
             </div>
@@ -348,7 +348,7 @@ export default function PaidServices() {
               onClick={() => navigate(user ? '/dashboard' : '/register')}
               style={{
                 marginTop: '26px', width: '100%', background: '#fff', color: '#000',
-                border: '1.5px solid #c9ede6', borderRadius: '10px', padding: '13px 14px', fontSize: '14px',
+                border: '1.5px solid #c9ede6', borderRadius: '10px', padding: '13px 14px', fontSize: '12.5px',
                 fontWeight: 700, letterSpacing: '.02em', fontFamily: "'Manrope', sans-serif", cursor: 'pointer',
                 boxShadow: '0 4px 14px rgba(0, 166, 147, 0.1)',
               }}
@@ -361,9 +361,9 @@ export default function PaidServices() {
           <div style={{ padding: '32px 30px', display: 'flex', flexDirection: 'column', background: '#f5faf9' }}>
             <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: '4px' }}>
               <div style={{ display: 'flex', alignItems: 'baseline', gap: '10px' }}>
-                <span style={{ fontFamily: "'Spectral', serif", fontSize: '25px', fontWeight: 600, color: '#243433' }}>Premium</span>
+                <span style={{ fontFamily: "'Spectral', serif", fontSize: '23.5px', fontWeight: 600, color: '#243433' }}>Premium</span>
                 <span style={{
-                  fontSize: '10px', fontWeight: 800, letterSpacing: '.1em', textTransform: 'uppercase',
+                  fontSize: '9px', fontWeight: 800, letterSpacing: '.1em', textTransform: 'uppercase',
                   color: '#0a7373', background: '#dcefed', borderRadius: '999px', padding: '3px 9px',
                 }}>
                   Popular
@@ -371,11 +371,11 @@ export default function PaidServices() {
               </div>
               <span style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
                 {(freeOfferActive || hasPremiumAccess || hasFreeGrant) && priceDisplay && (
-                  <span style={{ fontFamily: "'Spectral', serif", fontSize: '18px', fontWeight: 600, color: '#9aa6a4', textDecoration: 'line-through' }}>
+                  <span style={{ fontFamily: "'Spectral', serif", fontSize: '16.5px', fontWeight: 600, color: '#9aa6a4', textDecoration: 'line-through' }}>
                     {priceDisplay}
                   </span>
                 )}
-                <span style={{ fontFamily: "'Spectral', serif", fontSize: '22px', fontWeight: 700, color: (freeOfferActive || hasPremiumAccess || hasFreeGrant) ? '#0a7373' : '#243433' }}>
+                <span style={{ fontFamily: "'Spectral', serif", fontSize: '20.5px', fontWeight: 700, color: (freeOfferActive || hasPremiumAccess || hasFreeGrant) ? '#0a7373' : '#243433' }}>
                   {plansLoading || offerConfig === null
                     ? '…'
                     : (freeOfferActive || hasPremiumAccess || hasFreeGrant)
@@ -391,7 +391,7 @@ export default function PaidServices() {
                   <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style={{ flex: 'none', marginTop: '2px' }}>
                     <path d="M3 8.4l3 3 7-7.4" stroke="#0c8c8c" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
-                  <span style={{ fontSize: '14px', color: '#3f4948', lineHeight: 1.4 }}>{f}</span>
+                  <span style={{ fontSize: '12.5px', color: '#3f4948', lineHeight: 1.4 }}>{f}</span>
                 </div>
               ))}
             </div>
@@ -402,10 +402,10 @@ export default function PaidServices() {
           <div style={{ padding: '32px 30px', display: 'flex', flexDirection: 'column', background: '#fffcf0', borderLeft: '1px solid #eef2f0' }}>
             <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: '4px' }}>
               <div style={{ display: 'flex', flexDirection: 'column' }}>
-                <span style={{ fontFamily: "'Spectral', serif", fontSize: '23px', fontWeight: 600, color: '#332900' }}>Dubai Job Hunting Package</span>
-                <span style={{ fontSize: '10px', color: '#665200', marginTop: '2px', fontWeight: 600 }}>Male or Female Candidates</span>
+                <span style={{ fontFamily: "'Spectral', serif", fontSize: '16.5px', fontWeight: 600, color: '#332900' }}>Dubai Job Hunting Package</span>
+                <span style={{ fontSize: '9px', color: '#665200', marginTop: '2px', fontWeight: 600 }}>Male or Female Candidates</span>
               </div>
-              <span style={{ fontFamily: "'Spectral', serif", fontSize: '20px', fontWeight: 700, color: '#b38f00' }}>
+              <span style={{ fontFamily: "'Spectral', serif", fontSize: '14.5px', fontWeight: 700, color: '#b38f00' }}>
                 ₹1,10,000
               </span>
             </div>
@@ -416,13 +416,13 @@ export default function PaidServices() {
                   <svg width="15" height="15" viewBox="0 0 16 16" fill="none" style={{ flex: 'none', marginTop: '2px' }}>
                     <path d="M3 8.4l3 3 7-7.4" stroke="#e6b800" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
-                  <span style={{ fontSize: '13px', color: '#4d3d00', lineHeight: 1.4 }}>{f}</span>
+                  <span style={{ fontSize: '11.5px', color: '#4d3d00', lineHeight: 1.4 }}>{f}</span>
                 </div>
               ))}
             </div>
             
             <div style={{ background: '#fff4cc', padding: '10px', borderRadius: '8px', marginTop: '14px', border: '1px solid #ffe680' }}>
-              <p style={{ fontSize: '11px', color: '#665200', margin: 0, fontWeight: 500, lineHeight: 1.4, textAlign: 'justify' }}>
+              <p style={{ fontSize: '9.5px', color: '#665200', margin: 0, fontWeight: 500, lineHeight: 1.4, textAlign: 'justify' }}>
                 This package is designed for job seekers who wish to explore employment opportunities in Dubai independently while staying on a visit visa. We take care of all the essential arrangements, allowing you to focus entirely on your job search.
               </p>
             </div>
@@ -435,7 +435,7 @@ export default function PaidServices() {
                 }}
                 style={{
                   width: '100%', background: '#cc9900', color: '#fff',
-                  border: 'none', borderRadius: '10px', padding: '14px', fontSize: '14px',
+                  border: 'none', borderRadius: '10px', padding: '14px', fontSize: '12.5px',
                   fontWeight: 700, letterSpacing: '.02em', fontFamily: "'Manrope', sans-serif",
                   boxShadow: '0 6px 16px rgba(204, 153, 0, 0.25)',
                   cursor: 'pointer',
