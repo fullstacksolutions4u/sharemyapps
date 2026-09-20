@@ -114,7 +114,6 @@ const AdminVacanciesSection = forwardRef(function AdminVacanciesSection({ hideTi
   const [replyOpen, setReplyOpen] = useState(null);
   const [replyText, setReplyText] = useState('');
   const [replySending, setReplySending] = useState(false);
-  const [statusModal, setStatusModal] = useState({ isOpen: false, vacancyId: null, userId: null, userIds: null, status: null, note: '' });
   const [selectedUsers, setSelectedUsers] = useState({}); // { [vacancyId]: { [userId]: boolean } }
   const [viewModal, setViewModal] = useState({ isOpen: false, vacancy: null });
   const { user } = useAuth();
@@ -190,12 +189,40 @@ const AdminVacanciesSection = forwardRef(function AdminVacanciesSection({ hideTi
     }
   };
 
-  const handleStatusChange = async (vacancyId, userId, status) => {
+  const handleStatusChange = async (vacancyId, userIdOrIds, status) => {
+    let note = '';
     if (status === 'rejected') {
-      const defaultNote = "Thank you for your application. Unfortunately, we have decided to move forward with other candidates whose profiles more closely match our current requirements.\n\nWe encourage you to keep applying for our future vacancies, as we would be happy to consider your profile for other suitable opportunities.\n\nWe wish you all the best in your job search.";
-      setStatusModal({ isOpen: true, vacancyId, userId, status, note: defaultNote });
-    } else {
-      setStatusModal({ isOpen: true, vacancyId, userId, status, note: '' });
+      note = "Thank you for your application. Unfortunately, we have decided to move forward with other candidates whose profiles more closely match our current requirements.\n\nWe encourage you to keep applying for our future vacancies, as we would be happy to consider your profile for other suitable opportunities.\n\nWe wish you all the best in your job search.";
+    }
+
+    setSaving(true);
+    try {
+      const targetUserIds = Array.isArray(userIdOrIds) ? userIdOrIds : [userIdOrIds];
+      await api.patch(`/admin/vacancies/${vacancyId}/applicant-status`, { userIds: targetUserIds, status, note });
+      
+      setVacancies(prev => prev.map(v => {
+        if (v._id !== vacancyId) return v;
+        
+        const applicantStatus = { ...(v.applicantStatus || {}) };
+        const applicantStatusHistory = { ...(v.applicantStatusHistory || {}) };
+        
+        targetUserIds.forEach(uId => {
+          applicantStatus[uId] = status;
+          const history = applicantStatusHistory[uId] || [];
+          applicantStatusHistory[uId] = [...history, { status, date: new Date().toISOString(), note }];
+        });
+
+        return { ...v, applicantStatus, applicantStatusHistory };
+      }));
+      toast.success('Applicant status updated');
+      
+      if (Array.isArray(userIdOrIds)) {
+        setSelectedUsers(prev => ({ ...prev, [vacancyId]: {} }));
+      }
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to update status');
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -215,39 +242,6 @@ const AdminVacanciesSection = forwardRef(function AdminVacanciesSection({ hideTi
     } catch {
       toast.error('Failed to automatically update status');
     }
-  };
-
-  const submitStatusChange = async () => {
-    setSaving(true);
-    try {
-      const { vacancyId, userId, userIds, status, note } = statusModal;
-      const targetUserIds = userIds || [userId];
-      await api.patch(`/admin/vacancies/${vacancyId}/applicant-status`, { userIds: targetUserIds, status, note });
-      setVacancies(prev => prev.map(v => {
-        if (v._id !== vacancyId) return v;
-        
-        const applicantStatus = { ...(v.applicantStatus || {}) };
-        const applicantStatusHistory = { ...(v.applicantStatusHistory || {}) };
-        
-        targetUserIds.forEach(uId => {
-          applicantStatus[uId] = status;
-          const history = applicantStatusHistory[uId] || [];
-          applicantStatusHistory[uId] = [...history, { status, date: new Date().toISOString(), note: note || '' }];
-        });
-
-        return {
-          ...v,
-          applicantStatus,
-          applicantStatusHistory
-        };
-      }));
-      toast.success('Applicant status updated');
-      setStatusModal({ isOpen: false, vacancyId: null, userId: null, userIds: null, status: null, note: '' });
-      if (userIds) {
-        setSelectedUsers(prev => ({ ...prev, [vacancyId]: {} }));
-      }
-    } catch (err) { toast.error(err.response?.data?.message || 'Failed to update status'); }
-    finally { setSaving(false); }
   };
 
   const startEdit = (v) => {
@@ -425,12 +419,7 @@ const AdminVacanciesSection = forwardRef(function AdminVacanciesSection({ hideTi
                                     const val = e.target.value;
                                     if (!val) return;
                                     const targetUserIds = Object.keys(selectedUsers[v._id] || {}).filter(uid => selectedUsers[v._id][uid]);
-                                    if (val === 'rejected') {
-                                      const defaultNote = "Thank you for your application. Unfortunately, we have decided to move forward with other candidates whose profiles more closely match our current requirements.\n\nWe encourage you to keep applying for our future vacancies, as we would be happy to consider your profile for other suitable opportunities.\n\nWe wish you all the best in your job search.";
-                                      setStatusModal({ isOpen: true, vacancyId: v._id, userIds: targetUserIds, status: val, note: defaultNote });
-                                    } else {
-                                      setStatusModal({ isOpen: true, vacancyId: v._id, userIds: targetUserIds, status: val, note: '' });
-                                    }
+                                    handleStatusChange(v._id, targetUserIds, val);
                                     e.target.value = '';
                                   }}
                                   className="px-2 py-1 text-xs border rounded-lg bg-white font-semibold text-[#1A1A1A] focus:outline-none cursor-pointer"
@@ -594,47 +583,6 @@ const AdminVacanciesSection = forwardRef(function AdminVacanciesSection({ hideTi
               )}
             </div>
           ))}
-        </div>
-      )}
-
-      {/* Status Modal */}
-      {statusModal.isOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-          <div className="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl relative animate-in fade-in zoom-in duration-200">
-            <button onClick={() => setStatusModal({ ...statusModal, isOpen: false })} className="absolute top-4 right-4 text-muted hover:text-text transition-colors">
-              <X size={20} />
-            </button>
-            
-            <div className="mb-6 mt-4">
-              <label className="block text-sm font-medium text-text mb-2">
-                Note to Applicant {statusModal.status !== 'rejected' && <span className="text-muted font-normal">(Optional)</span>}
-              </label>
-              <textarea
-                value={statusModal.note}
-                onChange={e => setStatusModal({ ...statusModal, note: e.target.value })}
-                placeholder={statusModal.status === 'rejected' ? "e.g., We are looking for someone with more React experience..." : "e.g., Leave an optional comment about their status..."}
-                rows={statusModal.status === 'rejected' ? 8 : 4}
-                className="w-full px-4 py-3 border border-border rounded-xl text-sm text-text bg-white placeholder-muted focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/10 transition resize-none"
-              />
-            </div>
-            
-            <div className="flex justify-end gap-3">
-              <button 
-                onClick={() => setStatusModal({ ...statusModal, isOpen: false })}
-                className="px-5 py-2.5 text-sm font-semibold text-text bg-[#F3F0EB] hover:bg-[#E5E1DA] rounded-xl transition-colors"
-                disabled={saving}
-              >
-                Cancel
-              </button>
-              <button
-                onClick={submitStatusChange}
-                disabled={saving || (statusModal.status === 'rejected' && !statusModal.note.trim())}
-                className={`px-5 py-2.5 text-sm font-semibold text-white rounded-xl transition-colors flex items-center justify-center min-w-[100px] disabled:opacity-50 disabled:cursor-not-allowed ${statusModal.status === 'rejected' ? 'bg-red-600 hover:bg-red-700' : 'bg-accent hover:bg-accent-hover'}`}
-              >
-                {saving ? <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> : 'Save'}
-              </button>
-            </div>
-          </div>
         </div>
       )}
 
