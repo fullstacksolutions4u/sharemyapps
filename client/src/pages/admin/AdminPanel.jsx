@@ -112,7 +112,7 @@ const { user, setUser, logout } = useAuth();
         lg:static lg:translate-x-0
         ${mobileOpen ? 'translate-x-0' : '-translate-x-full'}
       `}>
-        <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
+        <nav className="flex-1 px-3 py-4 space-y-2 overflow-y-auto">
           {NAV.map(({ key, label, icon: Icon }) => (
             <button
               key={key}

@@ -512,7 +512,7 @@ const AdminVacanciesSection = forwardRef(function AdminVacanciesSection({ hideTi
                                       const msg = `Congrats ${devName}. its me ${adminName} from sharemyapps. its a response of ${v.title} application. you have been selected for next steps of interview. hope still you looking job. need to check your availability tomorrow for next round online interview`;
                                       const phone = u.phone.replace(/\D/g, '');
                                       window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank');
-                                      updateStatusDirectly(v._id, u._id, 'contacted');
+
                                     }}
                                     className="shrink-0 flex items-center gap-1 text-xs font-medium px-2.5 py-1.5 rounded-lg border border-[#25D366] text-[#25D366] hover:bg-[#25D366] hover:text-white transition-colors"
                                     title="WhatsApp"
