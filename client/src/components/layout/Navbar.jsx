@@ -379,7 +379,6 @@ export default function Navbar() {
             {!isRecruiter && !isClient && !isMentee && !isMentor && (
               <>
                 <Link to="/opportunities" className="relative text-base font-bold text-muted hover:text-text transition-colors whitespace-nowrap shrink-0 after:absolute after:left-0 after:-bottom-0.5 after:h-[1.5px] after:w-0 after:bg-accent after:transition-[width] after:duration-300 hover:after:w-full">Opportunities</Link>
-                <Link to="/quiz-zone" className="relative text-base font-bold text-muted hover:text-text transition-colors whitespace-nowrap shrink-0 after:absolute after:left-0 after:-bottom-0.5 after:h-[1.5px] after:w-0 after:bg-accent after:transition-[width] after:duration-300 hover:after:w-full">Quiz Zone</Link>
                 <Link to="/mentorship" className="relative inline-flex items-center gap-1.5 text-base font-bold text-muted hover:text-text transition-colors whitespace-nowrap shrink-0 after:absolute after:left-0 after:-bottom-0.5 after:h-[1.5px] after:w-0 after:bg-accent after:transition-[width] after:duration-300 hover:after:w-full">
                   <Crown size={15} className="text-amber-500 shrink-0" />
                   Mentorship Program
@@ -388,6 +387,7 @@ export default function Navbar() {
                   <Crown size={15} className="text-amber-500 shrink-0" />
                   Job Assistance Services
                 </Link>
+                <Link to="/quiz-zone" className="relative text-base font-bold text-muted hover:text-text transition-colors whitespace-nowrap shrink-0 after:absolute after:left-0 after:-bottom-0.5 after:h-[1.5px] after:w-0 after:bg-accent after:transition-[width] after:duration-300 hover:after:w-full">Quiz Zone</Link>
               </>
             )}
           </nav>
@@ -444,13 +444,13 @@ export default function Navbar() {
           {!isRecruiter && !isClient && !isMentee && !isMentor && (
             <>
               <Link to="/opportunities" onClick={() => setMenuOpen(false)} className="block text-sm text-muted hover:text-text">Opportunities</Link>
-              <Link to="/quiz-zone" onClick={() => setMenuOpen(false)} className="block text-sm text-muted hover:text-text">Quiz Zone</Link>
               <Link to="/mentorship" onClick={() => setMenuOpen(false)} className="flex items-center gap-1.5 text-sm text-muted hover:text-text">
                 <Crown size={14} className="text-amber-500 shrink-0" /> Mentorship Program
               </Link>
               <Link to="/placement" onClick={() => setMenuOpen(false)} className="flex items-center gap-1.5 text-sm text-muted hover:text-text">
                 <Crown size={14} className="text-amber-500 shrink-0" /> Job Assistance Services
               </Link>
+              <Link to="/quiz-zone" onClick={() => setMenuOpen(false)} className="block text-sm text-muted hover:text-text">Quiz Zone</Link>
             </>
           )}
           {user ? (
