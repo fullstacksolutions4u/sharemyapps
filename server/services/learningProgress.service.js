@@ -305,7 +305,7 @@ class LearningProgressService {
     const topUsers = await progressRepo.findDevUsersForLeaderboard(
       devFilter,
       { points: -1, createdAt: 1 },
-      10,
+      13,
       'name avatar points'
     );
 

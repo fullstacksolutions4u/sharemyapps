@@ -46,6 +46,7 @@ export default function AdminPanel() {
   const [stats, setStats] = useState(null);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [unreadMessages, setUnreadMessages] = useState(0);
+  const [unreadDubai, setUnreadDubai] = useState(0);
 const { user, setUser, logout } = useAuth();
   const nav = useNavigate();
   const avatarInputRef = useRef(null);
@@ -68,6 +69,10 @@ const { user, setUser, logout } = useAuth();
   useEffect(() => {
     api.get('/admin/stats').then(res => setStats(res.data)).catch(() => {});
     api.get('/messages').then(res => setUnreadMessages(res.data.unreadCount)).catch(() => {});
+    api.get('/admin/dubai-enquiries').then(res => {
+      const pendingCount = res.data.enquiries.filter(e => e.status === 'pending').length;
+      setUnreadDubai(pendingCount);
+    }).catch(() => {});
 
     const handleDecrement = () => {
       setStats(prev => prev ? { ...prev, pendingVacancies: Math.max(0, prev.pendingVacancies - 1) } : null);
@@ -119,8 +124,8 @@ const { user, setUser, logout } = useAuth();
               {key === 'projects' && stats?.pending > 0 && (
                 <span className="ml-auto bg-yellow-500 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full leading-none shrink-0">{stats.pending}</span>
               )}
-              {key === 'communications' && unreadMessages > 0 && (
-                <span className="ml-auto bg-accent text-white text-xs w-5 h-5 flex items-center justify-center rounded-full leading-none shrink-0">{unreadMessages > 9 ? '9+' : unreadMessages}</span>
+              {key === 'communications' && (unreadMessages + unreadDubai) > 0 && (
+                <span className="ml-auto bg-accent text-white text-xs w-5 h-5 flex items-center justify-center rounded-full leading-none shrink-0">{(unreadMessages + unreadDubai) > 9 ? '9+' : (unreadMessages + unreadDubai)}</span>
               )}
               {key === 'opportunities' && stats?.pendingVacancies > 0 && (
                 <span className="ml-auto bg-red-500 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full leading-none shrink-0">{stats.pendingVacancies}</span>

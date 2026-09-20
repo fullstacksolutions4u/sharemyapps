@@ -148,7 +148,7 @@ class UserBrowseService {
 
   async getDevelopers(reqUser, query) {
     const page  = Math.max(1, parseInt(query.page) || 1);
-    const LIMIT = 12;
+    const LIMIT = 20;
     const skip  = (page - 1) * LIMIT;
     const search = query.search?.trim();
     const safeSearch = search?.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');

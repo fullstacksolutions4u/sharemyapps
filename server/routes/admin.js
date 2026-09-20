@@ -1318,4 +1318,31 @@ router.delete('/job-alerts/applicant-statuses/:id', async (req, res) => {
   } catch (err) { res.status(500).json({ message: err.message }); }
 });
 
+// Dubai Enquiries
+const DubaiEnquiry = require('../models/DubaiEnquiry');
+
+router.get('/dubai-enquiries', async (req, res) => {
+  try {
+    const enquiries = await DubaiEnquiry.find().sort({ createdAt: -1 }).populate('user', 'name email avatar headline');
+    res.json({ enquiries });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+router.patch('/dubai-enquiries/:id/status', async (req, res) => {
+  try {
+    const { status } = req.body;
+    const enquiry = await DubaiEnquiry.findByIdAndUpdate(
+      req.params.id,
+      { status },
+      { new: true }
+    ).populate('user', 'name email avatar headline');
+    if (!enquiry) return res.status(404).json({ message: 'Enquiry not found' });
+    res.json({ success: true, enquiry });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
 module.exports = router;

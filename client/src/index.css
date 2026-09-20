@@ -264,6 +264,7 @@
 html,
 body {
   font-family: var(--font-sans);
+  font-size: 14px;
   background-color: #FFFFFF;
   color: #1A1A1A;
   -webkit-font-smoothing: antialiased;

@@ -270,7 +270,7 @@ export default function Feed() {
     <div className="fixed top-[57px] bottom-0 left-0 right-0 bg-white overflow-hidden flex flex-col z-10">
       <div className="relative max-w-[1600px] mx-auto px-2 lg:px-4 py-4 w-full flex-1 min-h-0 flex flex-col lg:flex-row gap-4">
       
-      {/* LEFT: Shared Job Links */}
+      {/* LEFT: Client Vacancies */}
       <div className="w-full lg:max-w-[25%] flex flex-col h-full pb-4">
         <div className="bg-white rounded-xl shadow-sm border border-[#5a788b] flex flex-col h-full relative overflow-hidden">
           {/* Abstract wavy background at the bottom */}
@@ -281,149 +281,49 @@ export default function Feed() {
             </svg>
           </div>
           <div className="relative z-10 flex flex-col h-full overflow-hidden">
-          <div className="shrink-0 border-b border-black/5 bg-[#006994]/5 px-4 py-4 rounded-t-xl">
-            <h2 className="text-sm font-bold text-[#006994] uppercase tracking-wide flex items-center gap-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#006994]"></span>
-              LinkedIn job posts links for apply
-            </h2>
-          </div>
+            <div className="shrink-0 border-b border-black/5 bg-[#008b74]/5 px-4 py-4 rounded-t-xl flex flex-col items-center justify-center text-center">
+              <Briefcase size={20} className="text-[#008b74] mb-1" />
+              <h2 className="text-sm font-bold text-[#008b74] uppercase tracking-wide">
+                Active Opportunities
+              </h2>
+            </div>
 
-
-          <div className="overflow-y-auto custom-scrollbar px-2 pt-2 pb-1 flex-1 flex flex-col">
-            {filteredJobLinks.length === 0 ? (
-              <p className="text-sm text-gray-500 text-center py-6">No job links match this filter.</p>
-            ) : (
-              <>
-                <div className="space-y-1">
-                {filteredJobLinks.slice(0, 5).map(link => {
-                   const isApplied = clickedLinks.includes(link._id);
-                  return (
-                    <div 
-                      key={link._id} 
-                      className={`block pl-3 pr-2 py-2.5 rounded-lg border transition group ${
-                        isApplied ? 'bg-[#006994]/5 border-[#006994]/30' : 'hover:bg-blue-50/50 border-transparent hover:border-blue-100'
-                      }`}
-                    >
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="flex flex-col gap-0.5 flex-1 min-w-0">
-                          <div className="flex mt-0.5 max-w-full overflow-hidden items-start justify-between gap-1">
-                            <span className={`text-[9px] font-bold uppercase tracking-wider truncate ${getDesignationStyle(link.title)}`}>
-                              {link.title || 'Job Opportunity'}
-                            </span>
-                            {(link.isInternship || /\bintern(?:ship)?\b/i.test(link.title)) && (
-                              <span className="px-1.5 py-0.5 rounded text-[8px] font-bold uppercase tracking-wider bg-purple-100 text-purple-700 shrink-0 border border-purple-200">
-                                Intern
-                              </span>
-                            )}
-                          </div>
-
-                          
-                          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-gray-500 mt-0.5">
-                            {link.experience && (
-                              <div className="flex items-center gap-1">
-                                <Clock size={12} />
-                                <span className="whitespace-nowrap">{link.experience}</span>
-                              </div>
-                            )}
-                            {link.workMode && (
-                              <div className="flex items-center gap-1">
-                                <Laptop size={12} />
-                                <span className="whitespace-nowrap truncate max-w-[160px]">
-                                  {link.workMode}{link.location ? `, ${link.location}` : ''}
-                                </span>
-                              </div>
-                            )}
-                            {!link.workMode && link.location && (
-                              <div className="flex items-center gap-1">
-                                <MapPin size={12} />
-                                <span className="whitespace-nowrap truncate max-w-[160px]">
-                                  {link.location}
-                                </span>
-                              </div>
-                            )}
-                          </div>
-                          {link.postedDate && (
-                            <div className="flex items-center gap-1 text-xs text-emerald-700 font-medium mt-1.5">
-                              <Calendar size={12} />
-                              <span className="whitespace-nowrap">Posted: {link.postedDate}</span>
-                            </div>
-                          )}
-                        </div>
-                        
-                        <div className="flex flex-col items-end gap-2 shrink-0">
-                          {!user ? (
-                            <Link
-                              to="/login"
-                              className="py-1 px-3 rounded text-[11px] font-bold uppercase tracking-wider transition-colors border flex items-center gap-1.5 shrink-0 bg-[#006994] text-white border-[#006994] hover:bg-[#005578]"
-                            >
-                              Sign in to apply
-                            </Link>
-                          ) : !isApplied && !canApplyMore && !isPremium ? (
-                            <div className="relative group/unlock z-10">
-                              <button
-                                type="button"
-                                onClick={(e) => { e.preventDefault(); navigate('/job-post-links-premium'); }}
-                                className="py-1 px-2 rounded-lg text-[10px] font-semibold flex items-center justify-center gap-1 bg-amber-100 text-amber-700 hover:bg-amber-200 border-b-2 border-amber-300 transition-all shadow-sm"
-                              >
-                                <span>Upgrade</span>
-                                <Crown size={10} />
-                              </button>
-                            </div>
-                          ) : (
-                            <a 
-                              href={link.url} 
-                              target="_blank" 
-                              rel="noopener noreferrer"
-                              onClick={() => handleLinkClick(link._id)}
-                              className={`flex items-center justify-center shrink-0 px-2 py-1 rounded-md transition-colors border text-[10px] font-bold uppercase gap-1 ${
-                              isApplied 
-                                ? 'bg-white text-[#006994] border-[#006994]' 
-                                : 'bg-[#006994] text-white border-[#006994] hover:bg-[#005578]'
-                            }`}>
-                              {isApplied ? 'Visited' : 'Apply'} <ExternalLink size={10} />
-                            </a>
-                          )}
-                          
-                          {isApplied && (
-                            <div className="text-[10px] text-gray-500 flex flex-col items-end gap-1 mt-1">
-                              <span>Heard back?</span>
-                              <div className="flex gap-1">
-                                <button 
-                                  onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleFeedback(link._id, true); }} 
-                                  className={`px-1.5 py-0.5 rounded border transition-colors ${feedbackGiven[link._id] === 'yes' ? 'bg-emerald-50 text-emerald-600 border-emerald-200 font-medium' : 'border-gray-200 hover:bg-emerald-50 hover:text-emerald-600'}`}
-                                >
-                                  Yes
-                                </button>
-                                <button 
-                                  onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleFeedback(link._id, false); }} 
-                                  className={`px-1.5 py-0.5 rounded border transition-colors ${feedbackGiven[link._id] === 'no' ? 'bg-red-50 text-red-600 border-red-200 font-medium' : 'border-gray-200 hover:bg-red-50 hover:text-red-600'}`}
-                                >
-                                  No
-                                </button>
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
+            <div className="overflow-y-auto custom-scrollbar px-3 pt-3 pb-3 flex-1 flex flex-col gap-2.5">
+              {opportunities.length === 0 ? (
+                <div className="py-6 flex flex-col items-center justify-center text-slate-400 bg-[#fbfcfa] rounded-2xl border border-gray-100/60 shadow-sm">
+                  <p className="text-xs font-medium">No active opportunities</p>
                 </div>
-                
-                {filteredJobLinks.length > 0 && (
-                  <Link
-                    to="/opportunities?tab=job-links"
-                    className="mt-auto mb-4 shrink-0 flex items-center justify-center w-full bg-white border border-[#5a788b]/20 shadow-sm text-[#008b74] font-extrabold text-[12px] py-2 rounded-xl hover:bg-gray-50 transition-all uppercase tracking-wide"
+              ) : (
+                opportunities.map(job => (
+                  <Link 
+                    key={job._id} 
+                    to="/vacancies" 
+                    className="shrink-0 bg-white/80 backdrop-blur-sm border border-gray-100 p-3 rounded-xl shadow-sm hover:shadow-md transition-all flex flex-col group relative overflow-hidden"
                   >
-                    View All Job Links
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-transparent to-[#008b74]/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                    <span className="text-[13px] font-bold text-slate-800 line-clamp-2 leading-tight tracking-wide drop-shadow-sm group-hover:text-[#008b74] transition-colors">{job.title}</span>
+                    <div className="flex items-center justify-between mt-2 text-[10px] font-semibold text-gray-500">
+                      <span className="flex items-center gap-1"><MapPin size={10} /> {job.location || 'Remote'}</span>
+                      <span className="flex items-center gap-1 text-[#008b74]">Apply Now &rarr;</span>
+                    </div>
                   </Link>
-                )}
-              </>
+                ))
+              )}
+            </div>
+            
+            {opportunities.length > 0 && (
+              <div className="p-3 shrink-0 bg-white/50 backdrop-blur-sm border-t border-gray-100/50">
+                <Link 
+                  to="/vacancies" 
+                  className="flex items-center justify-center w-full bg-[#008b74] text-white font-bold text-[12px] py-2.5 rounded-xl hover:bg-[#007360] transition-colors shadow-sm uppercase tracking-wide"
+                >
+                  View All Vacancies
+                </Link>
+              </div>
             )}
           </div>
         </div>
       </div>
-    </div>
 
       {/* MIDDLE: Activity Stream */}
       <div className="w-full lg:max-w-[50%] flex-1 overflow-y-auto custom-scrollbar pb-10 h-full px-2 lg:px-3 bg-white">
@@ -490,7 +390,7 @@ export default function Feed() {
               <div className="p-6 text-center text-muted">No data available</div>
             ) : (
               <div className="divide-y divide-black/5">
-                {leaderboard.slice(0, 5).map((user, idx) => (
+                {leaderboard.slice(0, 13).map((user, idx) => (
                   <Link 
                     key={user.userId} 
                     to={`/portfolio/${user.userId}`}
@@ -526,64 +426,10 @@ export default function Feed() {
           </div>
         </div>
       </div>
+    </div>
+  </div>
 
-        {/* REPORT VACANCY BUTTON */}
-        {user && (
-          <button
-            onClick={() => setShowReportModal(true)}
-            className="bg-[#fbfcfa] border border-[#5a788b] p-4 rounded-[18px] flex items-center justify-center w-full shrink-0 shadow-sm"
-          >
-            <span className="text-[14px] font-bold text-transparent bg-clip-text bg-gradient-to-r from-slate-900 to-slate-600 tracking-wide drop-shadow-sm">Report your company vacancy &gt;</span>
-          </button>
-        )}
-
-        <div className="bg-white rounded-xl p-4 pb-6 flex flex-col relative overflow-hidden shrink-0 shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-[#5a788b] w-full mt-auto">
-          {/* Abstract wavy background at the bottom */}
-          <div className="absolute bottom-0 left-0 right-0 h-32 pointer-events-none opacity-50 flex items-end">
-            <svg viewBox="0 0 1440 320" className="absolute bottom-0 w-full h-full object-cover" preserveAspectRatio="none">
-              <path fill="#008b74" fillOpacity="0.08" d="M0,192L48,181.3C96,171,192,149,288,144C384,139,480,149,576,165.3C672,181,768,203,864,197.3C960,192,1056,160,1152,149.3C1248,139,1344,149,1392,154.7L1440,160L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path>
-              <path fill="#008b74" fillOpacity="0.12" d="M0,256L48,250.7C96,245,192,235,288,213.3C384,192,480,160,576,149.3C672,139,768,149,864,170.7C960,192,1056,224,1152,234.7C1248,245,1344,235,1392,229.3L1440,224L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path>
-            </svg>
-          </div>
-          
-          <div className="relative z-10 flex flex-col gap-6">
-            {/* OPPORTUNITIES (Jobs) */}
-            <div className="flex flex-col gap-1.5">
-              <div className="flex items-center justify-center px-1">
-                <span className="text-[15px] font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-[#008b74] to-[#5a788b] tracking-wider drop-shadow-sm text-center uppercase">Active Job Opportunities</span>
-              </div>
-              
-              <div className="flex flex-col gap-2.5">
-                {opportunities.length === 0 ? (
-                   <div className="py-6 flex flex-col items-center justify-center text-slate-400 bg-[#fbfcfa] rounded-2xl border border-gray-100/60 shadow-sm">
-                     <p className="text-xs font-medium">No active opportunities</p>
-                   </div>
-                ) : (
-                  opportunities.slice(0, 3).map(job => (
-                    <Link 
-                      key={job._id} 
-                      to="/vacancies" 
-                      className="bg-[#fbfcfa] border border-gray-100/60 p-2.5 rounded-xl shadow-sm hover:shadow-md transition-all flex items-center justify-center group"
-                    >
-                      <span className="text-[13.5px] font-semibold text-slate-800 text-center line-clamp-2 leading-tight tracking-wide drop-shadow-sm">{job.title}</span>
-                    </Link>
-                  ))
-                )}
-              </div>
-              <Link 
-                to="/vacancies" 
-                className="text-[12.5px] font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-[#008b74] to-teal-600 hover:opacity-80 text-center tracking-wider uppercase transition-opacity drop-shadow-sm"
-              >
-                View All
-              </Link>
-            </div>
-          </div>
-        </div>
-
-      </div>
-      </div>
-
-      <ReportVacancyModal 
+  <ReportVacancyModal 
         isOpen={showReportModal} 
         onClose={() => setShowReportModal(false)} 
         user={user} 

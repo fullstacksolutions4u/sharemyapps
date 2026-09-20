@@ -392,8 +392,8 @@ export default function Navbar() {
 
         {/* Desktop Nav + Action buttons grouped together */}
         <div className="hidden md:flex items-center gap-6 lg:gap-10 flex-nowrap shrink-0">
-          <nav className="flex items-center gap-5 lg:gap-8 xl:gap-10 flex-nowrap shrink-0">
-            <Link to="/feed" className="relative text-base font-bold text-muted hover:text-text transition-colors whitespace-nowrap shrink-0 after:absolute after:left-0 after:-bottom-0.5 after:h-[1.5px] after:w-0 after:bg-accent after:transition-[width] after:duration-300 hover:after:w-full">Timeline</Link>
+          <nav className="flex items-center gap-6 lg:gap-10 xl:gap-14 flex-nowrap shrink-0">
+            <Link to="/feed" className="relative text-base font-bold text-muted hover:text-text transition-colors whitespace-nowrap shrink-0 after:absolute after:left-0 after:-bottom-0.5 after:h-[1.5px] after:w-0 after:bg-accent after:transition-[width] after:duration-300 hover:after:w-full">Dev Feed</Link>
             <Link to="/projects" className="relative text-base font-bold text-muted hover:text-text transition-colors whitespace-nowrap shrink-0 after:absolute after:left-0 after:-bottom-0.5 after:h-[1.5px] after:w-0 after:bg-accent after:transition-[width] after:duration-300 hover:after:w-full">Projects</Link>
             <Link to="/portfolios" className="relative text-base font-bold text-muted hover:text-text transition-colors whitespace-nowrap shrink-0 after:absolute after:left-0 after:-bottom-0.5 after:h-[1.5px] after:w-0 after:bg-accent after:transition-[width] after:duration-300 hover:after:w-full">
               Portfolios
@@ -452,7 +452,7 @@ export default function Navbar() {
       {/* Mobile menu */}
       {menuOpen && (
         <div className="md:hidden bg-white border-t border-border px-4 py-4 space-y-3">
-          <Link to="/feed" onClick={() => setMenuOpen(false)} className="block text-sm text-muted hover:text-text">Timeline</Link>
+          <Link to="/feed" onClick={() => setMenuOpen(false)} className="block text-sm text-muted hover:text-text">Dev Feed</Link>
           <Link to="/projects" onClick={() => setMenuOpen(false)} className="block text-sm text-muted hover:text-text">Projects</Link>
           <Link to="/portfolios" onClick={() => setMenuOpen(false)} className="block text-sm text-muted hover:text-text">
             Portfolios

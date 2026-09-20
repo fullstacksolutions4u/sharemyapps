@@ -4,6 +4,7 @@ const User = require('../models/User');
 const SessionRequest = require('../models/SessionRequest');
 const FreeOffer = require('../models/FreeOffer');
 const JobAlert = require('../models/JobAlert');
+const DubaiEnquiry = require('../models/DubaiEnquiry');
 const ApplicantJobStatus = require('../models/ApplicantJobStatus');
 const CandidateIntake = require('../models/CandidateIntake');
 const CATALOG = require('../config/services');
@@ -178,6 +179,33 @@ router.post('/candidate-intake', protect, async (req, res) => {
       { new: true, upsert: true, setDefaultsOnInsert: true }
     );
     res.json({ intake });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// Submit Dubai Package enquiry
+router.post('/dubai-enquiry', protect, async (req, res) => {
+  try {
+    const { message, phone } = req.body;
+    
+    if (!message?.trim()) return res.status(400).json({ message: 'Message to admin is required' });
+
+    const user = await User.findById(req.user._id).select('name email phone').lean();
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    const finalPhone = user.phone || phone?.trim();
+    if (!finalPhone) return res.status(400).json({ message: 'Phone number is required' });
+
+    const enquiry = await DubaiEnquiry.create({
+      user: req.user._id,
+      name: user.name,
+      email: user.email,
+      phone: finalPhone,
+      message: message.trim()
+    });
+
+    res.status(201).json({ success: true, enquiry });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

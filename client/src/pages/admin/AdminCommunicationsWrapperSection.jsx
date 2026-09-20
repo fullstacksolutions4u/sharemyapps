@@ -2,6 +2,7 @@ import { useState } from 'react';
 import AdminMessagesSection from './AdminMessagesSection';
 import AdminEmailSection from './AdminEmailSection';
 import AdminAnnouncementsSection from './AdminAnnouncementsSection';
+import AdminDubaiEnquiriesSection from './AdminDubaiEnquiriesSection';
 
 export default function AdminCommunicationsWrapperSection({ onUnreadChange }) {
   const [tab, setTab] = useState('messages');
@@ -39,12 +40,23 @@ export default function AdminCommunicationsWrapperSection({ onUnreadChange }) {
         >
           Announcements
         </button>
+        <button
+          onClick={() => setTab('dubai')}
+          className={`px-4 py-3 text-sm font-semibold transition-colors border-b-2 ${
+            tab === 'dubai'
+              ? 'border-[#0a7373] text-[#0a7373]'
+              : 'border-transparent text-gray-500 hover:text-gray-700'
+          }`}
+        >
+          Dubai Enquiries
+        </button>
       </div>
 
       <div>
         {tab === 'messages' && <AdminMessagesSection onUnreadChange={onUnreadChange} />}
         {tab === 'emails' && <AdminEmailSection />}
         {tab === 'announcements' && <AdminAnnouncementsSection />}
+        {tab === 'dubai' && <AdminDubaiEnquiriesSection />}
       </div>
     </div>
   );

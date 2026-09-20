@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../../api/axios';
 import { useAuth } from '../../context/AuthContext';
@@ -24,6 +24,15 @@ const PREMIUM_FEATURES = [
   'Mock Interviews for freshers with Industry Experts',
 ];
 
+const DUBAI_FEATURES = [
+  'Visit Visa',
+  '2 months accommodation with food',
+  'Wi-Fi',
+  'Metro Card',
+  'One-Way Air Ticket with Airport Pickup',
+  'Premium package included with this package',
+];
+
 export default function PaidServices() {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -39,7 +48,7 @@ export default function PaidServices() {
   const [hasFreeGrant, setHasFreeGrant] = useState(false);
   const [checkingPaid, setCheckingPaid] = useState(user != null);
   const [minLoadTimeDone, setMinLoadTimeDone] = useState(false);
-
+  const [showDubaiEnquiry, setShowDubaiEnquiry] = useState(false);
   useEffect(() => {
     const timer = setTimeout(() => setMinLoadTimeDone(true), 2500);
     return () => clearTimeout(timer);
@@ -298,7 +307,7 @@ export default function PaidServices() {
     }}>
       <div style={{
         width: '100%',
-        maxWidth: '1080px',
+        maxWidth: '1280px',
         background: '#fbfcfb',
         border: '1px solid #e8edeb',
         borderRadius: '22px',
@@ -317,11 +326,11 @@ export default function PaidServices() {
           <span>with Premium!</span>
         </div>
 
-        {/* Two columns */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.15fr' }}>
+        {/* Three columns */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))' }}>
 
           {/* Free */}
-          <div style={{ padding: '32px 30px', display: 'flex', flexDirection: 'column', borderRight: '1px solid #eef2f0' }}>
+          <div style={{ padding: '32px 30px', display: 'flex', flexDirection: 'column', borderRight: '1px solid #eef2f0', background: '#e6f5f4' }}>
             <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: '4px' }}>
               <span style={{ fontFamily: "'Spectral', serif", fontSize: '25px', fontWeight: 600, color: '#243433' }}>Free</span>
               <span style={{ fontFamily: "'Spectral', serif", fontSize: '18px', fontWeight: 600, color: '#9aa6a4' }}>₹0</span>
@@ -388,10 +397,153 @@ export default function PaidServices() {
             </div>
             {renderPremiumButton()}
           </div>
+
+          {/* Dubai Package */}
+          <div style={{ padding: '32px 30px', display: 'flex', flexDirection: 'column', background: '#fffcf0', borderLeft: '1px solid #eef2f0' }}>
+            <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: '4px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                <span style={{ fontFamily: "'Spectral', serif", fontSize: '23px', fontWeight: 600, color: '#332900' }}>Dubai Job Hunting Package</span>
+                <span style={{ fontSize: '10px', color: '#665200', marginTop: '2px', fontWeight: 600 }}>Male or Female Candidates</span>
+              </div>
+              <span style={{ fontFamily: "'Spectral', serif", fontSize: '20px', fontWeight: 700, color: '#b38f00' }}>
+                ₹11,000
+              </span>
+            </div>
+            <div style={{ height: '2px', background: '#e6b800', margin: '14px 0 18px' }} />
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '9px', flex: 1 }}>
+              {DUBAI_FEATURES.map((f, i) => (
+                <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
+                  <svg width="15" height="15" viewBox="0 0 16 16" fill="none" style={{ flex: 'none', marginTop: '2px' }}>
+                    <path d="M3 8.4l3 3 7-7.4" stroke="#e6b800" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                  <span style={{ fontSize: '13px', color: '#4d3d00', lineHeight: 1.4 }}>{f}</span>
+                </div>
+              ))}
+            </div>
+            
+            <div style={{ background: '#fff4cc', padding: '10px', borderRadius: '8px', marginTop: '14px', border: '1px solid #ffe680' }}>
+              <p style={{ fontSize: '11px', color: '#665200', margin: 0, fontWeight: 500, lineHeight: 1.4, textAlign: 'justify' }}>
+                This package is designed for job seekers who wish to explore employment opportunities in Dubai independently while staying on a visit visa. We take care of all the essential arrangements, allowing you to focus entirely on your job search.
+              </p>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '16px' }}>
+              <button
+                onClick={() => {
+                  if (!user) { navigate('/register'); return; }
+                  setShowDubaiEnquiry(true);
+                }}
+                style={{
+                  width: '100%', background: '#cc9900', color: '#fff',
+                  border: 'none', borderRadius: '10px', padding: '14px', fontSize: '14px',
+                  fontWeight: 700, letterSpacing: '.02em', fontFamily: "'Manrope', sans-serif",
+                  boxShadow: '0 6px 16px rgba(204, 153, 0, 0.25)',
+                  cursor: 'pointer',
+                }}
+              >
+                Enquiry
+              </button>
+            </div>
+          </div>
         </div>
 
       </div>
     </div>
+    
+    {showDubaiEnquiry && user && (
+      <DubaiEnquiryModal 
+        user={user} 
+        onClose={() => setShowDubaiEnquiry(false)} 
+      />
+    )}
     </>
+  );
+}
+
+function DubaiEnquiryModal({ user, onClose }) {
+  const [message, setMessage] = useState('');
+  const [phone, setPhone] = useState(user.phone || '');
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!phone?.trim()) return toast.error('Please provide a phone number');
+    if (!message?.trim()) return toast.error('Please provide a message');
+    setLoading(true);
+    try {
+      await api.post('/premium-services/dubai-enquiry', { message, phone });
+      toast.success('Enquiry submitted successfully! We will contact you soon.');
+      onClose();
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to submit enquiry');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+      <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden" onClick={(e) => e.stopPropagation()}>
+        <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between bg-amber-50/50">
+          <h3 className="text-lg font-bold text-amber-800">Dubai Job Hunting Package Enquiry</h3>
+          <button onClick={onClose} className="p-1 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-100 transition-colors">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6L6 18M6 6l12 12" /></svg>
+          </button>
+        </div>
+        
+        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+          <div className="space-y-3">
+            <div>
+              <label className="block text-xs font-semibold text-gray-600 mb-1">Full Name</label>
+              <input type="text" readOnly value={user.name} className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-600 cursor-not-allowed outline-none" />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-gray-600 mb-1">Email Address</label>
+              <input type="email" readOnly value={user.email} className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-600 cursor-not-allowed outline-none" />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-gray-600 mb-1">Phone Number <span className="text-red-500">*</span></label>
+              <input 
+                type="text" 
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                readOnly={!!user.phone}
+                placeholder="Enter your phone number"
+                className={`w-full px-3 py-2 border rounded-lg text-sm outline-none transition-shadow ${
+                  user.phone 
+                    ? 'bg-gray-50 border-gray-200 text-gray-600 cursor-not-allowed' 
+                    : 'bg-white border-amber-200 focus:border-amber-400 focus:ring-1 focus:ring-amber-400 text-gray-800'
+                }`}
+              />
+            </div>
+          </div>
+          
+          <div className="pt-2">
+            <label className="block text-xs font-semibold text-gray-700 mb-1">Message to Admin <span className="text-red-500">*</span></label>
+            <textarea
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              placeholder="Any specific questions or requirements?"
+              rows="3"
+              className="w-full px-3 py-2 border border-amber-200 rounded-lg text-sm focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400 transition-shadow resize-none"
+            ></textarea>
+          </div>
+          
+          <div className="pt-2 flex justify-end gap-3">
+            <button type="button" onClick={onClose} className="px-4 py-2 text-sm font-semibold text-gray-600 hover:text-gray-800 transition-colors">
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={loading}
+              className="px-6 py-2 bg-amber-500 hover:bg-amber-600 text-white text-sm font-bold rounded-lg shadow-sm transition-colors disabled:opacity-70 flex items-center gap-2"
+            >
+              {loading && <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>}
+              Submit Enquiry
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
   );
 }
