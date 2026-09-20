@@ -27,8 +27,8 @@ const PREMIUM_FEATURES = [
 const DUBAI_FEATURES = [
   'Single entry visa for job seekers with 60/90/120 days',
   '2 months accommodation with food',
-  'Wi-Fi',
-  'Metro Card',
+  'Wifi and Resume printing facilities',
+  'Metro Card for travel around dubai',
   'One-Way Air Ticket with Airport Pickup',
   'Premium package included with this package',
 ];

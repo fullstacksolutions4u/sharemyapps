@@ -517,11 +517,7 @@ export default function Vacancies() {
     }
   };
 
-  const TABS = [
-    // { key: 'job-links',  label: 'Job Post Links',      icon: ExternalLink },
-    { key: 'vacancies',  label: 'Our Client Vacancies',          icon: Briefcase },
-    { key: 'freelance',  label: 'Freelance Projects',  icon: Laptop },
-  ];
+
 
   const { data: vacancies = [], isLoading: loadingV, isError: errV } = useQuery({
     queryKey: ['vacancies'], queryFn: () => api.get('/vacancies').then(r => r.data), staleTime: 60000,
@@ -663,57 +659,7 @@ export default function Vacancies() {
   return (
     <div className={`min-h-screen bg-linear-to-br ${bgStyles.wrapper} relative transition-colors duration-500`}>
       <div className="absolute inset-0 opacity-20 pointer-events-none transition-all duration-500" style={{ backgroundImage: bgStyles.pattern, backgroundSize: '28px 28px' }} />
-      {/* Tabs header */}
-      <div className="relative border-b border-white/20 shadow-sm overflow-hidden bg-white/30 backdrop-blur-md">
-        <div className="relative max-w-[1550px] mx-auto px-2 sm:px-3 flex items-center justify-between py-2">
-          <div className="flex gap-1.5 flex-1 justify-center">
-            {TABS.map(({ key, label, icon: Icon }) => {
-              const tabColors = {
-                'job-links': {
-                  active: 'bg-[#5a788b] text-white shadow-md scale-105',
-                  inactive: 'text-gray-600 hover:bg-white/60 hover:text-[#5a788b]'
-                },
-                'vacancies': {
-                  active: 'bg-emerald-600 text-white shadow-md scale-105',
-                  inactive: 'text-gray-600 hover:bg-white/60 hover:text-emerald-700'
-                },
-                'freelance': {
-                  active: 'bg-violet-600 text-white shadow-md scale-105',
-                  inactive: 'text-gray-600 hover:bg-white/60 hover:text-violet-700'
-                }
-              };
-              const colors = tabColors[key] || { active: '', inactive: '' };
-              return (
-                <button
-                  key={key}
-                  onClick={() => {
-                    setActiveTab(key);
-                    setFilterDesignation('');
-                    setFilterLocation('');
-                    setFilterExperience('');
-                    setCurrentPage(1);
-                    navigate(`?tab=${key}`, { replace: true });
-                  }}
-                  className={`flex items-center gap-2 px-5 py-2.5 text-[14px] font-bold rounded-xl transition-all duration-300 ${
-                    activeTab === key ? colors.active : colors.inactive
-                  }`}
-                >
-                  <Icon size={16} />
-                  {label}
-                </button>
-              );
-            })}
-          </div>
-          {activeTab === 'job-links' ? null : (
-            <Link
-              to="/placement"
-              className="flex items-center gap-1.5 bg-white border border-amber-300 hover:border-amber-400 text-gray-700 text-xs font-semibold px-3 py-1.5 rounded-full transition-colors shrink-0 mb-1"
-            >
-              <Crown size={12} className="text-amber-500" /> Job Assistance Services
-            </Link>
-          )}
-        </div>
-      </div>
+
       
       {/* Advanced Filters */}
       {!TAB_CONFIG[activeTab].loading && (TAB_CONFIG[activeTab].data.length > 0 || activeTab === 'job-links') && (
