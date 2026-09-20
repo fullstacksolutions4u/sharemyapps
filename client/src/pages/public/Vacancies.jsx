@@ -371,7 +371,8 @@ export default function Vacancies() {
     try {
       const res = await api.get(`/vacancies/${vacancy._id}/shortlisted`);
       setShortlistedModal({ isOpen: true, vacancy, data: res.data.shortlisted || [], loading: false });
-    } catch (_err) {
+    } catch (err) {
+      console.error(err);
       toast.error('Failed to load shortlisted profiles');
       setShortlistedModal({ isOpen: false, vacancy: null, data: [], loading: false });
     }
