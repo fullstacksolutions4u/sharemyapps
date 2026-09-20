@@ -11,7 +11,8 @@ export default function AdminDubaiEnquiriesSection() {
     try {
       const res = await api.get('/admin/dubai-enquiries');
       setEnquiries(res.data.enquiries);
-    } catch (_err) {
+    } catch (err) {
+      console.error(err);
       toast.error('Failed to load Dubai enquiries');
     } finally {
       setLoading(false);
@@ -19,6 +20,7 @@ export default function AdminDubaiEnquiriesSection() {
   };
 
   useEffect(() => {
+    // eslint-disable-next-line
     fetchEnquiries();
   }, []);
 
@@ -27,7 +29,8 @@ export default function AdminDubaiEnquiriesSection() {
       const res = await api.patch(`/admin/dubai-enquiries/${id}/status`, { status });
       setEnquiries(prev => prev.map(e => e._id === id ? res.data.enquiry : e));
       toast.success('Status updated');
-    } catch (_err) {
+    } catch (err) {
+      console.error(err);
       toast.error('Failed to update status');
     }
   };

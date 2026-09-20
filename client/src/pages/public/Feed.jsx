@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import axios from '../../api/axios';
 import { formatDistanceToNow } from 'date-fns';
 import { Trophy, MessageCircle, Heart, Star, TrendingUp, UserPlus, Crown, Sparkles, MapPin, Briefcase } from 'lucide-react';
@@ -92,26 +92,6 @@ const getDesignationStyle = (title) => {
 
 
 
-const parsePostedDate = (dateStr, createdAt) => {
-  if (!dateStr) return new Date(createdAt || 0).getTime();
-  const d = new Date(dateStr);
-  if (!isNaN(d.getTime())) return d.getTime();
-  const lower = dateStr.toLowerCase();
-  const now = new Date().getTime();
-  if (lower.includes('today') || lower.includes('just now')) return now;
-  if (lower.includes('yesterday')) return now - 86400000;
-  const match = lower.match(/(\d+)\s*(day|week|month|year)s?\s*ago/);
-  if (match) {
-    const amount = parseInt(match[1], 10);
-    const unit = match[2];
-    if (unit === 'day') return now - amount * 86400000;
-    if (unit === 'week') return now - amount * 7 * 86400000;
-    if (unit === 'month') return now - amount * 30 * 86400000;
-    if (unit === 'year') return now - amount * 365 * 86400000;
-  }
-  return new Date(createdAt || 0).getTime();
-};
-
 export default function Feed() {
   const { user } = useAuth();
   const [activities, setActivities] = useState([]);
@@ -119,8 +99,6 @@ export default function Feed() {
   const [opportunities, setOpportunities] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showReportModal, setShowReportModal] = useState(false);
-  const [jobLinks, setJobLinks] = useState([]);
-  const [applyEligibility, setApplyEligibility] = useState(null);
   
   
   // Infinite scroll state
@@ -146,12 +124,10 @@ export default function Feed() {
   useEffect(() => {
     const fetchInitialData = async () => {
       try {
-        const [feedRes, leaderRes, oppRes, jobLinksRes, applyEligRes] = await Promise.all([
+        const [feedRes, leaderRes, oppRes] = await Promise.all([
           axios.get('/feed?page=1'),
           axios.get('/learning-progress/leaderboard'),
           axios.get('/vacancies').catch(() => ({ data: [] })),
-          axios.get('/job-links').catch(() => ({ data: { success: false } })),
-          user ? axios.get('/job-links/apply-eligibility').catch(() => null) : Promise.resolve(null),
           new Promise(resolve => setTimeout(resolve, 5000))
         ]);
         if (feedRes.data.success) {
@@ -164,12 +140,6 @@ export default function Feed() {
         if (oppRes.data) {
           const rawOpps = Array.isArray(oppRes.data) ? oppRes.data : oppRes.data.data || [];
           setOpportunities(rawOpps.filter(job => job.status === 'active'));
-        }
-        if (jobLinksRes.data && jobLinksRes.data.success) {
-          setJobLinks(jobLinksRes.data.data);
-        }
-        if (applyEligRes && applyEligRes.data && applyEligRes.data.success) {
-          setApplyEligibility(applyEligRes.data.data);
         }
       } catch (err) {
         console.error('Failed to load feed', err);
