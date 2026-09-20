@@ -7,27 +7,27 @@ export default function AdminDubaiEnquiriesSection() {
   const [enquiries, setEnquiries] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    fetchEnquiries();
-  }, []);
-
   const fetchEnquiries = async () => {
     try {
       const res = await api.get('/admin/dubai-enquiries');
       setEnquiries(res.data.enquiries);
-    } catch (err) {
+    } catch (_err) {
       toast.error('Failed to load Dubai enquiries');
     } finally {
       setLoading(false);
     }
   };
 
+  useEffect(() => {
+    fetchEnquiries();
+  }, []);
+
   const updateStatus = async (id, status) => {
     try {
       const res = await api.patch(`/admin/dubai-enquiries/${id}/status`, { status });
       setEnquiries(prev => prev.map(e => e._id === id ? res.data.enquiry : e));
       toast.success('Status updated');
-    } catch (err) {
+    } catch (_err) {
       toast.error('Failed to update status');
     }
   };

@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from '../../api/axios';
 import { formatDistanceToNow } from 'date-fns';
-import { Trophy, MessageCircle, Heart, Star, TrendingUp, UserPlus, Crown, Sparkles, MapPin, Laptop, ExternalLink, Clock, Calendar, Briefcase } from 'lucide-react';
+import { Trophy, MessageCircle, Heart, Star, TrendingUp, UserPlus, Crown, Sparkles, MapPin, Briefcase } from 'lucide-react';
 import _Lottie from 'lottie-react';
 import feedAnimation from '../../assets/feed.json';
 import FeedProjectCard from '../../components/cards/FeedProjectCard';
@@ -120,61 +120,8 @@ export default function Feed() {
   const [loading, setLoading] = useState(true);
   const [showReportModal, setShowReportModal] = useState(false);
   const [jobLinks, setJobLinks] = useState([]);
-  const navigate = useNavigate();
   const [applyEligibility, setApplyEligibility] = useState(null);
   
-  const isPremium = applyEligibility?.isPremium;
-  const canApplyMore = !user || applyEligibility?.canApplyMore !== false;
-  const [clickedLinks, setClickedLinks] = useState(() => {
-    try {
-      const saved = localStorage.getItem('clicked_job_links');
-      return saved ? JSON.parse(saved) : [];
-    } catch {
-      return [];
-    }
-  });
-
-  const [feedbackGiven, setFeedbackGiven] = useState(() => {
-    try {
-      const saved = localStorage.getItem('jobLinkFeedback');
-      return saved ? JSON.parse(saved) : {};
-    } catch {
-      return {};
-    }
-  });
-
-  const handleLinkClick = (id) => {
-    if (!clickedLinks.includes(id)) {
-      const updated = [...clickedLinks, id];
-      setClickedLinks(updated);
-      try {
-        localStorage.setItem('clicked_job_links', JSON.stringify(updated));
-      } catch (e) {
-        console.error(e);
-      }
-    }
-  };
-
-  const handleFeedback = async (id, heardBack) => {
-    try {
-      if (!user) {
-        import('react-hot-toast').then(t => t.default.error('Please log in to submit feedback'));
-        return;
-      }
-      await axios.post(`/job-links/${id}/feedback`, { heardBack });
-      const updated = { ...feedbackGiven, [id]: heardBack ? 'yes' : 'no' };
-      setFeedbackGiven(updated);
-      try {
-        localStorage.setItem('jobLinkFeedback', JSON.stringify(updated));
-      } catch (e) {
-        console.error(e);
-      }
-      import('react-hot-toast').then(t => t.default.success('Thank you for your feedback!'));
-    } catch (error) {
-      console.error(error);
-      import('react-hot-toast').then(t => t.default.error('Failed to submit feedback'));
-    }
-  };
   
   // Infinite scroll state
   const [page, setPage] = useState(1);
@@ -263,8 +210,6 @@ export default function Feed() {
   );
 
 
-
-  const filteredJobLinks = [...jobLinks].sort((a, b) => parsePostedDate(b.postedDate, b.createdAt) - parsePostedDate(a.postedDate, a.createdAt));
 
   return (
     <div className="fixed top-[57px] bottom-0 left-0 right-0 bg-white overflow-hidden flex flex-col z-10">
