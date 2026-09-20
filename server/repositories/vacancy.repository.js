@@ -60,6 +60,12 @@ class VacancyRepository {
     return await Vacancy.findById(id).select('title company description skills location type experience salaryRange');
   }
 
+  async getVacancyWithInterests(id) {
+    return await Vacancy.findById(id)
+      .populate('interests', 'name avatar regNumber userType')
+      .lean();
+  }
+
   async getInterviewSessionsForVacancy(vacancyId) {
     return await InterviewSession.find({ vacancy: vacancyId })
       .populate('user', 'name email phone linkedinUrl githubUrl portfolioUrl cvUrl avatar bio yearsOfExperience skills designations')

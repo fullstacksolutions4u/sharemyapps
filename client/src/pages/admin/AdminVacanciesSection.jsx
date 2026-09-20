@@ -21,6 +21,7 @@ const STATUS_SELECT_STYLES = {
   '1 round interview': 'border-indigo-200 text-indigo-700 bg-indigo-50/50 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100',
   '2nd round interview': 'border-purple-200 text-purple-700 bg-purple-50/50 focus:border-purple-400 focus:ring-2 focus:ring-purple-100',
   '3rd round interview': 'border-pink-200 text-pink-700 bg-pink-50/50 focus:border-pink-400 focus:ring-2 focus:ring-pink-100',
+  shortlisted: 'border-teal-200 text-teal-700 bg-teal-50/50 focus:border-teal-400 focus:ring-2 focus:ring-teal-100',
   selected: 'border-accent/30 text-accent bg-[#E6F7F5]/50 focus:border-accent focus:ring-2 focus:ring-accent/10',
   rejected: 'border-red-200 text-red-700 bg-red-50/50 focus:border-red-400 focus:ring-2 focus:ring-red-100',
 };
@@ -441,6 +442,7 @@ const AdminVacanciesSection = forwardRef(function AdminVacanciesSection({ hideTi
                                   <option value="1 round interview">1st Round Interview</option>
                                   <option value="2nd round interview">2nd Round Interview</option>
                                   <option value="3rd round interview">3rd Round Interview</option>
+                                  <option value="shortlisted">Shortlisted</option>
                                   <option value="selected">Selected</option>
                                   <option value="rejected">Not Selected This Time</option>
                                 </select>
@@ -504,6 +506,7 @@ const AdminVacanciesSection = forwardRef(function AdminVacanciesSection({ hideTi
                                     <option value="1 round interview" className="text-[#1A1A1A] bg-white font-medium">1st Round Interview</option>
                                     <option value="2nd round interview" className="text-[#1A1A1A] bg-white font-medium">2nd Round Interview</option>
                                     <option value="3rd round interview" className="text-[#1A1A1A] bg-white font-medium">3rd Round Interview</option>
+                                    <option value="shortlisted" className="text-[#1A1A1A] bg-white font-medium">Shortlisted</option>
                                     <option value="selected" className="text-[#1A1A1A] bg-white font-medium">Selected</option>
                                     <option value="rejected" className="text-[#1A1A1A] bg-white font-medium">Not Selected This Time</option>
                                   </select>

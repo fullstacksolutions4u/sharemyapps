@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { MapPin, Briefcase, CheckCircle, XCircle, ArrowRight, Laptop, Crown, Banknote, ExternalLink, Building, Clock, Calendar } from 'lucide-react';
+import { MapPin, Briefcase, CheckCircle, XCircle, ArrowRight, Laptop, Crown, Banknote, ExternalLink, Building, Clock, Calendar, Users } from 'lucide-react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import api from '../../api/axios';
 import { useAuth } from '../../context/AuthContext';
@@ -364,9 +364,21 @@ export default function Vacancies() {
   const [expanded, setExpanded] = useState({});
   const [positionModal, setPositionModal] = useState({ isOpen: false, vacancy: null });
   const [selectedPosition, setSelectedPosition] = useState('');
+  const [shortlistedModal, setShortlistedModal] = useState({ isOpen: false, vacancy: null, data: [], loading: false });
+
+  const handleViewShortlisted = async (vacancy) => {
+    setShortlistedModal({ isOpen: true, vacancy, data: [], loading: true });
+    try {
+      const res = await api.get(`/vacancies/${vacancy._id}/shortlisted`);
+      setShortlistedModal({ isOpen: true, vacancy, data: res.data.shortlisted || [], loading: false });
+    } catch (err) {
+      toast.error('Failed to load shortlisted profiles');
+      setShortlistedModal({ isOpen: false, vacancy: null, data: [], loading: false });
+    }
+  };
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
-  const initialTab = queryParams.get('tab') || 'job-links';
+  const initialTab = queryParams.get('tab') || 'vacancies';
   const [activeTab, setActiveTab] = useState(initialTab);
 
   const [filterDesignation, setFilterDesignation] = useState('');
@@ -505,7 +517,7 @@ export default function Vacancies() {
   };
 
   const TABS = [
-    { key: 'job-links',  label: 'Job Post Links',      icon: ExternalLink },
+    // { key: 'job-links',  label: 'Job Post Links',      icon: ExternalLink },
     { key: 'vacancies',  label: 'Our Client Vacancies',          icon: Briefcase },
     { key: 'freelance',  label: 'Freelance Projects',  icon: Laptop },
   ];
@@ -959,10 +971,10 @@ export default function Vacancies() {
                     >
                       <div className="flex flex-col gap-4 flex-1">
                         {/* Header: Title, Company */}
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <h2 className="text-[17px] font-semibold text-gray-900">{v.title}</h2>
-                          <p className="text-[14px] text-[#4f6e87] mt-0.5">{subLabel || v.company || 'Company Name'}</p>
+                      <div className="flex justify-between items-start gap-4">
+                        <div className="min-w-0">
+                          <h2 className="text-[17px] font-semibold text-gray-900 truncate">{v.title}</h2>
+                          <p className="text-[14px] text-[#4f6e87] mt-0.5 truncate">{subLabel || v.company || 'Company Name'}</p>
                           {v.positions && v.positions.length > 0 && (
                             <div className="flex flex-wrap gap-1.5 mt-2">
                               {v.positions.map((pos, pIdx) => (
@@ -973,6 +985,16 @@ export default function Vacancies() {
                             </div>
                           )}
                         </div>
+                        {v.shortlistedCount > 0 && (
+                          <button
+                            onClick={(e) => { e.preventDefault(); handleViewShortlisted(v); }}
+                            className="flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-bold text-teal-700 bg-teal-50 hover:bg-teal-100 border border-teal-200 rounded-lg transition-colors shrink-0 shadow-sm"
+                          >
+                            <Users size={12} />
+                            <span className="hidden sm:inline">Shortlisted Profiles</span>
+                            <span className="sm:hidden">Profiles</span>
+                          </button>
+                        )}
                       </div>
 
                       {/* Info Row: Experience, Salary, Type, Location */}
@@ -1217,6 +1239,64 @@ export default function Vacancies() {
                 className="flex-1 py-2.5 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl transition-all border-b-[3px] border-emerald-800 active:border-b-0 active:translate-y-[3px] disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Apply Now
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Shortlisted Profiles Modal */}
+      {shortlistedModal.isOpen && shortlistedModal.vacancy && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200">
+          <div className="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl relative animate-in fade-in zoom-in-95 duration-200 border border-border flex flex-col max-h-[80vh]">
+            <button
+              onClick={() => setShortlistedModal({ isOpen: false, vacancy: null, data: [], loading: false })}
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"
+            >
+              <XCircle size={20} />
+            </button>
+            <div className="mb-4 shrink-0">
+              <h3 className="text-lg font-bold text-gray-900">Candidates shortlisted for interview</h3>
+            </div>
+
+            <div className="flex-1 overflow-y-auto pr-1 py-1 custom-scrollbar min-h-[100px]">
+              {shortlistedModal.loading ? (
+                <div className="flex justify-center py-8">
+                  <span className="w-6 h-6 border-2 border-teal-500 border-t-transparent rounded-full animate-spin" />
+                </div>
+              ) : shortlistedModal.data.length === 0 ? (
+                <div className="text-center py-8 text-sm text-gray-500">
+                  No profiles have been shortlisted yet.
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {shortlistedModal.data.map(u => (
+                    <div key={u._id} className="flex items-center gap-3 p-3 rounded-xl border border-gray-100 bg-gray-50/50">
+                      {u.avatar ? (
+                        <img src={u.avatar} alt={u.name} className="w-10 h-10 rounded-full object-cover shrink-0 border border-gray-200" />
+                      ) : (
+                        <div className="w-10 h-10 rounded-full bg-teal-100 text-teal-700 flex items-center justify-center font-bold text-sm shrink-0 border border-teal-200">
+                          {u.name?.[0]?.toUpperCase() || '?'}
+                        </div>
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-bold text-gray-900 truncate">
+                          {u.name}
+                          {u.regNumber && <span className="ml-1.5 text-[10px] font-bold text-accent">{u.userType === 'client' ? 'C' : 'D'}{u.regNumber}</span>}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className="mt-4 pt-4 border-t border-gray-100 shrink-0">
+              <button
+                onClick={() => setShortlistedModal({ isOpen: false, vacancy: null, data: [], loading: false })}
+                className="w-full py-2.5 text-xs font-bold text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-xl transition-colors border border-transparent"
+              >
+                Close
               </button>
             </div>
           </div>

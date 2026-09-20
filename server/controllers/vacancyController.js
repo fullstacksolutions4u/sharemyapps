@@ -127,3 +127,13 @@ exports.getSharedProfiles = async (req, res, next) => {
     res.status(500).json({ message: err.message });
   }
 };
+
+exports.getShortlistedProfiles = async (req, res, next) => {
+  try {
+    const result = await vacancyService.getShortlistedProfiles(req.params.id);
+    res.json(result);
+  } catch (err) {
+    if (err.status) return res.status(err.status).json({ message: err.message });
+    res.status(500).json({ message: err.message });
+  }
+};

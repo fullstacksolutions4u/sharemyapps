@@ -4,17 +4,27 @@ const { sendJobApplicationEmail, sendApplicationReviewingEmail } = require('../u
 class VacancyService {
   async getVacancies(userId) {
     const vacancies = await vacancyRepo.getPublicVacancies();
-    return vacancies.map(v => ({
-      ...v,
-      interestCount: v.interests.length,
-      interested: userId ? v.interests.some(id => id.toString() === userId) : false,
-      applicationStatus: userId && v.applicantStatus && v.applicantStatus[userId] ? v.applicantStatus[userId] : null,
-      appliedPosition: userId && v.applicantPositions && v.applicantPositions[userId] ? v.applicantPositions[userId] : null,
-      interests: undefined,
-      applicantStatus: undefined,
-      applicantStatusHistory: undefined,
-      applicantPositions: undefined,
-    }));
+    return vacancies.map(v => {
+      let shortlistedCount = 0;
+      if (v.applicantStatus) {
+        for (const status of Object.values(v.applicantStatus)) {
+          if (status === 'shortlisted') shortlistedCount++;
+        }
+      }
+
+      return {
+        ...v,
+        interestCount: v.interests.length,
+        interested: userId ? v.interests.some(id => id.toString() === userId) : false,
+        applicationStatus: userId && v.applicantStatus && v.applicantStatus[userId] ? v.applicantStatus[userId] : null,
+        appliedPosition: userId && v.applicantPositions && v.applicantPositions[userId] ? v.applicantPositions[userId] : null,
+        shortlistedCount,
+        interests: undefined,
+        applicantStatus: undefined,
+        applicantStatusHistory: undefined,
+        applicantPositions: undefined,
+      };
+    });
   }
 
   async showInterest(vacancyId, user, position) {
@@ -194,6 +204,29 @@ class VacancyService {
       const err = new Error('Vacancy not found'); err.status = 404; throw err;
     }
     return vacancy;
+  }
+
+  async getShortlistedProfiles(id) {
+    const vacancy = await vacancyRepo.getVacancyWithInterests(id);
+    if (!vacancy) {
+      const err = new Error('Vacancy not found'); err.status = 404; throw err;
+    }
+
+    const shortlisted = [];
+    if (vacancy.applicantStatus && vacancy.interests) {
+      for (const user of vacancy.interests) {
+        if (vacancy.applicantStatus[user._id.toString()] === 'shortlisted') {
+          shortlisted.push({
+            _id: user._id,
+            name: user.name,
+            avatar: user.avatar,
+            regNumber: user.regNumber,
+            userType: user.userType
+          });
+        }
+      }
+    }
+    return { success: true, shortlisted };
   }
 
   async getSharedProfiles(id) {
