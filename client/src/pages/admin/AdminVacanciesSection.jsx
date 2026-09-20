@@ -226,23 +226,7 @@ const AdminVacanciesSection = forwardRef(function AdminVacanciesSection({ hideTi
     }
   };
 
-  const updateStatusDirectly = async (vacancyId, userId, status) => {
-    try {
-      await api.patch(`/admin/vacancies/${vacancyId}/applicant-status`, { userId, status, note: '' });
-      setVacancies(prev => prev.map(v => {
-        if (v._id !== vacancyId) return v;
-        const history = v.applicantStatusHistory?.[userId] || [];
-        return {
-          ...v,
-          applicantStatus: { ...v.applicantStatus, [userId]: status },
-          applicantStatusHistory: { ...v.applicantStatusHistory, [userId]: [...history, { status, date: new Date().toISOString() }] }
-        };
-      }));
-      toast.success('Applicant status automatically updated');
-    } catch {
-      toast.error('Failed to automatically update status');
-    }
-  };
+
 
   const startEdit = (v) => {
     setEditId(v._id);
