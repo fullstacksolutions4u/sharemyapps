@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { MapPin, Briefcase, CheckCircle, XCircle, ArrowRight, Laptop, Crown, Banknote, ExternalLink, Building, Clock, Calendar, Users } from 'lucide-react';
+import { MapPin, Briefcase, CheckCircle, XCircle, ArrowRight, Laptop, Banknote, ExternalLink, Building, Clock, Calendar, Users } from 'lucide-react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import api from '../../api/axios';
 import { useAuth } from '../../context/AuthContext';
@@ -380,7 +380,7 @@ export default function Vacancies() {
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
   const initialTab = queryParams.get('tab') || 'vacancies';
-  const [activeTab, setActiveTab] = useState(initialTab);
+  const [activeTab] = useState(initialTab);
 
   const [filterDesignation, setFilterDesignation] = useState('');
   const [filterLocation, setFilterLocation] = useState('');
