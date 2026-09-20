@@ -406,7 +406,7 @@ export default function PaidServices() {
                 <span style={{ fontSize: '10px', color: '#665200', marginTop: '2px', fontWeight: 600 }}>Male or Female Candidates</span>
               </div>
               <span style={{ fontFamily: "'Spectral', serif", fontSize: '20px', fontWeight: 700, color: '#b38f00' }}>
-                ₹11,000
+                ₹1,10,000
               </span>
             </div>
             <div style={{ height: '2px', background: '#e6b800', margin: '14px 0 18px' }} />
