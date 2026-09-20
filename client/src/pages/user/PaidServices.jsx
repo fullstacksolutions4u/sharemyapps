@@ -403,7 +403,6 @@ export default function PaidServices() {
             <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: '4px' }}>
               <div style={{ display: 'flex', flexDirection: 'column' }}>
                 <span style={{ fontFamily: "'Spectral', serif", fontSize: '16.5px', fontWeight: 600, color: '#332900' }}>Dubai Job Hunting Package</span>
-                <span style={{ fontSize: '9px', color: '#665200', marginTop: '2px', fontWeight: 600 }}>Male or Female Candidates</span>
               </div>
               <span style={{ fontFamily: "'Spectral', serif", fontSize: '14.5px', fontWeight: 700, color: '#b38f00' }}>
                 ₹1,10,000
