@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FileText, MapPin, Check, X, ChevronRight, Home, Info, Video, Clock } from 'lucide-react';
 import api from '../../api/axios';
 import AppSpinner from '../../components/ui/AppSpinner';
@@ -80,12 +80,14 @@ function ApplicationStepper({ status, history = [], appliedAt, sessions = [] }) 
     ];
     currentIndex = stages.length - 1;
   } else {
-    stages = baseStages;
     if (s === 'reviewing') currentIndex = 1;
     else if (s === 'contacted') currentIndex = 2;
     else if (s.includes('interview') || (sessions && sessions.length > 0)) {
       currentIndex = 3 + Math.max(0, (sessions?.length || 1) - 1);
+    } else {
+      currentIndex = 0;
     }
+    stages = baseStages.slice(0, currentIndex + 1);
   }
 
   return (
