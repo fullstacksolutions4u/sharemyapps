@@ -14,7 +14,7 @@ export default function Footer() {
         
         <span className="hidden sm:inline">·</span>
         
-        <a href="mailto:hello@sharemyapps.in" className="hover:text-accent transition-colors duration-150">hello@sharemyapps.in</a>
+        <a href="mailto:hello@sharemyapps.in" className="hover:opacity-80 transition-opacity duration-150">hello@sharemyapps.in</a>
         <span>·</span>
         <Link to="/privacy" className="hover:opacity-75 transition-opacity duration-150">Privacy Policy</Link>
         <span>·</span>
