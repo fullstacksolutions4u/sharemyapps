@@ -1,8 +1,86 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Search, ToggleLeft, ToggleRight, Save, IndianRupee, Crown, UserPlus, X } from 'lucide-react';
+import { Search, ToggleLeft, ToggleRight, Save, IndianRupee, Crown, UserPlus, X, Briefcase } from 'lucide-react';
 import api from '../../api/axios';
 import toast from 'react-hot-toast';
 import { optimizeImage } from '../../utils/image';
+
+/* ── Opportunities Unlock Pricing card ─────────────────────── */
+function OpportunitiesPricingCard({ config, onSaved }) {
+  const [freelanceFee, setFreelanceFee]   = useState(config?.freelanceUnlockPricePaise ? config.freelanceUnlockPricePaise / 100 : 499);
+  const [mentorshipFee, setMentorshipFee] = useState(config?.mentorshipUnlockPricePaise ? config.mentorshipUnlockPricePaise / 100 : 499);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    if (config) {
+      if (config.freelanceUnlockPricePaise !== undefined) setFreelanceFee(config.freelanceUnlockPricePaise / 100);
+      if (config.mentorshipUnlockPricePaise !== undefined) setMentorshipFee(config.mentorshipUnlockPricePaise / 100);
+    }
+  }, [config]);
+
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      const res = await api.put('/admin/config', {
+        freelanceUnlockPricePaise: Number(freelanceFee) * 100,
+        mentorshipUnlockPricePaise: Number(mentorshipFee) * 100,
+      });
+      toast.success('Opportunity unlock prices saved.');
+      onSaved(res.data);
+    } catch {
+      toast.error('Failed to save prices.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="bg-white border border-border rounded-2xl px-5 py-4 flex flex-col gap-4">
+      <div className="flex items-center gap-3">
+        <div className="w-10 h-10 rounded-xl bg-teal-50 border border-teal-200 flex items-center justify-center shrink-0">
+          <Briefcase size={18} className="text-teal-600" />
+        </div>
+        <div>
+          <p className="text-sm font-semibold text-text">Freelance & Mentorship Rates</p>
+          <p className="text-xs text-muted">Set unlock fee rate for new developers</p>
+        </div>
+      </div>
+
+      <div className="border-t border-border pt-3 space-y-3">
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className="block text-xs font-semibold text-muted mb-1.5">Freelance Rate (₹)</label>
+            <input
+              type="number" min={0}
+              value={freelanceFee}
+              onChange={e => setFreelanceFee(e.target.value)}
+              className="w-full border border-border rounded-xl px-3 py-2 text-sm font-semibold text-text focus:outline-none focus:border-accent"
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-semibold text-muted mb-1.5">Mentorship Rate (₹)</label>
+            <input
+              type="number" min={0}
+              value={mentorshipFee}
+              onChange={e => setMentorshipFee(e.target.value)}
+              className="w-full border border-border rounded-xl px-3 py-2 text-sm font-semibold text-text focus:outline-none focus:border-accent"
+            />
+          </div>
+        </div>
+
+        <div className="flex justify-end pt-1">
+          <button
+            onClick={handleSave}
+            disabled={saving}
+            className="flex items-center gap-2 bg-accent hover:bg-accent-hover disabled:opacity-40 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition-colors cursor-pointer"
+          >
+            {saving ? <span className="w-3 h-3 border-2 border-white/40 border-t-white rounded-full animate-spin" /> : <Save size={14} />}
+            {saving ? 'Saving…' : 'Save Unlock Rates'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 /* ── JD Analysis card ───────────────────────────────────────── */
 function JdAnalysisCard({ config, onSaved }) {
@@ -565,11 +643,15 @@ export default function AdminPlansSection() {
 
   return (
     <div className="max-w-5xl">
-      {/* Top row — two cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
+      {/* Top row — three cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
         {loadingConfig
           ? <div className="bg-white border border-border rounded-2xl px-5 py-4 h-40 animate-pulse" />
           : <JdAnalysisCard key={config?._id ?? 'jd'} config={config} onSaved={setConfig} />}
+
+        {loadingConfig
+          ? <div className="bg-white border border-border rounded-2xl px-5 py-4 h-40 animate-pulse" />
+          : <OpportunitiesPricingCard key={(config?._id ?? 'opp') + '_opp'} config={config} onSaved={setConfig} />}
 
         {/* Plans Pricing */}
         <PlansPricingCard 

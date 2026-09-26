@@ -3,7 +3,8 @@ class ConfigDto {
     const allowed = [
       'jdFreeLimit', 'jdPaidPackSize', 'jdPackPricePaise',
       'jdFeatureEnabled', 'freeOfferEnabled', 'freeOfferDueDate',
-      'premiumServicePricePaise', 'rank1OfferPricePaise'
+      'premiumServicePricePaise', 'rank1OfferPricePaise',
+      'freelanceUnlockPricePaise', 'mentorshipUnlockPricePaise'
     ];
     const update = {};
     for (const key of allowed) {

@@ -77,3 +77,26 @@ exports.getPlacementPurchases = async (req, res, next) => {
     res.status(500).json({ message: err.message });
   }
 };
+
+exports.createOpportunityUnlockOrder = async (req, res, next) => {
+  try {
+    const { type } = req.body;
+    const result = await paymentService.createOpportunityUnlockOrder(req.user._id, type);
+    res.json(result);
+  } catch (err) {
+    console.error('Opportunity unlock order error:', err);
+    if (err.status) return res.status(err.status).json({ message: err.message });
+    res.status(500).json({ message: 'Failed to create payment order.' });
+  }
+};
+
+exports.verifyOpportunityUnlockPayment = async (req, res, next) => {
+  try {
+    const result = await paymentService.verifyOpportunityUnlockPayment(req.user._id, req.body);
+    res.json(result);
+  } catch (err) {
+    console.error('Opportunity unlock verify error:', err);
+    if (err.status) return res.status(err.status).json({ message: err.message });
+    res.status(500).json({ message: 'Payment verification error.' });
+  }
+};

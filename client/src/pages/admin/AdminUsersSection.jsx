@@ -418,7 +418,7 @@ function UserEditPage({ user: initial, onBack, onSaved, allDesignations = [] }) 
                 <div className="space-y-4 pt-2 border-t border-[#E5E1DA]">
                   <div className="space-y-2">
                     <label className="flex items-center justify-between p-3 bg-[#F9F8F6] rounded-xl cursor-pointer">
-                      <p className="text-sm font-medium text-[#1A1A1A]">Available for freelance?</p>
+                      <p className="text-sm font-medium text-[#1A1A1A]">Available for freelance opportunities?</p>
                       <div onClick={() => setForm(f => ({ ...f, freelanceAvailable: !f.freelanceAvailable }))}
                         className={`w-10 h-6 rounded-full transition-colors relative ${form.freelanceAvailable ? 'bg-[#00A693]' : 'bg-[#E5E1DA]'}`}>
                         <span className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-transform ${form.freelanceAvailable ? 'translate-x-5' : 'translate-x-1'}`} />
@@ -434,7 +434,7 @@ function UserEditPage({ user: initial, onBack, onSaved, allDesignations = [] }) 
 
                   <div className="space-y-2">
                     <label className="flex items-center justify-between p-3 bg-[#F9F8F6] rounded-xl cursor-pointer">
-                      <p className="text-sm font-medium text-[#1A1A1A]">Available for mentorship?</p>
+                      <p className="text-sm font-medium text-[#1A1A1A]">Available for mentorship opportunities?</p>
                       <div onClick={() => setForm(f => ({ ...f, mentorshipAvailable: !f.mentorshipAvailable }))}
                         className={`w-10 h-6 rounded-full transition-colors relative ${form.mentorshipAvailable ? 'bg-[#00A693]' : 'bg-[#E5E1DA]'}`}>
                         <span className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-transform ${form.mentorshipAvailable ? 'translate-x-5' : 'translate-x-1'}`} />

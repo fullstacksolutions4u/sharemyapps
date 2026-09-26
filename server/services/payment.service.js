@@ -168,6 +168,65 @@ class PaymentService {
   async getPlacementPurchases(userId) {
     return await paymentRepo.getPlacementPurchases(userId);
   }
+
+  async createOpportunityUnlockOrder(userId, type) {
+    if (!['freelance', 'mentorship'].includes(type)) {
+      const err = new Error('Invalid opportunity type.'); err.status = 400; throw err;
+    }
+    const cfg = await getConfig();
+    const amountPaise = type === 'freelance'
+      ? (cfg.freelanceUnlockPricePaise || 49900)
+      : (cfg.mentorshipUnlockPricePaise || 49900);
+
+    const order = await this.razorpay.orders.create({
+      amount: amountPaise,
+      currency: 'INR',
+      receipt: `opp_${type.slice(0, 4)}_${userId.toString().slice(-6)}_${Date.now().toString().slice(-6)}`,
+      notes: { userId: userId.toString(), type },
+    });
+    return { orderId: order.id, amount: order.amount, currency: order.currency, type };
+  }
+
+  async verifyOpportunityUnlockPayment(userId, data) {
+    const { razorpay_order_id, razorpay_payment_id, razorpay_signature, type } = data;
+    this.verifySignature(razorpay_order_id, razorpay_payment_id, razorpay_signature);
+
+    const cfg = await getConfig();
+    const amountPaise = type === 'freelance'
+      ? (cfg.freelanceUnlockPricePaise || 49900)
+      : (cfg.mentorshipUnlockPricePaise || 49900);
+
+    const user = await paymentRepo.getUserDocumentById(userId);
+    if (!user) {
+      const err = new Error('User not found.'); err.status = 404; throw err;
+    }
+
+    if (type === 'freelance') {
+      user.freelanceUnlocked = true;
+    } else if (type === 'mentorship') {
+      user.mentorshipUnlocked = true;
+    }
+    await user.save();
+
+    await paymentRepo.createPayment({
+      user: userId,
+      razorpayOrderId: razorpay_order_id,
+      razorpayPaymentId: razorpay_payment_id,
+      amountPaise,
+      pack: `unlock_${type}`,
+      analysesGranted: 0,
+      status: 'success',
+    });
+
+    await paymentRepo.createNotification({
+      user: userId,
+      type: 'payment_success',
+      title: `${type === 'freelance' ? 'Freelance' : 'Mentorship'} Listing Unlocked 🎉`,
+      message: `Your payment was successful. You can now toggle your ${type} availability in your profile.`,
+    });
+
+    return { ok: true, type, user: user.toAuthJSON() };
+  }
 }
 
 module.exports = new PaymentService();

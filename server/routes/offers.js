@@ -11,6 +11,8 @@ router.get('/config', async (_req, res) => {
       freeOfferDueDate:         doc?.freeOfferDueDate ?? null,
       premiumServicePricePaise: doc?.premiumServicePricePaise ?? 99900,
       rank1OfferPricePaise:     doc?.rank1OfferPricePaise ?? 49900,
+      freelanceUnlockPricePaise:  doc?.freelanceUnlockPricePaise ?? 49900,
+      mentorshipUnlockPricePaise: doc?.mentorshipUnlockPricePaise ?? 49900,
     });
   } catch { res.status(500).json({ message: 'Server error' }); }
 });

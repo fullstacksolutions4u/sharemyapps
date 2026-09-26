@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { COUNTRIES, STATES_BY_COUNTRY, DISTRICTS_BY_STATE } from '../../data/locationData';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -284,6 +284,102 @@ export default function Profile() {
       })
       .catch(() => {});
   }, []);
+
+  const [unlockLoading, setUnlockLoading] = useState(null);
+  const [siteConfig, setSiteConfig] = useState(null);
+  const [paymentModalType, setPaymentModalType] = useState(null);
+
+  useEffect(() => {
+    api.get('/offers/config').then(r => setSiteConfig(r.data)).catch(() => {});
+  }, []);
+
+  const freelancePrice = siteConfig?.freelanceUnlockPricePaise ? Math.round(siteConfig.freelanceUnlockPricePaise / 100) : 499;
+  const mentorshipPrice = siteConfig?.mentorshipUnlockPricePaise ? Math.round(siteConfig.mentorshipUnlockPricePaise / 100) : 499;
+
+  const handleToggleFreelance = () => {
+    if (form.freelanceAvailable) {
+      setForm(f => ({ ...f, freelanceAvailable: false }));
+    } else {
+      if (user?.freelanceUnlocked) {
+        setForm(f => ({ ...f, freelanceAvailable: true }));
+      } else {
+        setPaymentModalType('freelance');
+      }
+    }
+  };
+
+  const handleToggleMentorship = () => {
+    if (form.mentorshipAvailable) {
+      setForm(f => ({ ...f, mentorshipAvailable: false }));
+    } else {
+      if (user?.mentorshipUnlocked) {
+        setForm(f => ({ ...f, mentorshipAvailable: true }));
+      } else {
+        setPaymentModalType('mentorship');
+      }
+    }
+  };
+
+  const loadRazorpayScript = () => new Promise((resolve) => {
+    if (window.Razorpay) return resolve(true);
+    const script = document.createElement('script');
+    script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+    script.onload = () => resolve(true);
+    script.onerror = () => resolve(false);
+    document.body.appendChild(script);
+  });
+
+  const handleUnlockOpportunity = async (type) => {
+    const loaded = await loadRazorpayScript();
+    if (!loaded) {
+      toast.error('Razorpay SDK failed to load. Are you online?');
+      return;
+    }
+    setUnlockLoading(type);
+    try {
+      const { data: order } = await api.post('/payments/opportunity-unlock/create-order', { type });
+      const options = {
+        key: import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_live_SycsEGlG62kjPc',
+        amount: order.amount,
+        currency: order.currency,
+        name: 'ShareMyApps',
+        description: `Unlock ${type === 'freelance' ? 'Freelance' : 'Mentorship'} Listing Access`,
+        order_id: order.orderId,
+        handler: async (response) => {
+          try {
+            const { data: res } = await api.post('/payments/opportunity-unlock/verify', {
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature,
+              type,
+            });
+            toast.success(`${type === 'freelance' ? 'Freelance' : 'Mentorship'} availability unlocked!`);
+            if (res.user) {
+              setUser(res.user);
+            }
+            if (type === 'freelance') setForm(f => ({ ...f, freelanceAvailable: true }));
+            if (type === 'mentorship') setForm(f => ({ ...f, mentorshipAvailable: true }));
+          } catch (err) {
+            toast.error(err.response?.data?.message || 'Payment verification failed.');
+          } finally {
+            setUnlockLoading(null);
+          }
+        },
+        prefill: {
+          name: user?.name || '',
+          email: user?.email || '',
+          contact: user?.phone || '',
+        },
+        theme: { color: '#00A693' },
+      };
+      const rzp = new window.Razorpay(options);
+      rzp.open();
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to initiate unlock payment.');
+    } finally {
+      setUnlockLoading(null);
+    }
+  };
 
   useEffect(() => {
     api.get('/auth/me').then(r => setUser(r.data.user)).catch(() => {});
@@ -965,7 +1061,9 @@ export default function Profile() {
                   </div>
                   <div className="flex items-center gap-4 p-3 bg-[#F9F8F6] rounded-xl">
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-text">Available for freelance?</p>
+                      <p className="text-sm font-medium text-text">
+                        Available for freelance opportunities?
+                      </p>
                       {form.freelanceAvailable && <p className="text-xs text-muted mt-0.5">Hourly rate (in ₹)</p>}
                     </div>
                     {form.freelanceAvailable && (
@@ -980,11 +1078,14 @@ export default function Profile() {
                         />
                       </div>
                     )}
-                    <div
-                      onClick={() => setForm(f => ({ ...f, freelanceAvailable: !f.freelanceAvailable }))}
-                      className={`w-10 h-6 rounded-full transition-colors relative shrink-0 cursor-pointer ${form.freelanceAvailable ? 'bg-accent' : 'bg-border'}`}
-                    >
-                      <span className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-transform ${form.freelanceAvailable ? 'translate-x-5' : 'translate-x-1'}`} />
+                    <div className="flex items-center gap-2 shrink-0">
+                      <Crown size={15} className="text-amber-500 fill-amber-400 shrink-0" title="Premium Feature" />
+                      <div
+                        onClick={handleToggleFreelance}
+                        className={`w-10 h-6 rounded-full transition-colors relative shrink-0 cursor-pointer ${form.freelanceAvailable ? 'bg-accent' : 'bg-border'}`}
+                      >
+                        <span className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-transform ${form.freelanceAvailable ? 'translate-x-5' : 'translate-x-1'}`} />
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -999,7 +1100,9 @@ export default function Profile() {
                   </div>
                   <div className="flex items-center gap-4 p-3 bg-[#F9F8F6] rounded-xl">
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-text">Available for mentorship?</p>
+                      <p className="text-sm font-medium text-text">
+                        Available for mentorship opportunities?
+                      </p>
                       {form.mentorshipAvailable && <p className="text-xs text-muted mt-0.5">Session rate (in ₹)</p>}
                     </div>
                     {form.mentorshipAvailable && (
@@ -1014,11 +1117,14 @@ export default function Profile() {
                         />
                       </div>
                     )}
-                    <div
-                      onClick={() => setForm(f => ({ ...f, mentorshipAvailable: !f.mentorshipAvailable }))}
-                      className={`w-10 h-6 rounded-full transition-colors relative shrink-0 cursor-pointer ${form.mentorshipAvailable ? 'bg-accent' : 'bg-border'}`}
-                    >
-                      <span className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-transform ${form.mentorshipAvailable ? 'translate-x-5' : 'translate-x-1'}`} />
+                    <div className="flex items-center gap-2 shrink-0">
+                      <Crown size={15} className="text-amber-500 fill-amber-400 shrink-0" title="Premium Feature" />
+                      <div
+                        onClick={handleToggleMentorship}
+                        className={`w-10 h-6 rounded-full transition-colors relative shrink-0 cursor-pointer ${form.mentorshipAvailable ? 'bg-accent' : 'bg-border'}`}
+                      >
+                        <span className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-transform ${form.mentorshipAvailable ? 'translate-x-5' : 'translate-x-1'}`} />
+                      </div>
                     </div>
                   </div>
                   {form.mentorshipAvailable && (
@@ -1360,6 +1466,67 @@ export default function Profile() {
           onClose={() => setShowDelete(false)}
           deleting={deleting}
         />
+      )}
+
+      {paymentModalType && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs animate-in fade-in duration-200" onClick={() => setPaymentModalType(null)}>
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6 border border-border" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between pb-4 border-b border-border">
+              <div className="flex items-center gap-2.5">
+                <div className="w-10 h-10 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-center shrink-0">
+                  <Crown size={20} className="text-amber-500 fill-amber-400" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-text">
+                    Unlock {paymentModalType === 'freelance' ? 'Freelance' : 'Mentorship'} Listing
+                  </h3>
+                </div>
+              </div>
+              <button onClick={() => setPaymentModalType(null)} className="text-muted hover:text-text transition-colors">
+                <XIcon size={18} />
+              </button>
+            </div>
+
+            <div className="py-5 space-y-4">
+              <div className="p-4 bg-[#F9F8F6] rounded-xl border border-border space-y-2">
+                <p className="text-xs text-muted leading-relaxed">
+                  {paymentModalType === 'freelance'
+                    ? 'Listing yourself as an Freelance Developer to Unlock freelance opportunities and discovered by clients.'
+                    : 'Listing yourself as a Mentor to Unlock mentorship opportunities.'}
+                </p>
+                <div className="flex items-center justify-between pt-2 border-t border-border">
+                  <span className="text-xs font-semibold text-text">Unlock Fee</span>
+                  <span className="text-base font-extrabold text-accent">
+                    ₹{paymentModalType === 'freelance' ? freelancePrice : mentorshipPrice}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => setPaymentModalType(null)}
+                className="flex-1 py-2.5 px-4 text-xs font-semibold text-muted hover:text-text border border-border rounded-xl transition-colors cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  const type = paymentModalType;
+                  setPaymentModalType(null);
+                  handleUnlockOpportunity(type);
+                }}
+                disabled={unlockLoading !== null}
+                className="flex-1 flex items-center justify-center gap-2 py-2.5 px-4 text-xs font-bold text-white bg-accent hover:bg-accent-hover rounded-xl shadow-xs transition-colors cursor-pointer"
+              >
+                <IndianRupee size={13} />
+                Proceed to Pay (₹{paymentModalType === 'freelance' ? freelancePrice : mentorshipPrice})
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

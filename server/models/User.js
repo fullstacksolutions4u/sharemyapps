@@ -28,8 +28,10 @@ const userSchema = new mongoose.Schema({
   designations: [{ type: String, trim: true }],
   freelanceAvailable: { type: Boolean, default: false },
   freelanceRate: { type: Number, default: null },
+  freelanceUnlocked: { type: Boolean, default: false },
   mentorshipAvailable: { type: Boolean, default: false },
   mentorshipRate: { type: Number, default: null },
+  mentorshipUnlocked: { type: Boolean, default: false },
   mentorshipTech: [{ type: String, trim: true }],
   familiarTech: [{ type: String, trim: true }],
   mentorshipSchedule: { type: mongoose.Schema.Types.Mixed, default: null },
@@ -109,6 +111,9 @@ userSchema.methods.comparePassword = function (candidate) {
 };
 
 userSchema.methods.toPublicJSON = function () {
+  const freelanceUnlocked = !!this.freelanceUnlocked;
+  const mentorshipUnlocked = !!this.mentorshipUnlocked;
+
   return {
     _id: this._id,
     name: this.name,
@@ -134,8 +139,10 @@ userSchema.methods.toPublicJSON = function () {
     designations: this.designations || [],
     freelanceAvailable: this.freelanceAvailable || false,
     freelanceRate: this.freelanceRate ?? null,
+    freelanceUnlocked,
     mentorshipAvailable: this.mentorshipAvailable || false,
     mentorshipRate: this.mentorshipRate ?? null,
+    mentorshipUnlocked,
     mentorshipTech: this.mentorshipTech || [],
     familiarTech: this.familiarTech || [],
     mentorshipSchedule: this.mentorshipSchedule || null,

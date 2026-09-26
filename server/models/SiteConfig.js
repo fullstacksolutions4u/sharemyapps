@@ -15,6 +15,10 @@ const siteConfigSchema = new mongoose.Schema({
   freeOfferDueDate:         { type: Date, default: null },
   premiumServicePricePaise: { type: Number, default: 99900 }, // ₹999 in paise
   rank1OfferPricePaise:     { type: Number, default: 49900 }, // ₹499 in paise
+
+  // Opportunities unlock pricing
+  freelanceUnlockPricePaise:  { type: Number, default: 49900 }, // ₹499 in paise
+  mentorshipUnlockPricePaise: { type: Number, default: 49900 }, // ₹499 in paise
 }, { timestamps: true });
 
 module.exports = mongoose.model('SiteConfig', siteConfigSchema);

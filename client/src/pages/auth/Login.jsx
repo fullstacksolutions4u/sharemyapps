@@ -110,7 +110,7 @@ export default function Login() {
         </div>
 
         {/* Right: tabs + form */}
-        <div className="w-full max-w-sm">
+        <div className="w-full sm:w-[410px] md:w-[440px] lg:w-[450px] max-w-full">
           {/* Mobile logo */}
           <div className="flex justify-center mb-4 lg:hidden">
             <Link to="/"><img src={logo} alt="ShareMyApps" className="h-10 w-auto" /></Link>

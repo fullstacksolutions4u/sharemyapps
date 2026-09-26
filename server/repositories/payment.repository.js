@@ -76,6 +76,10 @@ class PaymentRepository {
   async getUserById(userId) {
     return await User.findById(userId).select('name email').lean();
   }
+
+  async getUserDocumentById(userId) {
+    return await User.findById(userId);
+  }
 }
 
 module.exports = new PaymentRepository();

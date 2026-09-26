@@ -13,6 +13,8 @@ const DEFAULTS = {
   freeOfferEnabled: true,
   premiumServicePricePaise: 99900,
   rank1OfferPricePaise: 49900,
+  freelanceUnlockPricePaise: 49900,
+  mentorshipUnlockPricePaise: 49900,
 };
 
 async function getConfig() {
