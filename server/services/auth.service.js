@@ -99,9 +99,15 @@ class AuthService {
     if (industry !== undefined) user.industry = sanitizeText(industry);
     if (hrName !== undefined) user.hrName = sanitizeText(hrName);
     if (requirements !== undefined) user.requirements = sanitizeRichText(requirements);
-    if (freelanceAvailable !== undefined) user.freelanceAvailable = Boolean(freelanceAvailable);
+    if (freelanceAvailable !== undefined) {
+      user.freelanceAvailable = Boolean(freelanceAvailable);
+      if (user.freelanceAvailable) user.freelanceUnlocked = true;
+    }
     if (freelanceRate !== undefined) user.freelanceRate = freelanceRate === '' || freelanceRate === null ? null : Number(freelanceRate);
-    if (mentorshipAvailable !== undefined) user.mentorshipAvailable = Boolean(mentorshipAvailable);
+    if (mentorshipAvailable !== undefined) {
+      user.mentorshipAvailable = Boolean(mentorshipAvailable);
+      if (user.mentorshipAvailable) user.mentorshipUnlocked = true;
+    }
     if (mentorshipRate !== undefined) user.mentorshipRate = mentorshipRate === '' || mentorshipRate === null ? null : Number(mentorshipRate);
     if (mentorshipTech !== undefined) user.mentorshipTech = sanitizeTextArray(Array.isArray(mentorshipTech) ? mentorshipTech : [mentorshipTech]);
     if (familiarTech !== undefined) user.familiarTech = sanitizeTextArray(Array.isArray(familiarTech) ? familiarTech : [familiarTech]);

@@ -300,7 +300,7 @@ export default function Profile() {
     if (form.freelanceAvailable) {
       setForm(f => ({ ...f, freelanceAvailable: false }));
     } else {
-      if (user?.freelanceUnlocked) {
+      if (user?.freelanceUnlocked || user?.freelanceAvailable || (user?.freelanceRate && user?.freelanceRate > 0)) {
         setForm(f => ({ ...f, freelanceAvailable: true }));
       } else {
         setPaymentModalType('freelance');
@@ -312,7 +312,7 @@ export default function Profile() {
     if (form.mentorshipAvailable) {
       setForm(f => ({ ...f, mentorshipAvailable: false }));
     } else {
-      if (user?.mentorshipUnlocked) {
+      if (user?.mentorshipUnlocked || user?.mentorshipAvailable || (user?.mentorshipRate && user?.mentorshipRate > 0)) {
         setForm(f => ({ ...f, mentorshipAvailable: true }));
       } else {
         setPaymentModalType('mentorship');

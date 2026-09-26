@@ -111,8 +111,11 @@ userSchema.methods.comparePassword = function (candidate) {
 };
 
 userSchema.methods.toPublicJSON = function () {
-  const freelanceUnlocked = !!this.freelanceUnlocked;
-  const mentorshipUnlocked = !!this.mentorshipUnlocked;
+  const CUTOFF_DATE = new Date('2026-09-26T15:00:00Z');
+  const isExistingRegisteredUser = this.createdAt && new Date(this.createdAt) < CUTOFF_DATE;
+
+  const freelanceUnlocked = !!(this.freelanceUnlocked || this.freelanceAvailable || (this.freelanceRate !== null && this.freelanceRate !== undefined && this.freelanceRate > 0) || isExistingRegisteredUser);
+  const mentorshipUnlocked = !!(this.mentorshipUnlocked || this.mentorshipAvailable || (this.mentorshipRate !== null && this.mentorshipRate !== undefined && this.mentorshipRate > 0) || isExistingRegisteredUser);
 
   return {
     _id: this._id,
