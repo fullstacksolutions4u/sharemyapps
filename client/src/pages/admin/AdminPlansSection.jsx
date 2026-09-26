@@ -6,16 +6,9 @@ import { optimizeImage } from '../../utils/image';
 
 /* ── Opportunities Unlock Pricing card ─────────────────────── */
 function OpportunitiesPricingCard({ config, onSaved }) {
-  const [freelanceFee, setFreelanceFee]   = useState(config?.freelanceUnlockPricePaise ? config.freelanceUnlockPricePaise / 100 : 499);
-  const [mentorshipFee, setMentorshipFee] = useState(config?.mentorshipUnlockPricePaise ? config.mentorshipUnlockPricePaise / 100 : 499);
+  const [freelanceFee, setFreelanceFee]   = useState(config?.freelanceUnlockPricePaise !== undefined ? config.freelanceUnlockPricePaise / 100 : 499);
+  const [mentorshipFee, setMentorshipFee] = useState(config?.mentorshipUnlockPricePaise !== undefined ? config.mentorshipUnlockPricePaise / 100 : 499);
   const [saving, setSaving] = useState(false);
-
-  useEffect(() => {
-    if (config) {
-      if (config.freelanceUnlockPricePaise !== undefined) setFreelanceFee(config.freelanceUnlockPricePaise / 100);
-      if (config.mentorshipUnlockPricePaise !== undefined) setMentorshipFee(config.mentorshipUnlockPricePaise / 100);
-    }
-  }, [config]);
 
   const handleSave = async () => {
     setSaving(true);
