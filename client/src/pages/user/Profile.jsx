@@ -1473,8 +1473,8 @@ export default function Profile() {
           <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6 border border-border" onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between pb-4 border-b border-border">
               <div className="flex items-center gap-2.5">
-                <div className="w-10 h-10 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-center shrink-0">
-                  <Crown size={20} className="text-amber-500 fill-amber-400" />
+                <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center shrink-0">
+                  <Crown size={20} className="text-amber-600 fill-amber-500" />
                 </div>
                 <div>
                   <h3 className="text-base font-bold text-text">
@@ -1482,23 +1482,26 @@ export default function Profile() {
                   </h3>
                 </div>
               </div>
-              <button onClick={() => setPaymentModalType(null)} className="text-muted hover:text-text transition-colors">
+              <button onClick={() => setPaymentModalType(null)} className="text-slate-400 hover:text-slate-600 transition-colors p-1 rounded-lg hover:bg-slate-100">
                 <XIcon size={18} />
               </button>
             </div>
 
             <div className="py-5 space-y-4">
-              <div className="p-4 bg-[#F9F8F6] rounded-xl border border-border space-y-2">
-                <p className="text-xs text-muted leading-relaxed">
+              <div className="p-4 bg-gradient-to-br from-teal-50/50 via-emerald-50/30 to-slate-50 rounded-2xl border border-teal-100/80 shadow-2xs space-y-3">
+                <p className="text-xs text-slate-600 leading-relaxed font-normal">
                   {paymentModalType === 'freelance'
-                    ? 'Listing yourself as an Freelance Developer to Unlock freelance opportunities and discovered by clients.'
-                    : 'Listing yourself as a Mentor to Unlock mentorship opportunities.'}
+                    ? 'Add freelance services to your profile to get discovered by clients and unlock freelance project opportunities.'
+                    : 'List your mentorship services on your profile to connect with students and guide them through their career journey.'}
                 </p>
-                <div className="flex items-center justify-between pt-2 border-t border-border">
-                  <span className="text-xs font-semibold text-text">Unlock Fee</span>
-                  <span className="text-base font-extrabold text-accent">
-                    ₹{paymentModalType === 'freelance' ? freelancePrice : mentorshipPrice}
-                  </span>
+                <div className="flex items-center justify-between pt-3 border-t border-teal-100/80">
+                  <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Unlock Fee</span>
+                  <div className="flex items-baseline text-accent">
+                    <span className="text-lg font-black tracking-tight">
+                      ₹{paymentModalType === 'freelance' ? freelancePrice : mentorshipPrice}
+                    </span>
+                    <span className="text-[10px] text-slate-400 ml-1 font-medium">one-time</span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -1507,7 +1510,7 @@ export default function Profile() {
               <button
                 type="button"
                 onClick={() => setPaymentModalType(null)}
-                className="flex-1 py-2.5 px-4 text-xs font-semibold text-muted hover:text-text border border-border rounded-xl transition-colors cursor-pointer"
+                className="flex-1 py-2.5 px-4 text-xs font-semibold text-slate-600 hover:text-slate-900 bg-slate-100/80 hover:bg-slate-100 border border-slate-200/70 rounded-xl transition-all cursor-pointer"
               >
                 Cancel
               </button>
@@ -1519,7 +1522,7 @@ export default function Profile() {
                   handleUnlockOpportunity(type);
                 }}
                 disabled={unlockLoading !== null}
-                className="flex-1 flex items-center justify-center gap-2 py-2.5 px-4 text-xs font-bold text-white bg-accent hover:bg-accent-hover rounded-xl shadow-xs transition-colors cursor-pointer"
+                className="flex-1 flex items-center justify-center gap-1.5 py-2.5 px-4 text-xs font-bold text-white bg-accent hover:bg-accent-hover active:scale-[0.99] rounded-xl shadow-xs transition-all cursor-pointer"
               >
                 <IndianRupee size={13} />
                 Proceed to Pay (₹{paymentModalType === 'freelance' ? freelancePrice : mentorshipPrice})
