@@ -525,7 +525,7 @@ exports.sendJobApplicationEmail = async ({ to, name, vacancy, selectedPosition }
             You've successfully applied for the <strong>${positionText}</strong> position. Shortlisted profiles will be listed on the platform shortly, so keep checking back here!
           </p>
           <p style="color:#6B7280;font-size:13px;margin:0 0 20px;line-height:1.7;">
-            Job post links and our client vacancies are actively listed in the Opportunities section. Explore these opportunities and make sure your profile is always up to date with your latest resume and projects to increase your chances of getting noticed.
+            Explore all opportunities and make sure your profile is always up to date with your latest resume and projects to increase your chances of getting noticed.
           </p>
           <table style="width:100%;border-collapse:collapse;margin-top:8px;">
             <tr>
