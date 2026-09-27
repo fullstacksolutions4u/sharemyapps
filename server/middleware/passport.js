@@ -1,10 +1,10 @@
 const passport = require('passport');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const User = require('../models/User');
+const userRepo = require('../repositories/user.repository');
 
 const getNextRegNumber = async () => {
-  const last = await User.findOne({ regNumber: { $exists: true } }).sort({ regNumber: -1 }).select('regNumber');
-  return last?.regNumber ? last.regNumber + 1 : 101;
+  return await userRepo.findLastRegNumber();
 };
 
 if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {

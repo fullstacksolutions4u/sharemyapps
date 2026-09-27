@@ -14,10 +14,12 @@ class UserRepository {
   }
 
   async findLastRegNumber() {
+    const count = await User.countDocuments();
     const last = await User.findOne({ regNumber: { $exists: true } })
       .sort({ regNumber: -1 })
       .select('regNumber');
-    return last?.regNumber ? last.regNumber + 1 : 101;
+    const maxReg = last?.regNumber || 0;
+    return Math.max(count + 1, maxReg + 1);
   }
 
   async create(data) {
