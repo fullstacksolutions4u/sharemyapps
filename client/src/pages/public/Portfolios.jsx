@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Search, GitBranch, Link2, Code2,
-  Globe, Layers, ChevronLeft, ChevronRight, Users, Monitor, Smartphone, Crown
+  Globe, Layers, ChevronLeft, ChevronRight, Users, Monitor, Smartphone, Crown, GraduationCap
 } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import api from '../../api/axios';
@@ -62,14 +62,17 @@ function DeveloperCard({ dev, idx }) {
 
       {/* Gradient banner */}
       {(() => {
-        const bannerItems = [
-          ...(dev.designations || []),
-          ...(dev.mentorshipAvailable ? [dev.mentorshipRate ? `Mentor (₹${dev.mentorshipRate}/hr)` : 'Mentor'] : []),
-        ];
+        const bannerItems = [...(dev.designations || [])];
         return (
           <div className={`bg-linear-to-r ${accent} relative overflow-hidden ${bannerItems.length ? 'h-24' : 'h-16'}`}>
             <div className="absolute inset-0 opacity-30"
               style={{ backgroundImage: 'radial-gradient(circle at 20% 50%, white 1px, transparent 1px)', backgroundSize: '18px 18px' }} />
+            {dev.mentorshipAvailable && (
+              <div className="absolute top-2.5 right-3 z-20 inline-flex items-center gap-1 text-[10px] font-bold px-2.5 py-1 rounded-full bg-white/90 text-amber-600 border border-amber-300/80 shadow-xs backdrop-blur-xs">
+                <GraduationCap size={11} className="text-amber-500" />
+                Mentor {dev.mentorshipRate ? `(₹${dev.mentorshipRate})` : ''}
+              </div>
+            )}
             {bannerItems.length > 0 && (
               <div className="absolute inset-0 flex items-center justify-center px-4">
                 <span className="text-[11px] font-semibold text-accent/90 leading-tight text-center">

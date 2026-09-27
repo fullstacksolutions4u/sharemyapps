@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Search, BookOpen, Globe, Link2, GitBranch, Users, Phone, Mail, Clock } from 'lucide-react';
 
@@ -47,7 +47,7 @@ function MentorCard({ mentor }) {
           <div className="mt-1.5">
             {mentor.mentorshipRate ? (
               <span className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">
-                ₹{mentor.mentorshipRate}/hr
+                ₹{mentor.mentorshipRate}
               </span>
             ) : (
               <span className="inline-flex items-center gap-1 text-xs font-semibold text-blue-600 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded-full">
