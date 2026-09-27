@@ -955,7 +955,7 @@ export default function Home() {
 
 
           <h1 className="text-5xl sm:text-6xl font-bold text-text tracking-tight leading-tight mb-4" style={{ fontFamily: "'Caveat', cursive" }}>
-            Be part of the developers community to unlock{" "}
+            Be part of the community to unlock{" "}
             <span className="text-accent">hiring</span>,{" "}
             <span className="text-[#6366F1]">freelance</span>{" "}
             and{" "}
@@ -976,11 +976,11 @@ export default function Home() {
               ))}
             </div>
             <div className="text-[12.5px] font-extrabold text-[#1E3A8A] tracking-wide flex items-center justify-center gap-1 flex-wrap text-center">
-              <span>Joined by</span>
+              <span>Driven by a community of</span>
               <span className="inline-block text-center min-w-[38px] tabular-nums">
                 {Number(displayCount).toLocaleString()}
               </span>
-              <span>software developers &amp; mentorship students</span>
+              <span>professionals and students</span>
             </div>
           </div>
 
