@@ -53,6 +53,8 @@ class VacancyService {
 
     await vacancyRepo.saveVacancy(vacancy);
 
+    const positionText = position ? `${vacancy.title} (${position})` : vacancy.title;
+
     if (isFirstTime) {
       sendJobApplicationEmail({
         to: user.email,
@@ -61,6 +63,14 @@ class VacancyService {
         selectedPosition: position || null,
       }).catch(() => {});
     }
+
+    vacancyRepo.createNotification({
+      user: user._id,
+      type: 'vacancy_reply',
+      title: `Application Submitted – ${vacancy.title}`,
+      message: `Your application for "${positionText}" has been received. Shortlisted profiles will be listed on the platform shortly, so keep checking back here!`,
+      vacancy: vacancy._id,
+    }).catch(console.error);
 
     return { interested: true, interestCount: vacancy.interests.length };
   }
@@ -178,12 +188,15 @@ class VacancyService {
               }).catch(console.error);
             }
 
+            const isShortlisted = data.status === 'shortlisted';
             vacancyRepo.createNotification({
               user: uId,
               fromUser: adminId,
               type: 'vacancy_reply',
-              title: 'Application Status Updated',
-              message: `Your application status for "${vacancy.title}" has been updated to: ${data.status}`,
+              title: isShortlisted ? '🎉 Profile Shortlisted!' : 'Application Status Updated',
+              message: isShortlisted
+                ? `Congratulations! Your profile for "${vacancy.title}" has been shortlisted! Shortlisted profiles are listed directly on the job card on the platform.`
+                : `Your application status for "${vacancy.title}" has been updated to: ${data.status}. Check the job card on the platform for shortlisted profiles.`,
               vacancy: vacancy._id,
             }).catch(console.error);
           }

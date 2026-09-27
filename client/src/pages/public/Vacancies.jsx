@@ -619,7 +619,12 @@ export default function Vacancies() {
           : v
         )
       );
-      toast.success(isWithdraw ? 'Application withdrawn.' : 'Successfully submitted. An executive will contact you if your resume is shortlisted.', { duration: 5000 });
+      toast.success(
+        isWithdraw
+          ? 'Application withdrawn.'
+          : 'Successfully submitted! Shortlisted profiles listed on the platform shortly, so keep checking back here',
+        { duration: 6000 }
+      );
     } catch (err) {
       toast.error(err.response?.data?.message || 'Something went wrong');
     } finally {

@@ -48,6 +48,12 @@ class FreelanceOpportunityService {
     if (idx === -1) {
       item.interests.push(userId);
       interested = true;
+      freelanceRepo.createNotification({
+        user: userId,
+        type: 'vacancy_reply',
+        title: `Application Submitted – ${item.title}`,
+        message: `Your interest in "${item.title}" has been submitted successfully. Shortlisted profiles will be listed on the platform shortly, so keep checking back here!`,
+      }).catch(console.error);
     } else {
       item.interests.splice(idx, 1);
       interested = false;

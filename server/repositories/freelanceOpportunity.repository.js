@@ -1,5 +1,6 @@
 const FreelanceOpportunity = require('../models/FreelanceOpportunity');
 const Message = require('../models/Message');
+const Notification = require('../models/Notification');
 
 class FreelanceOpportunityRepository {
   async getAllAdmin() {
@@ -30,6 +31,10 @@ class FreelanceOpportunityRepository {
 
   async createMessage(data) {
     return await Message.create(data);
+  }
+
+  async createNotification(data) {
+    return await Notification.create(data);
   }
 }
 

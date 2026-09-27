@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { CheckCircle, XCircle, Clock, Bell, CheckCheck, Heart, Star, MessageCircle, AlertTriangle, FileText, Briefcase, Users } from 'lucide-react';
 import api from '../../api/axios';
@@ -132,8 +132,9 @@ export default function Notifications() {
               onClick={() => {
                 if (!n.read) markRead(n._id);
                 if (n.type === 'job_alert') navigate('/dashboard/job-alerts');
+                else if (n.type === 'vacancy_reply') navigate('/opportunities');
               }}
-              className={`bg-white border rounded-2xl p-5 transition-all ${n.type === 'job_alert' ? 'cursor-pointer' : 'cursor-default'} ${
+              className={`bg-white border rounded-2xl p-5 transition-all ${n.type === 'job_alert' || n.type === 'vacancy_reply' ? 'cursor-pointer hover:border-accent/40' : 'cursor-default'} ${
                 !n.read ? 'border-[#00A693]/30 bg-[#F0FBF9]' : 'border-[#E5E1DA]'
               }`}
             >

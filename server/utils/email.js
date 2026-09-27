@@ -522,7 +522,7 @@ exports.sendJobApplicationEmail = async ({ to, name, vacancy, selectedPosition }
           <h2 style="margin:0 0 8px;font-size:18px;color:#1A1A1A;">Application Received!</h2>
           <p style="color:#374151;margin:0 0 16px;">Hi ${name},</p>
           <p style="color:#374151;margin:0 0 16px;">
-            You've successfully applied for the <strong>${positionText}</strong> position. An executive will contact you if your resume is shortlisted.
+            You've successfully applied for the <strong>${positionText}</strong> position. Shortlisted profiles will be listed on the platform shortly, so keep checking back here!
           </p>
           <p style="color:#6B7280;font-size:13px;margin:0 0 20px;line-height:1.7;">
             Job post links and our client vacancies are actively listed in the Opportunities section. Explore these opportunities and make sure your profile is always up to date with your latest resume and projects to increase your chances of getting noticed.
@@ -531,7 +531,7 @@ exports.sendJobApplicationEmail = async ({ to, name, vacancy, selectedPosition }
             <tr>
               <td>
                 <a href="${BASE_URL}/opportunities" style="display:block;text-align:center;background:#5a788b;color:#fff;text-decoration:none;padding:11px 10px;border-radius:8px;font-weight:600;font-size:13px;">
-                  More Opportunities
+                  View Opportunities & Shortlisted Profiles
                 </a>
               </td>
             </tr>

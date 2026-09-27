@@ -252,6 +252,7 @@ function UserDropdown({ user, onLogout }) {
                       onClick={() => {
                         if (!n.read) markRead(n._id);
                         if (n.type === 'job_alert') { close(); navigate('/dashboard/job-alerts'); }
+                        else if (n.type === 'vacancy_reply') { close(); navigate('/opportunities'); }
                       }}
                       className={`px-4 py-3 flex items-start gap-3 cursor-pointer hover:bg-bg transition-colors ${!n.read ? 'bg-[#F0FBF9]' : ''}`}
                     >
