@@ -101,6 +101,19 @@ userSchema.index({ freelanceAvailable: 1, hidden: 1, isDeleted: 1 });
 userSchema.index({ userType: 1, role: 1, hidden: 1, isDeleted: 1 });
 
 userSchema.pre('save', async function (next) {
+  if (this.isNew && !this.regNumber) {
+    try {
+      const count = await this.constructor.countDocuments();
+      const last = await this.constructor.findOne({ regNumber: { $exists: true } })
+        .sort({ regNumber: -1 })
+        .select('regNumber');
+      const maxReg = last?.regNumber || 0;
+      this.regNumber = Math.max(count + 1, maxReg + 1);
+    } catch (err) {
+      return next(err);
+    }
+  }
+
   if (!this.isModified('password') || !this.password) return next();
   this.password = await bcrypt.hash(this.password, 12);
   next();
