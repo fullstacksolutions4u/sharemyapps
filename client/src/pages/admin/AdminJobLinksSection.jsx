@@ -22,6 +22,18 @@ const DESIGNATION_OPTIONS = [
   "Data Scientist",
   "Data Analyst",
   "Product Manager",
+  "Digital Marketer",
+  "Digital Marketing Specialist",
+  "SEO Specialist",
+  "Content Writer",
+  "Content Creator",
+  "Social Media Specialist",
+  "Social Media Manager",
+  "Graphic Designer",
+  "Video Editor",
+  "Copywriter",
+  "Performance Marketer",
+  "Growth Marketer",
   "Other"
 ];
 

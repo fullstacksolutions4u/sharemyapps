@@ -262,7 +262,11 @@ const DESIGNATIONS = [
   'PHP Developer', 'Laravel Developer',
   'Flutter Developer', 'React Native Developer', 'Android Developer', 'iOS Developer',
   'Data Scientist', 'Machine Learning Engineer', 'DevOps Engineer', 'UI/UX Developer',
-  'Java Full Stack Developer', '.NET Developer', 'Spring Boot Developer', 'Others',
+  'Java Full Stack Developer', '.NET Developer', 'Spring Boot Developer',
+  'Digital Marketer', 'Digital Marketing Specialist', 'SEO Specialist',
+  'Content Writer', 'Content Creator', 'Social Media Specialist', 'Social Media Manager',
+  'Graphic Designer', 'Video Editor', 'Copywriter', 'Performance Marketer', 'Growth Marketer',
+  'Others',
 ];
 
 const EXPERIENCES = [

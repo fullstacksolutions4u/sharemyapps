@@ -1021,7 +1021,7 @@ export default function Home() {
         <section className="bg-[#4c5a68] py-16">
           <div className="max-w-[1500px] mx-auto px-3 sm:px-4">
             <div className="flex items-center justify-between mb-8">
-              <h2 className="text-2xl font-bold text-white tracking-tight">Our Registered software developers & Mentorship Students</h2>
+              <h2 className="text-2xl font-bold text-white tracking-tight">Our Registered Professionals and Mentorship Students</h2>
               <Link to="/portfolios" className="text-sm text-white hover:text-white/80 flex items-center gap-1 font-medium">
                 View all <ArrowRight size={14} />
               </Link>

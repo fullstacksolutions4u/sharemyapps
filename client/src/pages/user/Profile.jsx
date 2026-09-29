@@ -79,7 +79,11 @@ const PRESET_DESIGNATIONS = [
   'PHP Developer', 'Laravel Developer',
   'Flutter Developer', 'React Native Developer', 'Android Developer', 'iOS Developer',
   'Data Scientist', 'Machine Learning Engineer', 'DevOps Engineer', 'UI/UX Developer',
-  'Java Full Stack Developer', '.NET Developer', 'Spring Boot Developer', 'Others',
+  'Java Full Stack Developer', '.NET Developer', 'Spring Boot Developer',
+  'Digital Marketer', 'Digital Marketing Specialist', 'SEO Specialist',
+  'Content Writer', 'Content Creator', 'Social Media Specialist', 'Social Media Manager',
+  'Graphic Designer', 'Video Editor', 'Copywriter', 'Performance Marketer', 'Growth Marketer',
+  'Others',
 ];
 
 const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
@@ -102,10 +106,14 @@ const TABS = [
   { id: 'resume', label: 'Resume / CV', icon: FileText },
 ];
 
-function Field({ icon, label, name, value, onChange, onBlur, placeholder, type = 'text', readOnly = false, hint }) {
+function Field({ icon, label, name, value, onChange, onBlur, placeholder, type = 'text', readOnly = false, hint, required = false, optional = false }) {
   return (
     <div>
-      <label className="block text-sm font-medium text-text mb-2">{label}</label>
+      <label className="block text-sm font-medium text-text mb-2">
+        {label}
+        {required && <span className="text-red-500 font-semibold text-xs ml-1.5">* (Mandatory)</span>}
+        {optional && <span className="text-[#9CA3AF] font-normal text-xs ml-1.5">(Optional)</span>}
+      </label>
       {hint && <p className="text-xs text-[#9CA3AF] mb-2">{hint}</p>}
       <div className="relative">
         <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#9CA3AF]">{icon}</span>
@@ -440,6 +448,10 @@ export default function Profile() {
       toast.error('Full name is required');
       return;
     }
+    if (activeTab === 1 && !form.linkedinUrl.trim()) {
+      toast.error('LinkedIn profile link is mandatory');
+      return;
+    }
     setCompleted(prev => new Set(prev).add(activeTab));
     setActiveTab(i => i + 1);
   };
@@ -448,7 +460,12 @@ export default function Profile() {
 
   const handleSave = async () => {
     if (!form.name.trim()) { toast.error('Name is required'); return; }
+    if (!form.linkedinUrl.trim()) { toast.error('LinkedIn profile link is mandatory'); return; }
     if (!form.cvUrl.trim()) { toast.error('Google Drive CV link is required'); return; }
+    if (form.expectedSalary && Number(form.expectedSalary) > 0 && Number(form.expectedSalary) < 100000) {
+      toast.error('Please enter annual salary (per year) for Expected Salary');
+      return;
+    }
     setCompleted(prev => new Set(prev).add(activeTab));
     setSaving(true);
     try {
@@ -929,20 +946,20 @@ export default function Profile() {
 
                 {/* Row 1: LinkedIn + GitHub */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <Field icon={<Link2 size={15} />} label="LinkedIn" name="linkedinUrl" value={form.linkedinUrl} onChange={handle} placeholder="linkedin.com/in/yourprofile" />
-                  <Field icon={<GitBranch size={15} />} label="GitHub" name="githubUrl" value={form.githubUrl} onChange={handle} placeholder="github.com/yourusername" />
+                  <Field icon={<Link2 size={15} />} label="LinkedIn" name="linkedinUrl" value={form.linkedinUrl} onChange={handle} placeholder="linkedin.com/in/yourprofile" required />
+                  <Field icon={<GitBranch size={15} />} label="GitHub" name="githubUrl" value={form.githubUrl} onChange={handle} placeholder="github.com/yourusername" optional />
                 </div>
 
                 {/* Row 2: LeetCode + Portfolio */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <Field icon={<LeetCodeIcon />} label="LeetCode" name="leetcodeUrl" value={form.leetcodeUrl} onChange={handle} placeholder="leetcode.com/yourusername" />
-                  <Field icon={<Globe size={15} />} label="Portfolio" name="portfolioUrl" value={form.portfolioUrl} onChange={handle} placeholder="yourportfolio.com" />
+                  <Field icon={<LeetCodeIcon />} label="LeetCode" name="leetcodeUrl" value={form.leetcodeUrl} onChange={handle} placeholder="leetcode.com/yourusername" optional />
+                  <Field icon={<Globe size={15} />} label="Portfolio" name="portfolioUrl" value={form.portfolioUrl} onChange={handle} placeholder="yourportfolio.com" optional />
                 </div>
 
                 {/* Tech Stack — Know Well */}
                 <div>
                   <label className="flex items-center gap-1.5 text-sm font-medium text-text mb-1">
-                    <Code2 size={13} className="text-muted" /> Know Well
+                    <Code2 size={13} className="text-muted" /> Know Well <span className="text-[#9CA3AF] font-normal text-xs ml-1.5">(Optional)</span>
                   </label>
                   <div className="space-y-2">
                     <div className="flex gap-2">
@@ -995,7 +1012,7 @@ export default function Profile() {
                 {/* Tech Stack — Familiar With */}
                 <div>
                   <label className="flex items-center gap-1.5 text-sm font-medium text-text mb-1">
-                    <Code2 size={13} className="text-muted" /> Familiar With
+                    <Code2 size={13} className="text-muted" /> Familiar With <span className="text-[#9CA3AF] font-normal text-xs ml-1.5">(Optional)</span>
                   </label>
                   <div className="space-y-2">
                     <div className="flex gap-2">
@@ -1319,9 +1336,19 @@ export default function Profile() {
                         value={form.expectedSalary}
                         onChange={handle}
                         placeholder="e.g. 500000"
-                        className="w-full pl-10 pr-4 py-2.5 border border-border rounded-xl text-sm text-text placeholder-muted focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/10 transition bg-white"
+                        className={`w-full pl-10 pr-4 py-2.5 border rounded-xl text-sm text-text placeholder-muted focus:outline-none focus:ring-2 transition bg-white ${
+                          Number(form.expectedSalary) > 0 && Number(form.expectedSalary) < 100000
+                            ? 'border-amber-400 focus:border-amber-500 focus:ring-amber-500/20'
+                            : 'border-border focus:border-accent focus:ring-accent/10'
+                        }`}
                       />
                     </div>
+                    {Number(form.expectedSalary) > 0 && Number(form.expectedSalary) < 100000 && (
+                      <p className="mt-1.5 text-xs text-amber-600 flex items-center gap-1 font-medium leading-tight">
+                        <AlertTriangle size={13} className="shrink-0 text-amber-500" />
+                        <span>Please enter annual salary (per year)</span>
+                      </p>
+                    )}
                   </div>
                 </div>
 
@@ -1491,8 +1518,8 @@ export default function Profile() {
               <div className="p-4 bg-gradient-to-br from-teal-50/50 via-emerald-50/30 to-slate-50 rounded-2xl border border-teal-100/80 shadow-2xs space-y-3">
                 <p className="text-xs text-slate-600 leading-relaxed font-normal">
                   {paymentModalType === 'freelance'
-                    ? 'Add freelance services to your profile to get discovered by clients and unlock freelance project opportunities.'
-                    : 'List your mentorship services on your profile to connect with students and guide them through their career journey.'}
+                    ? 'Add freelance services badge to your profile to get discovered by clients and unlock freelance project opportunities.'
+                    : 'Add mentorship services badge to your profile to connect with students and guide them through their career journey.'}
                 </p>
                 <div className="flex items-center justify-between pt-3 border-t border-teal-100/80">
                   <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Unlock Fee</span>
@@ -1512,7 +1539,7 @@ export default function Profile() {
                 onClick={() => setPaymentModalType(null)}
                 className="flex-1 py-2.5 px-4 text-xs font-semibold text-slate-600 hover:text-slate-900 bg-slate-100/80 hover:bg-slate-100 border border-slate-200/70 rounded-xl transition-all cursor-pointer"
               >
-                Cancel
+                Skip
               </button>
               <button
                 type="button"
@@ -1525,7 +1552,7 @@ export default function Profile() {
                 className="flex-1 flex items-center justify-center gap-1.5 py-2.5 px-4 text-xs font-bold text-white bg-accent hover:bg-accent-hover active:scale-[0.99] rounded-xl shadow-xs transition-all cursor-pointer"
               >
                 <IndianRupee size={13} />
-                Proceed to Pay (₹{paymentModalType === 'freelance' ? freelancePrice : mentorshipPrice})
+                Proceed to Pay
               </button>
             </div>
           </div>

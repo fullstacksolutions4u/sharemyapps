@@ -9,8 +9,11 @@ const ROLES = [
   {
     key: 'developer',
     icon: Code2,
-    label: 'Developer',
-    desc: 'Complete your profile, showcase projects & portfolio, apply for jobs, and get discovered by recruiters.',
+    label: 'Professionals & Students',
+    desc: [
+      'Complete your profile & showcase your portfolio.',
+      'Apply for top jobs and get discovered by recruiters.',
+    ],
     color: 'text-blue-500',
     bg: 'bg-blue-50/70',
     border: 'border-blue-500',
@@ -20,7 +23,10 @@ const ROLES = [
     key: 'recruiter',
     icon: Briefcase,
     label: 'Recruiter',
-    desc: 'Find talented developers, browse portfolios, post vacancies, and hire the best fit.',
+    desc: [
+      'Browse portfolios of top professionals & students.',
+      'Post job vacancies and hire the best fit for your team.',
+    ],
     color: 'text-accent',
     bg: 'bg-accent-light/70',
     border: 'border-accent',
@@ -75,7 +81,7 @@ export default function SelectRole() {
 
   return (
     <div className="min-h-screen bg-bg flex flex-col items-center justify-start px-4 pt-3 sm:pt-5 pb-8 relative">
-      <div className="w-full max-w-3xl">
+      <div className="w-full max-w-4xl">
         {/* Header */}
         <div className="text-center mb-8 animate-in fade-in slide-in-from-bottom-2 duration-500">
           <img src={logo} alt="ShareMyApps" className="h-8 w-auto mx-auto mb-2.5" />
@@ -96,7 +102,7 @@ export default function SelectRole() {
                 key={key}
                 type="button"
                 onClick={() => setSelected(key)}
-                className={`w-full aspect-[4/3.2] min-h-[260px] flex flex-col items-center justify-between text-center p-7 rounded-3xl border-2 transition-all duration-300 cursor-pointer ${
+                className={`w-full min-h-[280px] flex flex-col items-center justify-between text-center p-6 sm:p-7 rounded-3xl border-2 transition-all duration-300 cursor-pointer ${
                   isSelected
                     ? `${border} ${bg} ${ring} shadow-lg scale-[1.02]`
                     : 'border-border bg-white hover:border-[#3B5973]/40 hover:shadow-md hover:scale-[1.01]'
@@ -112,19 +118,27 @@ export default function SelectRole() {
                 </div>
 
                 {/* Center Icon & Info */}
-                <div className="flex flex-col items-center my-auto">
-                  <div className={`w-16 h-16 rounded-2xl ${isSelected ? 'bg-white shadow-xs' : 'bg-[#F0F4F8]'} flex items-center justify-center transition-all mb-4`}>
-                    <Icon size={32} className={isSelected ? color : 'text-[#3B5973]'} />
+                <div className="flex flex-col items-center my-auto w-full">
+                  <div className={`w-14 h-14 sm:w-16 sm:h-16 rounded-2xl ${isSelected ? 'bg-white shadow-xs' : 'bg-[#F0F4F8]'} flex items-center justify-center transition-all mb-3`}>
+                    <Icon size={30} className={isSelected ? color : 'text-[#3B5973]'} />
                   </div>
-                  <h3 className={`font-bold text-lg mb-2 ${isSelected ? color : 'text-[#1E3A5F]'}`}>
-                    {label}
-                  </h3>
-                  <p className={`text-sm leading-relaxed px-2 ${isSelected ? 'text-[#1E3A5F]' : 'text-[#3B5973]'}`}>
-                    {desc}
-                  </p>
+                  <div className="h-12 flex items-center justify-center mb-2">
+                    <h3 className={`font-bold text-base sm:text-lg leading-tight text-center ${isSelected ? color : 'text-[#1E3A5F]'}`}>
+                      {label}
+                    </h3>
+                  </div>
+                  <div className={`text-xs sm:text-sm leading-relaxed px-2 text-center flex flex-col items-center justify-center space-y-1 ${isSelected ? 'text-[#1E3A5F]' : 'text-[#3B5973]'}`}>
+                    {Array.isArray(desc) ? (
+                      desc.map((sentence, sIdx) => (
+                        <p key={sIdx}>{sentence}</p>
+                      ))
+                    ) : (
+                      <p>{desc}</p>
+                    )}
+                  </div>
                 </div>
 
-                <div className="h-2" />
+                <div className="h-1" />
               </button>
             );
           })}
