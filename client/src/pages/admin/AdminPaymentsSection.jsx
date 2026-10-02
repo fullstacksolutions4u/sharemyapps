@@ -10,6 +10,9 @@ function packLabel(p) {
   if (p.pack && p.pack.startsWith('placement_')) {
     return p.pack.replace('placement_', '').replace(/\b\w/g, c => c.toUpperCase());
   }
+  if (p.pack && p.pack.startsWith('unlock_')) {
+    return p.pack.replace('unlock_', '').replace(/\b\w/g, c => c.toUpperCase());
+  }
   return `${p.analysesGranted} JD ${p.analysesGranted === 1 ? 'analysis' : 'analyses'}`;
 }
 
