@@ -21,7 +21,7 @@ class UserProfileService {
       appliedPosition: v.applicantPositions && v.applicantPositions[userId.toString()] ? v.applicantPositions[userId.toString()] : null,
       statusHistory: v.applicantStatusHistory && v.applicantStatusHistory[userId.toString()] ? v.applicantStatusHistory[userId.toString()] : [],
       appliedAt: v.createdAt,
-      sessions: sessions
+      sessions: sessions.filter(s => s.vacancy?.toString() === v._id.toString())
     }));
   }
 

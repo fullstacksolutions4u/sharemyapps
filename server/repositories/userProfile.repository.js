@@ -14,7 +14,7 @@ class UserProfileRepository {
   async getInterviewSessions(userId) {
     return await InterviewSession.find({ user: userId })
       .sort({ interviewedAt: 1 })
-      .select('googleMeetLink interviewedAt status')
+      .select('googleMeetLink interviewedAt status vacancy')
       .lean();
   }
 

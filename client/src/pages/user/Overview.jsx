@@ -1,8 +1,8 @@
-﻿import { useState } from 'react';
+import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { 
-  FileText, ExternalLink, GraduationCap, Bell,
+  FileText, ExternalLink, GraduationCap, Bell, Code,
   Loader2 
 } from 'lucide-react';
 import api from '../../api/axios';
@@ -35,7 +35,7 @@ export default function Overview() {
   const chartData = filter === 'daily'
     ? (stats?.dailyActivity || [])
     : (stats?.monthlyActivity || []);
-  const maxVal = Math.max(...chartData.map(d => d.apps + d.clicks + (isJobAlertEligible ? d.alerts : 0)), 4);
+  const maxVal = Math.max(...chartData.map(d => d.apps + (isJobAlertEligible ? d.alerts : 0)), 4);
 
   const statCards = [
     {
@@ -48,13 +48,13 @@ export default function Overview() {
       iconColor: 'bg-blue-50 text-blue-600 border border-blue-100'
     },
     {
-      title: 'Apply through Job Post Links',
-      value: clickCount,
+      title: 'Projects',
+      value: stats?.projectsCount || 0,
       badge: '',
       badgeColor: 'bg-indigo-50 text-indigo-700 border-indigo-100',
       description: '',
-      icon: ExternalLink,
-      iconColor: 'bg-cyan-50 text-cyan-600 border border-cyan-100'
+      icon: Code,
+      iconColor: 'bg-indigo-50 text-indigo-600 border border-indigo-100'
     },
     ...(isJobAlertEligible ? [{
       title: 'Job Alerts Received',
@@ -79,10 +79,10 @@ export default function Overview() {
   const skillsList = stats?.skillPathStats || [];
 
   return (
-    <div className="w-full px-4 sm:px-6 py-6 space-y-6">
+    <div className="w-full px-4 sm:px-6 pt-12 pb-6 space-y-10">
       
       {/* Top Stats Cards */}
-      <div className={`grid grid-cols-1 sm:grid-cols-2 ${isJobAlertEligible ? 'lg:grid-cols-5' : 'lg:grid-cols-4'} gap-4`}>
+      <div className={`grid grid-cols-1 sm:grid-cols-2 ${isJobAlertEligible ? 'lg:grid-cols-4' : 'lg:grid-cols-3'} gap-4 justify-center`}>
         {statCards.map((card, i) => {
           const Icon = card.icon;
           return (
@@ -109,7 +109,7 @@ export default function Overview() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         
         {/* Left Card: Application Activity Bar Chart */}
-        <div className="bg-white border border-[#E5E1DA] rounded-2xl p-6 shadow-sm lg:col-span-7 flex flex-col justify-between">
+        <div className="bg-white border border-[#E5E1DA] rounded-2xl p-6 shadow-sm lg:col-span-7 flex flex-col justify-between min-h-[400px]">
           <div className="flex items-center justify-between mb-6">
             <h3 className="font-bold text-[#1A1A1A] text-sm">Application Activity</h3>
             <div className="flex items-center gap-1.5 bg-gray-50 p-1 rounded-xl border border-gray-100">
@@ -129,8 +129,8 @@ export default function Overview() {
             </div>
           </div>
 
-          <div className="flex-1 flex flex-col justify-end min-h-[180px]">
-            <div className="flex h-[150px] relative px-2">
+          <div className="flex-1 flex flex-col justify-end min-h-[280px]">
+            <div className="flex h-[250px] relative px-2">
               {/* Y-axis Labels */}
               <div className="flex flex-col justify-between text-[10px] font-bold text-gray-400 pb-6 text-right pr-2.5 select-none w-7">
                 <span>{Math.round(maxVal)}</span>
@@ -151,15 +151,14 @@ export default function Overview() {
                 {/* Bars mapping */}
                 {chartData.map((item, i) => {
                   const effectiveAlerts = isJobAlertEligible ? item.alerts : 0;
-                  const totalVal = item.apps + item.clicks + effectiveAlerts;
+                  const totalVal = item.apps + effectiveAlerts;
                   const barHeight = totalVal > 0 ? (totalVal / maxVal) * 100 : 0;
                   const appPercent = totalVal > 0 ? (item.apps / totalVal) * 100 : 0;
-                  const clickPercent = totalVal > 0 ? (item.clicks / totalVal) * 100 : 0;
                   const alertPercent = totalVal > 0 ? (effectiveAlerts / totalVal) * 100 : 0;
 
                   return (
                     <div key={i} className="flex flex-col items-center flex-1 group">
-                      <div className="w-full flex items-end justify-center h-[120px] relative">
+                      <div className="w-full flex items-end justify-center h-[220px] relative">
                         {totalVal > 0 ? (
                           <>
                             <div 
@@ -180,19 +179,7 @@ export default function Overview() {
                                 </div>
                               )}
                               
-                              {/* Clicks Segment (Emerald) */}
-                              {item.clicks > 0 && (
-                                <div
-                                  style={{ height: `${clickPercent}%` }}
-                                  className="w-full bg-[#00A693] flex items-center justify-center overflow-hidden"
-                                >
-                                  {clickPercent >= 18 && (
-                                    <span className="text-white font-extrabold select-none" style={{ fontSize: '9px', lineHeight: 1 }}>
-                                      {item.clicks}
-                                    </span>
-                                  )}
-                                </div>
-                              )}
+
 
                               {/* Job Alerts Segment (Amber) — only for eligible users */}
                               {isJobAlertEligible && effectiveAlerts > 0 && (
@@ -229,10 +216,7 @@ export default function Overview() {
                 <span className="w-2 h-2 rounded-full bg-[#0052CC]" />
                 <span>Applications Applied</span>
               </div>
-              <div className="flex items-center gap-1.5 text-[11px] font-bold text-gray-500">
-                <span className="w-2 h-2 rounded-full bg-[#00A693]" />
-                <span>Job Post Links</span>
-              </div>
+
               {isJobAlertEligible && (
                 <div className="flex items-center gap-1.5 text-[11px] font-bold text-gray-500">
                   <span className="w-2 h-2 rounded-full bg-amber-500" />
@@ -244,7 +228,7 @@ export default function Overview() {
         </div>
 
         {/* Right Card: Skill Path Progress */}
-        <div className="bg-white border border-[#E5E1DA] rounded-2xl p-6 shadow-sm lg:col-span-5 flex flex-col justify-between">
+        <div className="bg-white border border-[#E5E1DA] rounded-2xl p-6 shadow-sm lg:col-span-5 flex flex-col justify-between min-h-[400px]">
           <div>
             
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
