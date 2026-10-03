@@ -52,6 +52,11 @@ export default function ProjectForm() {
   const [showCollabDrop, setShowCollabDrop] = useState(false);
   const collabRef = useRef(null);
   const [isFeatured, setIsFeatured] = useState(false);
+  const [siteConfig, setSiteConfig] = useState(null);
+
+  useEffect(() => {
+    api.get('/offers/config').then(r => setSiteConfig(r.data)).catch(() => {});
+  }, []);
 
   useEffect(() => {
     if (!isEdit) return;
@@ -580,13 +585,13 @@ export default function ProjectForm() {
     {/* Project Sale Unlock Explanation Modal */}
     {showUnlockModal && (
       <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
-        <div className="bg-white rounded-3xl w-full max-w-sm border border-border shadow-2xl p-6 text-center animate-in fade-in zoom-in-95 duration-200">
+        <div className="bg-white rounded-3xl w-full max-w-md border border-border shadow-2xl p-6 text-center animate-in fade-in zoom-in-95 duration-200">
           <div className="w-16 h-16 bg-amber-50 rounded-full flex items-center justify-center mx-auto mb-4 border border-amber-100">
             <Crown size={32} className="text-amber-500 fill-amber-400" />
           </div>
           <h2 className="text-xl font-bold text-text mb-2">Monetize your project</h2>
-          <p className="text-sm text-muted mb-6 leading-relaxed">
-            Want to monetize your hard work? Unlock the ability to sell the source code of this project directly to other users. As a bonus, this project will get a <strong>Featured</strong> badge and appear at the top of the project list page! This is a one-time fee applicable for this project only.
+          <p className="text-sm text-muted mb-6 leading-relaxed text-justify">
+            Want to monetize your hard work? Unlock the ability to sell the source code of this project directly to other users and clients. Also this project will get a <strong>Featured</strong> badge and appear at the top of the project list page! This is a one-time fee applicable for this project.
           </p>
           <div className="flex gap-3">
             <button
@@ -602,9 +607,9 @@ export default function ProjectForm() {
                 setShowUnlockModal(false);
                 handleUnlockSale();
               }}
-              className="flex-1 py-3 rounded-xl bg-accent hover:bg-accent-hover text-white text-sm font-semibold shadow-md shadow-accent/20 transition-all"
+              className="flex-1 py-3 rounded-xl bg-accent hover:bg-accent-hover text-white text-sm font-semibold shadow-md shadow-accent/20 transition-all flex items-center justify-center gap-2"
             >
-              Proceed to Pay
+              Proceed to Pay <span className="opacity-90 font-medium bg-white/20 px-2 py-0.5 rounded text-xs">₹{siteConfig?.projectSaleUnlockPricePaise ? siteConfig.projectSaleUnlockPricePaise / 100 : 499}</span>
             </button>
           </div>
         </div>

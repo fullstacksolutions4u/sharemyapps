@@ -64,7 +64,7 @@ const popularityPipeline = (filter, skip, limit) => [
     },
   },
   { $addFields: { popularityScore: { $add: ['$likesCount', { $multiply: ['$avgRating', 2] }] } } },
-  { $sort: { featured: -1, popularityScore: -1, createdAt: -1 } },
+  { $sort: { featured: -1, featuredAt: -1, popularityScore: -1, createdAt: -1 } },
   { $skip: skip },
   { $limit: limit },
   ...ownerLookupStages,
@@ -265,6 +265,7 @@ class ProjectService {
       owner: reqUser._id,
       forSale: wantSale,
       featured: isFeatured,
+      featuredAt: isFeatured ? new Date() : null,
       salePrice: wantSale && data.salePrice ? Number(data.salePrice) : null,
     };
 
@@ -308,6 +309,7 @@ class ProjectService {
               reqUser.projectMonetizeCredits -= 1;
               await reqUser.save();
               project.featured = true;
+              project.featuredAt = new Date();
             } else {
               const err = new Error('Insufficient monetize credits. Please pay first.'); err.status = 400; throw err;
             }
