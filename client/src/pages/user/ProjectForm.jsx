@@ -104,7 +104,7 @@ export default function ProjectForm() {
         order_id: order.orderId,
         handler: async (response) => {
           try {
-            const { data: res } = await api.post('/payments/opportunity-unlock/verify', {
+            await api.post('/payments/opportunity-unlock/verify', {
               razorpay_order_id: response.razorpay_order_id,
               razorpay_payment_id: response.razorpay_payment_id,
               razorpay_signature: response.razorpay_signature,

@@ -1,4 +1,4 @@
-﻿import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { useSearchParams, useLocation, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { Search, X, Plus } from 'lucide-react';
@@ -192,18 +192,6 @@ export default function Explore() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {projects.map(p => <ProjectCard key={p._id} project={p} />)}
           </div>
-
-          {newlyAdded.length > 0 && (
-            <div className="mt-6">
-              <div className="flex items-center gap-3 mb-3">
-                <span className="text-sm font-semibold text-text">Newly Added</span>
-                <div className="flex-1 h-px bg-border" />
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                {newlyAdded.map(p => <ProjectCard key={p._id} project={p} />)}
-              </div>
-            </div>
-          )}
         </>
       )}
 
@@ -212,17 +200,10 @@ export default function Explore() {
         const { groupStart, groupEnd, hasPrev, hasNext } = getPageGroup(page, pages);
 
         // Calculate the range shown on the current page
-        const SCORE_PAGE1 = 12;
-        const NEWLY_ADDED_COUNT = newlyAdded.length;
         const PAGE_SIZE = 16;
         let from, to;
-        if (page === 1) {
-          from = 1;
-          to = projects.length + NEWLY_ADDED_COUNT;
-        } else {
-          from = SCORE_PAGE1 + NEWLY_ADDED_COUNT + (page - 2) * PAGE_SIZE + 1;
-          to = Math.min(from + projects.length - 1, total);
-        }
+        from = (page - 1) * PAGE_SIZE + 1;
+        to = Math.min(from + projects.length - 1, total);
 
         return (
           <div className="mt-10 flex items-center justify-center gap-4 flex-wrap">

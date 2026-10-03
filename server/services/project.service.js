@@ -15,8 +15,6 @@ const {
 } = require('../utils/visibility');
 
 const PAGE_SIZE = 16;
-const SCORE_PAGE1 = 12;
-const NEWLY_ADDED = 4;
 
 const ownerLookupStages = [
   {
@@ -157,21 +155,9 @@ class ProjectService {
     if (type) filter.appType = type;
 
     const total = await projectRepo.count(filter);
-    const pages = total <= SCORE_PAGE1 ? 1 : 1 + Math.ceil((total - SCORE_PAGE1) / PAGE_SIZE);
+    const pages = Math.ceil(total / PAGE_SIZE) || 1;
+    const skip = (page - 1) * PAGE_SIZE;
 
-    if (page === 1) {
-      const projects = await projectRepo.aggregate(popularityPipeline(filter, 0, SCORE_PAGE1));
-      const scoreIds = projects.map(p => p._id);
-      const newlyAdded = await projectRepo.aggregate([
-        { $match: { ...filter, _id: { $nin: scoreIds } } },
-        { $sort: { createdAt: -1 } },
-        { $limit: NEWLY_ADDED },
-        ...ownerLookupStages,
-      ]);
-      return { projects, newlyAdded, total, page, pages };
-    }
-
-    const skip = SCORE_PAGE1 + (page - 2) * PAGE_SIZE;
     const projects = await projectRepo.aggregate(popularityPipeline(filter, skip, PAGE_SIZE));
     return { projects, newlyAdded: [], total, page, pages };
   }
