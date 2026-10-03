@@ -1,9 +1,32 @@
 import { useEffect, useState } from 'react';
-import { IndianRupee, TrendingUp, CreditCard, ChevronLeft, ChevronRight, ExternalLink, Trash2 } from 'lucide-react';
+import { IndianRupee, TrendingUp, CreditCard, ChevronLeft, ChevronRight, ExternalLink, Trash2, Download } from 'lucide-react';
 import api from '../../api/axios';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 function fmt(paise) {
   return `₹${(paise / 100).toLocaleString('en-IN', { minimumFractionDigits: 2 })}`;
+}
+
+function fmtPdf(paise) {
+  return `Rs. ${(paise / 100).toLocaleString('en-IN', { minimumFractionDigits: 2 })}`;
+}
+
+function amountInWords(amount) {
+  if (amount === 0) return 'Zero Rupees Only';
+  const a = ['','One ','Two ','Three ','Four ', 'Five ','Six ','Seven ','Eight ','Nine ','Ten ','Eleven ','Twelve ','Thirteen ','Fourteen ','Fifteen ','Sixteen ','Seventeen ','Eighteen ','Nineteen '];
+  const b = ['', '', 'Twenty','Thirty','Forty','Fifty', 'Sixty','Seventy','Eighty','Ninety'];
+  let num = Math.floor(amount);
+  if ((num = num.toString()).length > 9) return 'Overflow';
+  let n = ('000000000' + num).substr(-9).match(/^(\d{2})(\d{2})(\d{2})(\d{1})(\d{2})$/);
+  if (!n) return ''; 
+  let str = '';
+  str += (n[1] != 0) ? (a[Number(n[1])] || b[n[1][0]] + ' ' + a[n[1][1]]) + 'Crore ' : '';
+  str += (n[2] != 0) ? (a[Number(n[2])] || b[n[2][0]] + ' ' + a[n[2][1]]) + 'Lakh ' : '';
+  str += (n[3] != 0) ? (a[Number(n[3])] || b[n[3][0]] + ' ' + a[n[3][1]]) + 'Thousand ' : '';
+  str += (n[4] != 0) ? (a[Number(n[4])] || b[n[4][0]] + ' ' + a[n[4][1]]) + 'Hundred ' : '';
+  str += (n[5] != 0) ? ((str != '') ? 'and ' : '') + (a[Number(n[5])] || b[n[5][0]] + ' ' + a[n[5][1]]) : '';
+  return str.trim() + ' Rupees Only';
 }
 
 function packLabel(p) {
@@ -50,6 +73,75 @@ export default function AdminPaymentsSection() {
     } catch (err) {
       alert(err.response?.data?.message || 'Error deleting payment');
     }
+  };
+
+  const handleDownloadInvoice = (p) => {
+    const doc = new jsPDF();
+    
+    const generate = () => {
+      doc.setFontSize(22);
+      doc.setTextColor(0, 82, 204);
+      doc.text("INVOICE", 196, 40, null, null, "right");
+      
+      doc.setFontSize(11);
+      doc.setTextColor(50, 50, 50);
+      doc.text(`Invoice Number: INV-${p._id.slice(-6).toUpperCase()}`, 14, 60);
+      doc.text(`Date of Issue: ${new Date(p.createdAt).toLocaleDateString('en-IN')}`, 14, 67);
+      doc.text(`Transaction ID: ${p.razorpayPaymentId}`, 14, 74);
+      
+      doc.text(`Billed To:`, 14, 90);
+      doc.setFont(undefined, 'bold');
+      doc.text(`${p.user?.name || 'Customer'}`, 14, 97);
+      doc.setFont(undefined, 'normal');
+      doc.text(`${p.user?.email || 'N/A'}`, 14, 104);
+      
+      autoTable(doc, {
+        startY: 115,
+        head: [['Description', 'Amount']],
+        body: [
+          [`Payment for ${packLabel(p)} feature unlock`, fmtPdf(p.amountPaise)],
+        ],
+        theme: 'grid',
+        headStyles: { fillColor: [0, 166, 147], textColor: 255 },
+        styles: { fontSize: 10, cellPadding: 5 }
+      });
+      
+      const finalY = doc.lastAutoTable.finalY || 110;
+      
+      doc.setFontSize(12);
+      doc.setFont(undefined, 'bold');
+      doc.text(`Total Paid: ${fmtPdf(p.amountPaise)}`, 14, finalY + 15);
+      
+      doc.setFontSize(10);
+      doc.setFont(undefined, 'italic');
+      doc.setTextColor(80, 80, 80);
+      doc.text(`Amount in Words: ${amountInWords(p.amountPaise / 100)}`, 14, finalY + 22);
+      
+      doc.setFontSize(10);
+      doc.setFont(undefined, 'normal');
+      doc.setTextColor(150, 150, 150);
+      doc.text("Empowering developers to build the future.", 105, finalY + 40, null, null, "center");
+      
+      doc.save(`Invoice_${p.razorpayPaymentId}.pdf`);
+    };
+
+    const img = new Image();
+    img.src = '/logo.png';
+    img.onload = () => {
+      doc.addImage(img, 'PNG', 14, 32, 10, 10);
+      doc.setFontSize(20);
+      doc.setTextColor(0, 166, 147);
+      doc.setFont(undefined, 'bold');
+      doc.text("ShareMyApps", 27, 40);
+      generate();
+    };
+    img.onerror = () => {
+      doc.setFontSize(22);
+      doc.setTextColor(0, 166, 147);
+      doc.setFont(undefined, 'bold');
+      doc.text("ShareMyApps", 14, 40);
+      generate();
+    };
   };
 
   useEffect(() => {
@@ -157,7 +249,10 @@ export default function AdminPaymentsSection() {
                           Success
                         </span>
                       </td>
-                      <td className="px-5 py-3.5 text-right">
+                      <td className="px-5 py-3.5 text-right flex items-center justify-end gap-3 h-full pt-4">
+                        <button onClick={() => handleDownloadInvoice(p)} className="text-muted hover:text-[#0052CC] transition-colors" title="Download Invoice">
+                          <Download size={16} />
+                        </button>
                         <button onClick={() => handleDelete(p._id)} className="text-muted hover:text-red-500 transition-colors" title="Delete Payment">
                           <Trash2 size={16} />
                         </button>
