@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { 
-  FileText, ExternalLink, GraduationCap, Bell, Code,
+  FileText, GraduationCap, Bell, Code,
   Loader2 
 } from 'lucide-react';
 import api from '../../api/axios';
@@ -28,7 +28,6 @@ export default function Overview() {
   }
 
   const appCount = stats?.applicationsCount || 0;
-  const clickCount = stats?.jobPostLinksCount || 0;
   const alertCount = stats?.jobAlertCount || 0;
   const isJobAlertEligible = !!stats?.isJobAlertEligible;
 
