@@ -250,6 +250,18 @@ class ProjectService {
       ? (Array.isArray(data.collaborators) ? data.collaborators : [data.collaborators]).filter(Boolean)
       : [];
 
+    const wantSale = data.forSale === 'true' || data.forSale === true;
+    let isFeatured = false;
+    if (wantSale) {
+      if (reqUser.projectMonetizeCredits > 0) {
+        reqUser.projectMonetizeCredits -= 1;
+        await reqUser.save();
+        isFeatured = true;
+      } else {
+        const err = new Error('Insufficient monetize credits. Please pay first.'); err.status = 400; throw err;
+      }
+    }
+
     const projectData = {
       title: sanitizeText(data.title),
       description: sanitizeRichText(data.description),
@@ -265,8 +277,9 @@ class ProjectService {
       githubVisible: data.githubVisible !== 'false',
       collaborators: collaboratorIds,
       owner: reqUser._id,
-      forSale: data.forSale === 'true' || data.forSale === true,
-      salePrice: (data.forSale === 'true' || data.forSale === true) && data.salePrice ? Number(data.salePrice) : null,
+      forSale: wantSale,
+      featured: isFeatured,
+      salePrice: wantSale && data.salePrice ? Number(data.salePrice) : null,
     };
 
     const project = await projectRepo.create(projectData);
@@ -301,8 +314,25 @@ class ProjectService {
     }
     if (data.githubVisible !== undefined) project.githubVisible = data.githubVisible !== 'false';
     if (data.forSale !== undefined) {
-      project.forSale = data.forSale === 'true' || data.forSale === true;
-      project.salePrice = project.forSale && data.salePrice ? Number(data.salePrice) : null;
+      const wantSale = data.forSale === 'true' || data.forSale === true;
+      if (wantSale) {
+        if (!project.forSale) {
+          if (!project.featured) {
+            if (reqUser.projectMonetizeCredits > 0) {
+              reqUser.projectMonetizeCredits -= 1;
+              await reqUser.save();
+              project.featured = true;
+            } else {
+              const err = new Error('Insufficient monetize credits. Please pay first.'); err.status = 400; throw err;
+            }
+          }
+        }
+        project.forSale = true;
+        project.salePrice = data.salePrice ? Number(data.salePrice) : null;
+      } else {
+        project.forSale = false;
+        project.salePrice = null;
+      }
     }
     if (data.collaborators !== undefined) {
       const newIds = (Array.isArray(data.collaborators) ? data.collaborators : [data.collaborators]).filter(Boolean);

@@ -19,6 +19,7 @@ const siteConfigSchema = new mongoose.Schema({
   // Opportunities unlock pricing
   freelanceUnlockPricePaise:  { type: Number, default: 49900 }, // ₹499 in paise
   mentorshipUnlockPricePaise: { type: Number, default: 49900 }, // ₹499 in paise
+  projectSaleUnlockPricePaise: { type: Number, default: 49900 }, // ₹499 in paise
 }, { timestamps: true });
 
 module.exports = mongoose.model('SiteConfig', siteConfigSchema);

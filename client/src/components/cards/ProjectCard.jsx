@@ -38,19 +38,19 @@ const ProjectCard = memo(function ProjectCard({ project }) {
       {/* Banner */}
       <Link to={`/project/${_id}`} className="block overflow-hidden relative shrink-0">
         <div className="absolute top-2 left-2 z-10 flex flex-col items-start gap-1">
-          {featured && (
+          {featured && !(forSale && salePrice != null) && (
             <span className="flex items-center gap-1 bg-amber-500 text-white text-[10px] font-semibold px-2 py-0.5 rounded-full shadow">
-              <Sparkles size={9} /> Featured for feedback
+              <Sparkles size={9} /> Featured
             </span>
           )}
-          {category && (
-            <span className="flex items-center gap-1 bg-violet-500/80 text-white text-[10px] font-semibold px-2 py-0.5 rounded-full shadow backdrop-blur-sm">
-              {category}
+          {forSale && salePrice != null && (
+            <span className="flex items-center gap-1 bg-amber-500 text-white text-[10px] font-semibold px-2 py-0.5 rounded-full shadow">
+              <Sparkles size={9} /> Featured <span className="opacity-75 px-0.5">•</span> ₹{Number(salePrice).toLocaleString('en-IN')}
             </span>
           )}
         </div>
         <span className={`absolute top-2 right-2 z-10 flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full shadow backdrop-blur-sm ${appTypeCfg.cls}`}>
-          <appTypeCfg.Icon size={9} /> {appTypeCfg.label}
+          <appTypeCfg.Icon size={9} /> {category ? category : appTypeCfg.label}
         </span>
         <img
           src={optimizeImage(getbanner(bannerImage, liveUrl), 800)}
@@ -147,9 +147,6 @@ const ProjectCard = memo(function ProjectCard({ project }) {
               >
                 Visit <ExternalLink size={12} />
               </a>
-              {forSale && salePrice && (
-                <span className="text-[10px] font-semibold text-amber-500 leading-none">₹{Number(salePrice).toLocaleString('en-IN')}</span>
-              )}
             </div>
           </div>
         </div>

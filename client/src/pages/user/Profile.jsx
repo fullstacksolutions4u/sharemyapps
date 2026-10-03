@@ -1096,13 +1096,13 @@ export default function Profile() {
                       </div>
                     )}
                     <div className="flex items-center gap-2 shrink-0">
-                      <Crown size={15} className="text-amber-500 fill-amber-400 shrink-0" title="Premium Feature" />
                       <div
                         onClick={handleToggleFreelance}
                         className={`w-10 h-6 rounded-full transition-colors relative shrink-0 cursor-pointer ${form.freelanceAvailable ? 'bg-accent' : 'bg-border'}`}
                       >
-                        <span className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-transform ${form.freelanceAvailable ? 'translate-x-5' : 'translate-x-1'}`} />
+                        <span className={`absolute top-1 left-0 w-4 h-4 bg-white rounded-full shadow transition-transform ${form.freelanceAvailable ? 'translate-x-5' : 'translate-x-1'}`} />
                       </div>
+                      <Crown size={15} className="text-amber-500 fill-amber-400 shrink-0" title="Premium Feature" />
                     </div>
                   </div>
                 </div>
@@ -1135,13 +1135,13 @@ export default function Profile() {
                       </div>
                     )}
                     <div className="flex items-center gap-2 shrink-0">
-                      <Crown size={15} className="text-amber-500 fill-amber-400 shrink-0" title="Premium Feature" />
                       <div
                         onClick={handleToggleMentorship}
                         className={`w-10 h-6 rounded-full transition-colors relative shrink-0 cursor-pointer ${form.mentorshipAvailable ? 'bg-accent' : 'bg-border'}`}
                       >
-                        <span className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-transform ${form.mentorshipAvailable ? 'translate-x-5' : 'translate-x-1'}`} />
+                        <span className={`absolute top-1 left-0 w-4 h-4 bg-white rounded-full shadow transition-transform ${form.mentorshipAvailable ? 'translate-x-5' : 'translate-x-1'}`} />
                       </div>
+                      <Crown size={15} className="text-amber-500 fill-amber-400 shrink-0" title="Premium Feature" />
                     </div>
                   </div>
                   {form.mentorshipAvailable && (

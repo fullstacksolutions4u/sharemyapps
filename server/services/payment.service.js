@@ -170,13 +170,14 @@ class PaymentService {
   }
 
   async createOpportunityUnlockOrder(userId, type) {
-    if (!['freelance', 'mentorship'].includes(type)) {
+    if (!['freelance', 'mentorship', 'project_sale'].includes(type)) {
       const err = new Error('Invalid opportunity type.'); err.status = 400; throw err;
     }
     const cfg = await getConfig();
-    const amountPaise = type === 'freelance'
-      ? (cfg.freelanceUnlockPricePaise || 49900)
-      : (cfg.mentorshipUnlockPricePaise || 49900);
+    let amountPaise = 49900;
+    if (type === 'freelance') amountPaise = cfg.freelanceUnlockPricePaise || 49900;
+    else if (type === 'mentorship') amountPaise = cfg.mentorshipUnlockPricePaise || 49900;
+    else if (type === 'project_sale') amountPaise = cfg.projectSaleUnlockPricePaise || 49900;
 
     const order = await this.razorpay.orders.create({
       amount: amountPaise,
@@ -192,9 +193,10 @@ class PaymentService {
     this.verifySignature(razorpay_order_id, razorpay_payment_id, razorpay_signature);
 
     const cfg = await getConfig();
-    const amountPaise = type === 'freelance'
-      ? (cfg.freelanceUnlockPricePaise || 49900)
-      : (cfg.mentorshipUnlockPricePaise || 49900);
+    let amountPaise = 49900;
+    if (type === 'freelance') amountPaise = cfg.freelanceUnlockPricePaise || 49900;
+    else if (type === 'mentorship') amountPaise = cfg.mentorshipUnlockPricePaise || 49900;
+    else if (type === 'project_sale') amountPaise = cfg.projectSaleUnlockPricePaise || 49900;
 
     const user = await paymentRepo.getUserDocumentById(userId);
     if (!user) {
@@ -205,6 +207,8 @@ class PaymentService {
       user.freelanceUnlocked = true;
     } else if (type === 'mentorship') {
       user.mentorshipUnlocked = true;
+    } else if (type === 'project_sale') {
+      user.projectMonetizeCredits = (user.projectMonetizeCredits || 0) + 1;
     }
     await user.save();
 
@@ -218,11 +222,18 @@ class PaymentService {
       status: 'success',
     });
 
+    let title = `${type === 'freelance' ? 'Freelance' : 'Mentorship'} Listing Unlocked 🎉`;
+    let message = `Your payment was successful. You can now toggle your ${type} availability in your profile.`;
+    if (type === 'project_sale') {
+      title = 'Project Sale Unlocked 🎉';
+      message = 'Your payment was successful. You can now list your projects for sale.';
+    }
+
     await paymentRepo.createNotification({
       user: userId,
       type: 'payment_success',
-      title: `${type === 'freelance' ? 'Freelance' : 'Mentorship'} Listing Unlocked 🎉`,
-      message: `Your payment was successful. You can now toggle your ${type} availability in your profile.`,
+      title,
+      message,
     });
 
     return { ok: true, type, user: user.toAuthJSON() };

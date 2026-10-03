@@ -1,6 +1,6 @@
-﻿import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
-import { ArrowLeft, X, Plus, Users, ChevronRight, ChevronLeft } from 'lucide-react';
+import { ArrowLeft, X, Plus, Users, ChevronRight, ChevronLeft, Crown } from 'lucide-react';
 import api from '../../api/axios';
 import toast from 'react-hot-toast';
 import { useAuth } from '../../context/AuthContext';
@@ -51,6 +51,7 @@ export default function ProjectForm() {
   const [collabResults, setCollabResults] = useState([]);
   const [showCollabDrop, setShowCollabDrop] = useState(false);
   const collabRef = useRef(null);
+  const [isFeatured, setIsFeatured] = useState(false);
 
   useEffect(() => {
     if (!isEdit) return;
@@ -66,12 +67,85 @@ export default function ProjectForm() {
         setGithubUrls(urls);
         setGithubVisible(p.githubVisible !== false);
         setForSale(p.forSale || false);
+        setIsFeatured(p.featured || false);
         setSalePrice(p.salePrice != null ? String(p.salePrice) : '');
         if (p.collaborators?.length) setCollaborators(p.collaborators);
       })
       .catch(() => { toast.error('Failed to load project'); navigate('/dashboard'); })
       .finally(() => setFetching(false));
   }, [id, isEdit, navigate]);
+
+  const [unlockLoading, setUnlockLoading] = useState(false);
+  const [showUnlockModal, setShowUnlockModal] = useState(false);
+  const loadRazorpayScript = () => new Promise((resolve) => {
+    if (window.Razorpay) return resolve(true);
+    const script = document.createElement('script');
+    script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+    script.onload = () => resolve(true);
+    script.onerror = () => resolve(false);
+    document.body.appendChild(script);
+  });
+
+  const handleUnlockSale = async () => {
+    const loaded = await loadRazorpayScript();
+    if (!loaded) {
+      toast.error('Razorpay SDK failed to load. Are you online?');
+      return;
+    }
+    setUnlockLoading(true);
+    try {
+      const { data: order } = await api.post('/payments/opportunity-unlock/create-order', { type: 'project_sale' });
+      const options = {
+        key: import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_live_SycsEGlG62kjPc',
+        amount: order.amount,
+        currency: order.currency,
+        name: 'ShareMyApps',
+        description: 'Unlock Project Sale Feature',
+        order_id: order.orderId,
+        handler: async (response) => {
+          try {
+            const { data: res } = await api.post('/payments/opportunity-unlock/verify', {
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature,
+              type: 'project_sale',
+            });
+            toast.success('Project sale feature unlocked!');
+            // Force user update in context
+            if (window.__triggerAuthRefresh) window.__triggerAuthRefresh();
+            setForSale(true);
+          } catch (err) {
+            toast.error(err.response?.data?.message || 'Payment verification failed.');
+          } finally {
+            setUnlockLoading(false);
+          }
+        },
+        prefill: {
+          name: user?.name || '',
+          email: user?.email || '',
+          contact: user?.phone || '',
+        },
+        theme: { color: '#00A693' },
+      };
+      const rzp = new window.Razorpay(options);
+      rzp.open();
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to initiate payment.');
+      setUnlockLoading(false);
+    }
+  };
+
+  const handleToggleForSale = () => {
+    if (forSale) {
+      setForSale(false);
+    } else {
+      if (isFeatured || (user?.projectMonetizeCredits && user.projectMonetizeCredits > 0)) {
+        setForSale(true);
+      } else {
+        setShowUnlockModal(true);
+      }
+    }
+  };
 
   useEffect(() => {
     const atIdx = collabInput.lastIndexOf('@');
@@ -387,11 +461,16 @@ export default function ProjectForm() {
                   <h3 className="text-sm font-semibold text-text mb-0.5">Available for sale</h3>
                   <p className="text-xs text-muted">Offer the source code of this project for purchase. GitHub repo will be hidden from others.</p>
                 </div>
-                <div
-                  onClick={() => setForSale(v => !v)}
-                  className={`w-9 h-5 rounded-full transition-colors relative shrink-0 cursor-pointer mt-0.5 ${forSale ? 'bg-amber-500' : 'bg-[#D1D5DB]'}`}
-                >
-                  <span className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${forSale ? 'translate-x-4' : 'translate-x-0.5'}`} />
+                <div className="flex items-center gap-2 shrink-0">
+                  <button
+                    type="button"
+                    onClick={handleToggleForSale}
+                    disabled={unlockLoading}
+                    className={`w-10 h-6 rounded-full transition-colors relative shrink-0 mt-0.5 ${forSale ? 'bg-amber-500' : 'bg-[#D1D5DB]'} ${unlockLoading ? 'opacity-50 cursor-wait' : 'cursor-pointer'}`}
+                  >
+                    <span className={`absolute top-1 left-0 w-4 h-4 bg-white rounded-full shadow transition-transform ${forSale ? 'translate-x-5' : 'translate-x-1'}`} />
+                  </button>
+                  <Crown size={15} className="text-amber-500 fill-amber-400 shrink-0" title="Premium Feature" />
                 </div>
               </div>
               {forSale && (
@@ -497,6 +576,40 @@ export default function ProjectForm() {
 
       </form>
     </div>
+
+    {/* Project Sale Unlock Explanation Modal */}
+    {showUnlockModal && (
+      <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
+        <div className="bg-white rounded-3xl w-full max-w-sm border border-border shadow-2xl p-6 text-center animate-in fade-in zoom-in-95 duration-200">
+          <div className="w-16 h-16 bg-amber-50 rounded-full flex items-center justify-center mx-auto mb-4 border border-amber-100">
+            <Crown size={32} className="text-amber-500 fill-amber-400" />
+          </div>
+          <h2 className="text-xl font-bold text-text mb-2">Monetize your project</h2>
+          <p className="text-sm text-muted mb-6 leading-relaxed">
+            Want to monetize your hard work? Unlock the ability to sell the source code of this project directly to other users. As a bonus, this project will get a <strong>Featured</strong> badge and appear at the top of the project list page! This is a one-time fee applicable for this project only.
+          </p>
+          <div className="flex gap-3">
+            <button
+              type="button"
+              onClick={() => setShowUnlockModal(false)}
+              className="flex-1 py-3 rounded-xl border border-border text-sm font-semibold text-text hover:bg-gray-50 transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setShowUnlockModal(false);
+                handleUnlockSale();
+              }}
+              className="flex-1 py-3 rounded-xl bg-accent hover:bg-accent-hover text-white text-sm font-semibold shadow-md shadow-accent/20 transition-all"
+            >
+              Proceed to Pay
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
     </>
   );
 }
