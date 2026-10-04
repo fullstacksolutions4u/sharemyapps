@@ -20,6 +20,7 @@ export default function AdminCustomersDatabaseSection() {
         setUsers(res.data.users);
       }
     } catch (err) {
+      console.error(err);
       toast.error('Failed to load customers database');
     } finally {
       setLoading(false);
@@ -27,6 +28,7 @@ export default function AdminCustomersDatabaseSection() {
   };
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchUsers();
   }, []);
 
@@ -41,10 +43,6 @@ export default function AdminCustomersDatabaseSection() {
     );
   });
 
-  // Reset to first page when search changes
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [search]);
 
   const totalPages = Math.ceil(filteredUsers.length / itemsPerPage) || 1;
   const paginatedUsers = filteredUsers.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
@@ -105,7 +103,10 @@ export default function AdminCustomersDatabaseSection() {
               type="text"
               placeholder="Search by name, email, phone or state..."
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setCurrentPage(1);
+              }}
               className="w-full pl-10 pr-4 py-2.5 bg-[#F9F8F6] border border-[#E5E1DA] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#00A693]/20 focus:border-[#00A693] transition-all"
             />
           </div>
