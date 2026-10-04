@@ -11,15 +11,16 @@ async function run() {
     console.log('Connected to DB');
     
     const users = await User.find({}).lean();
-    console.log('Found ' + users.length + ' users. Sending to SS HR with updated state mapping...');
+    console.log('Found ' + users.length + ' users. Sending to SS HR with linkedinUrl...');
 
     const formattedUsers = users.map(user => ({
       name: user.name,
       email: user.email,
       phone: user.phone || '',
-      state: user.state || '', // Fixed mapping
+      state: user.state || '',
       designations: user.designations || [],
       cvUrl: user.cvUrl || '',
+      linkedinUrl: user.linkedinUrl || '', // Added linkedinUrl
       source: 'ShareMyApps'
     }));
 

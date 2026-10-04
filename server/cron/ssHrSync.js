@@ -22,9 +22,10 @@ const syncUsersToSSHR = async () => {
       name: user.name,
       email: user.email,
       phone: user.phone || '',
-      state: user.state || '', // Fixed location to state
+      state: user.state || '',
       designations: user.designations || [],
       cvUrl: user.cvUrl || '',
+      linkedinUrl: user.linkedinUrl || '', // Added linkedinUrl
       source: 'ShareMyApps'
     }));
 
