@@ -424,7 +424,7 @@ export default function Portfolios() {
         {/* Grid */}
         {loading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-            {Array.from({ length: 6 }).map((_, i) => <SkeletonCard key={i} />)}
+            {Array.from({ length: 12 }).map((_, i) => <SkeletonCard key={i} />)}
           </div>
         ) : developers.length === 0 ? (
           <div className="bg-white border border-border rounded-2xl p-20 text-center shadow-sm">

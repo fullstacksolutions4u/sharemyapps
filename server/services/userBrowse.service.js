@@ -307,23 +307,26 @@ class UserBrowseService {
       userBrowseRepo.getDevelopers(premiumCountPipeline)
     ]);
 
+
+    const MAX_PREMIUMS_PER_PAGE = 6;
+
     const totalCount = countResult[0]?.n ?? 0;
     const totalPremiumUsers = premiumCountResult[0]?.n ?? 0;
 
-    const prevDevs = (page - 1) * 12;
-    const prevPremiums = Math.min((page - 1) * 4, totalPremiumUsers);
+    const prevDevs = (page - 1) * LIMIT;
+    const prevPremiums = Math.min((page - 1) * MAX_PREMIUMS_PER_PAGE, totalPremiumUsers);
     
     const premiumSkip = prevPremiums;
     const normalSkip = prevDevs - prevPremiums;
 
-    const availablePremiumsThisPage = Math.max(0, Math.min(4, totalPremiumUsers - prevPremiums));
-    const normalLimit = 12 - availablePremiumsThisPage;
+    const availablePremiumsThisPage = Math.max(0, Math.min(MAX_PREMIUMS_PER_PAGE, totalPremiumUsers - prevPremiums));
+    const normalLimit = LIMIT - availablePremiumsThisPage;
 
     const premiumPipeline = [
       { $match: premiumMatchStage },
       ...baseStages,
       { $skip: premiumSkip },
-      { $limit: 4 }
+      { $limit: MAX_PREMIUMS_PER_PAGE }
     ];
 
     const normalPipeline = [
