@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import {
   LayoutDashboard, FolderOpen, Menu, LogOut,
-  Users, Briefcase, MessageSquare, Camera, IndianRupee, Crown, BookOpen, Unlock, Building2, Link as LinkIcon, Database
+  Users, Briefcase, MessageSquare, Camera, IndianRupee, Crown, BookOpen, Unlock, Building2, Link as LinkIcon, Database, FileText
 } from 'lucide-react';
 import api from '../../api/axios';
 import AdminOverview from './AdminOverview';
@@ -23,6 +23,7 @@ import AdminCurationSection from './AdminCurationSection';
 import AdminCommunitySection from './AdminCommunitySection';
 import AdminPaymentsSection from './AdminPaymentsSection';
 import AdminCustomersDatabaseSection from './AdminCustomersDatabaseSection';
+import AdminDocumentsSection from './AdminDocumentsSection';
 import { optimizeImage } from '../../utils/image';
 
 const NAV = [
@@ -41,6 +42,7 @@ const NAV = [
   { key: 'learning',       label: 'Quiz Zone',        icon: BookOpen },
   { key: 'community',      label: 'Community Feed',   icon: MessageSquare },
   { key: 'customers_database', label: 'Customers Database', icon: Database },
+  { key: 'documents',      label: 'Documents',        icon: FileText },
 ];
 
 export default function AdminPanel() {
@@ -199,6 +201,7 @@ const { user, setUser, logout } = useAuth();
           {section === 'curation'         && <AdminCurationSection />}
           {section === 'community'        && <AdminCommunitySection />}
           {section === 'customers_database' && <AdminCustomersDatabaseSection />}
+          {section === 'documents'        && <AdminDocumentsSection />}
         </div>
       </div>
     </div>
