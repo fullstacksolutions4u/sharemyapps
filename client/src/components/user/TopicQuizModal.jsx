@@ -27,7 +27,7 @@ const TopicQuizModal = ({
   const resetState = useCallback((index) => {
     if (!quizzes || !quizzes[index]) return;
     const quizId = quizzes[index]._id;
-    const attempt = localAttempts.find(a => a.quizId.toString() === quizId.toString());
+    const attempt = localAttempts.find(a => String(a.quizId) === String(quizId));
     if (attempt) {
       setSelectedOption(null);
       setIsCorrect(attempt.isCorrect);
