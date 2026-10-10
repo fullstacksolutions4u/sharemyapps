@@ -26,6 +26,8 @@ function homeFor(user) {
 export default function Login() {
   const { login, register } = useAuth();
   const navigate = useNavigate();
+  const apiUrl = import.meta.env.VITE_API_URL || '';
+  const googleAuthUrl = `${apiUrl}/api/auth/google`;
   const [params] = useSearchParams();
   const [tab, setTab] = useState(params.get('signup') === '1' ? 'signup' : 'signin');
   const [isInAppBrowser] = useState(() => {
@@ -100,7 +102,7 @@ export default function Login() {
             </div>
           ) : (
             <a
-              href={`/api/auth/google`}
+              href={googleAuthUrl}
               className="flex items-center justify-center gap-3 w-full border border-border hover:border-text bg-white px-4 py-2.5 rounded-xl text-sm font-medium text-text transition-colors"
             >
               <GoogleIcon />
@@ -245,7 +247,7 @@ export default function Login() {
                 </div>
               ) : (
                 <a
-                  href={`/api/auth/google`}
+                  href={googleAuthUrl}
                   className="flex items-center justify-center gap-3 w-full border border-border hover:border-text bg-white px-4 py-2.5 rounded-xl text-sm font-medium text-text transition-colors"
                 >
                   <GoogleIcon />
