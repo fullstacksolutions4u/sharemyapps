@@ -26,7 +26,6 @@ function homeFor(user) {
 export default function Login() {
   const { login, register } = useAuth();
   const navigate = useNavigate();
-  const apiUrl = import.meta.env.VITE_API_URL || '';
   const googleAuthUrl = `/api/auth/google`;
   const [params] = useSearchParams();
   const [tab, setTab] = useState(params.get('signup') === '1' ? 'signup' : 'signin');
