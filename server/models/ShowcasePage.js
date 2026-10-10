@@ -26,7 +26,6 @@ const showcasePageSchema = new mongoose.Schema({
   createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
 }, { timestamps: true });
 
-showcasePageSchema.index({ slug: 1 });
 showcasePageSchema.index({ isActive: 1, createdAt: -1 });
 
 module.exports = mongoose.model('ShowcasePage', showcasePageSchema);

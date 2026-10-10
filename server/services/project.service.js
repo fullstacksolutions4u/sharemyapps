@@ -14,7 +14,7 @@ const {
   isPrivatePairUser,
 } = require('../utils/visibility');
 
-const PAGE_SIZE = 16;
+const PAGE_SIZE = 20;
 
 const ownerLookupStages = [
   {

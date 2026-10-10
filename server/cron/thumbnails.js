@@ -35,7 +35,9 @@ async function processMissingThumbnails() {
           console.log(`[Thumbnail Cron] Successfully updated thumbnail for ${project.title}`);
         } else {
           console.log(`[Thumbnail Cron] Failed to generate thumbnail for ${project.title}`);
-          // Optional: We could set bannerImage to a placeholder or a 'failed' marker to avoid infinite retries
+          // Fallback to mshots URL to prevent infinite retries hitting the rate limit
+          project.bannerImage = `https://s0.wordpress.com/mshots/v1/${encodeURIComponent(project.liveUrl)}?w=800`;
+          await project.save();
         }
       }
     }

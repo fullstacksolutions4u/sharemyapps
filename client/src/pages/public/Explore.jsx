@@ -22,7 +22,7 @@ const CATEGORIES = [
   'Open Source Project', 'Portfolios', 'Company Website',
 ];
 
-const SKELETONS = Array.from({ length: 16 });
+const SKELETONS = Array.from({ length: 20 });
 const GROUP = 10;
 const getPageGroup = (current, total) => {
   const groupStart = Math.floor((current - 1) / GROUP) * GROUP + 1;
@@ -200,7 +200,7 @@ export default function Explore() {
         const { groupStart, groupEnd, hasPrev, hasNext } = getPageGroup(page, pages);
 
         // Calculate the range shown on the current page
-        const PAGE_SIZE = 16;
+        const PAGE_SIZE = 20;
         let from, to;
         from = (page - 1) * PAGE_SIZE + 1;
         to = Math.min(from + projects.length - 1, total);

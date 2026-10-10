@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import {
   FileText, Star, Globe,
@@ -383,7 +383,7 @@ export default function CurationShowcase() {
           <div className="text-6xl mb-4">🔒</div>
           <h1 className="text-2xl font-bold text-white mb-2">Showcase Unavailable</h1>
           <p className="text-white/50">{error}</p>
-          <p className="text-xs text-white/30 mt-4">ShareMyApps — Where Developers Meet Opportunity</p>
+          <p className="text-xs text-white/30 mt-4">ShareMyApps</p>
         </div>
       </div>
     );
@@ -485,7 +485,7 @@ export default function CurationShowcase() {
       {/* Footer */}
       <div className="text-center py-10 border-t border-[#E5E1DA] mt-8">
         <img src={LOGO_URL} alt="ShareMyApps" className="h-6 object-contain mx-auto mb-2 opacity-50" />
-        <p className="text-xs text-[#9CA3AF]">Powered by <span className="font-semibold text-[#00A693]">ShareMyApps</span> — Where Developers Meet Opportunity</p>
+        <p className="text-xs text-[#9CA3AF]">Powered by <span className="font-semibold text-[#00A693]">ShareMyApps</span></p>
         <p className="text-xs text-[#C4C0B8] mt-1">This page is confidential and intended for the recipient only.</p>
       </div>
 
