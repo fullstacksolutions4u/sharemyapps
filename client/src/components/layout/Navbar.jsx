@@ -1,7 +1,7 @@
 import { useRef, useState, useEffect } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link, useNavigate } from 'react-router-dom';
-import { Menu, X, ChevronDown, LogOut, ShieldCheck, Bell, CheckCircle, XCircle, Clock, MessageSquare, AlertCircle, Heart, Star, MessageCircle, Briefcase, LayoutDashboard, Crown, ChevronRight, MonitorDown } from 'lucide-react';
+import { Menu, X, ChevronDown, LogOut, ShieldCheck, Bell, CheckCircle, XCircle, Clock, MessageSquare, AlertCircle, Heart, Star, MessageCircle, Briefcase, LayoutDashboard, Crown, ChevronRight } from 'lucide-react';
 import { progressAPI } from '../../api/tick2test';
 
 const GeminiIcon = ({ size = 14 }) => (
@@ -13,6 +13,17 @@ const GeminiIcon = ({ size = 14 }) => (
         <stop offset="100%" stopColor="#8B5CF6"/>
       </linearGradient>
     </defs>
+  </svg>
+);
+
+const ChromeInstallIcon = ({ size = 18 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="2" y="3" width="20" height="14" rx="2" />
+    <line x1="8" y1="21" x2="16" y2="21" />
+    <line x1="12" y1="17" x2="12" y2="21" />
+    <path d="M12 6v6" />
+    <path d="M9 9l3 3 3-3" />
+    <line x1="8" y1="15" x2="16" y2="15" />
   </svg>
 );
 import { useAuth } from '../../context/AuthContext';
@@ -45,9 +56,9 @@ function InstallPWAButton() {
     <button
       onClick={handleInstallClick}
       title="Install App"
-      className="flex items-center justify-center p-1.5 text-gray-400 hover:text-accent transition-colors rounded-full hover:bg-bg shrink-0"
+      className="flex items-center justify-center p-1.5 text-gray-400 hover:text-gray-600 transition-colors rounded-full hover:bg-bg shrink-0"
     >
-      <MonitorDown size={18} strokeWidth={2.5} />
+      <ChromeInstallIcon size={20} />
     </button>
   );
 }
