@@ -1,7 +1,7 @@
 import { useRef, useState, useEffect } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link, useNavigate } from 'react-router-dom';
-import { Menu, X, ChevronDown, LogOut, ShieldCheck, Bell, CheckCircle, XCircle, Clock, MessageSquare, AlertCircle, Heart, Star, MessageCircle, Briefcase, LayoutDashboard, Crown, ChevronRight, Download } from 'lucide-react';
+import { Menu, X, ChevronDown, LogOut, ShieldCheck, Bell, CheckCircle, XCircle, Clock, MessageSquare, AlertCircle, Heart, Star, MessageCircle, Briefcase, LayoutDashboard, Crown, ChevronRight, MonitorDown } from 'lucide-react';
 import { progressAPI } from '../../api/tick2test';
 
 const GeminiIcon = ({ size = 14 }) => (
@@ -45,9 +45,9 @@ function InstallPWAButton() {
     <button
       onClick={handleInstallClick}
       title="Install App"
-      className="flex items-center justify-center p-1.5 text-muted hover:text-accent transition-colors rounded-full hover:bg-bg shrink-0"
+      className="flex items-center justify-center p-1.5 text-gray-400 hover:text-accent transition-colors rounded-full hover:bg-bg shrink-0"
     >
-      <Download size={18} />
+      <MonitorDown size={18} strokeWidth={2.5} />
     </button>
   );
 }
@@ -425,16 +425,16 @@ export default function Navbar() {
 
           {/* Action buttons / User profile area (fixed width ensures menus stay in exact same position after login) */}
           {user ? (
-            <div className="flex items-center justify-start w-[232px] shrink-0 gap-4">
-              <InstallPWAButton />
+            <div className="flex items-center justify-start w-[232px] shrink-0 gap-3">
               <UserDropdown user={user} onLogout={handleLogout} />
+              <InstallPWAButton />
             </div>
           ) : (
-            <div className="flex items-center justify-start w-[232px] shrink-0 gap-4">
-              <InstallPWAButton />
+            <div className="flex items-center justify-start w-[232px] shrink-0 gap-3">
               <Link to="/login" className="text-sm bg-accent hover:bg-accent-hover text-white px-4 py-2 rounded-lg transition-colors font-medium whitespace-nowrap">
                 Join Now
               </Link>
+              <InstallPWAButton />
             </div>
           )}
         </div>
