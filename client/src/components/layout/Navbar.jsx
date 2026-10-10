@@ -16,52 +16,14 @@ const GeminiIcon = ({ size = 14 }) => (
   </svg>
 );
 
-const ChromeInstallIcon = ({ size = 18 }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-    <rect x="2" y="3" width="20" height="14" rx="2" />
-    <line x1="8" y1="21" x2="16" y2="21" />
-    <line x1="12" y1="17" x2="12" y2="21" />
-    <path d="M12 6v6" />
-    <path d="M9 9l3 3 3-3" />
-    <line x1="8" y1="15" x2="16" y2="15" />
-  </svg>
-);
+
 import { useAuth } from '../../context/AuthContext';
 import api from '../../api/axios';
 import toast from 'react-hot-toast';
 import logo from '../../assets/logo.png';
 import { optimizeImage } from '../../utils/image';
 
-function InstallPWAButton() {
-  const [deferredPrompt, setDeferredPrompt] = useState(null);
 
-  useEffect(() => {
-    const handler = (e) => {
-      e.preventDefault();
-      setDeferredPrompt(e);
-    };
-    window.addEventListener('beforeinstallprompt', handler);
-    return () => window.removeEventListener('beforeinstallprompt', handler);
-  }, []);
-
-  if (!deferredPrompt) return null;
-
-  const handleInstallClick = async () => {
-    deferredPrompt.prompt();
-    const { outcome } = await deferredPrompt.userChoice;
-    if (outcome === 'accepted') setDeferredPrompt(null);
-  };
-
-  return (
-    <button
-      onClick={handleInstallClick}
-      title="Install App"
-      className="flex items-center justify-center p-1.5 text-gray-400 hover:text-gray-600 transition-colors rounded-full hover:bg-bg shrink-0"
-    >
-      <ChromeInstallIcon size={20} />
-    </button>
-  );
-}
 
 const typeIcon = {
   approved:      <CheckCircle size={14} className="text-green-500 shrink-0" />,
@@ -438,21 +400,18 @@ export default function Navbar() {
           {user ? (
             <div className="flex items-center justify-start w-[232px] shrink-0 gap-3">
               <UserDropdown user={user} onLogout={handleLogout} />
-              <InstallPWAButton />
             </div>
           ) : (
             <div className="flex items-center justify-start w-[232px] shrink-0 gap-3">
               <Link to="/login" className="text-sm bg-accent hover:bg-accent-hover text-white px-4 py-2 rounded-lg transition-colors font-medium whitespace-nowrap">
                 Join Now
               </Link>
-              <InstallPWAButton />
             </div>
           )}
         </div>
 
         {/* Mobile toggle */}
         <div className="md:hidden flex items-center gap-2">
-          <InstallPWAButton />
           {user && <UserDropdown user={user} onLogout={handleLogout} />}
           <button className="text-muted" onClick={() => setMenuOpen(v => !v)}>
             {menuOpen ? <X size={20} /> : <Menu size={20} />}
