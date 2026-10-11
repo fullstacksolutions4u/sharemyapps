@@ -19,6 +19,8 @@ export default function Footer() {
         <Link to="/privacy" className="hover:opacity-75 transition-opacity duration-150">Privacy Policy</Link>
         <span>·</span>
         <Link to="/terms" className="hover:opacity-75 transition-opacity duration-150">Terms of Service</Link>
+        <span>·</span>
+        <Link to="/refund-policy" className="hover:opacity-75 transition-opacity duration-150">Cancellation &amp; Refund Policy</Link>
       </div>
     </footer>
   );

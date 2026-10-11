@@ -2,7 +2,7 @@ export default function PrivacyPolicy() {
   return (
     <div className="max-w-4xl mx-auto px-4 py-12 md:py-20 text-text">
       <h1 className="text-3xl md:text-4xl font-bold mb-4">Privacy Policy</h1>
-      <p className="text-sm text-text/60 mb-10">Last updated: June 1, 2025</p>
+      <p className="text-sm text-text/60 mb-10">Last updated: October 11, 2026</p>
 
       <div className="space-y-8 text-sm md:text-base leading-relaxed">
 
@@ -11,13 +11,13 @@ export default function PrivacyPolicy() {
           <h2 className="text-xl font-semibold mb-3">1. Introduction</h2>
           <p>
             Welcome to <strong>ShareMyApps</strong> ("we", "us", or "our"), a platform at{" "}
-            <a href="https://sharemyapps.in" className="underline">https://sharemyapps.in</a> that
-            helps developers showcase their side-projects to clients and recruiters. This Privacy
-            Policy explains what personal data we collect, why we collect it, how we use and
-            protect it, and the rights you have over your data.
+            <a href="https://sharemyapps.in" className="underline text-accent">https://sharemyapps.in</a> that
+            helps developers showcase their side-projects to clients and recruiters, access mentorship, and 
+            receive placement assistance. This Privacy Policy explains what personal data we collect, why we 
+            collect it, how we use and protect it, and the rights you have over your data.
           </p>
           <p className="mt-3">
-            By creating an account or otherwise using ShareMyApps, you agree to the practices
+            By creating an account, making a purchase, or otherwise using ShareMyApps, you agree to the practices
             described in this policy. If you do not agree, please do not use our services.
           </p>
         </section>
@@ -72,11 +72,36 @@ export default function PrivacyPolicy() {
               href="https://cloudinary.com/privacy"
               target="_blank"
               rel="noreferrer"
-              className="underline"
+              className="underline text-accent"
             >
               Cloudinary's Privacy Policy
             </a>{" "}
             for their data practices.
+          </p>
+
+          <h3 className="font-semibold mt-4 mb-2">2.5 Payment &amp; Financial Information (Razorpay Gateway)</h3>
+          <p>
+            When you purchase paid plans or digital services on ShareMyApps (such as Job Assistance, Mentorship, or AI Analysis packages), 
+            your payment is securely processed by our third-party payment gateway partner, <strong>Razorpay Software Private Limited</strong> ("Razorpay").
+          </p>
+          <p className="mt-2">
+            <strong>ShareMyApps does NOT collect, capture, or store sensitive payment credentials</strong> such as credit/debit card numbers, 
+            CVV codes, card PINs, or Net Banking credentials. All sensitive payment details are entered directly on Razorpay's encrypted checkout 
+            interface. Razorpay is certified under the <strong>Payment Card Industry Data Security Standard (PCI-DSS Level 1)</strong>, ensuring the 
+            highest level of transaction security.
+          </p>
+          <p className="mt-2">
+            We receive and store only non-sensitive transaction confirmation metadata (including Razorpay Order ID, Payment ID, amount paid, 
+            currency, transaction status, and timestamp) in our secure database to verify your purchase, activate your account features, 
+            and fulfill our accounting and tax obligations. For more information, please review the{" "}
+            <a
+              href="https://razorpay.com/privacy/"
+              target="_blank"
+              rel="noreferrer"
+              className="underline text-accent"
+            >
+              Razorpay Privacy Policy
+            </a>.
           </p>
         </section>
 
@@ -86,12 +111,13 @@ export default function PrivacyPolicy() {
           <p>We use the information described above for the following purposes:</p>
           <ul className="list-disc pl-5 mt-2 space-y-1">
             <li><strong>Account management:</strong> to create, authenticate, and maintain your account.</li>
-            <li><strong>Service delivery:</strong> to display your profile and projects to other users and to enable the messaging, commenting, and project-rating features.</li>
+            <li><strong>Service delivery:</strong> to display your profile and projects, deliver scheduled 1-on-1 mentorship or placement consultations, and provide access to purchased AI tools.</li>
+            <li><strong>Payment and billing processing:</strong> to verify transactions via Razorpay, issue digital payment receipts, and maintain account billing history.</li>
             <li><strong>Personalisation:</strong> to show you relevant projects, developers, or job postings based on your stated role and interests.</li>
-            <li><strong>Security and fraud prevention:</strong> to detect, investigate, and prevent abuse or unauthorised access.</li>
+            <li><strong>Security and fraud prevention:</strong> to detect, investigate, and prevent payment abuse, unauthorized access, or fraudulent transactions.</li>
             <li><strong>Platform improvement:</strong> to analyse aggregated, anonymised usage trends and to debug errors.</li>
-            <li><strong>Communications:</strong> to send you transactional emails (e.g., password reset, account notifications). We do not send unsolicited marketing emails.</li>
-            <li><strong>Legal compliance:</strong> to comply with applicable laws and regulations.</li>
+            <li><strong>Communications:</strong> to send you transactional emails (e.g., payment receipts, password reset, account notifications). We do not send unsolicited marketing emails.</li>
+            <li><strong>Legal compliance:</strong> to comply with applicable tax, financial, and regulatory laws.</li>
           </ul>
         </section>
 
@@ -119,10 +145,12 @@ export default function PrivacyPolicy() {
           </p>
           <ul className="list-disc pl-5 mt-2 space-y-1">
             <li>
-              <strong>Service providers:</strong> Cloudinary (image hosting), MongoDB Atlas
+              <strong>Payment Gateways:</strong> <strong>Razorpay Software Private Limited</strong> — to process secure digital transactions and process refunds when requested.
+            </li>
+            <li>
+              <strong>Infrastructure &amp; Storage Providers:</strong> Cloudinary (image hosting), MongoDB Atlas
               (database hosting), and Google Cloud / Firebase (infrastructure and authentication).
-              These providers act as data processors and are contractually obligated to protect
-              your data.
+              These providers act as data processors and are contractually obligated to protect your data.
             </li>
             <li>
               <strong>Other users:</strong> your public profile information, projects, and
@@ -265,14 +293,18 @@ export default function PrivacyPolicy() {
           </p>
           <ul className="list-none mt-2 space-y-1">
             <li>
-              <strong>Email:</strong>{" "}
-              <a href="mailto:hello@sharemyapps.in" className="underline">
+              <strong>Support Email:</strong>{" "}
+              <a href="mailto:hello@sharemyapps.in" className="underline text-accent">
                 hello@sharemyapps.in
+              </a>{" "}
+              /{" "}
+              <a href="mailto:sharemyappsportal@gmail.com" className="underline text-accent">
+                sharemyappsportal@gmail.com
               </a>
             </li>
             <li>
               <strong>Website:</strong>{" "}
-              <a href="https://sharemyapps.in" className="underline">
+              <a href="https://sharemyapps.in" className="underline text-accent">
                 https://sharemyapps.in
               </a>
             </li>

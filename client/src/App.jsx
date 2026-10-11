@@ -107,7 +107,11 @@ function AdminRedirect() {
 }
 
 // Pages where the footer should be visible (public-facing only)
-const PUBLIC_FOOTER_PATHS = ['/', '/projects', '/explore', '/login', '/register', '/privacy-policy', '/forgot-password'];
+const PUBLIC_FOOTER_PATHS = [
+  '/', '/projects', '/explore', '/login', '/register', 
+  '/privacy', '/privacy-policy', '/terms', '/terms-of-service', 
+  '/refund-policy', '/cancellation-refund', '/forgot-password'
+];
 
 function AppRoutes() {
   const location = useLocation();
@@ -183,7 +187,11 @@ function AppRoutes() {
             <Route path="/shared-profiles/:id/candidate/:sessionId" element={<SharedProfileDetail />} />
             <Route path="/showcase/:slug" element={<CurationShowcase />} />
             <Route path="/privacy" element={<PrivacyPolicy />} />
+            <Route path="/privacy-policy" element={<PrivacyPolicy />} />
             <Route path="/terms" element={<TermsOfService />} />
+            <Route path="/terms-of-service" element={<TermsOfService />} />
+            <Route path="/refund-policy" element={<TermsOfService />} />
+            <Route path="/cancellation-refund" element={<TermsOfService />} />
             <Route path="/admin" element={<AdminRoute><AdminPanel /></AdminRoute>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
