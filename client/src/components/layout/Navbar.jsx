@@ -341,7 +341,7 @@ export default function Navbar() {
 
   return (
     <header className="sticky top-0 z-50 bg-white border-b border-border">
-      <div className="w-full max-w-[1550px] mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-8 lg:gap-16">
+      <div className="w-full max-w-[1550px] mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between md:justify-center md:gap-12 lg:gap-20 xl:gap-28 2xl:gap-36">
         {/* Left: Logo */}
         <Link to="/" className="flex items-center gap-2 shrink-0">
           <img src={logo} alt="ShareMyApps" className="h-8 w-auto" />
@@ -354,59 +354,55 @@ export default function Navbar() {
           </div>
         </Link>
 
-        {/* Desktop Nav + Action buttons grouped together */}
-        <div className="hidden md:flex items-center gap-6 lg:gap-10 flex-nowrap shrink-0">
-          <nav className="flex items-center gap-6 lg:gap-10 xl:gap-14 flex-nowrap shrink-0">
-            <Link to="/feed" className="relative text-base font-bold text-muted hover:text-text transition-colors whitespace-nowrap shrink-0 after:absolute after:left-0 after:-bottom-0.5 after:h-[1.5px] after:w-0 after:bg-accent after:transition-[width] after:duration-300 hover:after:w-full">Feed</Link>
-            <Link to="/projects" className="relative text-base font-bold text-muted hover:text-text transition-colors whitespace-nowrap shrink-0 after:absolute after:left-0 after:-bottom-0.5 after:h-[1.5px] after:w-0 after:bg-accent after:transition-[width] after:duration-300 hover:after:w-full">Projects</Link>
-            <Link to="/portfolios" className="relative text-base font-bold text-muted hover:text-text transition-colors whitespace-nowrap shrink-0 after:absolute after:left-0 after:-bottom-0.5 after:h-[1.5px] after:w-0 after:bg-accent after:transition-[width] after:duration-300 hover:after:w-full">
-              Portfolios
+        {/* Center: Desktop Nav menus */}
+        <nav className="hidden md:flex items-center justify-center gap-4 lg:gap-6 xl:gap-8 2xl:gap-10 flex-nowrap shrink-0">
+          <Link to="/feed" className="relative text-sm xl:text-base font-bold text-muted hover:text-text transition-colors whitespace-nowrap shrink-0 after:absolute after:left-0 after:-bottom-0.5 after:h-[1.5px] after:w-0 after:bg-accent after:transition-[width] after:duration-300 hover:after:w-full">Feed</Link>
+          <Link to="/projects" className="relative text-sm xl:text-base font-bold text-muted hover:text-text transition-colors whitespace-nowrap shrink-0 after:absolute after:left-0 after:-bottom-0.5 after:h-[1.5px] after:w-0 after:bg-accent after:transition-[width] after:duration-300 hover:after:w-full">Projects</Link>
+          <Link to="/portfolios" className="relative text-sm xl:text-base font-bold text-muted hover:text-text transition-colors whitespace-nowrap shrink-0 after:absolute after:left-0 after:-bottom-0.5 after:h-[1.5px] after:w-0 after:bg-accent after:transition-[width] after:duration-300 hover:after:w-full">
+            Portfolios
+          </Link>
+          {isClient && (
+            <Link to="/freelance-developers" className="relative text-sm xl:text-base font-bold text-muted hover:text-text transition-colors whitespace-nowrap shrink-0 after:absolute after:left-0 after:-bottom-0.5 after:h-[1.5px] after:w-0 after:bg-accent after:transition-[width] after:duration-300 hover:after:w-full">Freelance Developers</Link>
+          )}
+          {isRecruiter && (
+            <Link to="/find-developers" className="relative inline-flex items-center gap-1.5 text-sm xl:text-base font-bold text-muted hover:text-text transition-colors whitespace-nowrap shrink-0 after:absolute after:left-0 after:-bottom-0.5 after:h-[1.5px] after:w-0 after:bg-accent after:transition-[width] after:duration-300 hover:after:w-full">
+              AI Talent Search
+              <GeminiIcon size={14} />
             </Link>
-            {isClient && (
-              <Link to="/freelance-developers" className="relative text-base font-bold text-muted hover:text-text transition-colors whitespace-nowrap shrink-0 after:absolute after:left-0 after:-bottom-0.5 after:h-[1.5px] after:w-0 after:bg-accent after:transition-[width] after:duration-300 hover:after:w-full">Freelance Developers</Link>
-            )}
-            {isRecruiter && (
-              <Link to="/find-developers" className="relative inline-flex items-center gap-1.5 text-base font-bold text-muted hover:text-text transition-colors whitespace-nowrap shrink-0 after:absolute after:left-0 after:-bottom-0.5 after:h-[1.5px] after:w-0 after:bg-accent after:transition-[width] after:duration-300 hover:after:w-full">
-                AI Talent Search
-                <GeminiIcon size={14} />
+          )}
+          {isRecruiter && (
+            <Link to="/find-developers/history" className="relative text-sm xl:text-base font-bold text-muted hover:text-text transition-colors whitespace-nowrap shrink-0 after:absolute after:left-0 after:-bottom-0.5 after:h-[1.5px] after:w-0 after:bg-accent after:transition-[width] after:duration-300 hover:after:w-full">Developers Directory</Link>
+          )}
+          {isRecruiter && (
+            <Link to="/post-vacancy" className="relative text-sm xl:text-base font-bold text-muted hover:text-text transition-colors whitespace-nowrap shrink-0 after:absolute after:left-0 after:-bottom-0.5 after:h-[1.5px] after:w-0 after:bg-accent after:transition-[width] after:duration-300 hover:after:w-full">Post Vacancy</Link>
+          )}
+          {isMentee && (
+            <Link to="/mentors" className="relative text-sm xl:text-base font-bold text-muted hover:text-text transition-colors whitespace-nowrap shrink-0 after:absolute after:left-0 after:-bottom-0.5 after:h-[1.5px] after:w-0 after:bg-accent after:transition-[width] after:duration-300 hover:after:w-full">Mentors</Link>
+          )}
+          {!isRecruiter && !isClient && !isMentee && !isMentor && (
+            <>
+              <Link to="/opportunities" className="relative text-sm xl:text-base font-bold text-muted hover:text-text transition-colors whitespace-nowrap shrink-0 after:absolute after:left-0 after:-bottom-0.5 after:h-[1.5px] after:w-0 after:bg-accent after:transition-[width] after:duration-300 hover:after:w-full">Opportunities</Link>
+              <Link to="/mentorship" className="relative inline-flex items-center gap-1.5 text-sm xl:text-base font-bold text-muted hover:text-text transition-colors whitespace-nowrap shrink-0 after:absolute after:left-0 after:-bottom-0.5 after:h-[1.5px] after:w-0 after:bg-accent after:transition-[width] after:duration-300 hover:after:w-full">
+                <Crown size={15} className="text-amber-500 shrink-0" />
+                Mentorship Program
               </Link>
-            )}
-            {isRecruiter && (
-              <Link to="/find-developers/history" className="relative text-base font-bold text-muted hover:text-text transition-colors whitespace-nowrap shrink-0 after:absolute after:left-0 after:-bottom-0.5 after:h-[1.5px] after:w-0 after:bg-accent after:transition-[width] after:duration-300 hover:after:w-full">Developers Directory</Link>
-            )}
-            {isRecruiter && (
-              <Link to="/post-vacancy" className="relative text-base font-bold text-muted hover:text-text transition-colors whitespace-nowrap shrink-0 after:absolute after:left-0 after:-bottom-0.5 after:h-[1.5px] after:w-0 after:bg-accent after:transition-[width] after:duration-300 hover:after:w-full">Post Vacancy</Link>
-            )}
-            {isMentee && (
-              <Link to="/mentors" className="relative text-base font-bold text-muted hover:text-text transition-colors whitespace-nowrap shrink-0 after:absolute after:left-0 after:-bottom-0.5 after:h-[1.5px] after:w-0 after:bg-accent after:transition-[width] after:duration-300 hover:after:w-full">Mentors</Link>
-            )}
-            {!isRecruiter && !isClient && !isMentee && !isMentor && (
-              <>
-                <Link to="/opportunities" className="relative text-base font-bold text-muted hover:text-text transition-colors whitespace-nowrap shrink-0 after:absolute after:left-0 after:-bottom-0.5 after:h-[1.5px] after:w-0 after:bg-accent after:transition-[width] after:duration-300 hover:after:w-full">Opportunities</Link>
-                <Link to="/mentorship" className="relative inline-flex items-center gap-1.5 text-base font-bold text-muted hover:text-text transition-colors whitespace-nowrap shrink-0 after:absolute after:left-0 after:-bottom-0.5 after:h-[1.5px] after:w-0 after:bg-accent after:transition-[width] after:duration-300 hover:after:w-full">
-                  <Crown size={15} className="text-amber-500 shrink-0" />
-                  Mentorship Program
-                </Link>
-                <Link to="/placement" className="relative inline-flex items-center gap-1.5 text-base font-bold text-muted hover:text-text transition-colors whitespace-nowrap shrink-0 after:absolute after:left-0 after:-bottom-0.5 after:h-[1.5px] after:w-0 after:bg-accent after:transition-[width] after:duration-300 hover:after:w-full">
-                  <Crown size={15} className="text-amber-500 shrink-0" />
-                  Job Assistance Services
-                </Link>
-                <Link to="/quiz-zone" className="relative text-base font-bold text-muted hover:text-text transition-colors whitespace-nowrap shrink-0 after:absolute after:left-0 after:-bottom-0.5 after:h-[1.5px] after:w-0 after:bg-accent after:transition-[width] after:duration-300 hover:after:w-full">Quiz Zone</Link>
-              </>
-            )}
-          </nav>
+              <Link to="/placement" className="relative inline-flex items-center gap-1.5 text-sm xl:text-base font-bold text-muted hover:text-text transition-colors whitespace-nowrap shrink-0 after:absolute after:left-0 after:-bottom-0.5 after:h-[1.5px] after:w-0 after:bg-accent after:transition-[width] after:duration-300 hover:after:w-full">
+                <Crown size={15} className="text-amber-500 shrink-0" />
+                Job Assistance Services
+              </Link>
+              <Link to="/quiz-zone" className="relative text-sm xl:text-base font-bold text-muted hover:text-text transition-colors whitespace-nowrap shrink-0 after:absolute after:left-0 after:-bottom-0.5 after:h-[1.5px] after:w-0 after:bg-accent after:transition-[width] after:duration-300 hover:after:w-full">Quiz Zone</Link>
+            </>
+          )}
+        </nav>
 
-          {/* Action buttons / User profile area (fixed width ensures menus stay in exact same position after login) */}
+        {/* Right: Action buttons / User profile area */}
+        <div className="hidden md:flex items-center shrink-0">
           {user ? (
-            <div className="flex items-center justify-start w-[232px] shrink-0 gap-3">
-              <UserDropdown user={user} onLogout={handleLogout} />
-            </div>
+            <UserDropdown user={user} onLogout={handleLogout} />
           ) : (
-            <div className="flex items-center justify-start w-[232px] shrink-0 gap-3">
-              <Link to="/login" className="text-sm bg-accent hover:bg-accent-hover text-white px-4 py-2 rounded-lg transition-colors font-medium whitespace-nowrap">
-                Join Now
-              </Link>
-            </div>
+            <Link to="/login" className="text-sm bg-accent hover:bg-accent-hover text-white px-4 py-2 rounded-lg transition-colors font-medium whitespace-nowrap">
+              Join Now
+            </Link>
           )}
         </div>
 
