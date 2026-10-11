@@ -1,8 +1,7 @@
 export default function PrivacyPolicy() {
   return (
     <div className="max-w-4xl mx-auto px-4 py-12 md:py-20 text-text">
-      <h1 className="text-3xl md:text-4xl font-bold mb-4">Privacy Policy</h1>
-      <p className="text-sm text-text/60 mb-10">Last updated: October 11, 2026</p>
+      <h1 className="text-3xl md:text-4xl font-bold mb-8">Privacy Policy</h1>
 
       <div className="space-y-8 text-sm md:text-base leading-relaxed">
 
@@ -12,9 +11,9 @@ export default function PrivacyPolicy() {
           <p>
             Welcome to <strong>ShareMyApps</strong> ("we", "us", or "our"), a platform at{" "}
             <a href="https://sharemyapps.in" className="underline text-accent">https://sharemyapps.in</a> that
-            helps developers showcase their side-projects to clients and recruiters, access mentorship, and 
-            receive placement assistance. This Privacy Policy explains what personal data we collect, why we 
-            collect it, how we use and protect it, and the rights you have over your data.
+            helps software developers and digital marketers showcase their projects, marketing campaigns, and portfolios 
+            to clients and recruiters, access mentorship, and receive placement assistance. This Privacy Policy explains 
+            what personal data we collect, why we collect it, how we use and protect it, and the rights you have over your data.
           </p>
           <p className="mt-3">
             By creating an account, making a purchase, or otherwise using ShareMyApps, you agree to the practices
@@ -113,7 +112,7 @@ export default function PrivacyPolicy() {
             <li><strong>Account management:</strong> to create, authenticate, and maintain your account.</li>
             <li><strong>Service delivery:</strong> to display your profile and projects, deliver scheduled 1-on-1 mentorship or placement consultations, and provide access to purchased AI tools.</li>
             <li><strong>Payment and billing processing:</strong> to verify transactions via Razorpay, issue digital payment receipts, and maintain account billing history.</li>
-            <li><strong>Personalisation:</strong> to show you relevant projects, developers, or job postings based on your stated role and interests.</li>
+            <li><strong>Personalisation:</strong> to show you relevant projects, campaigns, developers, digital marketers, or job postings based on your stated role and interests.</li>
             <li><strong>Security and fraud prevention:</strong> to detect, investigate, and prevent payment abuse, unauthorized access, or fraudulent transactions.</li>
             <li><strong>Platform improvement:</strong> to analyse aggregated, anonymised usage trends and to debug errors.</li>
             <li><strong>Communications:</strong> to send you transactional emails (e.g., payment receipts, password reset, account notifications). We do not send unsolicited marketing emails.</li>

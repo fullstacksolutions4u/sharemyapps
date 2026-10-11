@@ -1,8 +1,7 @@
 export default function TermsOfService() {
   return (
     <div className="max-w-4xl mx-auto px-4 py-12 md:py-20 text-text">
-      <h1 className="text-3xl md:text-4xl font-bold mb-3">Terms of Service</h1>
-      <p className="text-sm text-text/60 mb-10">Last updated: October 11, 2026</p>
+      <h1 className="text-3xl md:text-4xl font-bold mb-8">Terms of Service</h1>
 
       <div className="space-y-8 text-sm md:text-base leading-relaxed">
         
@@ -24,14 +23,14 @@ export default function TermsOfService() {
           <h2 className="text-xl font-semibold mb-3">2. Description of Services</h2>
           <p>
             ShareMyApps is a specialized SaaS, career acceleration, and community platform for software developers, 
-            students, recruiters, and tech professionals. Our offerings include:
+            digital marketers, students, recruiters, and industry professionals. Our offerings include:
           </p>
           <ul className="list-disc pl-5 mt-2 space-y-1.5">
-            <li><strong>Developer Portfolio & Project Showcase:</strong> Hosting public developer profiles, project showcases, and developer networking.</li>
+            <li><strong>Professional Portfolio & Project Showcase:</strong> Hosting public profiles, software side-projects, digital marketing campaigns, case studies, and networking.</li>
             <li><strong>Job Assistance & Career Support Services:</strong> 1-on-1 placement guidance sessions, ATS-compatible resume and cover letter optimization, LinkedIn profile review, and interview preparation.</li>
             <li><strong>Mentorship Programs:</strong> Structured modules, curriculum tracking, and mentor-led learning assistance.</li>
             <li><strong>AI-Powered Career Tools:</strong> AI mock interview assessments and Job Description (JD) matching analysis.</li>
-            <li><strong>Community & Learning Tracker:</strong> Developer community blog, coding quizzes, and skill-tracking modules.</li>
+            <li><strong>Community & Learning Tracker:</strong> Professional community blog, skill quizzes, and career-tracking modules.</li>
           </ul>
         </section>
 
