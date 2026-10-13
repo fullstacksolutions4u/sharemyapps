@@ -51,7 +51,7 @@ function extractQuizzes(topic) {
       correctAnswer: q.correctAnswer,
       explanation: q.explanation || undefined,
       sampleCode: q.sampleCode || undefined,
-      // no _id — let MongoDB generate fresh ones
+      _id: q._id || new mongoose.Types.ObjectId()
     }));
 }
 

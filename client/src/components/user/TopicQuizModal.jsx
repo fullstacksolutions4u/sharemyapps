@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { progressAPI } from '../../api/tick2test';
+import { toast } from 'react-hot-toast';
 
 const TopicQuizModal = ({
   isOpen,
@@ -86,6 +87,7 @@ const TopicQuizModal = ({
       }
     } catch (error) {
       console.error('Failed to submit quiz attempt:', error);
+      toast.error('Failed to submit quiz attempt. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
