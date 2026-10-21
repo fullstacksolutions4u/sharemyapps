@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Database, Search, Download, ExternalLink, RefreshCw, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Database, Search, Download, ExternalLink, RefreshCw, ChevronLeft, ChevronRight, UploadCloud } from 'lucide-react';
 import api from '../../api/axios';
 import toast from 'react-hot-toast';
 
@@ -8,6 +8,7 @@ export default function AdminCustomersDatabaseSection() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
+  const [syncing, setSyncing] = useState(false);
   const itemsPerPage = 10;
 
   const fetchUsers = async () => {
@@ -47,6 +48,31 @@ export default function AdminCustomersDatabaseSection() {
   const totalPages = Math.ceil(filteredUsers.length / itemsPerPage) || 1;
   const paginatedUsers = filteredUsers.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
+
+  const handleSyncToSSHR = async () => {
+    const confirm = window.confirm(
+      'Are you sure you want to sync all customers to SS HR Consultancy?'
+    );
+    if (!confirm) return;
+
+    setSyncing(true);
+    const toastId = toast.loading('Syncing customers to SS HR Consultancy...');
+    try {
+      const res = await api.post('/admin/sync-to-sshr');
+      if (res.data?.success) {
+        toast.success(res.data.message || 'Synced to SS HR Consultancy successfully!', { id: toastId });
+      } else {
+        toast.error(res.data?.message || 'Sync failed', { id: toastId });
+      }
+    } catch (err) {
+      console.error('SS HR Sync error:', err);
+      const errMsg = err.response?.data?.message || 'Failed to sync with SS HR Consultancy.';
+      toast.error(errMsg, { id: toastId });
+    } finally {
+      setSyncing(false);
+    }
+  };
+
   const exportCSV = () => {
     const headers = ['Name', 'Email', 'Phone', 'State', 'Designations', 'Resume URL'];
     const rows = filteredUsers.map(u => [
@@ -80,17 +106,28 @@ export default function AdminCustomersDatabaseSection() {
         <div className="flex items-center gap-3">
           <button
             onClick={fetchUsers}
-            className="flex items-center gap-2 px-4 py-2 bg-white border border-[#E5E1DA] rounded-xl text-sm font-medium text-[#1A1A1A] hover:bg-[#F9F8F6] transition-colors shadow-sm"
+            disabled={loading || syncing}
+            className="flex items-center gap-2 px-4 py-2 bg-white border border-[#E5E1DA] rounded-xl text-sm font-medium text-[#1A1A1A] hover:bg-[#F9F8F6] transition-colors shadow-sm disabled:opacity-50"
           >
             <RefreshCw size={16} className={loading ? 'animate-spin' : ''} />
             Refresh
           </button>
           <button
             onClick={exportCSV}
-            className="flex items-center gap-2 px-4 py-2 bg-[#00A693] text-white rounded-xl text-sm font-medium hover:bg-[#007D6F] transition-colors shadow-sm"
+            disabled={loading || syncing}
+            className="flex items-center gap-2 px-4 py-2 bg-white border border-[#E5E1DA] rounded-xl text-sm font-medium text-[#1A1A1A] hover:bg-[#F9F8F6] transition-colors shadow-sm disabled:opacity-50"
           >
             <Download size={16} />
             Export CSV
+          </button>
+          <button
+            onClick={handleSyncToSSHR}
+            disabled={loading || syncing}
+            className="flex items-center gap-2 px-4 py-2 bg-[#00A693] text-white rounded-xl text-sm font-medium hover:bg-[#007D6F] transition-colors shadow-sm disabled:opacity-50"
+            title="Sync all customers to SS HR Consultancy platform leads"
+          >
+            <UploadCloud size={16} className={syncing ? 'animate-bounce' : ''} />
+            {syncing ? 'Syncing...' : 'Sync to SS HR'}
           </button>
         </div>
       </div>
