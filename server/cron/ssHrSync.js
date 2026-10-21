@@ -1,51 +1,26 @@
 const cron = require('node-cron');
-const axios = require('axios');
-const User = require('../models/User'); // Adjust path if needed
-
-// Replace with your actual SS HR Consultancy backend URL
-const SS_HR_API_URL = 'http://localhost:5000/api/imported-customers/sync'; 
+const ssHrSyncService = require('../services/ssHrSync.service');
 
 const syncUsersToSSHR = async () => {
   try {
-    console.log('?? [Cron] Starting nightly sync to SS HR Consultancy...');
-    
-    // 1. Fetch users from ShareMyApps database
-    const users = await User.find({}).lean();
-
-    if (!users || users.length === 0) {
-      console.log('? [Cron] No users found to sync.');
-      return;
+    console.log('[Cron] Starting nightly sync to SS HR Consultancy...');
+    const result = await ssHrSyncService.syncCandidates();
+    if (result.success) {
+      console.log(`[Cron] Sync successful! Total synced: ${result.totalSynced}`);
+    } else {
+      console.log(`[Cron] Sync warning: ${result.message}`);
     }
-
-    // 2. Format the data to match what SS HR expects
-    const formattedUsers = users.map(user => ({
-      name: user.name,
-      email: user.email,
-      phone: user.phone || '',
-      state: user.state || '',
-      designations: user.designations || [],
-      cvUrl: user.cvUrl || '',
-      linkedinUrl: user.linkedinUrl || '', // Added linkedinUrl
-      source: 'ShareMyApps'
-    }));
-
-    // 3. Send the POST request
-    const response = await axios.post(SS_HR_API_URL, formattedUsers, {
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    });
-
-    console.log(? [Cron] Sync successful! Inserted: , Updated: );
-    
   } catch (error) {
-    console.error('? [Cron] Error syncing users to SS HR:', error.message);
+    console.error('[Cron] Error syncing users to SS HR:', error.message);
   }
 };
 
 // Schedule the cron job to run every night at 2:00 AM
-cron.schedule('0 2 * * *', () => {
+const task = cron.schedule('0 2 * * *', () => {
   syncUsersToSSHR();
+}, {
+  scheduled: true,
+  timezone: 'Asia/Kolkata'
 });
 
-module.exports = { syncUsersToSSHR };
+module.exports = { syncUsersToSSHR, task };

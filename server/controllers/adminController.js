@@ -1,3 +1,4 @@
+const ssHrSyncService = require('../services/ssHrSync.service');
 const adminService = require('../services/admin.service');
 const AdminDto = require('../dtos/admin.dto');
 
@@ -250,5 +251,25 @@ exports.getCompanies = async (req, res) => {
     res.json(result);
   } catch (err) {
     res.status(500).json({ message: err.message });
+  }
+};
+
+exports.syncToSSHR = async (req, res) => {
+  try {
+    const { userIds } = req.body || {};
+    const result = await ssHrSyncService.syncCandidates(userIds);
+    if (!result.success) {
+      return res.status(400).json(result);
+    }
+    res.json({
+      success: true,
+      message: `Successfully synced ${result.totalSynced} candidates to SS HR Consultancy`,
+      details: result.ssHrResponse
+    });
+  } catch (err) {
+    console.error('[AdminController] Error syncing to SS HR:', err.response?.data || err.message);
+    const status = err.response?.status || 500;
+    const message = err.response?.data?.message || err.message || 'Failed to sync with SS HR Consultancy';
+    res.status(status).json({ success: false, message });
   }
 };

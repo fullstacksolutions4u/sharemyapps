@@ -27,6 +27,7 @@ const {
   createEmailTemplate,
   updateEmailTemplate,
   deleteEmailTemplate,
+  syncToSSHR,
 } = require('../controllers/adminController');
 const { adminSendMessage } = require('../controllers/messageController');
 const {
@@ -60,6 +61,7 @@ router.get('/projects/pending', getPendingProjects);
 router.patch('/projects/:id/status', updateProjectStatus);
 router.put('/projects/:id', adminUpdateProject);
 router.get('/users', getAllUsers);
+router.post('/sync-to-sshr', syncToSSHR);
 router.get('/resumes', getResumes);
 router.get('/companies', getCompanies);
 router.get('/email/users', getEmailRecipients);
