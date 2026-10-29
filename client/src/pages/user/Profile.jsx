@@ -83,6 +83,13 @@ const PRESET_DESIGNATIONS = [
   'Digital Marketer', 'Digital Marketing Specialist', 'SEO Specialist',
   'Content Writer', 'Content Creator', 'Social Media Specialist', 'Social Media Manager',
   'Graphic Designer', 'Video Editor', 'Copywriter', 'Performance Marketer', 'Growth Marketer',
+  'HR Manager', 'HR Executive', 'HR Generalist', 'HR Business Partner',
+  'Talent Acquisition Specialist', 'Talent Acquisition Manager', 'Talent Acquisition Lead',
+  'Recruiter', 'Technical Recruiter', 'Senior Recruiter', 'Recruitment Consultant',
+  'Staffing Specialist', 'Campus Recruiter', 'Executive Recruiter',
+  'People Operations Manager', 'Compensation & Benefits Specialist',
+  'Learning & Development Specialist', 'Employee Relations Specialist',
+  'Workforce Planning Analyst', 'HRIS Analyst',
   'Others',
 ];
 
