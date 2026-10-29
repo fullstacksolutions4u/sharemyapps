@@ -108,7 +108,7 @@ const LeetCodeIcon = () => (
 
 const TABS = [
   { id: 'basic', label: 'Basic Info', icon: User },
-  { id: 'links', label: 'Developer Links', icon: Link2 },
+  { id: 'links', label: 'Candidate Links', icon: Link2 },
   { id: 'opportunities', label: 'Opportunities', icon: Briefcase },
   { id: 'resume', label: 'Resume / CV', icon: FileText },
 ];
@@ -947,26 +947,26 @@ export default function Profile() {
               </div>
             )}
 
-            {/* Tab 1 — Developer Links */}
+            {/* Tab 1 — Candidate Links */}
             {activeTab === 1 && (
               <div className="space-y-4">
 
-                {/* Row 1: LinkedIn + GitHub */}
+                {/* Row 1: LinkedIn + Portfolio */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <Field icon={<Link2 size={15} />} label="LinkedIn" name="linkedinUrl" value={form.linkedinUrl} onChange={handle} placeholder="linkedin.com/in/yourprofile" required />
-                  <Field icon={<GitBranch size={15} />} label="GitHub" name="githubUrl" value={form.githubUrl} onChange={handle} placeholder="github.com/yourusername" optional />
-                </div>
-
-                {/* Row 2: LeetCode + Portfolio */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <Field icon={<LeetCodeIcon />} label="LeetCode" name="leetcodeUrl" value={form.leetcodeUrl} onChange={handle} placeholder="leetcode.com/yourusername" optional />
                   <Field icon={<Globe size={15} />} label="Portfolio" name="portfolioUrl" value={form.portfolioUrl} onChange={handle} placeholder="yourportfolio.com" optional />
                 </div>
 
-                {/* Tech Stack — Know Well */}
+                {/* Row 2: GitHub + LeetCode */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <Field icon={<GitBranch size={15} />} label="GitHub" name="githubUrl" value={form.githubUrl} onChange={handle} placeholder="github.com/yourusername" optional />
+                  <Field icon={<LeetCodeIcon />} label="LeetCode" name="leetcodeUrl" value={form.leetcodeUrl} onChange={handle} placeholder="leetcode.com/yourusername" optional />
+                </div>
+
+                {/* Skills — Know Well */}
                 <div>
                   <label className="flex items-center gap-1.5 text-sm font-medium text-text mb-1">
-                    <Code2 size={13} className="text-muted" /> Know Well <span className="text-[#9CA3AF] font-normal text-xs ml-1.5">(Optional)</span>
+                    <Code2 size={13} className="text-muted" /> Skills – Know Well <span className="text-[#9CA3AF] font-normal text-xs ml-1.5">(Optional)</span>
                   </label>
                   <div className="space-y-2">
                     <div className="flex gap-2">
@@ -983,7 +983,7 @@ export default function Profile() {
                             setTechInput('');
                           }
                         }}
-                        placeholder="e.g. React, Node.js… (Enter or comma to add)"
+                        placeholder="e.g. React, Canva, MS Excel, Talent Sourcing, SEO… (Enter or comma to add)"
                         className="flex-1 px-3.5 py-2.5 border border-border rounded-xl text-sm text-text placeholder-muted focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/10 transition bg-white"
                       />
                       <button
@@ -1016,10 +1016,10 @@ export default function Profile() {
                   </div>
                 </div>
 
-                {/* Tech Stack — Familiar With */}
+                {/* Skills — Familiar With */}
                 <div>
                   <label className="flex items-center gap-1.5 text-sm font-medium text-text mb-1">
-                    <Code2 size={13} className="text-muted" /> Familiar With <span className="text-[#9CA3AF] font-normal text-xs ml-1.5">(Optional)</span>
+                    <Code2 size={13} className="text-muted" /> Skills – Familiar With <span className="text-[#9CA3AF] font-normal text-xs ml-1.5">(Optional)</span>
                   </label>
                   <div className="space-y-2">
                     <div className="flex gap-2">
@@ -1036,7 +1036,7 @@ export default function Profile() {
                             setFamiliarTechInput('');
                           }
                         }}
-                        placeholder="e.g. Docker, Kubernetes… (Enter or comma to add)"
+                        placeholder="e.g. Figma, Google Analytics, Cold Calling, Copywriting… (Enter or comma to add)"
                         className="flex-1 px-3.5 py-2.5 border border-border rounded-xl text-sm text-text placeholder-muted focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/10 transition bg-white"
                       />
                       <button
@@ -1156,7 +1156,7 @@ export default function Profile() {
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
                           <label className="flex items-center gap-1.5 text-sm font-medium text-text mb-2">
-                            <Code2 size={13} className="text-muted" /> Stack you can mentor in
+                            <Code2 size={13} className="text-muted" /> Skills / Topics you can mentor in
                           </label>
                           <div className="grid grid-cols-2 gap-2">
                             {form.mentorshipTech.map((t, i) => (
@@ -1166,7 +1166,7 @@ export default function Profile() {
                                   type="text" value={t}
                                   onChange={e => handleTechChange(e, i)}
                                   onKeyDown={e => handleTechKeyDown(e, i)}
-                                  placeholder="e.g. MERN Stack"
+                                  placeholder="e.g. React, Marketing, HR, Design"
                                   className="flex-1 min-w-0 px-3 py-2 border border-border rounded-xl text-sm text-text placeholder-muted focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/10 transition bg-white"
                                 />
                                 {i === form.mentorshipTech.length - 1 ? (
